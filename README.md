@@ -1,2 +1,2 @@
-# Project-VentureStar
-Project VentureStar features an iOS app that can accurately measure facial dimensions.
+# Project-Lightbulb
+Project Lightbulb features an iOS app that can accurately measure facial dimensions.
