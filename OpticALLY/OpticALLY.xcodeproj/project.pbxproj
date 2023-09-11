@@ -1,0 +1,629 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		967EE0652AAE06FB000C4D5F /* OpticALLYApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967EE0642AAE06FB000C4D5F /* OpticALLYApp.swift */; };
+		967EE0672AAE06FB000C4D5F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967EE0662AAE06FB000C4D5F /* ContentView.swift */; };
+		967EE0692AAE06FE000C4D5F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 967EE0682AAE06FE000C4D5F /* Assets.xcassets */; };
+		967EE06C2AAE06FE000C4D5F /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 967EE06B2AAE06FE000C4D5F /* Preview Assets.xcassets */; };
+		967EE0762AAE06FE000C4D5F /* OpticALLYTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967EE0752AAE06FE000C4D5F /* OpticALLYTests.swift */; };
+		967EE0802AAE06FE000C4D5F /* OpticALLYUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967EE07F2AAE06FE000C4D5F /* OpticALLYUITests.swift */; };
+		967EE0822AAE06FE000C4D5F /* OpticALLYUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967EE0812AAE06FE000C4D5F /* OpticALLYUITestsLaunchTests.swift */; };
+		967EE08F2AAEDA82000C4D5F /* EyesTrackingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967EE08E2AAEDA82000C4D5F /* EyesTrackingView.swift */; };
+		967EE0932AAEDBF3000C4D5F /* EyesTrackingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967EE0922AAEDBF3000C4D5F /* EyesTrackingViewModel.swift */; };
+		967EE0952AAEDE10000C4D5F /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967EE0942AAEDE10000C4D5F /* Extensions.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		967EE0722AAE06FE000C4D5F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 967EE0592AAE06FB000C4D5F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 967EE0602AAE06FB000C4D5F;
+			remoteInfo = OpticALLY;
+		};
+		967EE07C2AAE06FE000C4D5F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 967EE0592AAE06FB000C4D5F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 967EE0602AAE06FB000C4D5F;
+			remoteInfo = OpticALLY;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		967EE0612AAE06FB000C4D5F /* OpticALLY.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OpticALLY.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		967EE0642AAE06FB000C4D5F /* OpticALLYApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpticALLYApp.swift; sourceTree = "<group>"; };
+		967EE0662AAE06FB000C4D5F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		967EE0682AAE06FE000C4D5F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		967EE06B2AAE06FE000C4D5F /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		967EE0712AAE06FE000C4D5F /* OpticALLYTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OpticALLYTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		967EE0752AAE06FE000C4D5F /* OpticALLYTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpticALLYTests.swift; sourceTree = "<group>"; };
+		967EE07B2AAE06FE000C4D5F /* OpticALLYUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OpticALLYUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		967EE07F2AAE06FE000C4D5F /* OpticALLYUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpticALLYUITests.swift; sourceTree = "<group>"; };
+		967EE0812AAE06FE000C4D5F /* OpticALLYUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpticALLYUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		967EE08E2AAEDA82000C4D5F /* EyesTrackingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EyesTrackingView.swift; sourceTree = "<group>"; };
+		967EE0922AAEDBF3000C4D5F /* EyesTrackingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EyesTrackingViewModel.swift; sourceTree = "<group>"; };
+		967EE0942AAEDE10000C4D5F /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		967EE05E2AAE06FB000C4D5F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		967EE06E2AAE06FE000C4D5F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		967EE0782AAE06FE000C4D5F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		967EE0582AAE06FB000C4D5F = {
+			isa = PBXGroup;
+			children = (
+				967EE0632AAE06FB000C4D5F /* OpticALLY */,
+				967EE0742AAE06FE000C4D5F /* OpticALLYTests */,
+				967EE07E2AAE06FE000C4D5F /* OpticALLYUITests */,
+				967EE0622AAE06FB000C4D5F /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		967EE0622AAE06FB000C4D5F /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				967EE0612AAE06FB000C4D5F /* OpticALLY.app */,
+				967EE0712AAE06FE000C4D5F /* OpticALLYTests.xctest */,
+				967EE07B2AAE06FE000C4D5F /* OpticALLYUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		967EE0632AAE06FB000C4D5F /* OpticALLY */ = {
+			isa = PBXGroup;
+			children = (
+				967EE0912AAEDBD2000C4D5F /* ViewModel */,
+				967EE0902AAEDBBE000C4D5F /* View */,
+				967EE0642AAE06FB000C4D5F /* OpticALLYApp.swift */,
+				967EE0942AAEDE10000C4D5F /* Extensions.swift */,
+				967EE0682AAE06FE000C4D5F /* Assets.xcassets */,
+				967EE06A2AAE06FE000C4D5F /* Preview Content */,
+			);
+			path = OpticALLY;
+			sourceTree = "<group>";
+		};
+		967EE06A2AAE06FE000C4D5F /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				967EE06B2AAE06FE000C4D5F /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		967EE0742AAE06FE000C4D5F /* OpticALLYTests */ = {
+			isa = PBXGroup;
+			children = (
+				967EE0752AAE06FE000C4D5F /* OpticALLYTests.swift */,
+			);
+			path = OpticALLYTests;
+			sourceTree = "<group>";
+		};
+		967EE07E2AAE06FE000C4D5F /* OpticALLYUITests */ = {
+			isa = PBXGroup;
+			children = (
+				967EE07F2AAE06FE000C4D5F /* OpticALLYUITests.swift */,
+				967EE0812AAE06FE000C4D5F /* OpticALLYUITestsLaunchTests.swift */,
+			);
+			path = OpticALLYUITests;
+			sourceTree = "<group>";
+		};
+		967EE0902AAEDBBE000C4D5F /* View */ = {
+			isa = PBXGroup;
+			children = (
+				967EE0662AAE06FB000C4D5F /* ContentView.swift */,
+				967EE08E2AAEDA82000C4D5F /* EyesTrackingView.swift */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
+		967EE0912AAEDBD2000C4D5F /* ViewModel */ = {
+			isa = PBXGroup;
+			children = (
+				967EE0922AAEDBF3000C4D5F /* EyesTrackingViewModel.swift */,
+			);
+			path = ViewModel;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		967EE0602AAE06FB000C4D5F /* OpticALLY */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 967EE0852AAE06FE000C4D5F /* Build configuration list for PBXNativeTarget "OpticALLY" */;
+			buildPhases = (
+				967EE05D2AAE06FB000C4D5F /* Sources */,
+				967EE05E2AAE06FB000C4D5F /* Frameworks */,
+				967EE05F2AAE06FB000C4D5F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = OpticALLY;
+			productName = OpticALLY;
+			productReference = 967EE0612AAE06FB000C4D5F /* OpticALLY.app */;
+			productType = "com.apple.product-type.application";
+		};
+		967EE0702AAE06FE000C4D5F /* OpticALLYTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 967EE0882AAE06FE000C4D5F /* Build configuration list for PBXNativeTarget "OpticALLYTests" */;
+			buildPhases = (
+				967EE06D2AAE06FE000C4D5F /* Sources */,
+				967EE06E2AAE06FE000C4D5F /* Frameworks */,
+				967EE06F2AAE06FE000C4D5F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				967EE0732AAE06FE000C4D5F /* PBXTargetDependency */,
+			);
+			name = OpticALLYTests;
+			productName = OpticALLYTests;
+			productReference = 967EE0712AAE06FE000C4D5F /* OpticALLYTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		967EE07A2AAE06FE000C4D5F /* OpticALLYUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 967EE08B2AAE06FE000C4D5F /* Build configuration list for PBXNativeTarget "OpticALLYUITests" */;
+			buildPhases = (
+				967EE0772AAE06FE000C4D5F /* Sources */,
+				967EE0782AAE06FE000C4D5F /* Frameworks */,
+				967EE0792AAE06FE000C4D5F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				967EE07D2AAE06FE000C4D5F /* PBXTargetDependency */,
+			);
+			name = OpticALLYUITests;
+			productName = OpticALLYUITests;
+			productReference = 967EE07B2AAE06FE000C4D5F /* OpticALLYUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		967EE0592AAE06FB000C4D5F /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					967EE0602AAE06FB000C4D5F = {
+						CreatedOnToolsVersion = 15.0;
+					};
+					967EE0702AAE06FE000C4D5F = {
+						CreatedOnToolsVersion = 15.0;
+						TestTargetID = 967EE0602AAE06FB000C4D5F;
+					};
+					967EE07A2AAE06FE000C4D5F = {
+						CreatedOnToolsVersion = 15.0;
+						TestTargetID = 967EE0602AAE06FB000C4D5F;
+					};
+				};
+			};
+			buildConfigurationList = 967EE05C2AAE06FB000C4D5F /* Build configuration list for PBXProject "OpticALLY" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 967EE0582AAE06FB000C4D5F;
+			productRefGroup = 967EE0622AAE06FB000C4D5F /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				967EE0602AAE06FB000C4D5F /* OpticALLY */,
+				967EE0702AAE06FE000C4D5F /* OpticALLYTests */,
+				967EE07A2AAE06FE000C4D5F /* OpticALLYUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		967EE05F2AAE06FB000C4D5F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				967EE06C2AAE06FE000C4D5F /* Preview Assets.xcassets in Resources */,
+				967EE0692AAE06FE000C4D5F /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		967EE06F2AAE06FE000C4D5F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		967EE0792AAE06FE000C4D5F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		967EE05D2AAE06FB000C4D5F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				967EE0952AAEDE10000C4D5F /* Extensions.swift in Sources */,
+				967EE08F2AAEDA82000C4D5F /* EyesTrackingView.swift in Sources */,
+				967EE0672AAE06FB000C4D5F /* ContentView.swift in Sources */,
+				967EE0652AAE06FB000C4D5F /* OpticALLYApp.swift in Sources */,
+				967EE0932AAEDBF3000C4D5F /* EyesTrackingViewModel.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		967EE06D2AAE06FE000C4D5F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				967EE0762AAE06FE000C4D5F /* OpticALLYTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		967EE0772AAE06FE000C4D5F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				967EE0822AAE06FE000C4D5F /* OpticALLYUITestsLaunchTests.swift in Sources */,
+				967EE0802AAE06FE000C4D5F /* OpticALLYUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		967EE0732AAE06FE000C4D5F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 967EE0602AAE06FB000C4D5F /* OpticALLY */;
+			targetProxy = 967EE0722AAE06FE000C4D5F /* PBXContainerItemProxy */;
+		};
+		967EE07D2AAE06FE000C4D5F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 967EE0602AAE06FB000C4D5F /* OpticALLY */;
+			targetProxy = 967EE07C2AAE06FE000C4D5F /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		967EE0832AAE06FE000C4D5F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		967EE0842AAE06FE000C4D5F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		967EE0862AAE06FE000C4D5F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"OpticALLY/Preview Content\"";
+				DEVELOPMENT_TEAM = Z64KRUX3W3;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Your camera is used for the AR Eye Measure feature.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Your microphone is used for the audio-visual experience.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "You can use the existing photo to measure the eye distance.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "You can use the existing photo to measure the eye distance.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.lightbulb.OpticALLY;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		967EE0872AAE06FE000C4D5F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"OpticALLY/Preview Content\"";
+				DEVELOPMENT_TEAM = Z64KRUX3W3;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Your camera is used for the AR Eye Measure feature.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Your microphone is used for the audio-visual experience.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "You can use the existing photo to measure the eye distance.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "You can use the existing photo to measure the eye distance.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.lightbulb.OpticALLY;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		967EE0892AAE06FE000C4D5F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = Z64KRUX3W3;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.lightbulb.OpticALLYTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/OpticALLY.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/OpticALLY";
+			};
+			name = Debug;
+		};
+		967EE08A2AAE06FE000C4D5F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = Z64KRUX3W3;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.lightbulb.OpticALLYTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/OpticALLY.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/OpticALLY";
+			};
+			name = Release;
+		};
+		967EE08C2AAE06FE000C4D5F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = Z64KRUX3W3;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.lightbulb.OpticALLYUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = OpticALLY;
+			};
+			name = Debug;
+		};
+		967EE08D2AAE06FE000C4D5F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = Z64KRUX3W3;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.lightbulb.OpticALLYUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = OpticALLY;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		967EE05C2AAE06FB000C4D5F /* Build configuration list for PBXProject "OpticALLY" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				967EE0832AAE06FE000C4D5F /* Debug */,
+				967EE0842AAE06FE000C4D5F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		967EE0852AAE06FE000C4D5F /* Build configuration list for PBXNativeTarget "OpticALLY" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				967EE0862AAE06FE000C4D5F /* Debug */,
+				967EE0872AAE06FE000C4D5F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		967EE0882AAE06FE000C4D5F /* Build configuration list for PBXNativeTarget "OpticALLYTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				967EE0892AAE06FE000C4D5F /* Debug */,
+				967EE08A2AAE06FE000C4D5F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		967EE08B2AAE06FE000C4D5F /* Build configuration list for PBXNativeTarget "OpticALLYUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				967EE08C2AAE06FE000C4D5F /* Debug */,
+				967EE08D2AAE06FE000C4D5F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 967EE0592AAE06FB000C4D5F /* Project object */;
+}

@@ -1,0 +1,189 @@
+//
+//  EyesTrackingViewModel.swift
+//  OpticALLY
+//
+//  Created by John Seong on 9/11/23.
+//
+
+import Foundation
+import ARKit
+import Combine
+
+/// `EyesTrackingViewModel` manages and processes AR face tracking data, focusing on tracking eye movement
+/// and identifying where a user is looking on a virtual phone screen. It offers real-time feedback on the user's
+/// gaze position on a screen and their distance from the device.
+///
+/// Use this class to initialize and run an AR session with face tracking configuration and pause the session as needed.
+///
+/// ```
+/// let viewModel = EyesTrackingViewModel()
+/// viewModel.startSession() // Starts AR face tracking session
+/// viewModel.pauseSession() // Pauses the ongoing AR session
+/// ```
+///
+/// > Warning: Ensure AR face tracking is supported on the device before starting the session.
+///
+/// - Properties:
+///     - `eyePosition`: Current eye position represented as a `CGPoint`.
+///     - `distanceText`: Approximate distance (in centimeters) of the user's eyes from the device.
+///     - `lookAtPositionXText` & `lookAtPositionYText`: X and Y coordinates of user's gaze on the virtual phone screen.
+///     - `eyePositionIndicatorTransform`: Current position of eye tracking indicator on screen as a `CGAffineTransform`.
+///
+/// - Methods:
+///     - `startSession()`: Initializes and runs the AR session with face tracking configuration.
+///     - `pauseSession()`: Pauses the ongoing AR session.
+///     - `update(withFaceAnchor:)`: Updates and processes the latest face anchor data, calculates eye look-at positions, and updates related properties.
+///
+/// - Conformances:
+///     - `ARSCNViewDelegate`: Allows the class to respond to AR Scene View events.
+///     - `ARSessionDelegate`: Allows the class to respond to AR session changes.
+
+class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSessionDelegate {
+    @Published var eyePosition: CGPoint = .zero
+    @Published var distanceText: String = ""
+    @Published var lookAtPositionXText: String = ""
+    @Published var lookAtPositionYText: String = ""
+    // Additional Published properties for bindings:
+    @Published var eyePositionIndicatorTransform: CGAffineTransform = .identity
+    
+    // Variables and Constants from the Original Code
+    private var faceNode: SCNNode = SCNNode()
+    private var eyeLNode: SCNNode = {
+        let geometry = SCNCone(topRadius: 0.005, bottomRadius: 0, height: 0.2)
+        geometry.radialSegmentCount = 3
+        geometry.firstMaterial?.diffuse.contents = UIColor.blue
+        let node = SCNNode()
+        node.geometry = geometry
+        node.eulerAngles.x = -.pi / 2
+        node.position.z = 0.1
+        let parentNode = SCNNode()
+        parentNode.addChildNode(node)
+        return parentNode
+    }()
+    
+    private var eyeRNode: SCNNode = {
+        let geometry = SCNCone(topRadius: 0.005, bottomRadius: 0, height: 0.2)
+        geometry.radialSegmentCount = 3
+        geometry.firstMaterial?.diffuse.contents = UIColor.blue
+        let node = SCNNode()
+        node.geometry = geometry
+        node.eulerAngles.x = -.pi / 2
+        node.position.z = 0.1
+        let parentNode = SCNNode()
+        parentNode.addChildNode(node)
+        return parentNode
+    }()
+    private var lookAtTargetEyeLNode: SCNNode = SCNNode()
+    private var lookAtTargetEyeRNode: SCNNode = SCNNode()
+    private let phoneScreenSize = CGSize(width: 0.0623908297, height: 0.135096943231532)
+    private let phoneScreenPointSize = CGSize(width: 375, height: 812)
+    private var virtualPhoneNode: SCNNode = SCNNode()
+    private var virtualScreenNode: SCNNode = {
+        let screenGeometry = SCNPlane(width: 1, height: 1)
+        screenGeometry.firstMaterial?.isDoubleSided = true
+        screenGeometry.firstMaterial?.diffuse.contents = UIColor.green
+        
+        return SCNNode(geometry: screenGeometry)
+    }()
+    private var eyeLookAtPositionXs: [CGFloat] = []
+    private var eyeLookAtPositionYs: [CGFloat] = []
+    
+    private var session: ARSession!
+    
+    override init() {
+        super.init()
+        self.session = ARSession()
+        self.session.delegate = self
+    }
+    
+    func startSession() {
+        guard ARFaceTrackingConfiguration.isSupported else { return }
+        let configuration = ARFaceTrackingConfiguration()
+        configuration.isLightEstimationEnabled = true
+        
+        self.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
+    }
+    
+    func pauseSession() {
+        self.session.pause()
+    }
+    
+    func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
+        faceNode.transform = node.transform
+        guard let faceAnchor = anchor as? ARFaceAnchor else { return }
+        update(withFaceAnchor: faceAnchor)
+    }
+    
+    func renderer(_ renderer: SCNSceneRenderer, updateAtTime time: TimeInterval) {
+        virtualPhoneNode.transform = (renderer as! ARSCNView).pointOfView!.transform
+    }
+    
+    func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
+        faceNode.transform = node.transform
+        guard let faceAnchor = anchor as? ARFaceAnchor else { return }
+        update(withFaceAnchor: faceAnchor)
+    }
+    
+    func update(withFaceAnchor anchor: ARFaceAnchor) {
+        eyeRNode.simdTransform = anchor.rightEyeTransform
+        eyeLNode.simdTransform = anchor.leftEyeTransform
+        
+        var eyeLLookAt = CGPoint()
+        var eyeRLookAt = CGPoint()
+        
+        let heightCompensation: CGFloat = 312
+        
+        DispatchQueue.main.async {
+            
+            // Perform Hit test using the ray segments that are drawn by the center of the eyeballs to somewhere two meters away at direction of where users look at to the virtual plane that place at the same orientation of the phone screen
+            
+            let phoneScreenEyeRHitTestResults = self.virtualPhoneNode.hitTestWithSegment(from: self.lookAtTargetEyeRNode.worldPosition, to: self.eyeRNode.worldPosition, options: nil)
+            
+            let phoneScreenEyeLHitTestResults = self.virtualPhoneNode.hitTestWithSegment(from: self.lookAtTargetEyeLNode.worldPosition, to: self.eyeLNode.worldPosition, options: nil)
+            
+            for result in phoneScreenEyeRHitTestResults {
+                
+                eyeRLookAt.x = CGFloat(result.localCoordinates.x) / (self.phoneScreenSize.width / 2) * self.phoneScreenPointSize.width
+                
+                eyeRLookAt.y = CGFloat(result.localCoordinates.y) / (self.phoneScreenSize.height / 2) * self.phoneScreenPointSize.height + heightCompensation
+            }
+            
+            for result in phoneScreenEyeLHitTestResults {
+                
+                eyeLLookAt.x = CGFloat(result.localCoordinates.x) / (self.phoneScreenSize.width / 2) * self.phoneScreenPointSize.width
+                
+                eyeLLookAt.y = CGFloat(result.localCoordinates.y) / (self.phoneScreenSize.height / 2) * self.phoneScreenPointSize.height + heightCompensation
+            }
+            
+            // Add the latest position and keep up to 8 recent position to smooth with.
+            let smoothThresholdNumber: Int = 10
+            self.eyeLookAtPositionXs.append((eyeRLookAt.x + eyeLLookAt.x) / 2)
+            self.eyeLookAtPositionYs.append(-(eyeRLookAt.y + eyeLLookAt.y) / 2)
+            self.eyeLookAtPositionXs = Array(self.eyeLookAtPositionXs.suffix(smoothThresholdNumber))
+            self.eyeLookAtPositionYs = Array(self.eyeLookAtPositionYs.suffix(smoothThresholdNumber))
+            
+            let smoothEyeLookAtPositionX = self.eyeLookAtPositionXs.average!
+            let smoothEyeLookAtPositionY = self.eyeLookAtPositionYs.average!
+            
+            // Update indicator position
+            self.eyePositionIndicatorTransform = CGAffineTransform(translationX: smoothEyeLookAtPositionX, y: smoothEyeLookAtPositionY)
+            
+            // Update eye look at labels values
+            self.lookAtPositionXText = "\(Int(round(smoothEyeLookAtPositionX + self.phoneScreenPointSize.width / 2)))"
+            
+            self.lookAtPositionYText = "\(Int(round(smoothEyeLookAtPositionY + self.phoneScreenPointSize.height / 2)))"
+            
+            // Calculate distance of the eyes to the camera
+            let distanceL = self.eyeLNode.worldPosition - SCNVector3Zero
+            let distanceR = self.eyeRNode.worldPosition - SCNVector3Zero
+            
+            // Average distance from two eyes
+            let distance = (distanceL.length() + distanceR.length()) / 2
+            
+            // Update distance label value
+            self.distanceText = "\(Int(round(distance * 100))) cm"
+            
+        }
+        
+    }
+}
