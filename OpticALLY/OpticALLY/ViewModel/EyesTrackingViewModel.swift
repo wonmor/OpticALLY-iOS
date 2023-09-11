@@ -183,6 +183,7 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
             // Update distance label value
             self.distanceText = "\(Int(round(distance * 100))) cm"
             
+            // TO DO: Get the angle between two distanceL and distanceR and then get the other side length by doing trigonometry
         }
         
     }
