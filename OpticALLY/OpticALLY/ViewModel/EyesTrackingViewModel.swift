@@ -43,6 +43,8 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
     @Published var distanceText: String = ""
     @Published var lookAtPositionXText: String = ""
     @Published var lookAtPositionYText: String = ""
+    @Published var angleBetweenEyes: Double = 0.0
+    @Published var sideLength: CGFloat = 0.0
     // Additional Published properties for bindings:
     @Published var eyePositionIndicatorTransform: CGAffineTransform = .identity
     
@@ -95,7 +97,7 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
         self.session = ARSession()
         self.session.delegate = self
     }
-    
+
     func startSession() {
         guard ARFaceTrackingConfiguration.isSupported else { return }
         let configuration = ARFaceTrackingConfiguration()
@@ -179,12 +181,34 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
             
             // Average distance from two eyes
             let distance = (distanceL.length() + distanceR.length()) / 2
+            let vectorDifference = SCNVector3.subtractVectors(distanceL, distanceR)
             
+            let dotProductValue = SCNVector3.dot(distanceL, distanceR)
+            let magnitudes = distanceL.magnitude() * distanceR.magnitude()
+            let cosineAngle = dotProductValue / magnitudes
+            let angle = acos(cosineAngle)
+
             // Update distance label value
             self.distanceText = "\(Int(round(distance * 100))) cm"
+            
+            print(self.distanceText + " \(angle) degrees")
             
             // TO DO: Get the angle between two distanceL and distanceR and then get the other side length by doing trigonometry
         }
         
+    }
+}
+
+extension SCNVector3 {
+    func magnitude() -> Float {
+        return sqrt(x*x + y*y + z*z)
+    }
+    
+    static func dot(_ v1: SCNVector3, _ v2: SCNVector3) -> Float {
+        return (v1.x * v2.x) + (v1.y * v2.y) + (v1.z * v2.z)
+    }
+    
+    static func subtractVectors(_ left: SCNVector3, _ right: SCNVector3) -> SCNVector3 {
+        return SCNVector3Make(left.x - right.x, left.y - right.y, left.z - right.z)
     }
 }
