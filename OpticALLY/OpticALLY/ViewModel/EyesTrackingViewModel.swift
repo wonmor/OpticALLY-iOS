@@ -133,9 +133,7 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
 
         print("The Distance Between The Eyes Is Approximatly \(distanceBetweenEyesInCM)")
         
-        DispatchQueue.main.async {
-           self.distanceText = "\(distanceBetweenEyesInCM) cm"
-       }
+        self.distanceText = "\(distanceBetweenEyesInCM) cm"
         
         update(withFaceAnchor: faceAnchor)
     }
