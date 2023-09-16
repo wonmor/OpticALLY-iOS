@@ -71,10 +71,17 @@ struct ARViewContainer: UIViewRepresentable {
         
         // Set ARSCNView settings
         sceneView.backgroundColor = UIColor.clear
-        sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints, ARSCNDebugOptions.showWorldOrigin]
+        // sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints, ARSCNDebugOptions.showWorldOrigin]
         
         // Ensure autoenablesDefaultLighting is set for basic lighting
         sceneView.autoenablesDefaultLighting = true
+    
+        let configuration = ARFaceTrackingConfiguration()
+        if #available(iOS 13.0, *) {
+            configuration.maximumNumberOfTrackedFaces = ARFaceTrackingConfiguration.supportedNumberOfTrackedFaces
+        }
+        configuration.isLightEstimationEnabled = true
+        sceneView.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
         
         return sceneView
     }
