@@ -34,7 +34,11 @@ struct EyesTrackingView: View {
             VStack {
                 Spacer()
                 // Displaying eye distance and cosine angle
-                Text("Distance: \(viewModel.distanceText)")
+                Text("Pupillary Distance")
+                    .bold()
+                
+                Text("\(viewModel.distanceText)")
+                    .font(.title)
             }
         }
     }
