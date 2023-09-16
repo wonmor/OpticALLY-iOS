@@ -21,31 +21,25 @@ struct EyesTrackingView: View {
         ZStack {
             ARViewContainer(viewModel: viewModel)
                 .edgesIgnoringSafeArea(.all) // Ensuring AR view covers entire screen
+
             // Overlay circles for eyes
             Circle().fill(Color.red.opacity(0.5))
                 .frame(width: 20, height: 20)
-                .offset(x: viewModel.eyePosition.x, y: viewModel.eyePosition.y)
+                .offset(x: viewModel.rightEyePosition.x, y: viewModel.rightEyePosition.y)
+            
             Circle().fill(Color.blue.opacity(0.5))
                 .frame(width: 20, height: 20)
-                // You might need to adjust this position based on the second eye's data
-                .offset(x: viewModel.eyePosition.x + 40, y: viewModel.eyePosition.y)
-            
+                .offset(x: viewModel.leftEyePosition.x, y: viewModel.leftEyePosition.y)
+
             VStack {
                 Spacer()
                 // Displaying eye distance and cosine angle
                 Text("Distance: \(viewModel.distanceText)")
-                Text("Angle: \(viewModel.angleBetweenEyes, specifier: "%.2f")°")
             }
-        }
-        .onAppear {
-            viewModel.startSession()
-            print("Starting AR Session...")
-        }
-        .onDisappear {
-            viewModel.pauseSession()
         }
     }
 }
+
 
 
 /// A SwiftUI-compatible representation of `ARSCNView`.
@@ -75,7 +69,8 @@ struct ARViewContainer: UIViewRepresentable {
         
         // Ensure autoenablesDefaultLighting is set for basic lighting
         sceneView.autoenablesDefaultLighting = true
-    
+        
+        guard ARFaceTrackingConfiguration.isSupported else { return sceneView }
         let configuration = ARFaceTrackingConfiguration()
         if #available(iOS 13.0, *) {
             configuration.maximumNumberOfTrackedFaces = ARFaceTrackingConfiguration.supportedNumberOfTrackedFaces

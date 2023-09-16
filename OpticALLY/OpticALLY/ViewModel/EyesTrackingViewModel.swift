@@ -39,16 +39,16 @@ import Combine
 ///     - `ARSessionDelegate`: Allows the class to respond to AR session changes.
 
 class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSessionDelegate {
-    @Published var eyePosition: CGPoint = .zero
+    @Published var leftEyePosition: CGPoint = .zero
+    @Published var rightEyePosition: CGPoint = .zero
     @Published var distanceText: String = ""
     @Published var lookAtPositionXText: String = ""
     @Published var lookAtPositionYText: String = ""
-    @Published var angleBetweenEyes: Double = 0.0
     @Published var sideLength: CGFloat = 0.0
     // Additional Published properties for bindings:
     @Published var eyePositionIndicatorTransform: CGAffineTransform = .identity
     
-    // Variables and Constants from the Original Code
+    private var faceGeometry: ARFaceGeometry?
     private var faceNode: SCNNode = SCNNode()
     private var eyeLNode: SCNNode = {
         let geometry = SCNCone(topRadius: 0.005, bottomRadius: 0, height: 0.2)
@@ -97,18 +97,14 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
         self.session = ARSession()
         self.session.delegate = self
     }
-
-    func startSession() {
-        guard ARFaceTrackingConfiguration.isSupported else { return }
-        let configuration = ARFaceTrackingConfiguration()
-        configuration.isLightEstimationEnabled = true
-        
-        self.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
-    }
     
-    func pauseSession() {
-        self.session.pause()
-    }
+    /// Creates A GLKVector3 From a Simd_Float4
+   ///
+   /// - Parameter transform: simd_float4
+   /// - Returns: GLKVector3
+   func glkVector3FromARFaceAnchorTransform(_ transform: simd_float4) -> GLKVector3{
+       return GLKVector3Make(transform.x, transform.y, transform.z)
+   }
     
     func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
         faceNode.transform = node.transform
@@ -123,12 +119,38 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
     func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
         faceNode.transform = node.transform
         guard let faceAnchor = anchor as? ARFaceAnchor else { return }
+        
+        //2. Get The Position Of The Left & Right Eyes
+        let leftEyePosition = glkVector3FromARFaceAnchorTransform(faceAnchor.leftEyeTransform.columns.3)
+        let righEyePosition = glkVector3FromARFaceAnchorTransform(faceAnchor.rightEyeTransform.columns.3)
+        
+        self.leftEyePosition = CGPoint(x: CGFloat(leftEyePosition.x), y: CGFloat(leftEyePosition.y))
+        self.rightEyePosition = CGPoint(x: CGFloat(rightEyePosition.x), y: CGFloat(rightEyePosition.y))
+
+        //3. Calculate The Distance Between Them
+        let distanceBetweenEyesInMetres = GLKVector3Distance(leftEyePosition, righEyePosition)
+        let distanceBetweenEyesInCM = distanceBetweenEyesInMetres * 100
+
+        print("The Distance Between The Eyes Is Approximatly \(distanceBetweenEyesInCM)")
+        
+        self.distanceText = "\(distanceBetweenEyesInCM) cm"
+        
         update(withFaceAnchor: faceAnchor)
     }
     
     func update(withFaceAnchor anchor: ARFaceAnchor) {
-        eyeRNode.simdTransform = anchor.rightEyeTransform
-        eyeLNode.simdTransform = anchor.leftEyeTransform
+           // Store face geometry data
+           faceGeometry = anchor.geometry
+
+           // Access vertices for depth data
+           let vertices = faceGeometry?.vertices
+
+           // Adjust the gaze direction using depth data if necessary. This might involve creating a more complex 3D representation of the face and adjusting the direction from the eyes.
+           // This is a placeholder. The actual implementation would be more involved and requires testing.
+           let depthAdjustment = vertices?.first?.z ?? 0
+           
+           eyeRNode.simdTransform = anchor.rightEyeTransform
+           eyeLNode.simdTransform = anchor.leftEyeTransform
         
         var eyeLLookAt = CGPoint()
         var eyeRLookAt = CGPoint()
@@ -143,8 +165,11 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
             
             let phoneScreenEyeLHitTestResults = self.virtualPhoneNode.hitTestWithSegment(from: self.lookAtTargetEyeLNode.worldPosition, to: self.eyeLNode.worldPosition, options: nil)
             
+            // Now when calculating the position on the virtual phone, consider the depth adjustment. This is a simple representation; the actual depth-based adjustment might be more complex.
+            eyeRLookAt.x += CGFloat(depthAdjustment)
+            eyeLLookAt.y += CGFloat(depthAdjustment)
+            
             for result in phoneScreenEyeRHitTestResults {
-                
                 eyeRLookAt.x = CGFloat(result.localCoordinates.x) / (self.phoneScreenSize.width / 2) * self.phoneScreenPointSize.width
                 
                 eyeRLookAt.y = CGFloat(result.localCoordinates.y) / (self.phoneScreenSize.height / 2) * self.phoneScreenPointSize.height + heightCompensation
@@ -172,28 +197,7 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
             
             // Update eye look at labels values
             self.lookAtPositionXText = "\(Int(round(smoothEyeLookAtPositionX + self.phoneScreenPointSize.width / 2)))"
-            
             self.lookAtPositionYText = "\(Int(round(smoothEyeLookAtPositionY + self.phoneScreenPointSize.height / 2)))"
-            
-            // Calculate distance of the eyes to the camera
-            let distanceL = self.eyeLNode.worldPosition - SCNVector3Zero
-            let distanceR = self.eyeRNode.worldPosition - SCNVector3Zero
-            
-            // Average distance from two eyes
-            let distance = (distanceL.length() + distanceR.length()) / 2
-            let vectorDifference = SCNVector3.subtractVectors(distanceL, distanceR)
-            
-            let dotProductValue = SCNVector3.dot(distanceL, distanceR)
-            let magnitudes = distanceL.magnitude() * distanceR.magnitude()
-            let cosineAngle = dotProductValue / magnitudes
-            let angle = acos(cosineAngle)
-
-            // Update distance label value
-            self.distanceText = "\(Int(round(distance * 100))) cm"
-            
-            print(self.distanceText + " \(angle) degrees")
-            
-            // TO DO: Get the angle between two distanceL and distanceR and then get the other side length by doing trigonometry
         }
         
     }
