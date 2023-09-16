@@ -20,19 +20,33 @@ struct EyesTrackingView: View {
     var body: some View {
         ZStack {
             ARViewContainer(viewModel: viewModel)
-                // Design elements go here, like cornerRadius, etc.
+                .edgesIgnoringSafeArea(.all) // Ensuring AR view covers entire screen
+            // Overlay circles for eyes
+            Circle().fill(Color.red.opacity(0.5))
+                .frame(width: 20, height: 20)
+                .offset(x: viewModel.eyePosition.x, y: viewModel.eyePosition.y)
+            Circle().fill(Color.blue.opacity(0.5))
+                .frame(width: 20, height: 20)
+                // You might need to adjust this position based on the second eye's data
+                .offset(x: viewModel.eyePosition.x + 40, y: viewModel.eyePosition.y)
+            
             VStack {
-                // Other SwiftUI elements based on your design can be placed here
+                Spacer()
+                // Displaying eye distance and cosine angle
+                Text("Distance: \(viewModel.distanceText)")
+                Text("Angle: \(viewModel.angleBetweenEyes, specifier: "%.2f")°")
             }
         }
         .onAppear {
             viewModel.startSession()
+            print("Starting AR Session...")
         }
         .onDisappear {
             viewModel.pauseSession()
         }
     }
 }
+
 
 /// A SwiftUI-compatible representation of `ARSCNView`.
 ///
@@ -54,7 +68,14 @@ struct ARViewContainer: UIViewRepresentable {
         let sceneView = ARSCNView()
         sceneView.delegate = viewModel
         sceneView.session.delegate = viewModel
-        // Other ARSCNView configuration goes here
+        
+        // Set ARSCNView settings
+        sceneView.backgroundColor = UIColor.clear
+        sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints, ARSCNDebugOptions.showWorldOrigin]
+        
+        // Ensure autoenablesDefaultLighting is set for basic lighting
+        sceneView.autoenablesDefaultLighting = true
+        
         return sceneView
     }
 
@@ -62,6 +83,7 @@ struct ARViewContainer: UIViewRepresentable {
         // This method will get called whenever SwiftUI updates this view.
     }
 }
+
 
 struct EyesTrackingView_Previews: PreviewProvider {
     static var previews: some View {
