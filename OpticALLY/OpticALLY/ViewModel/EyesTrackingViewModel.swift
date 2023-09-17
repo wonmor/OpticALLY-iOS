@@ -56,6 +56,9 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
     
     private var cancellables: Set<AnyCancellable> = []
     
+    private var leftEyeHighlight: (node: SCNNode, material: SCNMaterial)!
+    private var rightEyeHighlight: (node: SCNNode, material: SCNMaterial)!
+    
     private var faceGeometry: ARFaceGeometry?
     private var faceNode: SCNNode = SCNNode()
     private var eyeLNode: SCNNode = {
@@ -108,7 +111,7 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
         self.session.delegate = self
     }
     
-    func createEyeHighlight(radius: CGFloat) -> SCNNode {
+    func createEyeHighlight(radius: CGFloat) -> (node: SCNNode, material: SCNMaterial) {
         let ellipse = SCNPlane(width: radius, height: radius * 0.75) // Making an assumption about the ellipse shape here
         ellipse.cornerRadius = radius / 2
         let node = SCNNode(geometry: ellipse)
@@ -118,7 +121,7 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
         material.shininess = 2.0 // Adjusts the shininess
         ellipse.materials = [material]
 
-        return node
+        return (node, material)
     }
     
     /// Creates A GLKVector3 From a Simd_Float4
@@ -141,6 +144,7 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
     
     func renderer(_ renderer: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
         guard let sceneView = renderer as? ARSCNView else { return nil }
+        
         if let faceAnchor = anchor as? ARFaceAnchor {
             let device = MTLCreateSystemDefaultDevice()!
             let faceMesh = ARSCNFaceGeometry(device: device)!
@@ -157,14 +161,14 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
             let rightEyePosition = SIMD3<Float>(rightEyeTransform.columns.3.x, rightEyeTransform.columns.3.y, rightEyeTransform.columns.3.z)
             
             // Use these positions to place your highlight nodes
-            let leftEyeHighlight = createEyeHighlight(radius: 0.02)
-            leftEyeHighlight.position = SCNVector3(leftEyePosition.x, leftEyePosition.y, leftEyePosition.z)
-            
-            let rightEyeHighlight = createEyeHighlight(radius: 0.02)
-            rightEyeHighlight.position = SCNVector3(rightEyePosition.x, rightEyePosition.y, rightEyePosition.z)
-            
-            node.addChildNode(leftEyeHighlight)
-            node.addChildNode(rightEyeHighlight)
+            leftEyeHighlight = createEyeHighlight(radius: 0.02)
+           leftEyeHighlight.node.position = SCNVector3(leftEyePosition.x, leftEyePosition.y, leftEyePosition.z)
+           
+           rightEyeHighlight = createEyeHighlight(radius: 0.02)
+           rightEyeHighlight.node.position = SCNVector3(rightEyePosition.x, rightEyePosition.y, rightEyePosition.z)
+           
+           node.addChildNode(leftEyeHighlight.node)
+           node.addChildNode(rightEyeHighlight.node)
             
             return node
         }
@@ -212,6 +216,24 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
         var eyeRLookAt = CGPoint()
         
         let heightCompensation: CGFloat = 312
+        
+        if let leftBlink = anchor.blendShapes[.eyeBlinkLeft] as? Float,
+              let rightBlink = anchor.blendShapes[.eyeBlinkRight] as? Float {
+               
+               // Calculate a scale based on the blink coefficient.
+               // Here, we are just linearly scaling between 1.0 (fully open) and 0.5 (fully closed).
+               // You can adjust this logic to get the desired visual effect.
+               let leftScale = 1.0 - 0.5 * CGFloat(leftBlink)
+               let rightScale = 1.0 - 0.5 * CGFloat(rightBlink)
+
+               // Apply the scale to the highlight nodes
+               leftEyeHighlight.node.scale = SCNVector3(leftScale, leftScale, leftScale)
+               rightEyeHighlight.node.scale = SCNVector3(rightScale, rightScale, rightScale)
+
+               // Modify shininess based on the blink coefficient
+               leftEyeHighlight.material.shininess = CGFloat(2.0 * Float(1.0 - leftBlink))
+               rightEyeHighlight.material.shininess = CGFloat(2.0 * Float(1.0 - rightBlink))
+           }
         
         DispatchQueue.main.async {
             // Perform Hit test using the ray segments that are drawn by the center of the eyeballs to somewhere two meters away at direction of where users look at to the virtual plane that place at the same orientation of the phone screen

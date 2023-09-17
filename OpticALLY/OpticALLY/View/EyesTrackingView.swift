@@ -23,14 +23,21 @@ struct EyesTrackingView: View {
                 .edgesIgnoringSafeArea(.all) // Ensuring AR view covers entire screen
 
             VStack {
-                Spacer()
-                // Displaying eye distance and cosine angle
                 Text("Pupillary Distance")
                     .bold()
                 
                 Text("\(viewModel.distanceText)")
                     .font(.title)
             }
+            .padding(20) // Add some padding to make it look nicer
+            .foregroundStyle(.black)
+            .background(
+                Capsule() // Pill-shaped background
+                    .foregroundColor(Color.white.opacity(0.4))
+                    .blur(radius: 5.0) // Blur the background
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+            .offset(y: 250) // Shift content slightly below the center
         }
     }
 }
