@@ -18,8 +18,6 @@
 		967EE0932AAEDBF3000C4D5F /* EyesTrackingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967EE0922AAEDBF3000C4D5F /* EyesTrackingViewModel.swift */; };
 		967EE0952AAEDE10000C4D5F /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967EE0942AAEDE10000C4D5F /* Extensions.swift */; };
 		967EE0982AAEE2C7000C4D5F /* snippet-extract in Frameworks */ = {isa = PBXBuildFile; productRef = 967EE0972AAEE2C7000C4D5F /* snippet-extract */; };
-		969AC2782AB54C8D0096892E /* CameraViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 969AC2772AB54C8D0096892E /* CameraViewController.swift */; };
-		969AC27A2AB54CBB0096892E /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 969AC2792AB54CBB0096892E /* CameraView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -53,8 +51,6 @@
 		967EE08E2AAEDA82000C4D5F /* EyesTrackingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EyesTrackingView.swift; sourceTree = "<group>"; };
 		967EE0922AAEDBF3000C4D5F /* EyesTrackingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EyesTrackingViewModel.swift; sourceTree = "<group>"; };
 		967EE0942AAEDE10000C4D5F /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
-		969AC2772AB54C8D0096892E /* CameraViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraViewController.swift; sourceTree = "<group>"; };
-		969AC2792AB54CBB0096892E /* CameraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -109,8 +105,6 @@
 				967EE0912AAEDBD2000C4D5F /* ViewModel */,
 				967EE0902AAEDBBE000C4D5F /* View */,
 				967EE0642AAE06FB000C4D5F /* OpticALLYApp.swift */,
-				969AC2772AB54C8D0096892E /* CameraViewController.swift */,
-				969AC2792AB54CBB0096892E /* CameraView.swift */,
 				967EE0942AAEDE10000C4D5F /* Extensions.swift */,
 				967EE0682AAE06FE000C4D5F /* Assets.xcassets */,
 				967EE06A2AAE06FE000C4D5F /* Preview Content */,
@@ -297,12 +291,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				967EE0952AAEDE10000C4D5F /* Extensions.swift in Sources */,
-				969AC27A2AB54CBB0096892E /* CameraView.swift in Sources */,
 				967EE08F2AAEDA82000C4D5F /* EyesTrackingView.swift in Sources */,
 				967EE0672AAE06FB000C4D5F /* ContentView.swift in Sources */,
 				967EE0652AAE06FB000C4D5F /* OpticALLYApp.swift in Sources */,
 				967EE0932AAEDBF3000C4D5F /* EyesTrackingViewModel.swift in Sources */,
-				969AC2782AB54C8D0096892E /* CameraViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
