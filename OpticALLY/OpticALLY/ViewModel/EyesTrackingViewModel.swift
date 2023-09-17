@@ -184,6 +184,17 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
         virtualPhoneNode.transform = (renderer as! ARSCNView).pointOfView!.transform
     }
     
+    func renderer(_ renderer: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
+        guard let sceneView = renderer as? ARSCNView else { return nil }
+        if let faceAnchor = anchor as? ARFaceAnchor {
+            let faceMesh = ARSCNFaceGeometry(device: sceneView.device!)
+            let node = SCNNode(geometry: faceMesh)
+            node.geometry?.firstMaterial?.fillMode = .lines
+            return node
+        }
+        return nil
+    }
+
     func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
         faceNode.transform = node.transform
         guard let faceAnchor = anchor as? ARFaceAnchor else { return }

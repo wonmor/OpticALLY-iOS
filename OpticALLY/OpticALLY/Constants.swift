@@ -8,7 +8,7 @@
 import Foundation
 
 struct Constants {
-    static let scaleFactorForEyeImagePos: CGFloat = 500.0 
+    static let scaleFactorForEyeImagePos: CGFloat = 2500.0
     
     private init() {} // prevent initialization
 }
