@@ -5,7 +5,8 @@
 //  Created by John Seong on 9/11/23.
 //
 
-import Foundation
+import SwiftUI
+import Combine
 import ARKit
 import Combine
 
@@ -41,12 +42,45 @@ import Combine
 class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSessionDelegate {
     @Published var leftEyePosition: CGPoint = .zero
     @Published var rightEyePosition: CGPoint = .zero
+    
     @Published var distanceText: String = ""
+    
     @Published var lookAtPositionXText: String = ""
     @Published var lookAtPositionYText: String = ""
+    
     @Published var sideLength: CGFloat = 0.0
+    
     // Additional Published properties for bindings:
     @Published var eyePositionIndicatorTransform: CGAffineTransform = .identity
+    
+    private var rightEyePositionSubject = PassthroughSubject<CGPoint, Never>()
+    private var leftEyePositionSubject = PassthroughSubject<CGPoint, Never>()
+    
+    private var cancellables: Set<AnyCancellable> = []
+    
+    private func setupDebounce() {
+        rightEyePositionSubject
+            .debounce(for: .milliseconds(100), scheduler: DispatchQueue.main) // debounce by 100ms, adjust as needed
+            .sink { [weak self] newPosition in
+                self?.rightEyePosition = newPosition
+            }
+            .store(in: &cancellables)
+        
+        leftEyePositionSubject
+            .debounce(for: .milliseconds(100), scheduler: DispatchQueue.main)
+            .sink { [weak self] newPosition in
+                self?.leftEyePosition = newPosition
+            }
+            .store(in: &cancellables)
+    }
+    
+    func updateRightEyePosition(_ newPosition: CGPoint) {
+        rightEyePositionSubject.send(newPosition)
+    }
+    
+    func updateLeftEyePosition(_ newPosition: CGPoint) {
+        leftEyePositionSubject.send(newPosition)
+    }
     
     private var faceGeometry: ARFaceGeometry?
     private var faceNode: SCNNode = SCNNode()
@@ -96,6 +130,7 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
         super.init()
         self.session = ARSession()
         self.session.delegate = self
+        setupDebounce()
     }
     
     private func computeLookAtPoint(from eyeTransform: simd_float4x4, to targetTransform: simd_float4x4) -> CGPoint? {
@@ -118,7 +153,7 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
         }
         return nil
     }
-
+    
     private func rayPlaneIntersection(rayOrigin: SIMD3<Float>, rayDirection: SIMD3<Float>, planePoint: SIMD3<Float>, planeNormal: SIMD3<Float>) -> SIMD3<Float>? {
         let dotNumerator = planePoint - rayOrigin
         let dotD = dot(planeNormal, dotNumerator)
@@ -132,12 +167,12 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
     }
     
     /// Creates A GLKVector3 From a Simd_Float4
-   ///
-   /// - Parameter transform: simd_float4
-   /// - Returns: GLKVector3
-   func glkVector3FromARFaceAnchorTransform(_ transform: simd_float4) -> GLKVector3{
-       return GLKVector3Make(transform.x, transform.y, transform.z)
-   }
+    ///
+    /// - Parameter transform: simd_float4
+    /// - Returns: GLKVector3
+    func glkVector3FromARFaceAnchorTransform(_ transform: simd_float4) -> GLKVector3{
+        return GLKVector3Make(transform.x, transform.y, transform.z)
+    }
     
     func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
         faceNode.transform = node.transform
@@ -152,17 +187,17 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
     func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
         faceNode.transform = node.transform
         guard let faceAnchor = anchor as? ARFaceAnchor else { return }
-
+        
         if let leftEyeLookAt = computeLookAtPoint(from: faceAnchor.leftEyeTransform, to: virtualPhoneNode.simdTransform) {
             DispatchQueue.main.async {
-                self.leftEyePosition = leftEyeLookAt
+                self.updateLeftEyePosition(leftEyeLookAt)
                 print("Left Eye Gaze Position: \(leftEyeLookAt)")
             }
         }
-
+        
         if let rightEyeLookAt = computeLookAtPoint(from: faceAnchor.rightEyeTransform, to: virtualPhoneNode.simdTransform) {
             DispatchQueue.main.async {
-                self.rightEyePosition = rightEyeLookAt
+                self.updateRightEyePosition(rightEyeLookAt)
                 print("Right Eye Gaze Position: \(rightEyeLookAt )")
             }
         }
@@ -170,13 +205,13 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
         //2. Get The Position Of The Left & Right Eyes
         let leftEyePositionLocal = glkVector3FromARFaceAnchorTransform(faceAnchor.leftEyeTransform.columns.3)
         let rightEyePositionLocal = glkVector3FromARFaceAnchorTransform(faceAnchor.rightEyeTransform.columns.3)
-
+        
         //3. Calculate The Distance Between Them
         let distanceBetweenEyesInMetres = GLKVector3Distance(leftEyePositionLocal, rightEyePositionLocal)
         let distanceBetweenEyesInMM = Int(round(distanceBetweenEyesInMetres * 100 * 10))
         
         // TO DO: Update left/rightEyePosition @Published var...
-
+        
         print("The Distance Between The Eyes Is Approximatly \(distanceBetweenEyesInMM)")
         
         DispatchQueue.main.async {
@@ -187,18 +222,18 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
     }
     
     func update(withFaceAnchor anchor: ARFaceAnchor) {
-           // Store face geometry data
-           faceGeometry = anchor.geometry
-
-           // Access vertices for depth data
-           let vertices = faceGeometry?.vertices
-
-           // Adjust the gaze direction using depth data if necessary. This might involve creating a more complex 3D representation of the face and adjusting the direction from the eyes.
-           // This is a placeholder. The actual implementation would be more involved and requires testing.
-           let depthAdjustment = vertices?.first?.z ?? 0
-           
-           eyeRNode.simdTransform = anchor.rightEyeTransform
-           eyeLNode.simdTransform = anchor.leftEyeTransform
+        // Store face geometry data
+        faceGeometry = anchor.geometry
+        
+        // Access vertices for depth data
+        let vertices = faceGeometry?.vertices
+        
+        // Adjust the gaze direction using depth data if necessary. This might involve creating a more complex 3D representation of the face and adjusting the direction from the eyes.
+        // This is a placeholder. The actual implementation would be more involved and requires testing.
+        let depthAdjustment = vertices?.first?.z ?? 0
+        
+        eyeRNode.simdTransform = anchor.rightEyeTransform
+        eyeLNode.simdTransform = anchor.leftEyeTransform
         
         var eyeLLookAt = CGPoint()
         var eyeRLookAt = CGPoint()
