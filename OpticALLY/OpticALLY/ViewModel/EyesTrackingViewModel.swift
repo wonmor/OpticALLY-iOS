@@ -98,6 +98,39 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
         self.session.delegate = self
     }
     
+    private func computeLookAtPoint(from eyeTransform: simd_float4x4, to targetTransform: simd_float4x4) -> CGPoint? {
+        let screenWidth = UIScreen.main.bounds.width
+        let screenHeight = UIScreen.main.bounds.height
+        
+        let scaleFactor = Constants.scaleFactorForEyeImagePos + screenWidth / 2
+        
+        // Compute a ray starting from the eye and pointing forward from the eye
+        let eyePosition = SIMD3<Float>(eyeTransform.columns.3.x * Float(scaleFactor) , eyeTransform.columns.3.y * Float(scaleFactor), eyeTransform.columns.3.z * Float(scaleFactor))
+        let eyeDirection = SIMD3<Float>(-eyeTransform.columns.2.x, -eyeTransform.columns.2.y, -eyeTransform.columns.2.z)
+        
+        // For simplicity, assume the virtual phone screen is a plane at z = 0 (in the phone's coordinate system).
+        // This may not be accurate depending on the actual setup. Adjust as necessary.
+        let planeNormal = SIMD3<Float>(0, 0, 1)
+        
+        // The intersection point of the ray with the plane gives the gaze position
+        if let intersection = rayPlaneIntersection(rayOrigin: eyePosition, rayDirection: eyeDirection, planePoint: SIMD3<Float>(0, 0, 0), planeNormal: planeNormal) {
+            return CGPoint(x: CGFloat(intersection.x), y: CGFloat(intersection.y))
+        }
+        return nil
+    }
+
+    private func rayPlaneIntersection(rayOrigin: SIMD3<Float>, rayDirection: SIMD3<Float>, planePoint: SIMD3<Float>, planeNormal: SIMD3<Float>) -> SIMD3<Float>? {
+        let dotNumerator = planePoint - rayOrigin
+        let dotD = dot(planeNormal, dotNumerator)
+        let dotR = dot(planeNormal, rayDirection)
+        if abs(dotR) < 0.0001 {
+            // Nearly parallel
+            return nil
+        }
+        let t = dotD / dotR
+        return rayOrigin + rayDirection * t
+    }
+    
     /// Creates A GLKVector3 From a Simd_Float4
    ///
    /// - Parameter transform: simd_float4
@@ -119,22 +152,25 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
     func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
         faceNode.transform = node.transform
         guard let faceAnchor = anchor as? ARFaceAnchor else { return }
+
+        if let leftEyeLookAt = computeLookAtPoint(from: faceAnchor.leftEyeTransform, to: virtualPhoneNode.simdTransform) {
+            DispatchQueue.main.async {
+                self.leftEyePosition = leftEyeLookAt
+                print("Left Eye Gaze Position: \(leftEyeLookAt)")
+            }
+        }
+
+        if let rightEyeLookAt = computeLookAtPoint(from: faceAnchor.rightEyeTransform, to: virtualPhoneNode.simdTransform) {
+            DispatchQueue.main.async {
+                self.rightEyePosition = rightEyeLookAt
+                print("Right Eye Gaze Position: \(rightEyeLookAt )")
+            }
+        }
         
         //2. Get The Position Of The Left & Right Eyes
         let leftEyePositionLocal = glkVector3FromARFaceAnchorTransform(faceAnchor.leftEyeTransform.columns.3)
         let rightEyePositionLocal = glkVector3FromARFaceAnchorTransform(faceAnchor.rightEyeTransform.columns.3)
-        
-        DispatchQueue.main.async { [self] in
-            self.leftEyePosition.x = CGFloat(leftEyePositionLocal.x) * Constants.scaleFactorForEyeImagePos
-            self.leftEyePosition.y = CGFloat(leftEyePositionLocal.y) * Constants.scaleFactorForEyeImagePos
-            
-            self.rightEyePosition.x = CGFloat(rightEyePositionLocal.x) * Constants.scaleFactorForEyeImagePos
-            self.rightEyePosition.y = CGFloat(rightEyePositionLocal.y) * Constants.scaleFactorForEyeImagePos
-            
-            print("Left eye position coorinates: (\(self.leftEyePosition.x), \(self.leftEyePosition.y))")
-            print("Right eye position coorinates: (\(self.rightEyePosition.x), \(self.rightEyePosition.y))")
-        }
-    
+
         //3. Calculate The Distance Between Them
         let distanceBetweenEyesInMetres = GLKVector3Distance(leftEyePositionLocal, rightEyePositionLocal)
         let distanceBetweenEyesInMM = Int(round(distanceBetweenEyesInMetres * 100 * 10))
@@ -211,6 +247,5 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
             self.lookAtPositionXText = "\(Int(round(smoothEyeLookAtPositionX + self.phoneScreenPointSize.width / 2)))"
             self.lookAtPositionYText = "\(Int(round(smoothEyeLookAtPositionY + self.phoneScreenPointSize.height / 2)))"
         }
-        
     }
 }

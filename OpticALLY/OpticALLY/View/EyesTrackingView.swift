@@ -25,11 +25,11 @@ struct EyesTrackingView: View {
             // Overlay circles for eyes
             Circle().fill(Color.red.opacity(0.5))
                 .frame(width: 20, height: 20)
-                .offset(x: viewModel.rightEyePosition.x, y: viewModel.rightEyePosition.y)
-            
+                .offset(x: viewModel.rightEyePosition.x, y: -viewModel.rightEyePosition.y)  // Note the '-' before y coordinate, if needed.
+
             Circle().fill(Color.blue.opacity(0.5))
                 .frame(width: 20, height: 20)
-                .offset(x: viewModel.leftEyePosition.x, y: viewModel.leftEyePosition.y)
+                .offset(x: viewModel.leftEyePosition.x, y: -viewModel.leftEyePosition.y) // Note the '-' before y coordinate, if needed.
 
             VStack {
                 Spacer()
@@ -43,8 +43,6 @@ struct EyesTrackingView: View {
         }
     }
 }
-
-
 
 /// A SwiftUI-compatible representation of `ARSCNView`.
 ///

@@ -36,3 +36,15 @@ extension Collection where Element == CGFloat, Index == Int {
         return sum / CGFloat(count)
     }
 }
+
+extension CGPoint {
+    // Multiply CGPoint by a scalar
+    static func * (left: CGPoint, right: CGFloat) -> CGPoint {
+        return CGPoint(x: left.x * right, y: left.y * right)
+    }
+    
+    // Multiply CGPoint by another CGPoint (element-wise multiplication)
+    static func * (left: CGPoint, right: CGPoint) -> CGPoint {
+        return CGPoint(x: left.x * right.x, y: left.y * right.y)
+    }
+}
