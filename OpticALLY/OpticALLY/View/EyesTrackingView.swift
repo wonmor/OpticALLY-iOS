@@ -26,14 +26,14 @@ struct EyesTrackingView: View {
                 Text("Pupillary Distance")
                     .bold()
                 
-                Text("\(viewModel.distanceText)")
+                Text(viewModel.distanceText.isEmpty ? "Measuring..." : viewModel.distanceText)
                     .font(.title)
             }
             .padding(20) // Add some padding to make it look nicer
-            .foregroundStyle(.black)
+            .foregroundStyle(.white)
             .background(
                 Capsule() // Pill-shaped background
-                    .foregroundColor(Color.white.opacity(0.4))
+                    .foregroundColor(Color.black.opacity(0.4))
                     .blur(radius: 5.0) // Blur the background
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)

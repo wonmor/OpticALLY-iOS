@@ -8,8 +8,14 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State var isNavigate = false
+    
     var body: some View {
-        EyesTrackingView()
+        if (isNavigate) {
+            EyesTrackingView()
+        } else {
+            IntroductionView(isNavigate: $isNavigate)
+        }
     }
 }
 

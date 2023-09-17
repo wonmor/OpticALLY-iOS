@@ -16,9 +16,10 @@
 		967EE0822AAE06FE000C4D5F /* OpticALLYUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967EE0812AAE06FE000C4D5F /* OpticALLYUITestsLaunchTests.swift */; };
 		967EE08F2AAEDA82000C4D5F /* EyesTrackingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967EE08E2AAEDA82000C4D5F /* EyesTrackingView.swift */; };
 		967EE0932AAEDBF3000C4D5F /* EyesTrackingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967EE0922AAEDBF3000C4D5F /* EyesTrackingViewModel.swift */; };
-		967EE0952AAEDE10000C4D5F /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967EE0942AAEDE10000C4D5F /* Extensions.swift */; };
 		967EE0982AAEE2C7000C4D5F /* snippet-extract in Frameworks */ = {isa = PBXBuildFile; productRef = 967EE0972AAEE2C7000C4D5F /* snippet-extract */; };
 		969AC27C2AB6E8AE0096892E /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 969AC27B2AB6E8AE0096892E /* Constants.swift */; };
+		969AC2802AB7550C0096892E /* IntroductionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 969AC27F2AB7550C0096892E /* IntroductionView.swift */; };
+		969AC2822AB7554C0096892E /* Extensions+Modifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 969AC2812AB7554C0096892E /* Extensions+Modifiers.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -51,8 +52,9 @@
 		967EE0812AAE06FE000C4D5F /* OpticALLYUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpticALLYUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		967EE08E2AAEDA82000C4D5F /* EyesTrackingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EyesTrackingView.swift; sourceTree = "<group>"; };
 		967EE0922AAEDBF3000C4D5F /* EyesTrackingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EyesTrackingViewModel.swift; sourceTree = "<group>"; };
-		967EE0942AAEDE10000C4D5F /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		969AC27B2AB6E8AE0096892E /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		969AC27F2AB7550C0096892E /* IntroductionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroductionView.swift; sourceTree = "<group>"; };
+		969AC2812AB7554C0096892E /* Extensions+Modifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Extensions+Modifiers.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -108,7 +110,7 @@
 				967EE0902AAEDBBE000C4D5F /* View */,
 				967EE0642AAE06FB000C4D5F /* OpticALLYApp.swift */,
 				969AC27B2AB6E8AE0096892E /* Constants.swift */,
-				967EE0942AAEDE10000C4D5F /* Extensions.swift */,
+				969AC2812AB7554C0096892E /* Extensions+Modifiers.swift */,
 				967EE0682AAE06FE000C4D5F /* Assets.xcassets */,
 				967EE06A2AAE06FE000C4D5F /* Preview Content */,
 			);
@@ -144,6 +146,7 @@
 			isa = PBXGroup;
 			children = (
 				967EE0662AAE06FB000C4D5F /* ContentView.swift */,
+				969AC27F2AB7550C0096892E /* IntroductionView.swift */,
 				967EE08E2AAEDA82000C4D5F /* EyesTrackingView.swift */,
 			);
 			path = View;
@@ -293,9 +296,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				967EE0952AAEDE10000C4D5F /* Extensions.swift in Sources */,
 				967EE08F2AAEDA82000C4D5F /* EyesTrackingView.swift in Sources */,
+				969AC2822AB7554C0096892E /* Extensions+Modifiers.swift in Sources */,
 				967EE0672AAE06FB000C4D5F /* ContentView.swift in Sources */,
+				969AC2802AB7550C0096892E /* IntroductionView.swift in Sources */,
 				967EE0652AAE06FB000C4D5F /* OpticALLYApp.swift in Sources */,
 				967EE0932AAEDBF3000C4D5F /* EyesTrackingViewModel.swift in Sources */,
 				969AC27C2AB6E8AE0096892E /* Constants.swift in Sources */,
