@@ -57,7 +57,7 @@ struct TitleView: View {
 struct InformationContainerView: View {
     var body: some View {
         VStack(alignment: .leading) {
-            InformationDetailView(title: "3D Face Scanning", subTitle: "Get a precise 3D model of your face using our AR technology.", imageName: "face.dashed")
+            InformationDetailView(title: "3D Facial Scanning", subTitle: "Get a precise 3D model of your face using our AR technology.", imageName: "face.dashed")
             
             InformationDetailView(title: "Pupillary Distance", subTitle: "Accurately measure your pupillary distance for a perfect fit.", imageName: "ruler.fill")
             
