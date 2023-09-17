@@ -7,8 +7,8 @@
 
 import SwiftUI
 import Combine
+import Metal
 import ARKit
-import Combine
 
 /// `EyesTrackingViewModel` manages and processes AR face tracking data, focusing on tracking eye movement
 /// and identifying where a user is looking on a virtual phone screen. It offers real-time feedback on the user's
@@ -40,9 +40,6 @@ import Combine
 ///     - `ARSessionDelegate`: Allows the class to respond to AR session changes.
 
 class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSessionDelegate {
-    @Published var leftEyePosition: CGPoint = .zero
-    @Published var rightEyePosition: CGPoint = .zero
-    
     @Published var distanceText: String = ""
     
     @Published var lookAtPositionXText: String = ""
@@ -57,30 +54,6 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
     private var leftEyePositionSubject = PassthroughSubject<CGPoint, Never>()
     
     private var cancellables: Set<AnyCancellable> = []
-    
-    private func setupDebounce() {
-        rightEyePositionSubject
-            .debounce(for: .milliseconds(100), scheduler: DispatchQueue.main) // debounce by 100ms, adjust as needed
-            .sink { [weak self] newPosition in
-                self?.rightEyePosition = newPosition
-            }
-            .store(in: &cancellables)
-        
-        leftEyePositionSubject
-            .debounce(for: .milliseconds(100), scheduler: DispatchQueue.main)
-            .sink { [weak self] newPosition in
-                self?.leftEyePosition = newPosition
-            }
-            .store(in: &cancellables)
-    }
-    
-    func updateRightEyePosition(_ newPosition: CGPoint) {
-        rightEyePositionSubject.send(newPosition)
-    }
-    
-    func updateLeftEyePosition(_ newPosition: CGPoint) {
-        leftEyePositionSubject.send(newPosition)
-    }
     
     private var faceGeometry: ARFaceGeometry?
     private var faceNode: SCNNode = SCNNode()
@@ -130,17 +103,11 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
         super.init()
         self.session = ARSession()
         self.session.delegate = self
-        setupDebounce()
     }
     
     private func computeLookAtPoint(from eyeTransform: simd_float4x4, to targetTransform: simd_float4x4) -> CGPoint? {
-        let screenWidth = UIScreen.main.bounds.width
-        let screenHeight = UIScreen.main.bounds.height
-        
-        let scaleFactor = Constants.scaleFactorForEyeImagePos + screenWidth / 2
-        
         // Compute a ray starting from the eye and pointing forward from the eye
-        let eyePosition = SIMD3<Float>(eyeTransform.columns.3.x * Float(scaleFactor) , eyeTransform.columns.3.y * Float(scaleFactor), eyeTransform.columns.3.z * Float(scaleFactor))
+        let eyePosition = SIMD3<Float>(eyeTransform.columns.3.x, eyeTransform.columns.3.y, eyeTransform.columns.3.z)
         let eyeDirection = SIMD3<Float>(-eyeTransform.columns.2.x, -eyeTransform.columns.2.y, -eyeTransform.columns.2.z)
         
         // For simplicity, assume the virtual phone screen is a plane at z = 0 (in the phone's coordinate system).
@@ -166,6 +133,17 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
         return rayOrigin + rayDirection * t
     }
     
+    func createEyeHighlight(radius: CGFloat) -> SCNNode {
+        let ellipse = SCNPlane(width: radius, height: radius * 0.75) // Making an assumption about the ellipse shape here
+        ellipse.cornerRadius = radius / 2
+        let node = SCNNode(geometry: ellipse)
+        let material = SCNMaterial()
+        material.diffuse.contents = UIColor.red
+        ellipse.materials = [material]
+        return node
+    }
+    
+    
     /// Creates A GLKVector3 From a Simd_Float4
     ///
     /// - Parameter transform: simd_float4
@@ -187,31 +165,40 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
     func renderer(_ renderer: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
         guard let sceneView = renderer as? ARSCNView else { return nil }
         if let faceAnchor = anchor as? ARFaceAnchor {
-            let faceMesh = ARSCNFaceGeometry(device: sceneView.device!)
+            let device = MTLCreateSystemDefaultDevice()!
+            let faceMesh = ARSCNFaceGeometry(device: device)!
+            faceMesh.update(from: faceAnchor.geometry)
+            
+            
+            
             let node = SCNNode(geometry: faceMesh)
             node.geometry?.firstMaterial?.fillMode = .lines
+            
+            // Extract eye positions
+            let leftEyeTransform = faceAnchor.leftEyeTransform
+            let rightEyeTransform = faceAnchor.rightEyeTransform
+            
+            let leftEyePosition = SIMD3<Float>(leftEyeTransform.columns.3.x, leftEyeTransform.columns.3.y, leftEyeTransform.columns.3.z)
+            let rightEyePosition = SIMD3<Float>(rightEyeTransform.columns.3.x, rightEyeTransform.columns.3.y, rightEyeTransform.columns.3.z)
+            
+            // Use these positions to place your highlight nodes
+            let leftEyeHighlight = createEyeHighlight(radius: 0.02)
+            leftEyeHighlight.position = SCNVector3(leftEyePosition.x, leftEyePosition.y, leftEyePosition.z)
+            
+            let rightEyeHighlight = createEyeHighlight(radius: 0.02)
+            rightEyeHighlight.position = SCNVector3(rightEyePosition.x, rightEyePosition.y, rightEyePosition.z)
+            
+            node.addChildNode(leftEyeHighlight)
+            node.addChildNode(rightEyeHighlight)
+            
             return node
         }
         return nil
     }
-
+    
     func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
         faceNode.transform = node.transform
         guard let faceAnchor = anchor as? ARFaceAnchor else { return }
-        
-        if let leftEyeLookAt = computeLookAtPoint(from: faceAnchor.leftEyeTransform, to: virtualPhoneNode.simdTransform) {
-            DispatchQueue.main.async {
-                self.updateLeftEyePosition(leftEyeLookAt)
-                print("Left Eye Gaze Position: \(leftEyeLookAt)")
-            }
-        }
-        
-        if let rightEyeLookAt = computeLookAtPoint(from: faceAnchor.rightEyeTransform, to: virtualPhoneNode.simdTransform) {
-            DispatchQueue.main.async {
-                self.updateRightEyePosition(rightEyeLookAt)
-                print("Right Eye Gaze Position: \(rightEyeLookAt )")
-            }
-        }
         
         //2. Get The Position Of The Left & Right Eyes
         let leftEyePositionLocal = glkVector3FromARFaceAnchorTransform(faceAnchor.leftEyeTransform.columns.3)
@@ -252,7 +239,6 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
         let heightCompensation: CGFloat = 312
         
         DispatchQueue.main.async {
-            
             // Perform Hit test using the ray segments that are drawn by the center of the eyeballs to somewhere two meters away at direction of where users look at to the virtual plane that place at the same orientation of the phone screen
             
             let phoneScreenEyeRHitTestResults = self.virtualPhoneNode.hitTestWithSegment(from: self.lookAtTargetEyeRNode.worldPosition, to: self.eyeRNode.worldPosition, options: nil)

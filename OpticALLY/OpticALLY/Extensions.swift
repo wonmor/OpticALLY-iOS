@@ -7,6 +7,20 @@
 
 import Foundation
 import SceneKit
+import simd
+
+extension Array where Element == SIMD3<Float> {
+    init(unsafeData: Data, count: Int) {
+        self = []
+        self.reserveCapacity(count)
+        for i in 0..<count {
+            let start = Data.Index(i * MemoryLayout<SIMD3<Float>>.stride)
+            let end = start + MemoryLayout<SIMD3<Float>>.stride
+            let element = unsafeData.subdata(in: start..<end).withUnsafeBytes { $0.load(as: SIMD3<Float>.self) }
+            self.append(element)
+        }
+    }
+}
 
 extension SCNVector3 {
     func magnitude() -> Float {
