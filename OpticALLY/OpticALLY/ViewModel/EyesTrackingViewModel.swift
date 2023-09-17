@@ -131,19 +131,20 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
             self.rightEyePosition.x = CGFloat(rightEyePositionLocal.x)
             self.rightEyePosition.y = CGFloat(rightEyePositionLocal.y)
             
-            print("right eye position x: \(rightEyePositionLocal.x)")
+            print("Left eye position coorinates: (\(leftEyePositionLocal.x), \(leftEyePositionLocal.y))")
+            print("Right eye position coorinates: (\(rightEyePositionLocal.x), \(rightEyePositionLocal.y))")
         }
     
         //3. Calculate The Distance Between Them
         let distanceBetweenEyesInMetres = GLKVector3Distance(leftEyePositionLocal, rightEyePositionLocal)
-        let distanceBetweenEyesInCM = distanceBetweenEyesInMetres * 100
+        let distanceBetweenEyesInMM = Int(round(distanceBetweenEyesInMetres * 100 * 10))
         
         // TO DO: Update left/rightEyePosition @Published var...
 
-        print("The Distance Between The Eyes Is Approximatly \(distanceBetweenEyesInCM)")
+        print("The Distance Between The Eyes Is Approximatly \(distanceBetweenEyesInMM)")
         
         DispatchQueue.main.async {
-            self.distanceText = "\(distanceBetweenEyesInCM) cm"
+            self.distanceText = "\(distanceBetweenEyesInMM) mm"
         }
         
         update(withFaceAnchor: faceAnchor)
