@@ -9,13 +9,17 @@ import Foundation
 import SceneKit
 
 extension SCNVector3 {
-    func length() -> Float {
-        return sqrtf(x * x + y * y + z * z)
+    func magnitude() -> Float {
+        return sqrt(x*x + y*y + z*z)
     }
-}
-
-func - (l: SCNVector3, r: SCNVector3) -> SCNVector3 {
-    return SCNVector3Make(l.x - r.x, l.y - r.y, l.z - r.z)
+    
+    static func dot(_ v1: SCNVector3, _ v2: SCNVector3) -> Float {
+        return (v1.x * v2.x) + (v1.y * v2.y) + (v1.z * v2.z)
+    }
+    
+    static func subtractVectors(_ left: SCNVector3, _ right: SCNVector3) -> SCNVector3 {
+        return SCNVector3Make(left.x - right.x, left.y - right.y, left.z - right.z)
+    }
 }
 
 extension Collection where Element == CGFloat, Index == Int {

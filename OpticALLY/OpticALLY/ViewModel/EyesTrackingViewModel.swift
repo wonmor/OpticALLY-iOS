@@ -125,14 +125,14 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
         let rightEyePositionLocal = glkVector3FromARFaceAnchorTransform(faceAnchor.rightEyeTransform.columns.3)
         
         DispatchQueue.main.async { [self] in
-            self.leftEyePosition.x = CGFloat(leftEyePositionLocal.x)
-            self.leftEyePosition.y = CGFloat(leftEyePositionLocal.y)
+            self.leftEyePosition.x = CGFloat(leftEyePositionLocal.x) * Constants.scaleFactorForEyeImagePos
+            self.leftEyePosition.y = CGFloat(leftEyePositionLocal.y) * Constants.scaleFactorForEyeImagePos
             
-            self.rightEyePosition.x = CGFloat(rightEyePositionLocal.x)
-            self.rightEyePosition.y = CGFloat(rightEyePositionLocal.y)
+            self.rightEyePosition.x = CGFloat(rightEyePositionLocal.x) * Constants.scaleFactorForEyeImagePos
+            self.rightEyePosition.y = CGFloat(rightEyePositionLocal.y) * Constants.scaleFactorForEyeImagePos
             
-            print("Left eye position coorinates: (\(leftEyePositionLocal.x), \(leftEyePositionLocal.y))")
-            print("Right eye position coorinates: (\(rightEyePositionLocal.x), \(rightEyePositionLocal.y))")
+            print("Left eye position coorinates: (\(self.leftEyePosition.x), \(self.leftEyePosition.y))")
+            print("Right eye position coorinates: (\(self.rightEyePosition.x), \(self.rightEyePosition.y))")
         }
     
         //3. Calculate The Distance Between Them
@@ -212,19 +212,5 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
             self.lookAtPositionYText = "\(Int(round(smoothEyeLookAtPositionY + self.phoneScreenPointSize.height / 2)))"
         }
         
-    }
-}
-
-extension SCNVector3 {
-    func magnitude() -> Float {
-        return sqrt(x*x + y*y + z*z)
-    }
-    
-    static func dot(_ v1: SCNVector3, _ v2: SCNVector3) -> Float {
-        return (v1.x * v2.x) + (v1.y * v2.y) + (v1.z * v2.z)
-    }
-    
-    static func subtractVectors(_ left: SCNVector3, _ right: SCNVector3) -> SCNVector3 {
-        return SCNVector3Make(left.x - right.x, left.y - right.y, left.z - right.z)
     }
 }
