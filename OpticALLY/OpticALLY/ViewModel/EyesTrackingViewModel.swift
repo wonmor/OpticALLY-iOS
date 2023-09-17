@@ -9,6 +9,7 @@ import SwiftUI
 import Combine
 import Metal
 import ARKit
+import SceneKit
 
 /// `EyesTrackingViewModel` manages and processes AR face tracking data, focusing on tracking eye movement
 /// and identifying where a user is looking on a virtual phone screen. It offers real-time feedback on the user's
@@ -105,34 +106,6 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
         self.session.delegate = self
     }
     
-    private func computeLookAtPoint(from eyeTransform: simd_float4x4, to targetTransform: simd_float4x4) -> CGPoint? {
-        // Compute a ray starting from the eye and pointing forward from the eye
-        let eyePosition = SIMD3<Float>(eyeTransform.columns.3.x, eyeTransform.columns.3.y, eyeTransform.columns.3.z)
-        let eyeDirection = SIMD3<Float>(-eyeTransform.columns.2.x, -eyeTransform.columns.2.y, -eyeTransform.columns.2.z)
-        
-        // For simplicity, assume the virtual phone screen is a plane at z = 0 (in the phone's coordinate system).
-        // This may not be accurate depending on the actual setup. Adjust as necessary.
-        let planeNormal = SIMD3<Float>(0, 0, 1)
-        
-        // The intersection point of the ray with the plane gives the gaze position
-        if let intersection = rayPlaneIntersection(rayOrigin: eyePosition, rayDirection: eyeDirection, planePoint: SIMD3<Float>(0, 0, 0), planeNormal: planeNormal) {
-            return CGPoint(x: CGFloat(intersection.x), y: CGFloat(intersection.y))
-        }
-        return nil
-    }
-    
-    private func rayPlaneIntersection(rayOrigin: SIMD3<Float>, rayDirection: SIMD3<Float>, planePoint: SIMD3<Float>, planeNormal: SIMD3<Float>) -> SIMD3<Float>? {
-        let dotNumerator = planePoint - rayOrigin
-        let dotD = dot(planeNormal, dotNumerator)
-        let dotR = dot(planeNormal, rayDirection)
-        if abs(dotR) < 0.0001 {
-            // Nearly parallel
-            return nil
-        }
-        let t = dotD / dotR
-        return rayOrigin + rayDirection * t
-    }
-    
     func createEyeHighlight(radius: CGFloat) -> SCNNode {
         let ellipse = SCNPlane(width: radius, height: radius * 0.75) // Making an assumption about the ellipse shape here
         ellipse.cornerRadius = radius / 2
@@ -142,7 +115,6 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
         ellipse.materials = [material]
         return node
     }
-    
     
     /// Creates A GLKVector3 From a Simd_Float4
     ///
