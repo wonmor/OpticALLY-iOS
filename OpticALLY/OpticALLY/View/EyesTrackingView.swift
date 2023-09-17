@@ -59,7 +59,7 @@ struct ARViewContainer: UIViewRepresentable {
         
         // Set ARSCNView settings
         sceneView.backgroundColor = UIColor.clear
-        // sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints, ARSCNDebugOptions.showWorldOrigin]
+        sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints, ARSCNDebugOptions.showWorldOrigin]
         
         // Ensure autoenablesDefaultLighting is set for basic lighting
         sceneView.autoenablesDefaultLighting = true

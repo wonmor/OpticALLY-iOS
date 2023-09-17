@@ -59,9 +59,10 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
     private var faceGeometry: ARFaceGeometry?
     private var faceNode: SCNNode = SCNNode()
     private var eyeLNode: SCNNode = {
-        let geometry = SCNCone(topRadius: 0.005, bottomRadius: 0, height: 0.2)
-        geometry.radialSegmentCount = 3
-        geometry.firstMaterial?.diffuse.contents = UIColor.blue
+        let geometry = SCNCone(topRadius: 0.001, bottomRadius: 0.003, height: 0.2) // Make the laser beam more pointed
+        geometry.radialSegmentCount = 32 // Higher number for smoother cone
+        geometry.firstMaterial?.diffuse.contents = UIColor.red
+        geometry.firstMaterial?.emission.contents = UIColor.red // Make it glow
         let node = SCNNode()
         node.geometry = geometry
         node.eulerAngles.x = -.pi / 2
@@ -70,11 +71,11 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
         parentNode.addChildNode(node)
         return parentNode
     }()
-    
     private var eyeRNode: SCNNode = {
-        let geometry = SCNCone(topRadius: 0.005, bottomRadius: 0, height: 0.2)
-        geometry.radialSegmentCount = 3
-        geometry.firstMaterial?.diffuse.contents = UIColor.blue
+        let geometry = SCNCone(topRadius: 0.001, bottomRadius: 0.003, height: 0.2) // Make the laser beam more pointed
+        geometry.radialSegmentCount = 32 // Higher number for smoother cone
+        geometry.firstMaterial?.diffuse.contents = UIColor.red
+        geometry.firstMaterial?.emission.contents = UIColor.red // Make it glow
         let node = SCNNode()
         node.geometry = geometry
         node.eulerAngles.x = -.pi / 2
@@ -83,6 +84,7 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
         parentNode.addChildNode(node)
         return parentNode
     }()
+
     private var lookAtTargetEyeLNode: SCNNode = SCNNode()
     private var lookAtTargetEyeRNode: SCNNode = SCNNode()
     private let phoneScreenSize = CGSize(width: 0.0623908297, height: 0.135096943231532)
@@ -111,8 +113,11 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
         ellipse.cornerRadius = radius / 2
         let node = SCNNode(geometry: ellipse)
         let material = SCNMaterial()
-        material.diffuse.contents = UIColor.red
+        material.diffuse.contents = UIColor.lightGray
+        material.specular.contents = UIColor.white // Adds a shiny component
+        material.shininess = 2.0 // Adjusts the shininess
         ellipse.materials = [material]
+
         return node
     }
     
@@ -140,9 +145,7 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
             let device = MTLCreateSystemDefaultDevice()!
             let faceMesh = ARSCNFaceGeometry(device: device)!
             faceMesh.update(from: faceAnchor.geometry)
-            
-            
-            
+
             let node = SCNNode(geometry: faceMesh)
             node.geometry?.firstMaterial?.fillMode = .lines
             
