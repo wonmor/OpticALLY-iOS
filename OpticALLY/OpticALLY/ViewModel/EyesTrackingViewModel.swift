@@ -143,7 +143,7 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
     }
     
     func renderer(_ renderer: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
-        guard let sceneView = renderer as? ARSCNView else { return nil }
+        guard renderer is ARSCNView else { return nil }
         
         if let faceAnchor = anchor as? ARFaceAnchor {
             let device = MTLCreateSystemDefaultDevice()!
