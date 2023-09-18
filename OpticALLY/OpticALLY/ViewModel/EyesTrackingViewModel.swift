@@ -87,7 +87,7 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
         parentNode.addChildNode(node)
         return parentNode
     }()
-
+    
     private var lookAtTargetEyeLNode: SCNNode = SCNNode()
     private var lookAtTargetEyeRNode: SCNNode = SCNNode()
     private let phoneScreenSize = CGSize(width: 0.0623908297, height: 0.135096943231532)
@@ -120,7 +120,7 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
         material.specular.contents = UIColor.white // Adds a shiny component
         material.shininess = 2.0 // Adjusts the shininess
         ellipse.materials = [material]
-
+        
         return (node, material)
     }
     
@@ -149,7 +149,7 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
             let device = MTLCreateSystemDefaultDevice()!
             let faceMesh = ARSCNFaceGeometry(device: device)!
             faceMesh.update(from: faceAnchor.geometry)
-
+            
             let node = SCNNode(geometry: faceMesh)
             node.geometry?.firstMaterial?.fillMode = .lines
             
@@ -162,13 +162,13 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
             
             // Use these positions to place your highlight nodes
             leftEyeHighlight = createEyeHighlight(radius: 0.02)
-           leftEyeHighlight.node.position = SCNVector3(leftEyePosition.x, leftEyePosition.y, leftEyePosition.z)
-           
-           rightEyeHighlight = createEyeHighlight(radius: 0.02)
-           rightEyeHighlight.node.position = SCNVector3(rightEyePosition.x, rightEyePosition.y, rightEyePosition.z)
-           
-           node.addChildNode(leftEyeHighlight.node)
-           node.addChildNode(rightEyeHighlight.node)
+            leftEyeHighlight.node.position = SCNVector3(leftEyePosition.x, leftEyePosition.y, leftEyePosition.z)
+            
+            rightEyeHighlight = createEyeHighlight(radius: 0.02)
+            rightEyeHighlight.node.position = SCNVector3(rightEyePosition.x, rightEyePosition.y, rightEyePosition.z)
+            
+            node.addChildNode(leftEyeHighlight.node)
+            node.addChildNode(rightEyeHighlight.node)
             
             return node
         }
@@ -187,15 +187,36 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
         let distanceBetweenEyesInMetres = GLKVector3Distance(leftEyePositionLocal, rightEyePositionLocal)
         let distanceBetweenEyesInMM = Int(round(distanceBetweenEyesInMetres * 100 * 10))
         
-        // TO DO: Update left/rightEyePosition @Published var...
-        
-        print("The Distance Between The Eyes Is Approximatly \(distanceBetweenEyesInMM)")
-        
         DispatchQueue.main.async {
             self.distanceText = "\(distanceBetweenEyesInMM) mm"
         }
         
         update(withFaceAnchor: faceAnchor)
+    }
+    
+    private var lastBlinkDate: Date?
+    private var blinkCount = 0
+    
+    func handleBlink() {
+        let currentDate = Date()
+        
+        if let lastBlinkDate = lastBlinkDate, currentDate.timeIntervalSince(lastBlinkDate) < 0.5 { // less than half a second since last blink
+            blinkCount += 1
+            
+            if blinkCount == 2 {
+                // Detected a double blink!
+                // Do your double blink action here
+                print("Double Blink Detected!")
+                
+                // Reset the blink count
+                blinkCount = 0
+            }
+            
+        } else {
+            blinkCount = 1
+        }
+        
+        lastBlinkDate = currentDate
     }
     
     func update(withFaceAnchor anchor: ARFaceAnchor) {
@@ -218,22 +239,29 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
         let heightCompensation: CGFloat = 312
         
         if let leftBlink = anchor.blendShapes[.eyeBlinkLeft] as? Float,
-              let rightBlink = anchor.blendShapes[.eyeBlinkRight] as? Float {
-               
-               // Calculate a scale based on the blink coefficient.
-               // Here, we are just linearly scaling between 1.0 (fully open) and 0.5 (fully closed).
-               // You can adjust this logic to get the desired visual effect.
-               let leftScale = 1.0 - 0.5 * CGFloat(leftBlink)
-               let rightScale = 1.0 - 0.5 * CGFloat(rightBlink)
-
-               // Apply the scale to the highlight nodes
-               leftEyeHighlight.node.scale = SCNVector3(leftScale, leftScale, leftScale)
-               rightEyeHighlight.node.scale = SCNVector3(rightScale, rightScale, rightScale)
-
-               // Modify shininess based on the blink coefficient
-               leftEyeHighlight.material.shininess = CGFloat(2.0 * Float(1.0 - leftBlink))
-               rightEyeHighlight.material.shininess = CGFloat(2.0 * Float(1.0 - rightBlink))
-           }
+           let rightBlink = anchor.blendShapes[.eyeBlinkRight] as? Float {
+            
+            // Calculate a scale based on the blink coefficient.
+            // Here, we are just linearly scaling between 1.0 (fully open) and 0.5 (fully closed).
+            // You can adjust this logic to get the desired visual effect.
+            let leftScale = 1.0 - 0.5 * CGFloat(leftBlink)
+            let rightScale = 1.0 - 0.5 * CGFloat(rightBlink)
+            
+            // Apply the scale to the highlight nodes
+            leftEyeHighlight.node.scale = SCNVector3(leftScale, leftScale, leftScale)
+            rightEyeHighlight.node.scale = SCNVector3(rightScale, rightScale, rightScale)
+            
+            // Modify shininess based on the blink coefficient
+            leftEyeHighlight.material.shininess = CGFloat(2.0 * Float(1.0 - leftBlink))
+            rightEyeHighlight.material.shininess = CGFloat(2.0 * Float(1.0 - rightBlink))
+            
+            let blinkThreshold: Float = 0.4 // you can adjust this threshold based on testing
+            
+            if leftBlink > blinkThreshold && rightBlink > blinkThreshold {
+                // Detected a blink
+                handleBlink()
+            }
+        }
         
         DispatchQueue.main.async {
             // Perform Hit test using the ray segments that are drawn by the center of the eyeballs to somewhere two meters away at direction of where users look at to the virtual plane that place at the same orientation of the phone screen
@@ -253,7 +281,6 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
             }
             
             for result in phoneScreenEyeLHitTestResults {
-                
                 eyeLLookAt.x = CGFloat(result.localCoordinates.x) / (self.phoneScreenSize.width / 2) * self.phoneScreenPointSize.width
                 
                 eyeLLookAt.y = CGFloat(result.localCoordinates.y) / (self.phoneScreenSize.height / 2) * self.phoneScreenPointSize.height + heightCompensation
