@@ -200,13 +200,15 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
     func handleBlink() {
         let currentDate = Date()
         
-        if let lastBlinkDate = lastBlinkDate, currentDate.timeIntervalSince(lastBlinkDate) < 0.5 { // less than half a second since last blink
+        let fastBlinkThreshold: TimeInterval = 0.3 // Let's set it to 0.3 seconds for faster blinks
+        
+        if let lastBlinkDate = lastBlinkDate, currentDate.timeIntervalSince(lastBlinkDate) < fastBlinkThreshold {
             blinkCount += 1
             
             if blinkCount == 2 {
                 // Detected a double blink!
                 // Do your double blink action here
-                print("Double Blink Detected!")
+                print("\(blinkCount)0.4 Double Blink Detected!")
                 
                 // Reset the blink count
                 blinkCount = 0
@@ -218,6 +220,7 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
         
         lastBlinkDate = currentDate
     }
+
     
     func update(withFaceAnchor anchor: ARFaceAnchor) {
         // Store face geometry data
@@ -255,7 +258,7 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
             leftEyeHighlight.material.shininess = CGFloat(2.0 * Float(1.0 - leftBlink))
             rightEyeHighlight.material.shininess = CGFloat(2.0 * Float(1.0 - rightBlink))
             
-            let blinkThreshold: Float = 0.4 // you can adjust this threshold based on testing
+            let blinkThreshold: Float = 0.8 // you can adjust this threshold based on testing
             
             if leftBlink > blinkThreshold && rightBlink > blinkThreshold {
                 // Detected a blink
