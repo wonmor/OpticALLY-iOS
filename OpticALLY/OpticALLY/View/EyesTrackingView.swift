@@ -16,12 +16,21 @@ import ARKit
 
 struct EyesTrackingView: View {
     @ObservedObject var viewModel = EyesTrackingViewModel()
-
+    
     var body: some View {
         ZStack {
             ARViewContainer(viewModel: viewModel)
                 .edgesIgnoringSafeArea(.all) // Ensuring AR view covers entire screen
-
+                .onChange(of: viewModel.isGoodToMove) { newValue in
+                    // Your logic when isGoodToMove changes
+                    if newValue {
+                        // Let's say you want to print a statement when it's good to move
+                        print("It's good to move!")
+                    } else {
+                        print("It's not good to move!")
+                    }
+                }
+            
             VStack {
                 Text("Pupillary Distance")
                     .bold()
@@ -58,7 +67,7 @@ struct EyesTrackingView: View {
 
 struct ARViewContainer: UIViewRepresentable {
     @ObservedObject var viewModel: EyesTrackingViewModel
-
+    
     func makeUIView(context: Context) -> ARSCNView {
         let sceneView = ARSCNView()
         sceneView.delegate = viewModel
@@ -81,7 +90,7 @@ struct ARViewContainer: UIViewRepresentable {
         
         return sceneView
     }
-
+    
     func updateUIView(_ uiView: ARSCNView, context: Context) {
         // This method will get called whenever SwiftUI updates this view.
     }

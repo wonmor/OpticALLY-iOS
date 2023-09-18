@@ -46,6 +46,8 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
     @Published var lookAtPositionXText: String = ""
     @Published var lookAtPositionYText: String = ""
     
+    @Published var isGoodToMove: Bool = false
+    
     @Published var sideLength: CGFloat = 0.0
     
     // Additional Published properties for bindings:
@@ -55,6 +57,7 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
     private var leftEyePositionSubject = PassthroughSubject<CGPoint, Never>()
     
     private var cancellables: Set<AnyCancellable> = []
+    private var debounceTimer: Timer?
     
     private var leftEyeHighlight: (node: SCNNode, material: SCNMaterial)!
     private var rightEyeHighlight: (node: SCNNode, material: SCNMaterial)!
@@ -109,6 +112,11 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
         super.init()
         self.session = ARSession()
         self.session.delegate = self
+    }
+    
+    deinit {
+        debounceTimer?.invalidate()
+        debounceTimer = nil
     }
     
     func createEyeHighlight(radius: CGFloat) -> (node: SCNNode, material: SCNMaterial) {
@@ -199,25 +207,37 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
     
     func handleBlink() {
         let currentDate = Date()
-        
+
         let fastBlinkThreshold: TimeInterval = 0.3 // Let's set it to 0.3 seconds for faster blinks
-        
+        let debounceInterval: TimeInterval = 1.0 // 1 second delay before another double blink can be detected
+
         if let lastBlinkDate = lastBlinkDate, currentDate.timeIntervalSince(lastBlinkDate) < fastBlinkThreshold {
             blinkCount += 1
-            
+
             if blinkCount == 2 {
-                // Detected a double blink!
-                // Do your double blink action here
-                print("\(blinkCount)0.4 Double Blink Detected!")
-                
-                // Reset the blink count
-                blinkCount = 0
+                // Check if the debounce timer is already running
+                if debounceTimer == nil {
+                    // Detected a double blink!
+                    DispatchQueue.main.async {
+                        self.isGoodToMove = true
+                    }
+
+                    // Start the debounce timer
+                    debounceTimer = Timer.scheduledTimer(withTimeInterval: debounceInterval, repeats: false, block: { [weak self] _ in
+                        self?.debounceTimer = nil
+                    })
+
+                    // Reset the blink count
+                    blinkCount = 0
+                } else {
+                    // If debounce timer is running, reset the blink count but do not detect the double blink
+                    blinkCount = 0
+                }
             }
-            
         } else {
             blinkCount = 1
         }
-        
+
         lastBlinkDate = currentDate
     }
 

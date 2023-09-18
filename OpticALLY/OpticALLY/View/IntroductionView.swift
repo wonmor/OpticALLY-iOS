@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct IntroductionView: View {
-    @Binding var isNavigate: Bool  // Add this binding
+    @Binding var currentView: ViewState  // Add this binding
     
     var body: some View {
         ScrollView {
@@ -19,7 +19,7 @@ struct IntroductionView: View {
                 Spacer(minLength: 30)
                 
                 Button(action: {
-                    isNavigate = true
+                    currentView = .tracking
                 }) {
                     Text("Continue")
                         .customButton()
@@ -110,15 +110,5 @@ struct InformationDetailView: View {
             }
         }
         .padding(.top)
-    }
-}
-
-struct IntroductionView_Previews: PreviewProvider {
-    @State static var showIntroductionMock: Bool = true
-    
-    static var previews: some View {
-        Group {
-            IntroductionView(isNavigate: $showIntroductionMock)
-        }
     }
 }
