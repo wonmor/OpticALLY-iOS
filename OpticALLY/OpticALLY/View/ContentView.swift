@@ -21,19 +21,10 @@ struct ContentView: View {
             case .introduction:
                 IntroductionView(currentView: $currentView)
                     .transition(.opacity)
-                    .onTapGesture {
-                        withAnimation {
-                            currentView = .tracking
-                        }
-                    }
+                
             case .tracking:
                 EyesTrackingView(currentView: $currentView)
                     .transition(.opacity)
-                    .onTapGesture {
-                        withAnimation {
-                            currentView = .introduction
-                        }
-                    }
             }
         }
         .animation(.easeInOut, value: true)

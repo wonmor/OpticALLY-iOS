@@ -19,7 +19,9 @@ struct IntroductionView: View {
                 Spacer(minLength: 30)
                 
                 Button(action: {
-                    currentView = .tracking
+                    withAnimation {
+                        currentView = .tracking
+                    }
                 }) {
                     Text("Continue")
                         .customButton()
