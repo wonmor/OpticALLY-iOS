@@ -282,7 +282,7 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
             
             if leftBlink > blinkThreshold && rightBlink > blinkThreshold {
                 // Detected a blink
-                handleBlink()
+                // handleBlink()
             }
         }
         

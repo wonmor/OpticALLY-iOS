@@ -17,6 +17,8 @@ import ARKit
 struct EyesTrackingView: View {
     @ObservedObject var viewModel = EyesTrackingViewModel()
     
+    @Binding var currentView: ViewState  // Add this binding
+    
     var body: some View {
         ZStack {
             ARViewContainer(viewModel: viewModel)
@@ -24,7 +26,7 @@ struct EyesTrackingView: View {
                 .onChange(of: viewModel.isGoodToMove) { newValue in
                     // Your logic when isGoodToMove changes
                     if newValue {
-                        // Let's say you want to print a statement when it's good to move
+                        currentView = .introduction
                         print("It's good to move!")
                     } else {
                         print("It's not good to move!")
@@ -93,12 +95,5 @@ struct ARViewContainer: UIViewRepresentable {
     
     func updateUIView(_ uiView: ARSCNView, context: Context) {
         // This method will get called whenever SwiftUI updates this view.
-    }
-}
-
-
-struct EyesTrackingView_Previews: PreviewProvider {
-    static var previews: some View {
-        EyesTrackingView()
     }
 }

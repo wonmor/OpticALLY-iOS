@@ -27,7 +27,7 @@ struct ContentView: View {
                         }
                     }
             case .tracking:
-                EyesTrackingView()
+                EyesTrackingView(currentView: $currentView)
                     .transition(.opacity)
                     .onTapGesture {
                         withAnimation {
