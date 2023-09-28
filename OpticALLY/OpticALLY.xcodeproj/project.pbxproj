@@ -20,6 +20,7 @@
 		969AC27C2AB6E8AE0096892E /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 969AC27B2AB6E8AE0096892E /* Constants.swift */; };
 		969AC2802AB7550C0096892E /* IntroductionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 969AC27F2AB7550C0096892E /* IntroductionView.swift */; };
 		969AC2822AB7554C0096892E /* Extensions+Modifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 969AC2812AB7554C0096892E /* Extensions+Modifiers.swift */; };
+		96BC2ABE2AC5E9D60081550B /* DevicePpi in Frameworks */ = {isa = PBXBuildFile; productRef = 96BC2ABD2AC5E9D60081550B /* DevicePpi */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -62,6 +63,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				96BC2ABE2AC5E9D60081550B /* DevicePpi in Frameworks */,
 				967EE0982AAEE2C7000C4D5F /* snippet-extract in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -178,6 +180,7 @@
 			name = OpticALLY;
 			packageProductDependencies = (
 				967EE0972AAEE2C7000C4D5F /* snippet-extract */,
+				96BC2ABD2AC5E9D60081550B /* DevicePpi */,
 			);
 			productName = OpticALLY;
 			productReference = 967EE0612AAE06FB000C4D5F /* OpticALLY.app */;
@@ -253,6 +256,7 @@
 			mainGroup = 967EE0582AAE06FB000C4D5F;
 			packageReferences = (
 				967EE0962AAEE2C7000C4D5F /* XCRemoteSwiftPackageReference "swift-docc-plugin" */,
+				96BC2ABC2AC5E9D60081550B /* XCRemoteSwiftPackageReference "DevicePpi" */,
 			);
 			productRefGroup = 967EE0622AAE06FB000C4D5F /* Products */;
 			projectDirPath = "";
@@ -654,6 +658,14 @@
 				minimumVersion = 1.3.0;
 			};
 		};
+		96BC2ABC2AC5E9D60081550B /* XCRemoteSwiftPackageReference "DevicePpi" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Clafou/DevicePpi";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.2.18;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -661,6 +673,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 967EE0962AAEE2C7000C4D5F /* XCRemoteSwiftPackageReference "swift-docc-plugin" */;
 			productName = "snippet-extract";
+		};
+		96BC2ABD2AC5E9D60081550B /* DevicePpi */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 96BC2ABC2AC5E9D60081550B /* XCRemoteSwiftPackageReference "DevicePpi" */;
+			productName = DevicePpi;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -35,26 +35,33 @@ struct EyesTrackingView: View {
                     }
                 }
             
-            if viewModel.shouldShowImage {
-               Image("BLINK") // Assume the name of the image is "BLINK"
-                   .resizable()
-                   .scaledToFit()
-                   .frame(width: 200, height: 200)
-                   .position(x: randomX, y: randomY)
-                   .onAppear {
-                       // This block will be called when the image appears.
-                       DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                           // After a delay of 2 seconds, shouldShowImage is set to false
-                           viewModel.shouldShowImage = false
-                       }
-                   }
-           }
+//            if viewModel.shouldShowImage {
+//               Image("BLINK") // Assume the name of the image is "BLINK"
+//                   .resizable()
+//                   .scaledToFit()
+//                   .frame(width: 200, height: 200)
+//                   .position(x: randomX, y: randomY)
+//                   .onAppear {
+//                       // This block will be called when the image appears.
+//                       DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+//                           // After a delay of 2 seconds, shouldShowImage is set to false
+//                           viewModel.shouldShowImage = false
+//                       }
+//                   }
+//           }
             
             VStack {
                 Text("Pupillary Distance")
                     .bold()
                 
                 Text(viewModel.distanceText.isEmpty ? "Measuring..." : viewModel.distanceText)
+                    .font(.title)
+                
+                Text("Face Width")
+                    .bold()
+                    .padding(.top)
+                
+                Text(viewModel.faceWidthText.isEmpty ? "Measuring..." : viewModel.faceWidthText)
                     .font(.title)
             }
             .padding(20) // Add some padding to make it look nicer

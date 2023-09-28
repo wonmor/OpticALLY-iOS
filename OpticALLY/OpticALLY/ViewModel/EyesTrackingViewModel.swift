@@ -42,6 +42,7 @@ import SceneKit
 
 class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSessionDelegate {
     @Published var distanceText: String = ""
+    @Published var faceWidthText: String = ""
     
     @Published var lookAtPositionXText: String = ""
     @Published var lookAtPositionYText: String = ""
@@ -49,6 +50,10 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
     @Published var shouldShowImage: Bool = false // or false based on your logic
     
     @Published var sideLength: CGFloat = 0.0
+    
+    @Published var hasGlasses: Bool = false
+    @Published var faceHeight: CGFloat = 0.0
+    @Published var faceWidth: CGFloat = 0.0
     
     // Additional Published properties for bindings:
     @Published var eyePositionIndicatorTransform: CGAffineTransform = .identity
@@ -58,6 +63,9 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
     
     private var cancellables: Set<AnyCancellable> = []
     private var debounceTimer: Timer?
+    
+    private var debounceTimer2: Timer?
+    private let debounceInterval2: TimeInterval = 0.5 // seconds
     
     private var leftEyeHighlight: (node: SCNNode, material: SCNMaterial)!
     private var rightEyeHighlight: (node: SCNNode, material: SCNMaterial)!
@@ -132,6 +140,54 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
         return (node, material)
     }
     
+    func detectFaceAndGlasses(from image: UIImage) {
+        guard let cgImage = image.cgImage else {
+            return
+        }
+        
+        let imageSize = CGSize(width: cgImage.width, height: cgImage.height)
+        
+        let request = VNDetectFaceLandmarksRequest { (request, error) in
+            self.processFaceLandmarks(for: request, error: error, imageSize: imageSize)
+        }
+        
+        let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
+        try? handler.perform([request])
+    }
+    
+    func convertPixelsToMillimeters(pixel: CGFloat, ppi: CGFloat) -> CGFloat {
+        let inch = pixel / ppi
+        let millimeter = inch * 25.4
+        return millimeter
+    }
+
+    func processFaceLandmarks(for request: VNRequest, error: Error?, imageSize: CGSize) {
+        guard let results = request.results as? [VNFaceObservation] else {
+            return
+        }
+
+        for faceObservation in results {
+            let boundingBox = faceObservation.boundingBox
+
+            // Convert the bounding box's coordinates to pixel coordinates
+            let widthInPixels = boundingBox.size.width * imageSize.width
+            let heightInPixels = boundingBox.size.height * imageSize.height
+            
+            let widthInMillimeters = convertPixelsToMillimeters(pixel: widthInPixels, ppi: devicePPI)
+
+            faceWidth = widthInMillimeters
+            faceWidthText = "\(widthInMillimeters) mm"
+
+            // Check for glasses and set the boolean to true
+            // You may need a machine learning model to detect glasses
+
+            // Calculate the segment height (SH) for left and right rim
+            faceHeight = heightInPixels
+            
+            print("Width: \(widthInMillimeters)")
+        }
+    }
+    
     /// Creates A GLKVector3 From a Simd_Float4
     ///
     /// - Parameter transform: simd_float4
@@ -139,6 +195,38 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
     func glkVector3FromARFaceAnchorTransform(_ transform: simd_float4) -> GLKVector3{
         return GLKVector3Make(transform.x, transform.y, transform.z)
     }
+    
+    // ARSessionDelegate method
+    func session(_ session: ARSession, didUpdate frame: ARFrame) {
+        // Invalidate the previous timer
+        debounceTimer2?.invalidate()
+        
+        // Start a new timer
+        debounceTimer2 = Timer.scheduledTimer(withTimeInterval: debounceInterval2, repeats: false, block: { [weak self] timer in
+            // Ensure the session is still running
+            guard let capturedImage: CVPixelBuffer? = frame.capturedImage else {
+                return
+            }
+            
+            let image = self?.convert(pixelBuffer: capturedImage!)
+            self?.processCapturedImage(image)
+        })
+    }
+    
+    func processCapturedImage(_ image: UIImage?) {
+            // Call the detectFaceAndGlasses(from:) function here
+            if let image = image {
+                detectFaceAndGlasses(from: image)
+            }
+        }
+    
+    // Convert a CVPixelBuffer to a UIImage
+       func convert(pixelBuffer: CVPixelBuffer) -> UIImage? {
+           let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
+           let context = CIContext()
+           guard let cgImage = context.createCGImage(ciImage, from: ciImage.extent) else { return nil }
+           return UIImage(cgImage: cgImage)
+       }
     
     func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
         faceNode.transform = node.transform
