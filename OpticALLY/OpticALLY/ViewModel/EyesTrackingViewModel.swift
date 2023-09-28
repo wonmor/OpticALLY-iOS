@@ -46,7 +46,7 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
     @Published var lookAtPositionXText: String = ""
     @Published var lookAtPositionYText: String = ""
     
-    @Published var isGoodToMove: Bool = false
+    @Published var shouldShowImage: Bool = false // or false based on your logic
     
     @Published var sideLength: CGFloat = 0.0
     
@@ -219,7 +219,7 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
                 if debounceTimer == nil {
                     // Detected a double blink!
                     DispatchQueue.main.async {
-                        self.isGoodToMove = true
+                        self.shouldShowImage = true
                     }
 
                     // Start the debounce timer
@@ -282,7 +282,7 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
             
             if leftBlink > blinkThreshold && rightBlink > blinkThreshold {
                 // Detected a blink
-                // handleBlink()
+                handleBlink()
             }
         }
         

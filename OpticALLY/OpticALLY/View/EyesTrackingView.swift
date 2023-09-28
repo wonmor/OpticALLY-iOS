@@ -17,21 +17,38 @@ import ARKit
 struct EyesTrackingView: View {
     @ObservedObject var viewModel = EyesTrackingViewModel()
     
+    @State private var randomX: CGFloat = CGFloat.random(in: 0..<UIScreen.main.bounds.width)
+    @State private var randomY: CGFloat = CGFloat.random(in: 0..<UIScreen.main.bounds.height)
+    
     @Binding var currentView: ViewState  // Add this binding
     
     var body: some View {
         ZStack {
             ARViewContainer(viewModel: viewModel)
                 .edgesIgnoringSafeArea(.all) // Ensuring AR view covers entire screen
-                .onChange(of: viewModel.isGoodToMove) { newValue in
+                .onChange(of: viewModel.shouldShowImage) { newValue in
                     // Your logic when isGoodToMove changes
                     if newValue {
-                        currentView = .introduction
                         print("It's good to move!")
                     } else {
                         print("It's not good to move!")
                     }
                 }
+            
+            if viewModel.shouldShowImage {
+               Image("BLINK") // Assume the name of the image is "BLINK"
+                   .resizable()
+                   .scaledToFit()
+                   .frame(width: 200, height: 200)
+                   .position(x: randomX, y: randomY)
+                   .onAppear {
+                       // This block will be called when the image appears.
+                       DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                           // After a delay of 2 seconds, shouldShowImage is set to false
+                           viewModel.shouldShowImage = false
+                       }
+                   }
+           }
             
             VStack {
                 Text("Pupillary Distance")
@@ -49,6 +66,11 @@ struct EyesTrackingView: View {
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             .offset(y: 250) // Shift content slightly below the center
+        }
+        .onAppear {
+            // Generate new random positions each time the view appears
+            randomX = CGFloat.random(in: 0..<UIScreen.main.bounds.width)
+            randomY = CGFloat.random(in: 0..<UIScreen.main.bounds.height)
         }
     }
 }
