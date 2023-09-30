@@ -57,12 +57,12 @@ struct EyesTrackingView: View {
                 Text(viewModel.distanceText.isEmpty ? "Measuring..." : viewModel.distanceText)
                     .font(.title)
                 
-                Text("Face Width")
-                    .bold()
-                    .padding(.top)
-                
-                Text(viewModel.faceWidthText.isEmpty ? "Measuring..." : viewModel.faceWidthText)
-                    .font(.title)
+//                Text("Face Width")
+//                    .bold()
+//                    .padding(.top)
+//                
+//                Text(viewModel.faceWidthText.isEmpty ? "Measuring..." : viewModel.faceWidthText)
+//                    .font(.title)
             }
             .padding(20) // Add some padding to make it look nicer
             .foregroundStyle(.white)
