@@ -694,12 +694,11 @@ struct SwiftUIView: View {
                 ZStack {
                     RoundedRectangle(cornerRadius: 10)
                         .frame(width: 150, height: 50)
-                        .foregroundColor(Color.white)
-                        .shadow(radius: 10)
+                        .foregroundColor(Color.black)
                     
                     Image(systemName: "hand.point.up.left")
                         .font(.largeTitle)
-                        .foregroundStyle(.black)
+                        .foregroundColor(.white)
                         .offset(x: fingerOffset)
                         .onAppear() {
                             withAnimation(Animation.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) {
@@ -713,24 +712,46 @@ struct SwiftUIView: View {
                     .bold()
                     .padding()
                     .multilineTextAlignment(.center)
-                    .foregroundStyle(.black)
+                    .foregroundColor(.white)
                 
-                // Button with SF symbol
-                Button(action: {
-                    // Your button action here
-                }) {
+                // Button with dropdown menu
+                Menu {
+                    Button(action: {
+                        // Your export to .USDZ action here
+                    }) {
+                        Text(".USDZ")
+                    }
+                    
+                    Button(action: {
+                        // Your export to .STL action here
+                    }) {
+                        Text(".STL")
+                    }
+                    
+                    Button(action: {
+                        // Your export to .OBJ action here
+                    }) {
+                        Text(".OBJ")
+                    }
+                    
+                    Button(action: {
+                        // Your export to .OBJ action here
+                    }) {
+                        Text(".STEP")
+                    }
+                    
+                } label: {
                     HStack {
                         Image(systemName: "square.and.arrow.up") // Export SF Symbol
                         Text("Export")
                             .font(.title)
                     }
-                    .foregroundStyle(.black)
+                    .foregroundColor(.white)
                     .padding()
-                    .background(Capsule().fill(Color.white))
+                    .background(Capsule().fill(Color.black))
                 }
-                .shadow(radius: 10)
             }
-            .background(Color.white.opacity(0.8).blur(radius: 40.0))
+            .background(Color.black.opacity(0.8).blur(radius: 40.0))
         }
         .padding()
     }
