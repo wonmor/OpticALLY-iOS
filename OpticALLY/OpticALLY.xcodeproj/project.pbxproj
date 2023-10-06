@@ -134,6 +134,59 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		9679F8E82AD0956E00686F13 /* Storyboard */ = {
+			isa = PBXGroup;
+			children = (
+				9679F8BF2AD0907900686F13 /* LaunchScreen.storyboard */,
+				9679F8C02AD0907900686F13 /* Main.storyboard */,
+			);
+			path = Storyboard;
+			sourceTree = "<group>";
+		};
+		9679F8EA2AD0958F00686F13 /* Utility */ = {
+			isa = PBXGroup;
+			children = (
+				9679F8B42AD0907900686F13 /* HistogramCalculator.h */,
+				9679F8C32AD0907900686F13 /* ResourceLoader.swift */,
+				9679F8BC2AD0907900686F13 /* HistogramCalculator.m */,
+				9679F8CA2AD0907A00686F13 /* AAPLTransforms.h */,
+				9679F8C82AD0907A00686F13 /* FilterRenderer.swift */,
+				9679F8B82AD0907900686F13 /* AAPLTransforms.mm */,
+			);
+			path = Utility;
+			sourceTree = "<group>";
+		};
+		9679F8EB2AD095AA00686F13 /* ViewController */ = {
+			isa = PBXGroup;
+			children = (
+				9679F8CB2AD0907A00686F13 /* HomeViewController.swift */,
+				9679F8C22AD0907900686F13 /* ScanViewController.swift */,
+				9679F8B22AD0907900686F13 /* ScanViewControllerWrapper.swift */,
+				9679F8C52AD0907A00686F13 /* CameraViewController.swift */,
+			);
+			path = ViewController;
+			sourceTree = "<group>";
+		};
+		9679F8EC2AD095F200686F13 /* Shader */ = {
+			isa = PBXGroup;
+			children = (
+				9679F8B92AD0907900686F13 /* Mixer.metal */,
+				9679F8C42AD0907900686F13 /* PassThrough.metal */,
+				9679F8B52AD0907900686F13 /* VideoMixer.swift */,
+				9679F8C12AD0907900686F13 /* PointCloud.metal */,
+			);
+			path = Shader;
+			sourceTree = "<group>";
+		};
+		9679F8ED2AD0961600686F13 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				969AC27B2AB6E8AE0096892E /* Constants.swift */,
+				969AC2812AB7554C0096892E /* Extensions+Modifiers.swift */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
 		967EE0582AAE06FB000C4D5F = {
 			isa = PBXGroup;
 			children = (
@@ -157,35 +210,16 @@
 		967EE0632AAE06FB000C4D5F /* OpticALLY */ = {
 			isa = PBXGroup;
 			children = (
+				9679F8ED2AD0961600686F13 /* Shared */,
+				9679F8EC2AD095F200686F13 /* Shader */,
+				9679F8EB2AD095AA00686F13 /* ViewController */,
+				9679F8EA2AD0958F00686F13 /* Utility */,
+				9679F8E82AD0956E00686F13 /* Storyboard */,
 				967EE0912AAEDBD2000C4D5F /* ViewModel */,
 				967EE0902AAEDBBE000C4D5F /* View */,
 				967EE0642AAE06FB000C4D5F /* OpticALLYApp.swift */,
-				9679F8CA2AD0907A00686F13 /* AAPLTransforms.h */,
-				9679F8B82AD0907900686F13 /* AAPLTransforms.mm */,
 				9679F8B32AD0907900686F13 /* AppDelegate.swift */,
-				9679F8CC2AD0907A00686F13 /* CameraView.swift */,
-				9679F8C52AD0907A00686F13 /* CameraViewController.swift */,
-				9679F8C82AD0907A00686F13 /* FilterRenderer.swift */,
-				9679F8B42AD0907900686F13 /* HistogramCalculator.h */,
-				9679F8BC2AD0907900686F13 /* HistogramCalculator.m */,
-				9679F8BD2AD0907900686F13 /* HomeView.swift */,
-				9679F8B72AD0907900686F13 /* HomeViewContainer.swift */,
-				9679F8CB2AD0907A00686F13 /* HomeViewController.swift */,
 				9679F8BA2AD0907900686F13 /* Info.plist */,
-				9679F8BF2AD0907900686F13 /* LaunchScreen.storyboard */,
-				9679F8C02AD0907900686F13 /* Main.storyboard */,
-				9679F8B92AD0907900686F13 /* Mixer.metal */,
-				9679F8C42AD0907900686F13 /* PassThrough.metal */,
-				9679F8C12AD0907900686F13 /* PointCloud.metal */,
-				9679F8C72AD0907A00686F13 /* PointCloudMetalView.h */,
-				9679F8C92AD0907A00686F13 /* PointCloudMetalView.mm */,
-				9679F8BB2AD0907900686F13 /* PreviewMetalView.swift */,
-				9679F8C32AD0907900686F13 /* ResourceLoader.swift */,
-				9679F8C22AD0907900686F13 /* ScanViewController.swift */,
-				9679F8B22AD0907900686F13 /* ScanViewControllerWrapper.swift */,
-				9679F8B52AD0907900686F13 /* VideoMixer.swift */,
-				969AC27B2AB6E8AE0096892E /* Constants.swift */,
-				969AC2812AB7554C0096892E /* Extensions+Modifiers.swift */,
 				967EE0682AAE06FE000C4D5F /* Assets.xcassets */,
 				967EE06A2AAE06FE000C4D5F /* Preview Content */,
 				9679F8B12AD0907800686F13 /* OpticALLY-Bridging-Header.h */,
@@ -221,8 +255,14 @@
 		967EE0902AAEDBBE000C4D5F /* View */ = {
 			isa = PBXGroup;
 			children = (
+				9679F8C72AD0907A00686F13 /* PointCloudMetalView.h */,
+				9679F8C92AD0907A00686F13 /* PointCloudMetalView.mm */,
+				9679F8BB2AD0907900686F13 /* PreviewMetalView.swift */,
 				967EE0662AAE06FB000C4D5F /* ContentView.swift */,
 				9679F8AF2AD08C7000686F13 /* ScanView.swift */,
+				9679F8BD2AD0907900686F13 /* HomeView.swift */,
+				9679F8B72AD0907900686F13 /* HomeViewContainer.swift */,
+				9679F8CC2AD0907A00686F13 /* CameraView.swift */,
 				969AC27F2AB7550C0096892E /* IntroductionView.swift */,
 				967EE08E2AAEDA82000C4D5F /* EyesTrackingView.swift */,
 			);
