@@ -10,6 +10,7 @@ import AVFoundation
 import CoreVideo
 import MobileCoreServices
 import Accelerate
+import SwiftUI
 
 @available(iOS 11.1, *)
 class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDelegate {
@@ -670,6 +671,44 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         
     
             cloudView?.setDepthFrame(depthData, withTexture: videoPixelBuffer)
+    }
+    
+    @IBSegueAction func embedSwiftUIView(_ coder: NSCoder) -> UIViewController? {
+        let hostingController = UIHostingController(coder: coder, rootView: SwiftUIView())
+        hostingController?.view.backgroundColor = .clear
+        return hostingController
+    }
+}
+
+struct SwiftUIView: View {
+    @State private var isViewLoaded: Bool = false
+
+    var body: some View {
+        ZStack {
+            // Button with SF symbol
+            Button(action: {
+                // Your button action here
+            }) {
+                HStack {
+                    Image(systemName: "square.and.arrow.up") // Export SF Symbol
+                    Text("Export")
+                        .font(.title)
+                }
+                .foregroundStyle(.black)
+                .padding()
+                .background(Capsule().fill(Color.white))
+                .blur(radius: isViewLoaded ? 0 : 20.0)
+                .opacity(isViewLoaded ? 1 : 0)
+                .animation(Animation.easeInOut(duration: 1.5), value: isViewLoaded)
+            }
+        }
+        .padding()
+        .onAppear {
+            withAnimation {
+                isViewLoaded = true
+            }
+        }
+        .backgroundStyle(.clear)
     }
 }
 

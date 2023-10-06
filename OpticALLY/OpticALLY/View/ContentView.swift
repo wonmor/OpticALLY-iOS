@@ -32,6 +32,7 @@ struct ContentView: View {
             case .scanning:
                 CameraView()
                     .transition(.opacity)
+                    .ignoresSafeArea(.all)
             }
         }
         .animation(.easeInOut, value: true)
