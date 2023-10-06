@@ -695,7 +695,7 @@ struct SwiftUIView: View {
                     RoundedRectangle(cornerRadius: 10)
                         .frame(width: 150, height: 50)
                         .foregroundColor(Color.white)
-                        .shadow(radius: 5)
+                        .shadow(radius: 10)
                     
                     Image(systemName: "hand.point.up.left")
                         .font(.largeTitle)
@@ -710,8 +710,10 @@ struct SwiftUIView: View {
                 
                 Text("Move your finger\nto pan around")
                     .font(.title3)
-                    .padding(.bottom, 20)
+                    .bold()
+                    .padding()
                     .multilineTextAlignment(.center)
+                    .foregroundStyle(.black)
                 
                 // Button with SF symbol
                 Button(action: {
@@ -726,10 +728,11 @@ struct SwiftUIView: View {
                     .padding()
                     .background(Capsule().fill(Color.white))
                 }
+                .shadow(radius: 10)
             }
+            .background(Color.white.opacity(0.8).blur(radius: 40.0))
         }
         .padding()
-        .backgroundStyle(.clear)
     }
 }
 
