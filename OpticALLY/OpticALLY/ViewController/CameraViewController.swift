@@ -697,17 +697,9 @@ struct SwiftUIView: View {
                 .foregroundStyle(.black)
                 .padding()
                 .background(Capsule().fill(Color.white))
-                .blur(radius: isViewLoaded ? 0 : 20.0)
-                .opacity(isViewLoaded ? 1 : 0)
-                .animation(Animation.easeInOut(duration: 1.5), value: isViewLoaded)
             }
         }
         .padding()
-        .onAppear {
-            withAnimation {
-                isViewLoaded = true
-            }
-        }
         .backgroundStyle(.clear)
     }
 }
