@@ -7,6 +7,28 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9679F8B02AD08C7000686F13 /* ScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8AF2AD08C7000686F13 /* ScanView.swift */; };
+		9679F8CD2AD0907A00686F13 /* ScanViewControllerWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8B22AD0907900686F13 /* ScanViewControllerWrapper.swift */; };
+		9679F8CE2AD0907A00686F13 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8B32AD0907900686F13 /* AppDelegate.swift */; };
+		9679F8CF2AD0907A00686F13 /* VideoMixer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8B52AD0907900686F13 /* VideoMixer.swift */; };
+		9679F8D02AD0907A00686F13 /* HomeViewContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8B72AD0907900686F13 /* HomeViewContainer.swift */; };
+		9679F8D12AD0907A00686F13 /* AAPLTransforms.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8B82AD0907900686F13 /* AAPLTransforms.mm */; };
+		9679F8D22AD0907A00686F13 /* Mixer.metal in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8B92AD0907900686F13 /* Mixer.metal */; };
+		9679F8D42AD0907A00686F13 /* PreviewMetalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8BB2AD0907900686F13 /* PreviewMetalView.swift */; };
+		9679F8D52AD0907A00686F13 /* HistogramCalculator.m in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8BC2AD0907900686F13 /* HistogramCalculator.m */; };
+		9679F8D62AD0907A00686F13 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8BD2AD0907900686F13 /* HomeView.swift */; };
+		9679F8D72AD0907A00686F13 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9679F8BF2AD0907900686F13 /* LaunchScreen.storyboard */; };
+		9679F8D82AD0907A00686F13 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9679F8C02AD0907900686F13 /* Main.storyboard */; };
+		9679F8D92AD0907A00686F13 /* PointCloud.metal in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8C12AD0907900686F13 /* PointCloud.metal */; };
+		9679F8DA2AD0907A00686F13 /* ScanViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8C22AD0907900686F13 /* ScanViewController.swift */; };
+		9679F8DB2AD0907A00686F13 /* ResourceLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8C32AD0907900686F13 /* ResourceLoader.swift */; };
+		9679F8DC2AD0907A00686F13 /* PassThrough.metal in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8C42AD0907900686F13 /* PassThrough.metal */; };
+		9679F8DD2AD0907A00686F13 /* CameraViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8C52AD0907A00686F13 /* CameraViewController.swift */; };
+		9679F8DE2AD0907A00686F13 /* FilterRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8C82AD0907A00686F13 /* FilterRenderer.swift */; };
+		9679F8DF2AD0907A00686F13 /* PointCloudMetalView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8C92AD0907A00686F13 /* PointCloudMetalView.mm */; };
+		9679F8E02AD0907A00686F13 /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8CB2AD0907A00686F13 /* HomeViewController.swift */; };
+		9679F8E12AD0907A00686F13 /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8CC2AD0907A00686F13 /* CameraView.swift */; };
+		9679F8E42AD0912200686F13 /* ZipArchive in Frameworks */ = {isa = PBXBuildFile; productRef = 9679F8E32AD0912200686F13 /* ZipArchive */; };
 		967EE0652AAE06FB000C4D5F /* OpticALLYApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967EE0642AAE06FB000C4D5F /* OpticALLYApp.swift */; };
 		967EE0672AAE06FB000C4D5F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967EE0662AAE06FB000C4D5F /* ContentView.swift */; };
 		967EE0692AAE06FE000C4D5F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 967EE0682AAE06FE000C4D5F /* Assets.xcassets */; };
@@ -41,6 +63,32 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		9679F8AF2AD08C7000686F13 /* ScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanView.swift; sourceTree = "<group>"; };
+		9679F8B12AD0907800686F13 /* OpticALLY-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "OpticALLY-Bridging-Header.h"; sourceTree = "<group>"; };
+		9679F8B22AD0907900686F13 /* ScanViewControllerWrapper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScanViewControllerWrapper.swift; sourceTree = "<group>"; };
+		9679F8B32AD0907900686F13 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		9679F8B42AD0907900686F13 /* HistogramCalculator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HistogramCalculator.h; sourceTree = "<group>"; };
+		9679F8B52AD0907900686F13 /* VideoMixer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoMixer.swift; sourceTree = "<group>"; };
+		9679F8B72AD0907900686F13 /* HomeViewContainer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HomeViewContainer.swift; sourceTree = "<group>"; };
+		9679F8B82AD0907900686F13 /* AAPLTransforms.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AAPLTransforms.mm; sourceTree = "<group>"; };
+		9679F8B92AD0907900686F13 /* Mixer.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = Mixer.metal; sourceTree = "<group>"; };
+		9679F8BA2AD0907900686F13 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		9679F8BB2AD0907900686F13 /* PreviewMetalView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreviewMetalView.swift; sourceTree = "<group>"; };
+		9679F8BC2AD0907900686F13 /* HistogramCalculator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HistogramCalculator.m; sourceTree = "<group>"; };
+		9679F8BD2AD0907900686F13 /* HomeView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		9679F8BF2AD0907900686F13 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		9679F8C02AD0907900686F13 /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
+		9679F8C12AD0907900686F13 /* PointCloud.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = PointCloud.metal; sourceTree = "<group>"; };
+		9679F8C22AD0907900686F13 /* ScanViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScanViewController.swift; sourceTree = "<group>"; };
+		9679F8C32AD0907900686F13 /* ResourceLoader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ResourceLoader.swift; sourceTree = "<group>"; };
+		9679F8C42AD0907900686F13 /* PassThrough.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = PassThrough.metal; sourceTree = "<group>"; };
+		9679F8C52AD0907A00686F13 /* CameraViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraViewController.swift; sourceTree = "<group>"; };
+		9679F8C72AD0907A00686F13 /* PointCloudMetalView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PointCloudMetalView.h; sourceTree = "<group>"; };
+		9679F8C82AD0907A00686F13 /* FilterRenderer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FilterRenderer.swift; sourceTree = "<group>"; };
+		9679F8C92AD0907A00686F13 /* PointCloudMetalView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = PointCloudMetalView.mm; sourceTree = "<group>"; };
+		9679F8CA2AD0907A00686F13 /* AAPLTransforms.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AAPLTransforms.h; sourceTree = "<group>"; };
+		9679F8CB2AD0907A00686F13 /* HomeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
+		9679F8CC2AD0907A00686F13 /* CameraView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraView.swift; sourceTree = "<group>"; };
 		967EE0612AAE06FB000C4D5F /* OpticALLY.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OpticALLY.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		967EE0642AAE06FB000C4D5F /* OpticALLYApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpticALLYApp.swift; sourceTree = "<group>"; };
 		967EE0662AAE06FB000C4D5F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -65,6 +113,7 @@
 			files = (
 				96BC2ABE2AC5E9D60081550B /* DevicePpi in Frameworks */,
 				967EE0982AAEE2C7000C4D5F /* snippet-extract in Frameworks */,
+				9679F8E42AD0912200686F13 /* ZipArchive in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -111,10 +160,35 @@
 				967EE0912AAEDBD2000C4D5F /* ViewModel */,
 				967EE0902AAEDBBE000C4D5F /* View */,
 				967EE0642AAE06FB000C4D5F /* OpticALLYApp.swift */,
+				9679F8CA2AD0907A00686F13 /* AAPLTransforms.h */,
+				9679F8B82AD0907900686F13 /* AAPLTransforms.mm */,
+				9679F8B32AD0907900686F13 /* AppDelegate.swift */,
+				9679F8CC2AD0907A00686F13 /* CameraView.swift */,
+				9679F8C52AD0907A00686F13 /* CameraViewController.swift */,
+				9679F8C82AD0907A00686F13 /* FilterRenderer.swift */,
+				9679F8B42AD0907900686F13 /* HistogramCalculator.h */,
+				9679F8BC2AD0907900686F13 /* HistogramCalculator.m */,
+				9679F8BD2AD0907900686F13 /* HomeView.swift */,
+				9679F8B72AD0907900686F13 /* HomeViewContainer.swift */,
+				9679F8CB2AD0907A00686F13 /* HomeViewController.swift */,
+				9679F8BA2AD0907900686F13 /* Info.plist */,
+				9679F8BF2AD0907900686F13 /* LaunchScreen.storyboard */,
+				9679F8C02AD0907900686F13 /* Main.storyboard */,
+				9679F8B92AD0907900686F13 /* Mixer.metal */,
+				9679F8C42AD0907900686F13 /* PassThrough.metal */,
+				9679F8C12AD0907900686F13 /* PointCloud.metal */,
+				9679F8C72AD0907A00686F13 /* PointCloudMetalView.h */,
+				9679F8C92AD0907A00686F13 /* PointCloudMetalView.mm */,
+				9679F8BB2AD0907900686F13 /* PreviewMetalView.swift */,
+				9679F8C32AD0907900686F13 /* ResourceLoader.swift */,
+				9679F8C22AD0907900686F13 /* ScanViewController.swift */,
+				9679F8B22AD0907900686F13 /* ScanViewControllerWrapper.swift */,
+				9679F8B52AD0907900686F13 /* VideoMixer.swift */,
 				969AC27B2AB6E8AE0096892E /* Constants.swift */,
 				969AC2812AB7554C0096892E /* Extensions+Modifiers.swift */,
 				967EE0682AAE06FE000C4D5F /* Assets.xcassets */,
 				967EE06A2AAE06FE000C4D5F /* Preview Content */,
+				9679F8B12AD0907800686F13 /* OpticALLY-Bridging-Header.h */,
 			);
 			path = OpticALLY;
 			sourceTree = "<group>";
@@ -148,6 +222,7 @@
 			isa = PBXGroup;
 			children = (
 				967EE0662AAE06FB000C4D5F /* ContentView.swift */,
+				9679F8AF2AD08C7000686F13 /* ScanView.swift */,
 				969AC27F2AB7550C0096892E /* IntroductionView.swift */,
 				967EE08E2AAEDA82000C4D5F /* EyesTrackingView.swift */,
 			);
@@ -181,6 +256,7 @@
 			packageProductDependencies = (
 				967EE0972AAEE2C7000C4D5F /* snippet-extract */,
 				96BC2ABD2AC5E9D60081550B /* DevicePpi */,
+				9679F8E32AD0912200686F13 /* ZipArchive */,
 			);
 			productName = OpticALLY;
 			productReference = 967EE0612AAE06FB000C4D5F /* OpticALLY.app */;
@@ -234,6 +310,7 @@
 				TargetAttributes = {
 					967EE0602AAE06FB000C4D5F = {
 						CreatedOnToolsVersion = 15.0;
+						LastSwiftMigration = 1500;
 					};
 					967EE0702AAE06FE000C4D5F = {
 						CreatedOnToolsVersion = 15.0;
@@ -257,6 +334,7 @@
 			packageReferences = (
 				967EE0962AAEE2C7000C4D5F /* XCRemoteSwiftPackageReference "swift-docc-plugin" */,
 				96BC2ABC2AC5E9D60081550B /* XCRemoteSwiftPackageReference "DevicePpi" */,
+				9679F8E22AD0912200686F13 /* XCRemoteSwiftPackageReference "ZipArchive" */,
 			);
 			productRefGroup = 967EE0622AAE06FB000C4D5F /* Products */;
 			projectDirPath = "";
@@ -275,6 +353,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				967EE06C2AAE06FE000C4D5F /* Preview Assets.xcassets in Resources */,
+				9679F8D82AD0907A00686F13 /* Main.storyboard in Resources */,
+				9679F8D72AD0907A00686F13 /* LaunchScreen.storyboard in Resources */,
 				967EE0692AAE06FE000C4D5F /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -300,12 +380,31 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9679F8E02AD0907A00686F13 /* HomeViewController.swift in Sources */,
+				9679F8DA2AD0907A00686F13 /* ScanViewController.swift in Sources */,
+				9679F8DC2AD0907A00686F13 /* PassThrough.metal in Sources */,
 				967EE08F2AAEDA82000C4D5F /* EyesTrackingView.swift in Sources */,
+				9679F8DB2AD0907A00686F13 /* ResourceLoader.swift in Sources */,
+				9679F8B02AD08C7000686F13 /* ScanView.swift in Sources */,
+				9679F8DF2AD0907A00686F13 /* PointCloudMetalView.mm in Sources */,
 				969AC2822AB7554C0096892E /* Extensions+Modifiers.swift in Sources */,
+				9679F8D12AD0907A00686F13 /* AAPLTransforms.mm in Sources */,
 				967EE0672AAE06FB000C4D5F /* ContentView.swift in Sources */,
+				9679F8D62AD0907A00686F13 /* HomeView.swift in Sources */,
+				9679F8CD2AD0907A00686F13 /* ScanViewControllerWrapper.swift in Sources */,
+				9679F8D42AD0907A00686F13 /* PreviewMetalView.swift in Sources */,
+				9679F8DD2AD0907A00686F13 /* CameraViewController.swift in Sources */,
+				9679F8D02AD0907A00686F13 /* HomeViewContainer.swift in Sources */,
+				9679F8E12AD0907A00686F13 /* CameraView.swift in Sources */,
+				9679F8D52AD0907A00686F13 /* HistogramCalculator.m in Sources */,
 				969AC2802AB7550C0096892E /* IntroductionView.swift in Sources */,
+				9679F8CF2AD0907A00686F13 /* VideoMixer.swift in Sources */,
+				9679F8D22AD0907A00686F13 /* Mixer.metal in Sources */,
 				967EE0652AAE06FB000C4D5F /* OpticALLYApp.swift in Sources */,
+				9679F8D92AD0907A00686F13 /* PointCloud.metal in Sources */,
 				967EE0932AAEDBF3000C4D5F /* EyesTrackingViewModel.swift in Sources */,
+				9679F8CE2AD0907A00686F13 /* AppDelegate.swift in Sources */,
+				9679F8DE2AD0907A00686F13 /* FilterRenderer.swift in Sources */,
 				969AC27C2AB6E8AE0096892E /* Constants.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -467,12 +566,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"OpticALLY/Preview Content\"";
 				DEVELOPMENT_TEAM = Z64KRUX3W3;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = OpticALLY/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = OpticALLY;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Your camera is used for the AR Eye Measure feature.";
@@ -482,6 +583,9 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UIRequiredDeviceCapabilities = metal;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -492,6 +596,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.theoptically.optically;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "OpticALLY/OpticALLY-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -502,12 +608,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"OpticALLY/Preview Content\"";
 				DEVELOPMENT_TEAM = Z64KRUX3W3;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = OpticALLY/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = OpticALLY;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Your camera is used for the AR Eye Measure feature.";
@@ -517,6 +625,9 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UIRequiredDeviceCapabilities = metal;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -527,6 +638,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.theoptically.optically;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "OpticALLY/OpticALLY-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -650,6 +762,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		9679F8E22AD0912200686F13 /* XCRemoteSwiftPackageReference "ZipArchive" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ZipArchive/ZipArchive.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.5;
+			};
+		};
 		967EE0962AAEE2C7000C4D5F /* XCRemoteSwiftPackageReference "swift-docc-plugin" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/apple/swift-docc-plugin";
@@ -669,6 +789,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		9679F8E32AD0912200686F13 /* ZipArchive */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9679F8E22AD0912200686F13 /* XCRemoteSwiftPackageReference "ZipArchive" */;
+			productName = ZipArchive;
+		};
 		967EE0972AAEE2C7000C4D5F /* snippet-extract */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 967EE0962AAEE2C7000C4D5F /* XCRemoteSwiftPackageReference "swift-docc-plugin" */;

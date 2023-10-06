@@ -10,10 +10,13 @@ import SwiftUI
 enum ViewState {
     case introduction
     case tracking
+    case scanning
 }
 
 struct ContentView: View {
     @State private var currentView: ViewState = .introduction
+    
+    @Environment(\.scenePhase) var scenePhase
     
     var body: some View {
         Group {
@@ -24,6 +27,10 @@ struct ContentView: View {
                 
             case .tracking:
                 EyesTrackingView(currentView: $currentView)
+                    .transition(.opacity)
+                
+            case .scanning:
+                CameraView()
                     .transition(.opacity)
             }
         }

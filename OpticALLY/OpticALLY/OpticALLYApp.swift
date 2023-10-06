@@ -21,6 +21,8 @@ let devicePPI: Double = {
 
 @main
 struct OpticALLYApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    
     var body: some Scene {
         WindowGroup {
             ContentView()

@@ -20,35 +20,23 @@ struct EyesTrackingView: View {
     @State private var randomX: CGFloat = CGFloat.random(in: 0..<UIScreen.main.bounds.width)
     @State private var randomY: CGFloat = CGFloat.random(in: 0..<UIScreen.main.bounds.height)
     
+    @State private var buttonOpacity: Double = 0.0 // Add this state variable
+    
+    @State private var blurAmount: CGFloat = 20.0
+    
     @Binding var currentView: ViewState  // Add this binding
     
     var body: some View {
         ZStack {
             ARViewContainer(viewModel: viewModel)
-                .edgesIgnoringSafeArea(.all) // Ensuring AR view covers entire screen
+                .edgesIgnoringSafeArea(.all)
                 .onChange(of: viewModel.shouldShowImage) { newValue in
-                    // Your logic when isGoodToMove changes
                     if newValue {
                         print("It's good to move!")
                     } else {
                         print("It's not good to move!")
                     }
                 }
-            
-//            if viewModel.shouldShowImage {
-//               Image("BLINK") // Assume the name of the image is "BLINK"
-//                   .resizable()
-//                   .scaledToFit()
-//                   .frame(width: 200, height: 200)
-//                   .position(x: randomX, y: randomY)
-//                   .onAppear {
-//                       // This block will be called when the image appears.
-//                       DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-//                           // After a delay of 2 seconds, shouldShowImage is set to false
-//                           viewModel.shouldShowImage = false
-//                       }
-//                   }
-//           }
             
             VStack {
                 Text("Pupillary Distance")
@@ -57,25 +45,64 @@ struct EyesTrackingView: View {
                 Text(viewModel.distanceText.isEmpty ? "Measuring..." : viewModel.distanceText)
                     .font(.title)
                 
-//                Text("Face Width")
-//                    .bold()
-//                    .padding(.top)
-//                
-//                Text(viewModel.faceWidthText.isEmpty ? "Measuring..." : viewModel.faceWidthText)
-//                    .font(.title)
+                // Conditionally display the "Next" button when viewModel.distanceText is not empty
             }
-            .padding(20) // Add some padding to make it look nicer
+            .padding(20)
             .foregroundStyle(.white)
             .background(
-                Capsule() // Pill-shaped background
+                Capsule()
                     .foregroundColor(Color.black.opacity(0.4))
-                    .blur(radius: 5.0) // Blur the background
+                    .blur(radius: 5.0)
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-            .offset(y: 250) // Shift content slightly below the center
+            .offset(y: 150)
+            
+            if !viewModel.distanceText.isEmpty {
+                Button(action: {
+                    // Action for when the "Next" button is pressed
+                    currentView = .scanning
+                }) {
+                    HStack {
+                        Text("Next")
+                            .bold()
+                        
+                        Image(systemName: "arrow.right")
+                    }
+                    .padding()
+                    .foregroundColor(.white)
+                    .background(
+                        Capsule()
+                            .foregroundStyle(.black)
+                    )
+                }
+                .opacity(buttonOpacity)
+                .blur(radius: blurAmount)  // Apply the blur effect
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                .offset(y: 250)
+                .animation(.easeInOut(duration: 1.5), value: buttonOpacity)
+                .onAppear {
+                    withAnimation(.easeInOut(duration: 1.5)) {
+                        buttonOpacity = 1.0
+                    }
+                    
+                    withAnimation(.easeInOut(duration: 2.5)) {
+                        blurAmount = 0.0  // Gradually remove the blur effect
+                    } // Gradually remove the blur effect
+                }
+            }
+        }
+        .onReceive(viewModel.$distanceText) { newText in
+            if !newText.isEmpty {
+                withAnimation(.easeInOut(duration: 1.5)) {
+                    buttonOpacity = 1.0
+                }
+                
+                withAnimation(.easeInOut(duration: 2.5)) {
+                    blurAmount = 0.0  // Gradually remove the blur effect
+                }
+            }
         }
         .onAppear {
-            // Generate new random positions each time the view appears
             randomX = CGFloat.random(in: 0..<UIScreen.main.bounds.width)
             randomY = CGFloat.random(in: 0..<UIScreen.main.bounds.height)
         }
@@ -124,5 +151,13 @@ struct ARViewContainer: UIViewRepresentable {
     
     func updateUIView(_ uiView: ARSCNView, context: Context) {
         // This method will get called whenever SwiftUI updates this view.
+    }
+}
+
+struct EyesTrackingViews_Previews: PreviewProvider {
+    @State static var currentViewMock: ViewState = .tracking
+    
+    static var previews: some View {
+        EyesTrackingView(currentView: $currentViewMock)
     }
 }
