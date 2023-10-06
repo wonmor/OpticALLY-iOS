@@ -21,7 +21,7 @@
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <subviews>
                                     <containerView opaque="NO" contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="xIh-9P-2Jn">
-                                        <rect key="frame" x="67" y="551" width="240" height="128"/>
+                                        <rect key="frame" x="67" y="28" width="240" height="671"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                         <connections>
                                             <segue destination="SdH-M6-O1j" kind="embed" destinationCreationSelector="embedSwiftUIView:" id="Oj6-J0-qsT"/>
