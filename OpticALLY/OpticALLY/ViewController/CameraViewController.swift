@@ -1,9 +1,9 @@
 /*
-See LICENSE folder for this sample’s licensing information.
-
-Abstract:
-Contains view controller code for previewing live-captured content.
-*/
+ See LICENSE folder for this sample’s licensing information.
+ 
+ Abstract:
+ Contains view controller code for previewing live-captured content.
+ */
 
 import UIKit
 import AVFoundation
@@ -163,7 +163,7 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
                 let rotation = PreviewMetalView.Rotation(with: interfaceOrientation,
                                                          videoOrientation: videoOrientation,
                                                          cameraPosition: videoDevicePosition)
-
+                
                 self.dataOutputQueue.async {
                     self.renderingEnabled = true
                 }
@@ -182,9 +182,9 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
                     alertController.addAction(UIAlertAction(title: NSLocalizedString("Settings", comment: "Alert button to open Settings"),
                                                             style: .`default`,
                                                             handler: { _ in
-                                                                UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!,
-                                                                                          options: [:],
-                                                                                          completionHandler: nil)
+                        UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!,
+                                                  options: [:],
+                                                  completionHandler: nil)
                     }))
                     
                     self.present(alertController, animated: true, completion: nil)
@@ -270,15 +270,15 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         super.viewWillTransition(to: size, with: coordinator)
         
         coordinator.animate(alongsideTransition: { _ in
-                let interfaceOrientation = UIApplication.shared.statusBarOrientation
-                self.statusBarOrientation = interfaceOrientation
-                self.sessionQueue.async {
-                    /*
-                     The photo orientation is based on the interface orientation. You could also set the orientation of the photo connection based
-                     on the device orientation by observing UIDeviceOrientationDidChangeNotification.
-                     */
-                    let videoOrientation = self.videoDataOutput.connection(with: .video)!.videoOrientation
-                }
+            let interfaceOrientation = UIApplication.shared.statusBarOrientation
+            self.statusBarOrientation = interfaceOrientation
+            self.sessionQueue.async {
+                /*
+                 The photo orientation is based on the interface orientation. You could also set the orientation of the photo connection based
+                 on the device orientation by observing UIDeviceOrientationDidChangeNotification.
+                 */
+                let videoOrientation = self.videoDataOutput.connection(with: .video)!.videoOrientation
+            }
         }, completion: nil)
     }
     
@@ -471,8 +471,8 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     func sessionWasInterrupted(notification: NSNotification) {
         // In iOS 9 and later, the userInfo dictionary contains information on why the session was interrupted.
         if let userInfoValue = notification.userInfo?[AVCaptureSessionInterruptionReasonKey] as AnyObject?,
-            let reasonIntegerValue = userInfoValue.integerValue,
-            let reason = AVCaptureSession.InterruptionReason(rawValue: reasonIntegerValue) {
+           let reasonIntegerValue = userInfoValue.integerValue,
+           let reason = AVCaptureSession.InterruptionReason(rawValue: reasonIntegerValue) {
             print("Capture session was interrupted with reason \(reason)")
             
             if reason == .videoDeviceInUseByAnotherClient {
@@ -498,7 +498,7 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         if !resumeButton.isHidden {
             UIView.animate(withDuration: 0.25,
                            animations: {
-                            self.resumeButton.alpha = 0
+                self.resumeButton.alpha = 0
             }, completion: { _ in
                 self.resumeButton.isHidden = true
             }
@@ -507,7 +507,7 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         if !cameraUnavailableLabel.isHidden {
             UIView.animate(withDuration: 0.25,
                            animations: {
-                            self.cameraUnavailableLabel.alpha = 0
+                self.cameraUnavailableLabel.alpha = 0
             }, completion: { _ in
                 self.cameraUnavailableLabel.isHidden = true
             }
@@ -649,12 +649,12 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         
         // Read all outputs
         guard renderingEnabled,
-            let syncedDepthData: AVCaptureSynchronizedDepthData =
-            synchronizedDataCollection.synchronizedData(for: depthDataOutput) as? AVCaptureSynchronizedDepthData,
-            let syncedVideoData: AVCaptureSynchronizedSampleBufferData =
-            synchronizedDataCollection.synchronizedData(for: videoDataOutput) as? AVCaptureSynchronizedSampleBufferData else {
-                // only work on synced pairs
-                return
+              let syncedDepthData: AVCaptureSynchronizedDepthData =
+                synchronizedDataCollection.synchronizedData(for: depthDataOutput) as? AVCaptureSynchronizedDepthData,
+              let syncedVideoData: AVCaptureSynchronizedSampleBufferData =
+                synchronizedDataCollection.synchronizedData(for: videoDataOutput) as? AVCaptureSynchronizedSampleBufferData else {
+            // only work on synced pairs
+            return
         }
         
         if syncedDepthData.depthDataWasDropped || syncedVideoData.sampleBufferWasDropped {
@@ -665,12 +665,12 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         let depthPixelBuffer = depthData.depthDataMap
         let sampleBuffer = syncedVideoData.sampleBuffer
         guard let videoPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer),
-            let formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer) else {
-                return
+              let formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer) else {
+            return
         }
         
-    
-            cloudView?.setDepthFrame(depthData, withTexture: videoPixelBuffer)
+        
+        cloudView?.setDepthFrame(depthData, withTexture: videoPixelBuffer)
     }
     
     @IBSegueAction func embedSwiftUIView(_ coder: NSCoder) -> UIViewController? {
@@ -682,25 +682,60 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
 
 struct SwiftUIView: View {
     @State private var isViewLoaded: Bool = false
-
+    @State private var fingerOffset: CGFloat = -30.0
+    @State private var isAnimationActive: Bool = true
+    
+    let maxOffset: CGFloat = 30.0 // change this to control how much the finger moves
+    
     var body: some View {
         ZStack {
-            // Button with SF symbol
-            Button(action: {
-                // Your button action here
-            }) {
-                HStack {
-                    Image(systemName: "square.and.arrow.up") // Export SF Symbol
-                    Text("Export")
-                        .font(.title)
+            VStack {
+                // Animated finger image
+                ZStack {
+                    RoundedRectangle(cornerRadius: 10)
+                        .frame(width: 150, height: 50)
+                        .foregroundColor(Color.white)
+                        .shadow(radius: 5)
+                    
+                    Image(systemName: "hand.point.up.left")
+                        .font(.largeTitle)
+                        .foregroundStyle(.black)
+                        .offset(x: fingerOffset)
+                        .onAppear() {
+                            withAnimation(Animation.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) {
+                                fingerOffset = maxOffset
+                            }
+                        }
                 }
-                .foregroundStyle(.black)
-                .padding()
-                .background(Capsule().fill(Color.white))
+                
+                Text("Move your finger\nto pan around")
+                    .font(.title3)
+                    .padding(.bottom, 20)
+                    .multilineTextAlignment(.center)
+                
+                // Button with SF symbol
+                Button(action: {
+                    // Your button action here
+                }) {
+                    HStack {
+                        Image(systemName: "square.and.arrow.up") // Export SF Symbol
+                        Text("Export")
+                            .font(.title)
+                    }
+                    .foregroundStyle(.black)
+                    .padding()
+                    .background(Capsule().fill(Color.white))
+                }
             }
         }
         .padding()
         .backgroundStyle(.clear)
+    }
+}
+
+struct SwiftUIView_Previews: PreviewProvider {
+    static var previews: some View {
+        SwiftUIView()
     }
 }
 
