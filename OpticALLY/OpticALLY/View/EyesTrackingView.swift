@@ -63,7 +63,7 @@ struct EyesTrackingView: View {
                     currentView = .scanning
                 }) {
                     HStack {
-                        Text("Next")
+                        Text("3D Capture")
                             .bold()
                         
                         Image(systemName: "arrow.right")
