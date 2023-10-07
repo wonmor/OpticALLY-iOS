@@ -49,13 +49,18 @@ vertexShaderPoints(uint vertexID [[ vertex_id ]],
 fragment float4 fragmentShaderPoints(RasterizerDataColor in [[stage_in]],
                                      texture2d<float> colorTexture [[ texture(0) ]])
 {
-    if (in.depth >= 1.0) {
-        constexpr sampler textureSampler (mag_filter::linear, min_filter::linear);
-        const float4 colorSample = colorTexture.sample (textureSampler, in.coor);
-        return colorSample;
+    const float faceMinDepth = 1.0; // Adjust to the minimum depth for face
+    const float faceMaxDepth = 1000.0; // Adjust to the maximum depth for face
+
+    // If outside the depth range for the face, discard the fragment
+    if (in.depth < faceMinDepth || in.depth > faceMaxDepth) {
+        discard_fragment();
+        return float4(0, 0, 0, 0);  // transparent color
     }
-    discard_fragment();
-    return 0;
+
+    constexpr sampler textureSampler (mag_filter::linear, min_filter::linear);
+    const float4 colorSample = colorTexture.sample (textureSampler, in.coor);
+    return colorSample;
 }
 
 
