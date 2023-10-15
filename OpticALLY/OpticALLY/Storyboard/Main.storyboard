@@ -31,44 +31,24 @@
                                 <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                             </view>
                             <label hidden="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="TrueDepth Camera Unavailable" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="B08-Wv-b5R" userLabel="Camera Unavailable">
-                                <rect key="frame" x="27" y="391.66666666666669" width="321" height="28.666666666666686"/>
+                                <rect key="frame" x="27" y="391.66666666666669" width="321" height="29"/>
                                 <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
                                 <color key="tintColor" red="1" green="1" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="24"/>
                                 <color key="textColor" red="1" green="1" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="6D4-Y8-I1S" userLabel="Resume">
-                                <rect key="frame" x="105" y="386.66666666666669" width="165" height="39"/>
-                                <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.29999999999999999" colorSpace="custom" customColorSpace="sRGB"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="24"/>
-                                <inset key="contentEdgeInsets" minX="10" minY="5" maxX="10" maxY="5"/>
-                                <state key="normal" title="Tap to resume">
-                                    <color key="titleShadowColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                </state>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
-                                        <integer key="value" value="4"/>
-                                    </userDefinedRuntimeAttribute>
-                                </userDefinedRuntimeAttributes>
-                                <connections>
-                                    <action selector="resumeInterruptedSession:" destination="BYZ-38-t0r" eventType="touchUpInside" id="9ZM-QH-ZlN"/>
-                                </connections>
-                            </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="3Gl-sb-vLR"/>
                         <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstItem="6D4-Y8-I1S" firstAttribute="centerY" secondItem="Eqv-7y-uCz" secondAttribute="centerY" id="0cF-Ck-xhe"/>
                             <constraint firstItem="B08-Wv-b5R" firstAttribute="centerX" secondItem="3Gl-sb-vLR" secondAttribute="centerX" id="9qb-K5-MI3"/>
-                            <constraint firstItem="6D4-Y8-I1S" firstAttribute="centerX" secondItem="3Gl-sb-vLR" secondAttribute="centerX" id="jcz-lJ-VxY"/>
                             <constraint firstItem="B08-Wv-b5R" firstAttribute="centerY" secondItem="Eqv-7y-uCz" secondAttribute="centerY" id="usf-3D-Qpy"/>
                         </constraints>
                     </view>
                     <connections>
                         <outlet property="cameraUnavailableLabel" destination="B08-Wv-b5R" id="zOh-RF-43A"/>
                         <outlet property="cloudView" destination="Qzi-3c-VQI" id="4GD-1c-K9J"/>
-                        <outlet property="resumeButton" destination="6D4-Y8-I1S" id="xYq-f7-4cQ"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
@@ -84,5 +64,4 @@
             <point key="canvasLocation" x="-145" y="-596"/>
         </scene>
     </scenes>
-    <color key="tintColor" red="1" green="1" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
 </document>

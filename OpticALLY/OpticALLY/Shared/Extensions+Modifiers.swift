@@ -168,6 +168,6 @@ extension Text {
 }
 
 extension Color {
-    static var mainColor = Color(UIColor.systemTeal)
+    static var mainColor = Color(UIColor.systemGray)
     static var subColor = Color(UIColor.systemYellow)
 }

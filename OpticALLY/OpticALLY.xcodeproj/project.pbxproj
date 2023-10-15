@@ -42,6 +42,9 @@
 		969AC27C2AB6E8AE0096892E /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 969AC27B2AB6E8AE0096892E /* Constants.swift */; };
 		969AC2802AB7550C0096892E /* IntroductionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 969AC27F2AB7550C0096892E /* IntroductionView.swift */; };
 		969AC2822AB7554C0096892E /* Extensions+Modifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 969AC2812AB7554C0096892E /* Extensions+Modifiers.swift */; };
+		969E42EE2ADC9D9E00E77BA7 /* promo.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 969E42ED2ADC9D9E00E77BA7 /* promo.mp4 */; };
+		969E42EF2ADC9D9E00E77BA7 /* promo.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 969E42ED2ADC9D9E00E77BA7 /* promo.mp4 */; };
+		969E42F02ADC9D9E00E77BA7 /* promo.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 969E42ED2ADC9D9E00E77BA7 /* promo.mp4 */; };
 		96BC2ABE2AC5E9D60081550B /* DevicePpi in Frameworks */ = {isa = PBXBuildFile; productRef = 96BC2ABD2AC5E9D60081550B /* DevicePpi */; };
 /* End PBXBuildFile section */
 
@@ -104,6 +107,7 @@
 		969AC27B2AB6E8AE0096892E /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		969AC27F2AB7550C0096892E /* IntroductionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroductionView.swift; sourceTree = "<group>"; };
 		969AC2812AB7554C0096892E /* Extensions+Modifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Extensions+Modifiers.swift"; sourceTree = "<group>"; };
+		969E42ED2ADC9D9E00E77BA7 /* promo.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = promo.mp4; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -181,6 +185,7 @@
 		9679F8ED2AD0961600686F13 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				969E42E82ADC9ABD00E77BA7 /* Resources */,
 				969AC27B2AB6E8AE0096892E /* Constants.swift */,
 				969AC2812AB7554C0096892E /* Extensions+Modifiers.swift */,
 			);
@@ -275,6 +280,14 @@
 				967EE0922AAEDBF3000C4D5F /* EyesTrackingViewModel.swift */,
 			);
 			path = ViewModel;
+			sourceTree = "<group>";
+		};
+		969E42E82ADC9ABD00E77BA7 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				969E42ED2ADC9D9E00E77BA7 /* promo.mp4 */,
+			);
+			path = Resources;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -392,6 +405,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				969E42EE2ADC9D9E00E77BA7 /* promo.mp4 in Resources */,
 				967EE06C2AAE06FE000C4D5F /* Preview Assets.xcassets in Resources */,
 				9679F8D82AD0907A00686F13 /* Main.storyboard in Resources */,
 				9679F8D72AD0907A00686F13 /* LaunchScreen.storyboard in Resources */,
@@ -403,6 +417,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				969E42EF2ADC9D9E00E77BA7 /* promo.mp4 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -410,6 +425,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				969E42F02ADC9D9E00E77BA7 /* promo.mp4 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -614,7 +630,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = OpticALLY/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = OpticALLY;
+				INFOPLIST_KEY_CFBundleDisplayName = Harolden;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Your camera is used for the AR Eye Measure feature.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Your microphone is used for the audio-visual experience.";
@@ -656,7 +672,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = OpticALLY/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = OpticALLY;
+				INFOPLIST_KEY_CFBundleDisplayName = Harolden;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Your camera is used for the AR Eye Measure feature.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Your microphone is used for the audio-visual experience.";

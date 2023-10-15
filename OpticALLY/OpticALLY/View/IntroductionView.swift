@@ -48,10 +48,10 @@ struct TitleView: View {
             
             Text("Welcome to")
                 .customTitleText()
-            
-            Text("OpticALLY")
-                .customTitleText()
                 .foregroundColor(.mainColor)
+            
+            Text("Harolden")
+                .customTitleText()
         }
     }
 }
@@ -59,11 +59,11 @@ struct TitleView: View {
 struct InformationContainerView: View {
     var body: some View {
         VStack(alignment: .leading) {
+            InformationDetailView(title: "Custom Eyewear", subTitle: "Tailor eyewear based on your face's unique dimensions.", imageName: "eyeglasses")
+            
             InformationDetailView(title: "3D Facial Scanning", subTitle: "Get a precise 3D model of your face using our AR technology.", imageName: "face.dashed")
             
             InformationDetailView(title: "Pupillary Distance", subTitle: "Accurately measure your pupillary distance for a perfect fit.", imageName: "ruler.fill")
-            
-            InformationDetailView(title: "Custom Eyewear", subTitle: "Tailor eyewear based on your face's unique dimensions.", imageName: "eyeglasses")
         }
         .padding(.horizontal)
     }
@@ -82,7 +82,6 @@ struct InformationDetailView: View {
             VStack(spacing: 10) {
                 Image(systemName: imageName)
                     .font(.largeTitle)
-                    .foregroundColor(.mainColor)
                     .accessibility(hidden: true)
                 
                 // This displays the label (if it exists) next to the image
@@ -90,7 +89,7 @@ struct InformationDetailView: View {
                     Text(label)
                         .font(.caption)
                         .bold()
-                        .foregroundStyle(.pink)
+                        .foregroundColor(.mainColor)
                         .padding(5)
                         .background(Color.pink.opacity(0.2))
                         .clipShape(RoundedRectangle(cornerRadius: 10))

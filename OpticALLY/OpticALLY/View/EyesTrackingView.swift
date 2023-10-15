@@ -23,6 +23,7 @@ struct EyesTrackingView: View {
     @State private var buttonOpacity: Double = 0.0 // Add this state variable
     
     @State private var blurAmount: CGFloat = 20.0
+    @State private var clickable: Bool = false
     
     @Binding var currentView: ViewState  // Add this binding
     
@@ -60,7 +61,9 @@ struct EyesTrackingView: View {
             if !viewModel.distanceText.isEmpty {
                 Button(action: {
                     // Action for when the "Next" button is pressed
-                    currentView = .scanning
+                    if clickable {
+                        currentView = .scanning
+                    }
                 }) {
                     HStack {
                         Text("3D Capture")
@@ -105,6 +108,11 @@ struct EyesTrackingView: View {
         .onAppear {
             randomX = CGFloat.random(in: 0..<UIScreen.main.bounds.width)
             randomY = CGFloat.random(in: 0..<UIScreen.main.bounds.height)
+            
+            // Delay of 2.5 seconds to make the button clickable
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                clickable = true
+            }
         }
     }
 }

@@ -11,13 +11,16 @@ import CoreVideo
 import MobileCoreServices
 import Accelerate
 import SwiftUI
+import Vision
+
+struct ExternalData {
+    static var renderingEnabled = true
+}
 
 @available(iOS 11.1, *)
 class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDelegate {
     
     // MARK: - Properties
-    
-    @IBOutlet weak private var resumeButton: UIButton!
     
     @IBOutlet weak private var cameraUnavailableLabel: UILabel!
     
@@ -26,7 +29,6 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     @IBOutlet weak private var mixFactorSlider: UISlider!
     
     @IBOutlet weak private var touchDepth: UILabel!
-    
     
     private enum SessionSetupResult {
         case success
@@ -51,8 +53,6 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     private var outputSynchronizer: AVCaptureDataOutputSynchronizer?
     
     private let videoDepthMixer = VideoMixer()
-    
-    private var renderingEnabled = true
     
     private let videoDeviceDiscoverySession = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInTrueDepthCamera],
                                                                                mediaType: .video,
@@ -153,7 +153,12 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         statusBarOrientation = interfaceOrientation
         
         let initialThermalState = ProcessInfo.processInfo.thermalState
+        
         if initialThermalState == .serious || initialThermalState == .critical {
+            // If iPhone is too hot at startup, make it so that it pauses stream after waiting 5 seconds...
+            DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+                ExternalData.renderingEnabled = false
+            }
             showThermalState(state: initialThermalState)
         }
         
@@ -169,7 +174,7 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
                                                          cameraPosition: videoDevicePosition)
                 
                 self.dataOutputQueue.async {
-                    self.renderingEnabled = true
+                    ExternalData.renderingEnabled = true
                 }
                 
                 self.session.startRunning()
@@ -179,7 +184,7 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
                 DispatchQueue.main.async {
                     let message = NSLocalizedString("TrueDepthStreamer doesn't have permission to use the camera, please change privacy settings",
                                                     comment: "Alert message when the user has denied access to the camera")
-                    let alertController = UIAlertController(title: "TrueDepthStreamer", message: message, preferredStyle: .alert)
+                    let alertController = UIAlertController(title: "Harolden 3D Capture", message: message, preferredStyle: .alert)
                     alertController.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Alert OK button"),
                                                             style: .cancel,
                                                             handler: nil))
@@ -208,7 +213,7 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     
     override func viewWillDisappear(_ animated: Bool) {
         dataOutputQueue.async {
-            self.renderingEnabled = false
+            ExternalData.renderingEnabled = false
         }
         sessionQueue.async {
             if self.setupResult == .success {
@@ -224,7 +229,7 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     func didEnterBackground(notification: NSNotification) {
         // Free up resources
         dataOutputQueue.async {
-            self.renderingEnabled = false
+            ExternalData.renderingEnabled = false
             //            if let videoFilter = self.videoFilter {
             //                videoFilter.reset()
             //            }
@@ -235,7 +240,7 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     @objc
     func willEnterForground(notification: NSNotification) {
         dataOutputQueue.async {
-            self.renderingEnabled = true
+            ExternalData.renderingEnabled = true
         }
     }
     
@@ -243,6 +248,9 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     @objc
     func thermalStateChanged(notification: NSNotification) {
         if let processInfo = notification.object as? ProcessInfo {
+            if (processInfo.thermalState == .serious || processInfo.thermalState == .critical) {
+                ExternalData.renderingEnabled = false
+            }
             showThermalState(state: processInfo.thermalState)
         }
     }
@@ -260,8 +268,8 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
                 thermalStateString = "CRITICAL"
             }
             
-            let message = NSLocalizedString("Thermal state: \(thermalStateString)", comment: "Alert message when thermal state has changed")
-            let alertController = UIAlertController(title: "TrueDepthStreamer", message: message, preferredStyle: .alert)
+            let message = NSLocalizedString("iPhone Temperature: \(thermalStateString)", comment: "Alert message when thermal state has changed")
+            let alertController = UIAlertController(title: "Harolden 3D Capture", message: message, preferredStyle: .alert)
             alertController.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Alert OK button"), style: .cancel, handler: nil))
             self.present(alertController, animated: true, completion: nil)
         }
@@ -481,11 +489,6 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             
             if reason == .videoDeviceInUseByAnotherClient {
                 // Simply fade-in a button to enable the user to try to resume the session running.
-                resumeButton.isHidden = false
-                resumeButton.alpha = 0.0
-                UIView.animate(withDuration: 0.25) {
-                    self.resumeButton.alpha = 1.0
-                }
             } else if reason == .videoDeviceNotAvailableWithMultipleForegroundApps {
                 // Simply fade-in a label to inform the user that the camera is unavailable.
                 cameraUnavailableLabel.isHidden = false
@@ -499,15 +502,6 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     
     @objc
     func sessionInterruptionEnded(notification: NSNotification) {
-        if !resumeButton.isHidden {
-            UIView.animate(withDuration: 0.25,
-                           animations: {
-                self.resumeButton.alpha = 0
-            }, completion: { _ in
-                self.resumeButton.isHidden = true
-            }
-            )
-        }
         if !cameraUnavailableLabel.isHidden {
             UIView.animate(withDuration: 0.25,
                            animations: {
@@ -538,14 +532,8 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
                 if self.isSessionRunning {
                     self.session.startRunning()
                     self.isSessionRunning = self.session.isRunning
-                } else {
-                    DispatchQueue.main.async {
-                        self.resumeButton.isHidden = false
-                    }
                 }
             }
-        } else {
-            resumeButton.isHidden = false
         }
     }
     
@@ -566,10 +554,6 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
                     let cancelAction = UIAlertAction(title: NSLocalizedString("OK", comment: "Alert OK button"), style: .cancel, handler: nil)
                     alertController.addAction(cancelAction)
                     self.present(alertController, animated: true, completion: nil)
-                }
-            } else {
-                DispatchQueue.main.async {
-                    self.resumeButton.isHidden = true
                 }
             }
         }
@@ -647,12 +631,12 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     
     func dataOutputSynchronizer(_ synchronizer: AVCaptureDataOutputSynchronizer,
                                 didOutput synchronizedDataCollection: AVCaptureSynchronizedDataCollection) {
-        if !renderingEnabled {
+        if !ExternalData.renderingEnabled {
             return
         }
         
         // Read all outputs
-        guard renderingEnabled,
+        guard ExternalData.renderingEnabled,
               let syncedDepthData: AVCaptureSynchronizedDepthData =
                 synchronizedDataCollection.synchronizedData(for: depthDataOutput) as? AVCaptureSynchronizedDepthData,
               let syncedVideoData: AVCaptureSynchronizedSampleBufferData =
@@ -684,88 +668,150 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     }
 }
 
+enum CurrentState {
+    case begin, start
+}
+
 struct SwiftUIView: View {
     @State private var isViewLoaded: Bool = false
     @State private var fingerOffset: CGFloat = -30.0
     @State private var isAnimationActive: Bool = true
+    @State private var currentState: CurrentState = .begin
     
     let maxOffset: CGFloat = 30.0 // change this to control how much the finger moves
     
     var body: some View {
         ZStack {
-            VStack {
-                // Animated finger image
-                ZStack {
-                    RoundedRectangle(cornerRadius: 10)
-                        .frame(width: 150, height: 50)
-                        .foregroundColor(Color.black)
-                    
-                    Image(systemName: "hand.point.up.left")
-                        .font(.largeTitle)
-                        .foregroundColor(.white)
-                        .offset(x: fingerOffset)
-                        .onAppear() {
-                            withAnimation(Animation.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) {
-                                fingerOffset = maxOffset
+            switch currentState {
+            case .begin:
+                VStack {
+                    // Animated finger image
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 10)
+                            .frame(width: 150, height: 50)
+                            .foregroundColor(Color.black)
+                        
+                        Image(systemName: "hand.point.up.left")
+                            .font(.largeTitle)
+                            .foregroundColor(.white)
+                            .offset(x: fingerOffset)
+                            .onAppear() {
+                                withAnimation(Animation.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) {
+                                    fingerOffset = maxOffset
+                                }
                             }
+                    }
+                    
+                    Text("Move your finger\nto pan around")
+                        .font(.title3)
+                        .bold()
+                        .padding()
+                        .multilineTextAlignment(.center)
+                        .foregroundColor(.white)
+                    
+                    // Button to start/pause scanning
+                    Button(action: {
+                        ExternalData.renderingEnabled.toggle()
+                        currentState = .start
+                    }) {
+                        HStack {
+                            Image(systemName: "play.circle") // Different SF Symbols for start and pause
+                            Text("START")
+                                .font(.title3)
+                                .bold()
                         }
+                        .foregroundColor(.white)
+                        .padding()
+                        .background(Capsule().fill(Color.black))
+                    }
                 }
+                .background(Color.black.opacity(0.8).blur(radius: 40.0))
                 
-                Text("Move your finger\nto pan around")
-                    .font(.title3)
-                    .bold()
-                    .padding()
-                    .multilineTextAlignment(.center)
-                    .foregroundColor(.white)
-                
-                // Button with dropdown menu
-                Menu {
-                    Button(action: {
-                        // Your export to .USDZ action here
-                    }) {
-                        Text(".USDZ")
-                    }
-                    
-                    Button(action: {
-                        // Your export to .STL action here
-                    }) {
-                        Text(".STL")
-                    }
-                    
-                    Button(action: {
-                        // Your export to .OBJ action here
-                    }) {
-                        Text(".OBJ")
-                    }
-                    
-                    Button(action: {
-                        // Your export to .OBJ action here
-                    }) {
-                        Text(".STEP")
-                    }
-                    
-                } label: {
-                    HStack {
-                        Image(systemName: "square.and.arrow.up") // Export SF Symbol
-                        Text("Export")
-                            .font(.title)
-                    }
-                    .foregroundColor(.white)
-                    .padding()
-                    .background(Capsule().fill(Color.black))
-                }
+            case .start:
+                FaceIDScanView()
+                    .background(Color.black.opacity(0.8).blur(radius: 40.0))
             }
-            .background(Color.black.opacity(0.8).blur(radius: 40.0))
         }
         .padding()
+        .onAppear {
+            // Make it pause due to thermal concerns...
+            DispatchQueue.main.asyncAfter(deadline: .now() + 15) {
+                ExternalData.renderingEnabled = false
+            }
+        }
     }
 }
 
-struct SwiftUIView_Previews: PreviewProvider {
-    static var previews: some View {
-        SwiftUIView()
+struct FaceIDScanView: View {
+    @State private var isAnimating: Bool = false
+    @State private var session = AVCaptureSession()
+    @ObservedObject private var cameraDelegate = CameraDelegate()
+    
+    var body: some View {
+        ZStack {
+            Circle()
+                .trim(from: 0, to: isAnimating ? 1 : 0)
+                .stroke(Color.green, lineWidth: 5)
+                .frame(width: 200, height: 200)
+                .rotationEffect(.degrees(isAnimating ? 360 : 0))
+                .onAppear {
+                    withAnimation(Animation.linear(duration: 2).repeatForever(autoreverses: false)) {
+                        isAnimating.toggle()
+                    }
+                }
+            
+            if !isAnimating {
+                Text("No Face Detected")
+                    .foregroundColor(.white)
+            }
+        }
+        .onAppear(perform: setupCamera)
+    }
+    
+    func setupCamera() {
+        session.sessionPreset = .photo
+        guard let backCamera = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .front) else {
+            print("Unable to access the camera!")
+            return
+        }
+        
+        do {
+            let input = try AVCaptureDeviceInput(device: backCamera)
+            if session.canAddInput(input) {
+                session.addInput(input)
+                
+                let videoDataOutput = AVCaptureVideoDataOutput()
+              videoDataOutput.setSampleBufferDelegate(cameraDelegate, queue: DispatchQueue(label: "videoQueue"))
+                if session.canAddOutput(videoDataOutput) {
+                    session.addOutput(videoDataOutput)
+                    session.startRunning()
+                }
+            }
+        } catch {
+            print(error.localizedDescription)
+        }
     }
 }
+
+class CameraDelegate: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, ObservableObject {
+    var isFaceDetected: Bool = false
+    private let sequenceHandler = VNSequenceRequestHandler()
+
+    func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+        guard let pixelBuffer: CVPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
+
+        let faceDetectionRequest = VNDetectFaceRectanglesRequest()
+        try? sequenceHandler.perform([faceDetectionRequest], on: pixelBuffer, orientation: .up)
+
+        if let _ = faceDetectionRequest.results as? [VNFaceObservation] {
+            isFaceDetected = true
+        } else {
+            isFaceDetected = false
+        }
+    }
+}
+
+
 
 extension AVCaptureVideoOrientation {
     init?(interfaceOrientation: UIInterfaceOrientation) {

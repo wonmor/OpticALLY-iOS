@@ -40,6 +40,52 @@ import SceneKit
 ///     - `ARSCNViewDelegate`: Allows the class to respond to AR Scene View events.
 ///     - `ARSessionDelegate`: Allows the class to respond to AR session changes.
 
+import Vision
+import CoreImage
+import CoreImage.CIFilterBuiltins
+
+func createBlackAndWhiteBackground(image: UIImage) -> UIImage? {
+    guard let cgImage = image.cgImage else {
+        return nil
+    }
+
+    let ciImage = CIImage(cgImage: cgImage)
+    let context = CIContext()
+
+    // 1. Use Vision to detect face
+    let faceRequest = VNDetectFaceRectanglesRequest()
+    let vnImage = VNImageRequestHandler(cgImage: cgImage, options: [:])
+    try? vnImage.perform([faceRequest])
+    guard let results = faceRequest.results as? [VNFaceObservation], let firstFace = results.first else {
+        return nil
+    }
+
+    // 2. Use Core Image to apply black and white filter
+    let blackAndWhiteFilter = CIFilter.photoEffectMono()
+    blackAndWhiteFilter.inputImage = ciImage
+    guard let blackAndWhiteImage = blackAndWhiteFilter.outputImage else {
+        return nil
+    }
+
+    // 3. Crop the original image to the face's bounding box
+    let faceBounds = CGRect(x: firstFace.boundingBox.origin.x * CGFloat(cgImage.width),
+                            y: (1 - firstFace.boundingBox.origin.y - firstFace.boundingBox.height) * CGFloat(cgImage.height),
+                            width: firstFace.boundingBox.width * CGFloat(cgImage.width),
+                            height: firstFace.boundingBox.height * CGFloat(cgImage.height))
+    guard let faceCroppedCIImage: CIImage? = ciImage.cropped(to: faceBounds) else {
+        return nil
+    }
+
+    // 4. Overlay the color face on top of the black and white image
+    let combinedImages = blackAndWhiteImage.composited(over: faceCroppedCIImage!)
+    guard let combinedCGImage = context.createCGImage(combinedImages, from: ciImage.extent) else {
+        return nil
+    }
+    
+    return UIImage(cgImage: combinedCGImage)
+}
+
+
 class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSessionDelegate {
     @Published var distanceText: String = ""
     @Published var faceWidthText: String = ""
@@ -209,7 +255,7 @@ class EyesTrackingViewModel: NSObject, ObservableObject, ARSCNViewDelegate, ARSe
             }
             
             let image = self?.convert(pixelBuffer: capturedImage!)
-            self?.processCapturedImage(image)
+            self?.processCapturedImage(createBlackAndWhiteBackground(image: image!))
         })
     }
     
