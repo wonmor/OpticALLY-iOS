@@ -744,29 +744,77 @@ struct SwiftUIView: View {
 
 struct FaceIDScanView: View {
     @State private var isAnimating: Bool = false
-    @State private var session = AVCaptureSession()
-    @ObservedObject private var cameraDelegate = CameraDelegate()
+    @StateObject private var cameraDelegate = CameraDelegate()
     
     var body: some View {
         ZStack {
-            Circle()
-                .trim(from: 0, to: cameraDelegate.isFaceDetected ? 1 : 0)
-                .stroke(Color.green, lineWidth: 5)
+            CameraPreview(session: $cameraDelegate.session)
+                .clipShape(Circle())
                 .frame(width: 200, height: 200)
-                .rotationEffect(.degrees(cameraDelegate.isFaceDetected ? 360 : 0))
-                .onAppear {
-                    withAnimation(Animation.linear(duration: 2).repeatForever(autoreverses: false)) {
-                        isAnimating.toggle()
-                    }
-                }
             
-            if !cameraDelegate.isFaceDetected {
-                Text("No Face Detected")
-                    .foregroundColor(.white)
-            }
-        }
-        .onAppear(perform: setupCamera)
+            Circle()
+                           .trim(from: 0, to: CGFloat(cameraDelegate.rotationPercentage))
+                           .stroke(Color.green, lineWidth: 5)
+                           .frame(width: 200, height: 200)
+                           .rotationEffect(.degrees(cameraDelegate.isFaceDetected ? 360 : 0))
+                           .onAppear {
+                               withAnimation(Animation.linear(duration: 2).repeatForever(autoreverses: false)) {
+                                   isAnimating.toggle()
+                               }
+                           }
+                       
+                       if cameraDelegate.isComplete {
+                           Image(systemName: "checkmark.circle.fill")
+                               .foregroundColor(.green)
+                               .font(.system(size: 50))
+                       } else if !cameraDelegate.isFaceDetected {
+                           Text("Searching for your face")
+                               .foregroundColor(.white)
+                       }
+                   }
+                   .onAppear(perform: cameraDelegate.setupCamera)
     }
+}
+
+struct CameraPreview: UIViewControllerRepresentable {
+    @Binding var session: AVCaptureSession
+    
+    func makeUIViewController(context: Context) -> CameraPreviewController {
+        let controller = CameraPreviewController()
+        controller.session = session
+        return controller
+    }
+    
+    func updateUIViewController(_ uiViewController: CameraPreviewController, context: Context) {
+        // Nothing to update
+    }
+}
+
+class CameraPreviewController: UIViewController {
+    var session: AVCaptureSession!
+    private var previewLayer: AVCaptureVideoPreviewLayer!
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        previewLayer = AVCaptureVideoPreviewLayer(session: session)
+        previewLayer.frame = view.bounds
+        previewLayer.videoGravity = .resizeAspectFill
+        view.layer.addSublayer(previewLayer)
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        previewLayer.frame = view.bounds
+    }
+}
+
+class CameraDelegate: NSObject, AVCaptureMetadataOutputObjectsDelegate, ObservableObject {
+    @Published var isFaceDetected: Bool = false
+    @Published var rotationPercentage: Double = 0
+    @Published var isComplete: Bool = false
+    var session = AVCaptureSession()
+    private var lastFaceBounds: CGRect? = nil
     
     func setupCamera() {
         session.sessionPreset = .photo
@@ -781,7 +829,7 @@ struct FaceIDScanView: View {
                 session.addInput(input)
                 
                 let metadataOutput = AVCaptureMetadataOutput()
-                metadataOutput.setMetadataObjectsDelegate(cameraDelegate, queue: DispatchQueue.main)
+                metadataOutput.setMetadataObjectsDelegate(self, queue: DispatchQueue.main)
                 if session.canAddOutput(metadataOutput) {
                     session.addOutput(metadataOutput)
                     metadataOutput.metadataObjectTypes = [.face]
@@ -792,18 +840,26 @@ struct FaceIDScanView: View {
             print(error.localizedDescription)
         }
     }
-}
-
-class CameraDelegate: NSObject, AVCaptureMetadataOutputObjectsDelegate, ObservableObject {
-    @Published var isFaceDetected: Bool = false
     
     func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
-        if metadataObjects.contains(where: { $0.type == .face }) {
+            guard let faceObject = metadataObjects.first(where: { $0.type == .face }) as? AVMetadataFaceObject else {
+                isFaceDetected = false
+                return
+            }
+
             isFaceDetected = true
-        } else {
-            isFaceDetected = false
+
+            if let lastBounds = lastFaceBounds {
+                let movement = faceObject.bounds.origin.x - lastBounds.origin.x
+                rotationPercentage += Double(abs(movement))
+                if rotationPercentage >= 1 {
+                    rotationPercentage = 1
+                    isComplete = true
+                }
+            }
+
+            lastFaceBounds = faceObject.bounds
         }
-    }
 }
 
 extension AVCaptureVideoOrientation {
