@@ -849,7 +849,10 @@ class CameraDelegate: NSObject, AVCaptureMetadataOutputObjectsDelegate, Observab
                 if session.canAddOutput(metadataOutput) {
                     session.addOutput(metadataOutput)
                     metadataOutput.metadataObjectTypes = [.face]
-                    session.startRunning()
+                    
+                    DispatchQueue.global(qos: .userInitiated).async {
+                        self.session.startRunning()
+                    }
                 }
             }
         } catch {
