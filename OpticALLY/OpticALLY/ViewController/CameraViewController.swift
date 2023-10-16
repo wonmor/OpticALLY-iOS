@@ -750,17 +750,17 @@ struct FaceIDScanView: View {
     var body: some View {
         ZStack {
             Circle()
-                .trim(from: 0, to: isAnimating ? 1 : 0)
+                .trim(from: 0, to: cameraDelegate.isFaceDetected ? 1 : 0)
                 .stroke(Color.green, lineWidth: 5)
                 .frame(width: 200, height: 200)
-                .rotationEffect(.degrees(isAnimating ? 360 : 0))
+                .rotationEffect(.degrees(cameraDelegate.isFaceDetected ? 360 : 0))
                 .onAppear {
                     withAnimation(Animation.linear(duration: 2).repeatForever(autoreverses: false)) {
                         isAnimating.toggle()
                     }
                 }
             
-            if !isAnimating {
+            if !cameraDelegate.isFaceDetected {
                 Text("No Face Detected")
                     .foregroundColor(.white)
             }
@@ -780,10 +780,11 @@ struct FaceIDScanView: View {
             if session.canAddInput(input) {
                 session.addInput(input)
                 
-                let videoDataOutput = AVCaptureVideoDataOutput()
-              videoDataOutput.setSampleBufferDelegate(cameraDelegate, queue: DispatchQueue(label: "videoQueue"))
-                if session.canAddOutput(videoDataOutput) {
-                    session.addOutput(videoDataOutput)
+                let metadataOutput = AVCaptureMetadataOutput()
+                metadataOutput.setMetadataObjectsDelegate(cameraDelegate, queue: DispatchQueue.main)
+                if session.canAddOutput(metadataOutput) {
+                    session.addOutput(metadataOutput)
+                    metadataOutput.metadataObjectTypes = [.face]
                     session.startRunning()
                 }
             }
@@ -793,25 +794,17 @@ struct FaceIDScanView: View {
     }
 }
 
-class CameraDelegate: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, ObservableObject {
-    var isFaceDetected: Bool = false
-    private let sequenceHandler = VNSequenceRequestHandler()
-
-    func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-        guard let pixelBuffer: CVPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
-
-        let faceDetectionRequest = VNDetectFaceRectanglesRequest()
-        try? sequenceHandler.perform([faceDetectionRequest], on: pixelBuffer, orientation: .up)
-
-        if let _ = faceDetectionRequest.results as? [VNFaceObservation] {
+class CameraDelegate: NSObject, AVCaptureMetadataOutputObjectsDelegate, ObservableObject {
+    @Published var isFaceDetected: Bool = false
+    
+    func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
+        if metadataObjects.contains(where: { $0.type == .face }) {
             isFaceDetected = true
         } else {
             isFaceDetected = false
         }
     }
 }
-
-
 
 extension AVCaptureVideoOrientation {
     init?(interfaceOrientation: UIInterfaceOrientation) {
