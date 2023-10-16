@@ -728,8 +728,20 @@ struct SwiftUIView: View {
                 .background(Color.black.opacity(0.8).blur(radius: 40.0))
                 
             case .start:
-                FaceIDScanView()
-                    .background(Color.black.opacity(0.8).blur(radius: 40.0))
+                VStack {
+                    FaceIDScanView()
+                        .background(Color.black.opacity(0.8).blur(radius: 40.0))
+                    
+                    Text("For an accurate scan, ensure you pan around the sides, top, and bottom of your face.")
+                        .font(.caption)
+                        .bold()
+                        .multilineTextAlignment(.center)
+                        .padding(.top, 10)
+                        .foregroundColor(.white)
+                }
+                .background(Color.black.opacity(0.8).blur(radius: 40.0))
+                
+                
             }
         }
         .padding()
@@ -753,26 +765,30 @@ struct FaceIDScanView: View {
                 .frame(width: 200, height: 200)
             
             Circle()
-                           .trim(from: 0, to: CGFloat(cameraDelegate.rotationPercentage))
-                           .stroke(Color.green, lineWidth: 5)
-                           .frame(width: 200, height: 200)
-                           .rotationEffect(.degrees(cameraDelegate.isFaceDetected ? 360 : 0))
-                           .onAppear {
-                               withAnimation(Animation.linear(duration: 2).repeatForever(autoreverses: false)) {
-                                   isAnimating.toggle()
-                               }
-                           }
-                       
-                       if cameraDelegate.isComplete {
-                           Image(systemName: "checkmark.circle.fill")
-                               .foregroundColor(.green)
-                               .font(.system(size: 50))
-                       } else if !cameraDelegate.isFaceDetected {
-                           Text("Searching for your face")
-                               .foregroundColor(.white)
-                       }
-                   }
-                   .onAppear(perform: cameraDelegate.setupCamera)
+                .trim(from: 0, to: CGFloat(cameraDelegate.rotationPercentage))
+                .stroke(Color.green, lineWidth: 5)
+                .frame(width: 200, height: 200)
+                .rotationEffect(.degrees(cameraDelegate.isFaceDetected ? 360 : 0))
+                .onAppear {
+                    withAnimation(Animation.linear(duration: 2).repeatForever(autoreverses: false)) {
+                        isAnimating.toggle()
+                    }
+                }
+            
+            if cameraDelegate.isComplete {
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundColor(.green)
+                    .font(.system(size: 100))
+                    .background(Color.black.opacity(0.8).blur(radius: 20.0))
+                
+            } else if !cameraDelegate.isFaceDetected {
+                Image(systemName: "faceid")
+                    .foregroundColor(.white)
+                    .font(.system(size: 50))
+                    .background(Color.black.opacity(0.8).blur(radius: 20.0))
+            }
+        }
+        .onAppear(perform: cameraDelegate.setupCamera)
     }
 }
 
@@ -842,24 +858,24 @@ class CameraDelegate: NSObject, AVCaptureMetadataOutputObjectsDelegate, Observab
     }
     
     func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
-            guard let faceObject = metadataObjects.first(where: { $0.type == .face }) as? AVMetadataFaceObject else {
-                isFaceDetected = false
-                return
-            }
-
-            isFaceDetected = true
-
-            if let lastBounds = lastFaceBounds {
-                let movement = faceObject.bounds.origin.x - lastBounds.origin.x
-                rotationPercentage += Double(abs(movement))
-                if rotationPercentage >= 1 {
-                    rotationPercentage = 1
-                    isComplete = true
-                }
-            }
-
-            lastFaceBounds = faceObject.bounds
+        guard let faceObject = metadataObjects.first(where: { $0.type == .face }) as? AVMetadataFaceObject else {
+            isFaceDetected = false
+            return
         }
+        
+        isFaceDetected = true
+        
+        if let lastBounds = lastFaceBounds {
+            let movement = faceObject.bounds.origin.x - lastBounds.origin.x
+            rotationPercentage += Double(abs(movement))
+            if rotationPercentage >= 1 {
+                rotationPercentage = 1
+                isComplete = true
+            }
+        }
+        
+        lastFaceBounds = faceObject.bounds
+    }
 }
 
 extension AVCaptureVideoOrientation {
