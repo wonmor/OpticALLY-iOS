@@ -778,13 +778,13 @@ struct FaceIDScanView: View {
             if cameraDelegate.isComplete {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundColor(.green)
-                    .font(.system(size: 100))
+                    .font(.system(size: 50))
                     .background(Color.black.opacity(0.8).blur(radius: 20.0))
                 
             } else if !cameraDelegate.isFaceDetected {
                 Image(systemName: "faceid")
                     .foregroundColor(.white)
-                    .font(.system(size: 50))
+                    .font(.system(size: 100))
                     .background(Color.black.opacity(0.8).blur(radius: 20.0))
             }
         }
