@@ -782,7 +782,7 @@ struct FaceIDScanView: View {
                     .background(Color.black.opacity(0.8).blur(radius: 20.0))
                 
             } else if !cameraDelegate.isFaceDetected {
-                Image(systemName: "faceid")
+                Image(systemName: "face.dashed")
                     .foregroundColor(.white)
                     .font(.system(size: 75))
                     .background(Color.black.opacity(0.8).blur(radius: 20.0))
