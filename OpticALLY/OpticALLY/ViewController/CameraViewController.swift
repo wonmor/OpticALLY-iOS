@@ -672,11 +672,29 @@ enum CurrentState {
     case begin, start
 }
 
+struct DropdownView: View {
+    var body: some View {
+        VStack {
+            Button(action: {
+                
+            }) {
+                Text(".USDZ")
+                    .padding()
+                    .foregroundColor(.white)
+                    .background(Capsule().fill(Color.gray.opacity(0.4)))
+            }
+        }
+        .padding(.top, 5)
+    }
+}
+
 struct SwiftUIView: View {
     @State private var isViewLoaded: Bool = false
     @State private var fingerOffset: CGFloat = -30.0
     @State private var isAnimationActive: Bool = true
     @State private var currentState: CurrentState = .begin
+    @State private var isScanComplete: Bool = false
+    @State private var showDropdown: Bool = false
     
     let maxOffset: CGFloat = 30.0 // change this to control how much the finger moves
     
@@ -729,7 +747,7 @@ struct SwiftUIView: View {
                 
             case .start:
                 VStack {
-                    FaceIDScanView()
+                    FaceIDScanView(isScanComplete: $isScanComplete)
                         .background(Color.black.opacity(0.8).blur(radius: 40.0))
                     
                     Text("For an accurate scan, ensure you pan around the sides, top, and bottom of your face.")
@@ -738,10 +756,35 @@ struct SwiftUIView: View {
                         .multilineTextAlignment(.center)
                         .padding(.top, 10)
                         .foregroundColor(.white)
+                    
+                    if isScanComplete {
+                        VStack {
+                            Button(action: {
+                                // Toggle the dropdown
+                                showDropdown.toggle()
+                            }) {
+                                HStack {
+                                    Image(systemName: "arrow.down.circle")
+                                    Text("DOWNLOAD")
+                                        .font(.body)
+                                        .bold()
+                                }
+                                .foregroundColor(.black)
+                                .padding()
+                                .background(Capsule().fill(Color.white))
+                            }
+                            
+                            // Dropdown list view
+                            if showDropdown {
+                                DropdownView()
+                            }
+                            
+                        }
+                        .padding()
+                    }
+                    
                 }
                 .background(Color.black.opacity(0.8).blur(radius: 40.0))
-                
-                
             }
         }
         .padding()
@@ -755,6 +798,8 @@ struct SwiftUIView: View {
 }
 
 struct FaceIDScanView: View {
+    @Binding var isScanComplete: Bool
+    
     @State private var isAnimating: Bool = false
     @StateObject private var cameraDelegate = CameraDelegate()
     
@@ -780,6 +825,11 @@ struct FaceIDScanView: View {
                     .foregroundColor(.green)
                     .font(.system(size: 50))
                     .background(Color.black.opacity(0.8).blur(radius: 20.0))
+                    .onAppear {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                            isScanComplete = true
+                        }
+                    }
                 
             } else if !cameraDelegate.isFaceDetected {
                 Image(systemName: "face.dashed")
