@@ -864,15 +864,15 @@ struct FaceIDScanView: View {
             }
             
             // Display face shape
-                VStack {
-                    Spacer()
-                    
-                    Text(cameraDelegate.faceShape?.rawValue ?? "Determining\nFace Shape...")
-                        .foregroundColor(.white)
-                        .font(.title)
-                        .fontWeight(.semibold)
-                        .padding(.bottom, 20)
-                }
+            VStack {
+                Spacer()
+                
+                Text(cameraDelegate.faceShape?.rawValue ?? "Determining\nFace Shape...")
+                    .foregroundColor(.white)
+                    .font(.title)
+                    .fontWeight(.semibold)
+                    .padding(.bottom, 20)
+            }
         }
         .onAppear(perform: cameraDelegate.setupCamera)
     }
@@ -922,7 +922,7 @@ class CameraDelegate: NSObject, AVCaptureMetadataOutputObjectsDelegate, Observab
     var stillImageOutput: AVCaptureStillImageOutput!
     
     private var computeFaceShapeWorkItem: DispatchWorkItem?
-
+    
     enum FaceShape: String {
         case oval = "Oval"
         case square = "Square"
@@ -931,7 +931,7 @@ class CameraDelegate: NSObject, AVCaptureMetadataOutputObjectsDelegate, Observab
         case triangle = "Triangle"
         case diamond = "Diamond"
     }
-
+    
     func computeFaceShape(from faces: [CIFaceFeature]) {
         guard let face = faces.first else {
             faceShape = nil
@@ -965,16 +965,16 @@ class CameraDelegate: NSObject, AVCaptureMetadataOutputObjectsDelegate, Observab
         
         // If there are landmarks available, modify the classification based on their positions
         if let leftEye: CGPoint? = face.leftEyePosition, let rightEye: CGPoint? = face.rightEyePosition, let mouthPosition: CGPoint? = face.mouthPosition {
-               let eyeCenterY = (leftEye!.y + rightEye!.y) / 2.0
-               let topThird = face.bounds.minY + faceLength * (2.0/3.0)
-               let bottomThird = face.bounds.minY + faceLength * (1.0/3.0)
-               
-               if eyeCenterY > topThird {
-                   faceShape = .triangle
-               } else if mouthPosition!.y < bottomThird {
-                   faceShape = .diamond
-               }
-           }
+            let eyeCenterY = (leftEye!.y + rightEye!.y) / 2.0
+            let topThird = face.bounds.minY + faceLength * (2.0/3.0)
+            let bottomThird = face.bounds.minY + faceLength * (1.0/3.0)
+            
+            if eyeCenterY > topThird {
+                faceShape = .triangle
+            } else if mouthPosition!.y < bottomThird {
+                faceShape = .diamond
+            }
+        }
     }
     
     var session = AVCaptureSession()
@@ -1029,10 +1029,10 @@ class CameraDelegate: NSObject, AVCaptureMetadataOutputObjectsDelegate, Observab
         
         DispatchQueue.main.async {
             self.faceLandmarks = faces
-
+            
             // Cancel the previous work item if it's still pending
             self.computeFaceShapeWorkItem?.cancel()
-
+            
             // Create a new work item and dispatch it after a delay
             let workItem = DispatchWorkItem { [weak self] in
                 self?.computeFaceShape(from: faces)
@@ -1044,18 +1044,18 @@ class CameraDelegate: NSObject, AVCaptureMetadataOutputObjectsDelegate, Observab
     
     func captureStillImage(completion: @escaping (CIImage?) -> Void) {
         guard let videoConnection = stillImageOutput.connection(with: .video) else { return }
-
+        
         stillImageOutput.captureStillImageAsynchronously(from: videoConnection) { (sampleBuffer, error) in
             guard let sampleBuffer = sampleBuffer, let imageData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(sampleBuffer) else {
                 completion(nil)
                 return
             }
-
+            
             let image = UIImage(data: imageData)
             completion(CIImage(image: image!))
         }
     }
-
+    
     func detectFaceShape(from ciImage: CIImage) {
         let faceDetector = CIDetector(ofType: CIDetectorTypeFace, context: nil, options: [CIDetectorAccuracy: CIDetectorAccuracyHigh])
         let faces = faceDetector?.features(in: ciImage) as? [CIFaceFeature] ?? []
@@ -1073,15 +1073,15 @@ class CameraDelegate: NSObject, AVCaptureMetadataOutputObjectsDelegate, Observab
         }
         
         isFaceDetected = true
-
-           // If face is detected and we haven't computed the face shape yet, capture a still image
-           if faceShape == nil {
-               captureStillImage { image in
-                   if let ciImage = image {
-                       self.detectFaceShape(from: ciImage)
-                   }
-               }
-           }
+        
+        // If face is detected and we haven't computed the face shape yet, capture a still image
+        if faceShape == nil {
+            captureStillImage { image in
+                if let ciImage = image {
+                    self.detectFaceShape(from: ciImage)
+                }
+            }
+        }
         
         if let lastBounds = lastFaceBounds {
             let movement = faceObject.bounds.origin.x - lastBounds.origin.x
