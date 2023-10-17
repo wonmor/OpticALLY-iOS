@@ -747,6 +747,18 @@ struct SwiftUIView: View {
                 
             case .start:
                 VStack {
+                    Image("1024")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 80, alignment: .center)
+                        .clipShape(RoundedRectangle(cornerRadius: 20)) // Clips the image as a rounded rectangle
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 20) // Applies a border on top of the rounded rectangle image
+                                .stroke(Color.primary, lineWidth: 2) // Adjust the color and line width as needed
+                        )
+                        .accessibility(hidden: true)
+                        .padding(.bottom)
+                    
                     FaceIDScanView(isScanComplete: $isScanComplete)
                         .background(Color.black.opacity(0.8).blur(radius: 40.0))
                     
@@ -861,8 +873,6 @@ struct FaceIDScanView: View {
                         .fontWeight(.semibold)
                         .padding(.bottom, 20)
                 }
-            
-            
         }
         .onAppear(perform: cameraDelegate.setupCamera)
     }
