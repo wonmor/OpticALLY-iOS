@@ -6,27 +6,62 @@
 //
 
 import SwiftUI
+import AVKit
+
+struct BackgroundVideoPlayer: UIViewControllerRepresentable {
+    func makeUIViewController(context: Context) -> AVPlayerViewController {
+        let playerViewController = AVPlayerViewController()
+        
+        // Assuming the video is in the app's resources bundle.
+        if let fileURL = Bundle.main.url(forResource: "promo", withExtension: "mp4") {
+            let player = AVPlayer(url: fileURL)
+            playerViewController.player = player
+            playerViewController.showsPlaybackControls = false
+            playerViewController.videoGravity = .resizeAspectFill
+            playerViewController.player?.isMuted = true
+            playerViewController.player?.play()
+            playerViewController.player?.actionAtItemEnd = .none
+            
+            NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: playerViewController.player?.currentItem, queue: .main) { _ in
+                playerViewController.player?.seek(to: CMTime.zero)
+                playerViewController.player?.play()
+            }
+        }
+        
+        return playerViewController
+    }
+
+    func updateUIViewController(_ uiViewController: AVPlayerViewController, context: Context) {}
+}
 
 struct IntroductionView: View {
     @Binding var currentView: ViewState  // Add this binding
     
     var body: some View {
-        ScrollView {
-            VStack(alignment: .center) {
-                Spacer()
-                TitleView()
-                InformationContainerView()
-                Spacer(minLength: 30)
-                
-                Button(action: {
-                    withAnimation {
-                        currentView = .tracking
+        ZStack {
+            // Background video player
+            BackgroundVideoPlayer()
+                .opacity(0.35)
+                .edgesIgnoringSafeArea(.all)
+            
+            // All your other views go here
+            ScrollView {
+                VStack(alignment: .center) {
+                    Spacer()
+                    TitleView()
+                    InformationContainerView()
+                    Spacer(minLength: 30)
+                    
+                    Button(action: {
+                        withAnimation {
+                            currentView = .tracking
+                        }
+                    }) {
+                        Text("Continue")
+                            .customButton()
                     }
-                }) {
-                    Text("Continue")
-                        .customButton()
+                    .padding(.horizontal)
                 }
-                .padding(.horizontal)
             }
         }
     }
