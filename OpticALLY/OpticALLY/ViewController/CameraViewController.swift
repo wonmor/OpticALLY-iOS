@@ -12,6 +12,7 @@ import MobileCoreServices
 import Accelerate
 import SwiftUI
 import Vision
+import UIKit
 
 struct ExternalData {
     static var renderingEnabled = true
@@ -838,10 +839,15 @@ struct FaceIDScanView: View {
                     .font(.system(size: 50))
                     .background(Color.black.opacity(0.8).blur(radius: 20.0))
                     .onAppear {
+                        // Trigger haptic feedback
+                        let generator = UIImpactFeedbackGenerator(style: .heavy)
+                        generator.impactOccurred()
+                        
                         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                             isScanComplete = true
                         }
                     }
+
             } else if !cameraDelegate.isFaceDetected {
                 Image(systemName: "face.dashed")
                     .foregroundColor(.white)
