@@ -852,19 +852,17 @@ struct FaceIDScanView: View {
             }
             
             // Display face shape
-            if let faceShape = cameraDelegate.faceShape {
                 VStack {
                     Spacer()
-                    Text(faceShape.rawValue)
+                    Text(cameraDelegate.faceShape?.rawValue ?? "Determining\nFace Shape...")
                         .foregroundColor(.white)
                         .font(.title)
                         .fontWeight(.semibold)
                         .padding(.bottom, 20)
-                        .shadow(color: Color.black.opacity(0.8), radius: 5, x: 0, y: 0)
-                        .background(Color.black.opacity(0.5).blur(radius: 20.0))
+                    
                     Spacer().frame(height: 20) // Adjusts the space below the faceShape text
                 }
-            }
+            
             
         }
         .onAppear(perform: cameraDelegate.setupCamera)
