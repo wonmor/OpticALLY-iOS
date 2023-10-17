@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9614F0AF2ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */; };
+		9614F0B02ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */; };
+		9614F0B12ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */; };
 		9679F8B02AD08C7000686F13 /* ScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8AF2AD08C7000686F13 /* ScanView.swift */; };
 		9679F8CD2AD0907A00686F13 /* ScanViewControllerWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8B22AD0907900686F13 /* ScanViewControllerWrapper.swift */; };
 		9679F8CE2AD0907A00686F13 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8B32AD0907900686F13 /* AppDelegate.swift */; };
@@ -66,6 +69,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = RobotoSlab.ttf; sourceTree = "<group>"; };
 		9679F8AF2AD08C7000686F13 /* ScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanView.swift; sourceTree = "<group>"; };
 		9679F8B12AD0907800686F13 /* OpticALLY-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "OpticALLY-Bridging-Header.h"; sourceTree = "<group>"; };
 		9679F8B22AD0907900686F13 /* ScanViewControllerWrapper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScanViewControllerWrapper.swift; sourceTree = "<group>"; };
@@ -226,6 +230,7 @@
 				9679F8B32AD0907900686F13 /* AppDelegate.swift */,
 				9679F8BA2AD0907900686F13 /* Info.plist */,
 				967EE0682AAE06FE000C4D5F /* Assets.xcassets */,
+				9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */,
 				967EE06A2AAE06FE000C4D5F /* Preview Content */,
 				9679F8B12AD0907800686F13 /* OpticALLY-Bridging-Header.h */,
 			);
@@ -410,6 +415,7 @@
 				9679F8D82AD0907A00686F13 /* Main.storyboard in Resources */,
 				9679F8D72AD0907A00686F13 /* LaunchScreen.storyboard in Resources */,
 				967EE0692AAE06FE000C4D5F /* Assets.xcassets in Resources */,
+				9614F0AF2ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -418,6 +424,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				969E42EF2ADC9D9E00E77BA7 /* promo.mp4 in Resources */,
+				9614F0B02ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -426,6 +433,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				969E42F02ADC9D9E00E77BA7 /* promo.mp4 in Resources */,
+				9614F0B12ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

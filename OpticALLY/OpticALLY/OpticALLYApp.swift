@@ -23,6 +23,17 @@ let devicePPI: Double = {
 struct OpticALLYApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
+    init() {
+        for family: String in UIFont.familyNames
+        {
+            print(family)
+            for names: String in UIFont.fontNames(forFamilyName: family)
+            {
+                print("== \(names)")
+            }
+        }
+    }
+    
     var body: some Scene {
         WindowGroup {
             ContentView()

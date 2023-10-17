@@ -159,14 +159,6 @@ extension View {
     }
 }
 
-extension Text {
-    func customTitleText() -> Text {
-        self
-            .fontWeight(.black)
-            .font(.system(size: 36))
-    }
-}
-
 extension Color {
     static var mainColor = Color(UIColor.systemGray)
     static var subColor = Color(UIColor.systemYellow)

@@ -82,11 +82,11 @@ struct TitleView: View {
                 .accessibility(hidden: true)
             
             Text("Welcome to")
-                .customTitleText()
+                .font(.system(size: 36, weight: .bold))
                 .foregroundColor(.mainColor)
             
             Text("Harolden")
-                .customTitleText()
+                .font(.system(size: 36, weight: .bold))
         }
     }
 }
