@@ -854,13 +854,12 @@ struct FaceIDScanView: View {
             // Display face shape
                 VStack {
                     Spacer()
+                    
                     Text(cameraDelegate.faceShape?.rawValue ?? "Determining\nFace Shape...")
                         .foregroundColor(.white)
                         .font(.title)
                         .fontWeight(.semibold)
                         .padding(.bottom, 20)
-                    
-                    Spacer().frame(height: 20) // Adjusts the space below the faceShape text
                 }
             
             
