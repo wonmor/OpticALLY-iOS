@@ -758,9 +758,14 @@ struct SwiftUIView: View {
                                 .stroke(Color.primary, lineWidth: 2) // Adjust the color and line width as needed
                         )
                         .accessibility(hidden: true)
+                    
+                    Text("HAROLDEN")
+                        .bold()
+                        .font(.caption)
+                        .foregroundStyle(.gray)
                         .padding(.bottom)
                     
-                    FaceIDScanView(isScanComplete: $isScanComplete)
+                    FaceIDScanView(isScanComplete: $isScanComplete, showDropdown: $showDropdown)
                         .background(Color.black.opacity(0.8).blur(radius: 40.0))
                     
                     Text("For an accurate scan, ensure you pan around the sides, top, and bottom of your face.")
@@ -812,6 +817,7 @@ struct SwiftUIView: View {
 
 struct FaceIDScanView: View {
     @Binding var isScanComplete: Bool
+    @Binding var showDropdown: Bool
     
     @State private var isAnimating: Bool = false
     @StateObject private var cameraDelegate = CameraDelegate()
@@ -870,19 +876,21 @@ struct FaceIDScanView: View {
             }
             
             // Display face shape
-            VStack {
-                Spacer()
-                
-                Text("FACE SHAPE")
-                    .bold()
-                    .font(.caption)
-                    .foregroundStyle(.gray)
-                
-                Text(cameraDelegate.faceShape?.rawValue ?? "Determining...")
-                    .foregroundColor(.white)
-                    .font(.title)
-                    .fontWeight(.semibold)
-                    .padding(.bottom, 20)
+            if !showDropdown {
+                VStack {
+                    Spacer()
+                    
+                    Text(cameraDelegate.faceShape?.rawValue ?? "Determining...")
+                        .foregroundColor(.white)
+                        .font(.title)
+                        .fontWeight(.semibold)
+                    
+                    Text("FACE SHAPE")
+                        .bold()
+                        .font(.caption)
+                        .foregroundStyle(.gray)
+                        .padding(.bottom, 20)
+                }
             }
         }
         .onAppear(perform: cameraDelegate.setupCamera)
