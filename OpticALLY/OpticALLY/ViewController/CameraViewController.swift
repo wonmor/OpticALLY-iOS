@@ -658,7 +658,6 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             return
         }
         
-        
         cloudView?.setDepthFrame(depthData, withTexture: videoPixelBuffer)
     }
     

@@ -12,6 +12,9 @@ A view implementing point cloud rendering
 #include "PointCloudMetalView.h"
 #import "AAPLTransforms.h"
 #include <simd/simd.h>
+#import <AVFoundation/AVFoundation.h>
+#import <CoreVideo/CoreVideo.h>
+#import <CoreImage/CoreImage.h>
 
 simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
     simd::float4 temp = { v.x, v.y, v.z, 0.0f };
@@ -46,6 +49,76 @@ simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
     [self internalInit];
     return self;
 }
+
+- (NSArray<NSDictionary *> *)getPointCloudData {
+    NSMutableArray<NSDictionary *> *points = [NSMutableArray array];
+
+    __block AVDepthData* depthData = nil;
+    __block CVPixelBufferRef colorFrame = nullptr;
+    
+    dispatch_sync(_syncQueue, ^{
+        depthData = self->_internalDepthFrame;
+        colorFrame = self->_internalColorTexture;
+        CVPixelBufferRetain(colorFrame);
+    });
+
+    if (!depthData || !colorFrame) {
+        NSLog(@"No data available");
+        return points;
+    }
+
+    // Getting the camera calibration data
+    AVCameraCalibrationData *calibrationData = depthData.cameraCalibrationData;
+    matrix_float3x3 intrinsicMatrix = calibrationData.intrinsicMatrix;
+
+    CVPixelBufferLockBaseAddress(depthData.depthDataMap, kCVPixelBufferLock_ReadOnly);
+    float *depthPointer = (float *)CVPixelBufferGetBaseAddress(depthData.depthDataMap);
+    
+    int width = CVPixelBufferGetWidth(depthData.depthDataMap);
+    int height = CVPixelBufferGetHeight(depthData.depthDataMap);
+
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            float depth = *depthPointer++;
+
+            // Convert to 3D point using intrinsic matrix
+            float fx = intrinsicMatrix.columns[0][0];
+            float fy = intrinsicMatrix.columns[1][1];
+            float cx = intrinsicMatrix.columns[2][0];
+            float cy = intrinsicMatrix.columns[2][1];
+            
+            float X = (x - cx) * depth / fx;
+            float Y = (y - cy) * depth / fy;
+            float Z = depth;
+
+            // Get the color at this pixel
+            // NOTE: Assuming color data is in BGRA format
+            uint8_t *baseAddress = (uint8_t *)CVPixelBufferGetBaseAddress(colorFrame);
+            uint8_t *colorData = baseAddress + y * CVPixelBufferGetBytesPerRow(colorFrame) + x * 4;
+            uint8_t blue = colorData[0];
+            uint8_t green = colorData[1];
+            uint8_t red = colorData[2];
+            uint8_t alpha = colorData[3];
+            
+            NSDictionary *pointData = @{
+                @"x": @(X),
+                @"y": @(Y),
+                @"z": @(Z),
+                @"red": @(red),
+                @"green": @(green),
+                @"blue": @(blue),
+                @"alpha": @(alpha)
+            };
+            [points addObject:pointData];
+        }
+    }
+
+    CVPixelBufferUnlockBaseAddress(depthData.depthDataMap, kCVPixelBufferLock_ReadOnly);
+    CVPixelBufferRelease(colorFrame);
+
+    return points;
+}
+
 
 - (void)internalInit {
     dispatch_queue_attr_t attr = NULL;
