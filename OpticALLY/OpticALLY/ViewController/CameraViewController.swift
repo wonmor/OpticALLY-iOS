@@ -16,6 +16,8 @@ import UIKit
 
 struct ExternalData {
     static var renderingEnabled = true
+    static var isSavingFileAsPLY = false
+    static var exportPLYData: Data?
 }
 
 @available(iOS 11.1, *)
@@ -65,8 +67,6 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     private var statusBarOrientation: UIInterfaceOrientation = .portrait
     
     private var touchDetected = false
-    
-    private var isSavingFile = false
     
     private var touchCoordinates = CGPoint(x: 0, y: 0)
     
@@ -636,19 +636,19 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     // MARK: - Save Points to File
     // Modified by John Seong from the code of following:
     // https://developer.apple.com/forums/thread/658109
-
-    private func savePointsToFile() {
-        guard !isSavingFile else { return }
-        self.isSavingFile = true
-        
+    
+    private func savePointsToFileAsPLY() {
+        guard !ExternalData.isSavingFileAsPLY else { return }
+        ExternalData.isSavingFileAsPLY = true
+    
         let depthMap: CVPixelBuffer = globalDepthData.depthDataMap
         let width = CVPixelBufferGetWidth(depthMap)
         let height = CVPixelBufferGetHeight(depthMap)
-
+        
         // Lock the buffers for reading
         CVPixelBufferLockBaseAddress(depthMap, .readOnly)
         CVPixelBufferLockBaseAddress(globalVideoPixelBuffer, .readOnly)
-
+        
         // Access the data in the buffers
         let floatBuffer = unsafeBitCast(CVPixelBufferGetBaseAddress(depthMap), to: UnsafeMutablePointer<Float>.self)
         
@@ -685,14 +685,14 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
                 let gComponent = UInt8(255 * clamp(value: floatBuffer[pixelDataLocation + 1], lower: 0, upper: 1))
                 let rComponent = UInt8(255 * clamp(value: floatBuffer[pixelDataLocation + 2], lower: 0, upper: 1))
                 let aComponent = UInt8(255 * clamp(value: floatBuffer[pixelDataLocation + 3], lower: 0, upper: 1))
-
+                
                 // Construct the point value line and add to fileToWrite
                 let pvValue = "\(x) \(y) \(depthValue) \(rComponent) \(gComponent) \(bComponent) \(aComponent)"
                 fileToWrite += pvValue
                 fileToWrite += "\r\n"
             }
         }
-
+        
         // Helper function to clamp values between a range
         func clamp<T: Comparable>(value: T, lower: T, upper: T) -> T {
             return min(max(value, lower), upper)
@@ -702,18 +702,25 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         CVPixelBufferUnlockBaseAddress(depthMap, .readOnly)
         CVPixelBufferUnlockBaseAddress(globalVideoPixelBuffer, .readOnly)
         
-        // 6. Define File Path
-        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
-        let documentsDirectory = paths[0]
-        let file = documentsDirectory.appendingPathComponent("ply_\(UUID().uuidString).ply")
+        // Unlock the buffers after reading
+        CVPixelBufferUnlockBaseAddress(depthMap, .readOnly)
+        CVPixelBufferUnlockBaseAddress(globalVideoPixelBuffer, .readOnly)
         
-        do {
-            // 7. Write to File
-            try fileToWrite.write(to: file, atomically: true, encoding: String.Encoding.ascii)
-            self.isSavingFile = false
-        } catch {
-            print("Failed to write PLY file", error)
-        }
+        ExternalData.exportPLYData = Data(fileToWrite.utf8)
+        ExternalData.isSavingFileAsPLY = false
+        
+        // 6. Define File Path
+        //        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+        //        let documentsDirectory = paths[0]
+        //        let file = documentsDirectory.appendingPathComponent("ply_\(UUID().uuidString).ply")
+        //
+        //        do {
+        //            // 7. Write to File
+        //            try fileToWrite.write(to: file, atomically: true, encoding: String.Encoding.ascii)
+        //            self.isSavingFile = false
+        //        } catch {
+        //            print("Failed to write PLY file", error)
+        //        }
     }
     
     // MARK: - Video + Depth Frame Processing
@@ -750,6 +757,10 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         globalVideoPixelBuffer = videoPixelBuffer
         
         cloudView?.setDepthFrame(depthData, withTexture: videoPixelBuffer)
+        
+        if ExternalData.isSavingFileAsPLY {
+            savePointsToFileAsPLY()
+        }
     }
     
     @IBSegueAction func embedSwiftUIView(_ coder: NSCoder) -> UIViewController? {
@@ -767,9 +778,9 @@ struct DropdownView: View {
     var body: some View {
         VStack {
             Button(action: {
-                
+                ExternalData.isSavingFileAsPLY = true
             }) {
-                Text(".USDZ")
+                Text(".PLY")
                     .padding()
                     .foregroundColor(.white)
                     .background(Capsule().fill(Color.gray.opacity(0.4)))
@@ -943,7 +954,7 @@ struct FaceIDScanView: View {
                             isScanComplete = true
                         }
                     }
-
+                
             } else if !cameraDelegate.isFaceDetected {
                 Image(systemName: "face.dashed")
                     .foregroundColor(.white)
@@ -970,7 +981,7 @@ struct FaceIDScanView: View {
                 VStack {
                     Spacer()
                     
-                    Text(cameraDelegate.faceShape?.rawValue ?? "Determining...")
+                    Text(cameraDelegate.faceShape?.rawValue ?? "Determining")
                         .foregroundColor(.white)
                         .font(.title)
                         .fontWeight(.semibold)
