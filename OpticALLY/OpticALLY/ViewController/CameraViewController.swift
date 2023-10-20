@@ -638,6 +638,8 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     // https://developer.apple.com/forums/thread/658109
     
     private func savePointsToFileAsPLY() {
+        print("Running PLY Export...")
+        
         guard !ExternalData.isSavingFileAsPLY else { return }
         ExternalData.isSavingFileAsPLY = true
     
@@ -651,6 +653,8 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         
         // Access the data in the buffers
         let floatBuffer = unsafeBitCast(CVPixelBufferGetBaseAddress(depthMap), to: UnsafeMutablePointer<Float>.self)
+        
+        print("Dot Projector Count: \(width * height)")
         
         // 1. Setup Headers
         // width * height = currentPointCount
@@ -778,7 +782,12 @@ struct DropdownView: View {
     var body: some View {
         VStack {
             Button(action: {
+                ExternalData.renderingEnabled = true
                 ExternalData.isSavingFileAsPLY = true
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                    ExternalData.renderingEnabled = false
+                }
             }) {
                 Text(".PLY")
                     .padding()
