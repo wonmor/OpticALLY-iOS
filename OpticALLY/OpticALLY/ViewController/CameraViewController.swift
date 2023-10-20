@@ -53,6 +53,9 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     private let depthDataOutput = AVCaptureDepthDataOutput()
     private var outputSynchronizer: AVCaptureDataOutputSynchronizer?
     
+    private var globalDepthData: AVDepthData!
+    private var globalVideoPixelBuffer: CVImageBuffer!
+    
     private let videoDepthMixer = VideoMixer()
     
     private let videoDeviceDiscoverySession = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInTrueDepthCamera],
@@ -62,6 +65,8 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     private var statusBarOrientation: UIInterfaceOrientation = .portrait
     
     private var touchDetected = false
+    
+    private var isSavingFile = false
     
     private var touchCoordinates = CGPoint(x: 0, y: 0)
     
@@ -628,6 +633,89 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         }
     }
     
+    // MARK: - Save Points to File
+    // Modified by John Seong from the code of following:
+    // https://developer.apple.com/forums/thread/658109
+
+    private func savePointsToFile() {
+        guard !isSavingFile else { return }
+        self.isSavingFile = true
+        
+        let depthMap: CVPixelBuffer = globalDepthData.depthDataMap
+        let width = CVPixelBufferGetWidth(depthMap)
+        let height = CVPixelBufferGetHeight(depthMap)
+
+        // Lock the buffers for reading
+        CVPixelBufferLockBaseAddress(depthMap, .readOnly)
+        CVPixelBufferLockBaseAddress(globalVideoPixelBuffer, .readOnly)
+
+        // Access the data in the buffers
+        let floatBuffer = unsafeBitCast(CVPixelBufferGetBaseAddress(depthMap), to: UnsafeMutablePointer<Float>.self)
+        
+        // 1. Setup Headers
+        // width * height = currentPointCount
+        var fileToWrite = ""
+        let headers = ["ply",
+                       "format ascii 1.0",
+                       "element vertex \(width * height)",
+                       "property float x",
+                       "property float y",
+                       "property float z",
+                       "property uchar red",
+                       "property uchar green",
+                       "property uchar blue",
+                       "property uchar alpha",
+                       "element face 0",
+                       "property list uchar int vertex_indices",
+                       "end_header"]
+        for header in headers {
+            fileToWrite += header
+            fileToWrite += "\r\n"
+        }
+        
+        // 2. Add Point Data
+        for y in 0..<height {
+            for x in 0..<width {
+                // Get depth value for the point (z coordinate)
+                let depthValue = floatBuffer[y * width + x]
+                
+                // Get color value for the point from globalVideoPixelBuffer
+                let pixelDataLocation: Int = (y * width + x) * 4 // * 4 for BGRA format
+                let bComponent = UInt8(255 * clamp(value: floatBuffer[pixelDataLocation], lower: 0, upper: 1))
+                let gComponent = UInt8(255 * clamp(value: floatBuffer[pixelDataLocation + 1], lower: 0, upper: 1))
+                let rComponent = UInt8(255 * clamp(value: floatBuffer[pixelDataLocation + 2], lower: 0, upper: 1))
+                let aComponent = UInt8(255 * clamp(value: floatBuffer[pixelDataLocation + 3], lower: 0, upper: 1))
+
+                // Construct the point value line and add to fileToWrite
+                let pvValue = "\(x) \(y) \(depthValue) \(rComponent) \(gComponent) \(bComponent) \(aComponent)"
+                fileToWrite += pvValue
+                fileToWrite += "\r\n"
+            }
+        }
+
+        // Helper function to clamp values between a range
+        func clamp<T: Comparable>(value: T, lower: T, upper: T) -> T {
+            return min(max(value, lower), upper)
+        }
+        
+        // Unlock the buffers after reading
+        CVPixelBufferUnlockBaseAddress(depthMap, .readOnly)
+        CVPixelBufferUnlockBaseAddress(globalVideoPixelBuffer, .readOnly)
+        
+        // 6. Define File Path
+        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+        let documentsDirectory = paths[0]
+        let file = documentsDirectory.appendingPathComponent("ply_\(UUID().uuidString).ply")
+        
+        do {
+            // 7. Write to File
+            try fileToWrite.write(to: file, atomically: true, encoding: String.Encoding.ascii)
+            self.isSavingFile = false
+        } catch {
+            print("Failed to write PLY file", error)
+        }
+    }
+    
     // MARK: - Video + Depth Frame Processing
     
     func dataOutputSynchronizer(_ synchronizer: AVCaptureDataOutputSynchronizer,
@@ -657,6 +745,9 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
               let formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer) else {
             return
         }
+        
+        globalDepthData = depthData
+        globalVideoPixelBuffer = videoPixelBuffer
         
         cloudView?.setDepthFrame(depthData, withTexture: videoPixelBuffer)
     }

@@ -16,8 +16,6 @@ A view implementing point cloud rendering
 
 @interface PointCloudMetalView : MTKView
 
-- (NSArray<NSDictionary *> *)getPointCloudData;
-
 // Update depth frame
 - (void)setDepthFrame:(AVDepthData* _Nonnull)depth withTexture:(_Nonnull CVPixelBufferRef)unormTexture;
 
