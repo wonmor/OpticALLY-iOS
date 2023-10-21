@@ -642,7 +642,7 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         
         guard !ExternalData.isSavingFileAsPLY else { return }
         ExternalData.isSavingFileAsPLY = true
-    
+        
         let depthMap: CVPixelBuffer = globalDepthData.depthDataMap
         let width = CVPixelBufferGetWidth(depthMap)
         let height = CVPixelBufferGetHeight(depthMap)
@@ -757,6 +757,7 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             return
         }
         
+        
         globalDepthData = depthData
         globalVideoPixelBuffer = videoPixelBuffer
         
@@ -840,8 +841,13 @@ struct SwiftUIView: View {
                     
                     // Button to start/pause scanning
                     Button(action: {
+                        // Trigger haptic feedback
+                        let generator = UIImpactFeedbackGenerator(style: .heavy)
+                        generator.impactOccurred()
+                        
                         ExternalData.renderingEnabled.toggle()
                         currentState = .start
+                        isScanComplete = false
                     }) {
                         HStack {
                             Image(systemName: "play.circle") // Different SF Symbols for start and pause
@@ -858,6 +864,30 @@ struct SwiftUIView: View {
                 
             case .start:
                 VStack {
+                    Button(action: {
+                        // Trigger haptic feedback
+                        let generator = UIImpactFeedbackGenerator(style: .heavy)
+                        generator.impactOccurred()
+                        
+                        ExternalData.renderingEnabled.toggle()
+                        currentState = .begin
+                        isScanComplete = false
+                    }) {
+                        HStack {
+                            Image(systemName: "arrow.left") // Using system arrow left image for back
+                            Text("Back")
+                        }
+                        .padding()
+                        .foregroundColor(.primary) // Adjust color as needed
+                    }
+                    .navigationBarItems(leading:
+                                            Button(action: {
+                        // Handle your back action here
+                    }) {
+                        Image(systemName: "arrow.left")
+                    }
+                    )
+                    
                     Image("1024")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
@@ -877,13 +907,6 @@ struct SwiftUIView: View {
                     
                     FaceIDScanView(isScanComplete: $isScanComplete, showDropdown: $showDropdown)
                         .background(Color.black.opacity(0.8).blur(radius: 40.0))
-                    
-                    Text("For an accurate scan, ensure you pan around the sides, top, and bottom of your face.")
-                        .font(.caption)
-                        .bold()
-                        .multilineTextAlignment(.center)
-                        .padding(.top, 10)
-                        .foregroundColor(.white)
                     
                     if isScanComplete {
                         VStack {
@@ -905,14 +928,36 @@ struct SwiftUIView: View {
                             // Dropdown list view
                             if showDropdown {
                                 DropdownView()
+                                
+                            } else {
+                                Button(action: {
+                                    ExternalData.renderingEnabled.toggle()
+                                    currentState = .begin
+                                    isScanComplete = false
+                                }) {
+                                    Text("RESCAN")
+                                        .font(.body)
+                                        .bold()
+                                        .foregroundColor(.white)
+                                        .padding()
+                                }
+                                .background(Color.black.opacity(0.8).blur(radius: 40.0))
                             }
                             
                         }
                         .padding()
+                        
+                    } else {
+                        Text("For an accurate scan, ensure you pan around the sides, top, and bottom of your face.")
+                            .font(.caption)
+                            .bold()
+                            .multilineTextAlignment(.center)
+                            .padding(.top, 10)
+                            .foregroundColor(.white)
                     }
                     
                 }
-                .background(Color.black.opacity(0.8).blur(radius: 40.0))
+                .background(isScanComplete ? Color.clear.blur(radius: 40.0) : Color.black.opacity(0.8).blur(radius: 40.0))
             }
         }
         .padding()
@@ -933,77 +978,73 @@ struct FaceIDScanView: View {
     @StateObject private var cameraDelegate = CameraDelegate()
     
     var body: some View {
-        ZStack {
-            CameraPreview(session: $cameraDelegate.session)
-                .clipShape(Circle())
-                .frame(width: 200, height: 200)
-            
-            Circle()
-                .trim(from: 0, to: CGFloat(cameraDelegate.rotationPercentage))
-                .stroke(Color.green, lineWidth: 5)
-                .frame(width: 200, height: 200)
-                .rotationEffect(.degrees(cameraDelegate.isFaceDetected ? 360 : 0))
+        if cameraDelegate.isComplete {
+            Spacer()
                 .onAppear {
-                    withAnimation(Animation.linear(duration: 2).repeatForever(autoreverses: false)) {
-                        isAnimating.toggle()
-                    }
+                    // Trigger haptic feedback
+                    let generator = UIImpactFeedbackGenerator(style: .heavy)
+                    generator.impactOccurred()
+                    
+                    isScanComplete = true
                 }
-            
-            if cameraDelegate.isComplete {
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundColor(.green)
-                    .font(.system(size: 50))
-                    .background(Color.black.opacity(0.8).blur(radius: 20.0))
+        } else {
+            ZStack {
+                CameraPreview(session: $cameraDelegate.session)
+                    .clipShape(Circle())
+                    .frame(width: 200, height: 200)
+                
+                Circle()
+                    .trim(from: 0, to: CGFloat(cameraDelegate.rotationPercentage))
+                    .stroke(Color.green, lineWidth: 5)
+                    .frame(width: 200, height: 200)
+                    .rotationEffect(.degrees(cameraDelegate.isFaceDetected ? 360 : 0))
                     .onAppear {
-                        // Trigger haptic feedback
-                        let generator = UIImpactFeedbackGenerator(style: .heavy)
-                        generator.impactOccurred()
-                        
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                            isScanComplete = true
+                        withAnimation(Animation.linear(duration: 2).repeatForever(autoreverses: false)) {
+                            isAnimating.toggle()
                         }
                     }
                 
-            } else if !cameraDelegate.isFaceDetected {
-                Image(systemName: "face.dashed")
-                    .foregroundColor(.white)
-                    .font(.system(size: 75))
-                    .background(Color.black.opacity(0.8).blur(radius: 20.0))
-            }
-            
-            // Draw face landmarks
-            ForEach(cameraDelegate.faceLandmarks, id: \.self) { face in
-                Path { path in
-                    if let leftEye: CGPoint? = face.leftEyePosition {
-                        path.addEllipse(in: CGRect(x: leftEye!.x - 5, y: leftEye!.y - 5, width: 10, height: 10))
-                    }
-                    if let rightEye: CGPoint? = face.rightEyePosition {
-                        path.addEllipse(in: CGRect(x: rightEye!.x - 5, y: rightEye!.y - 5, width: 10, height: 10))
-                    }
-                    // Add more landmarks as needed
-                }
-                .stroke(Color.green, lineWidth: 2)
-            }
-            
-            // Display face shape
-            if !showDropdown {
-                VStack {
-                    Spacer()
-                    
-                    Text(cameraDelegate.faceShape?.rawValue ?? "Determining")
+                if !cameraDelegate.isFaceDetected {
+                    Image(systemName: "face.dashed")
                         .foregroundColor(.white)
-                        .font(.title)
-                        .fontWeight(.semibold)
-                    
-                    Text("FACE SHAPE")
-                        .bold()
-                        .font(.caption)
-                        .foregroundStyle(.gray)
-                        .padding(.bottom, 20)
+                        .font(.system(size: 75))
+                        .background(Color.black.opacity(0.8).blur(radius: 20.0))
+                }
+                
+                // Draw face landmarks
+                ForEach(cameraDelegate.faceLandmarks, id: \.self) { face in
+                    Path { path in
+                        if let leftEye: CGPoint? = face.leftEyePosition {
+                            path.addEllipse(in: CGRect(x: leftEye!.x - 5, y: leftEye!.y - 5, width: 10, height: 10))
+                        }
+                        if let rightEye: CGPoint? = face.rightEyePosition {
+                            path.addEllipse(in: CGRect(x: rightEye!.x - 5, y: rightEye!.y - 5, width: 10, height: 10))
+                        }
+                        // Add more landmarks as needed
+                    }
+                    .stroke(Color.green, lineWidth: 2)
+                }
+                
+                // Display face shape
+                if !showDropdown {
+                    VStack {
+                        Spacer()
+                        
+                        Text(cameraDelegate.faceShape?.rawValue ?? "Determining")
+                            .foregroundColor(.white)
+                            .font(.title)
+                            .fontWeight(.semibold)
+                        
+                        Text("FACE PROFILE")
+                            .bold()
+                            .font(.caption)
+                            .foregroundStyle(.gray)
+                            .padding(.bottom, 20)
+                    }
                 }
             }
+            .onAppear(perform: cameraDelegate.setupCamera)
         }
-        .onAppear(perform: cameraDelegate.setupCamera)
     }
 }
 
