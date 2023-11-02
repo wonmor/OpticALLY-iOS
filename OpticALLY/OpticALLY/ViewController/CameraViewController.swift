@@ -726,6 +726,38 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         //            print("Failed to write PLY file", error)
         //        }
     }
+
+    // Function to print depth values from a CVPixelBuffer
+    func printDepthData(from depthData: AVDepthData) {
+        let depthPixelBuffer = depthData.depthDataMap
+        CVPixelBufferLockBaseAddress(depthPixelBuffer, .readOnly)
+        defer { CVPixelBufferUnlockBaseAddress(depthPixelBuffer, .readOnly) }
+        
+        let width = CVPixelBufferGetWidth(depthPixelBuffer)
+        let height = CVPixelBufferGetHeight(depthPixelBuffer)
+        
+        // Assuming a 32-bit float format for the depth data
+        guard let rowData = CVPixelBufferGetBaseAddress(depthPixelBuffer) else {
+            print("Unable to get pixel buffer base address.")
+            return
+        }
+        
+        // Calculate the number of bytes per row for the pixel buffer
+        let bytesPerRow = CVPixelBufferGetBytesPerRow(depthPixelBuffer)
+        
+        // Iterate over the depth map
+        for y in stride(from: 0, to: height, by: 10) { // Sample every 10 pixels for example
+            for x in stride(from: 0, to: width, by: 10) { // Sample every 10 pixels for example
+                let pixelOffset = y * bytesPerRow + x * 4 // 4 bytes per pixel for 32-bit float
+                let depthPointer = rowData.advanced(by: pixelOffset).assumingMemoryBound(to: Float.self)
+                let depth = depthPointer.pointee
+                
+                // Print the (x, y) coordinates and depth value
+                print("Depth at (\(x), \(y)): \(depth)")
+            }
+        }
+    }
+
     
     // MARK: - Video + Depth Frame Processing
     
@@ -750,6 +782,9 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         }
         
         let depthData = syncedDepthData.depthData
+        
+        printDepthData(from: depthData)
+        
         let depthPixelBuffer = depthData.depthDataMap
         let sampleBuffer = syncedVideoData.sampleBuffer
         guard let videoPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer),
@@ -762,10 +797,6 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         globalVideoPixelBuffer = videoPixelBuffer
         
         cloudView?.setDepthFrame(depthData, withTexture: videoPixelBuffer)
-        
-        if ExternalData.isSavingFileAsPLY {
-            savePointsToFileAsPLY()
-        }
     }
     
     @IBSegueAction func embedSwiftUIView(_ coder: NSCoder) -> UIViewController? {
@@ -841,10 +872,6 @@ struct SwiftUIView: View {
                     
                     // Button to start/pause scanning
                     Button(action: {
-                        // Trigger haptic feedback
-                        let generator = UIImpactFeedbackGenerator(style: .heavy)
-                        generator.impactOccurred()
-                        
                         ExternalData.renderingEnabled.toggle()
                         currentState = .start
                         isScanComplete = false
@@ -865,10 +892,6 @@ struct SwiftUIView: View {
             case .start:
                 VStack {
                     Button(action: {
-                        // Trigger haptic feedback
-                        let generator = UIImpactFeedbackGenerator(style: .heavy)
-                        generator.impactOccurred()
-                        
                         ExternalData.renderingEnabled.toggle()
                         currentState = .begin
                         isScanComplete = false
@@ -981,10 +1004,6 @@ struct FaceIDScanView: View {
         if cameraDelegate.isComplete {
             Spacer()
                 .onAppear {
-                    // Trigger haptic feedback
-                    let generator = UIImpactFeedbackGenerator(style: .heavy)
-                    generator.impactOccurred()
-                    
                     isScanComplete = true
                 }
         } else {
