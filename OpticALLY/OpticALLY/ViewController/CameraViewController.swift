@@ -738,52 +738,81 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             CVPixelBufferUnlockBaseAddress(colorPixelBuffer, .readOnly)
         }
         
-        let width = CVPixelBufferGetWidth(colorPixelBuffer)
-        let height = CVPixelBufferGetHeight(colorPixelBuffer)
+        let colorWidth = CVPixelBufferGetWidth(colorPixelBuffer)
+        let colorHeight = CVPixelBufferGetHeight(colorPixelBuffer)
+        let depthWidth = CVPixelBufferGetWidth(depthPixelBuffer)
+        let depthHeight = CVPixelBufferGetHeight(depthPixelBuffer)
         
-        print("Image Width: \(width) | Image Height: \(height)")
+        print("Image Width: \(colorWidth) | Image Height: \(colorHeight)")
+        print("Depth Data Width: \(depthWidth) | Depth Data Height: \(depthHeight)")
         
-        // Assuming the pixel buffer is in BGRA format
         guard let colorData = CVPixelBufferGetBaseAddress(colorPixelBuffer) else {
             print("Unable to get image buffer base address.")
             return
         }
         
-        let bytesPerRow = CVPixelBufferGetBytesPerRow(colorPixelBuffer)
-        let bytesPerPixel = 4 // For BGRA format
+        let colorBytesPerRow = CVPixelBufferGetBytesPerRow(colorPixelBuffer)
+        let colorBytesPerPixel = 4 // BGRA format
         
-        // Assuming a 32-bit float format for the depth data
-        guard let rowData = CVPixelBufferGetBaseAddress(depthPixelBuffer) else {
-            print("Unable to get pixel buffer base address.")
+        guard let depthDataAddress = CVPixelBufferGetBaseAddress(depthPixelBuffer) else {
+            print("Unable to get depth buffer base address.")
             return
         }
         
+        let depthBytesPerRow = CVPixelBufferGetBytesPerRow(depthPixelBuffer)
+        // Determine the bytes per pixel based on the depth format type
+        let depthPixelFormatType = CVPixelBufferGetPixelFormatType(depthPixelBuffer)
+        var depthBytesPerPixel: Int = 0 // Initialize with zero
+        
+        switch depthPixelFormatType {
+        case kCVPixelFormatType_DepthFloat32:
+            depthBytesPerPixel = 4
+        case kCVPixelFormatType_DepthFloat16:
+            depthBytesPerPixel = 2
+        // Add more cases as necessary for different formats
+        default:
+            print("Unsupported depth pixel format type")
+            return
+        }
+        
+        // Ensure that you're iterating within the bounds of both buffers
+        let commonWidth = min(colorWidth, depthWidth)
+        let commonHeight = min(colorHeight, depthHeight)
+        
+        print("Starting iteration with commonWidth: \(commonWidth), commonHeight: \(commonHeight)")
+        
         // Iterate over the image buffer
-        for y in stride(from: 0, to: height, by: 10) { // Sample every 10 pixels for example
-            for x in stride(from: 0, to: width, by: 10) { // Sample every 10 pixels for example
-                let pixelOffset = y * bytesPerRow + x * bytesPerPixel
-                let pixel = colorData.advanced(by: pixelOffset).assumingMemoryBound(to: UInt8.self)
+        for y in stride(from: 0, to: commonHeight, by: 10) {
+            for x in stride(from: 0, to: commonWidth, by: 10) {
+                let colorPixelOffset = y * colorBytesPerRow + x * colorBytesPerPixel
+                let colorPixel = colorData.advanced(by: colorPixelOffset).assumingMemoryBound(to: UInt8.self)
                 
                 // Extract BGRA components
-                let blue = pixel[0]
-                let green = pixel[1]
-                let red = pixel[2]
-                let alpha = pixel[3]
+                let blue = colorPixel[0]
+                let green = colorPixel[1]
+                let red = colorPixel[2]
+                let alpha = colorPixel[3]
                 
                 // Print the (x, y) coordinates and color value in BGRA
                 print("Color at (\(x), \(y)): B:\(blue) G:\(green) R:\(red) A:\(alpha)")
 
-                let depthPointer = rowData.advanced(by: pixelOffset).assumingMemoryBound(to: Float.self)
-                let depth = depthPointer.pointee
+                // Calculate the depth data's corresponding pixel offset
+                let depthPixelOffset = y * depthBytesPerRow + x * depthBytesPerPixel
+                let depthPixel = depthDataAddress.advanced(by: depthPixelOffset).assumingMemoryBound(to: Float.self)
+                let depthValue = depthPixel.pointee
                 
                 // Print the (x, y) coordinates and depth value
-                print("Depth at (\(x), \(y)): \(depth)")
+                print("Depth at (\(x), \(y)): \(depthValue)")
             }
         }
         
-        ExternalData.renderingEnabled.toggle()
+        print("Completed iteration")
+        
+        // Synchronize access to the shared resource
+        DispatchQueue.main.async {
+            ExternalData.renderingEnabled.toggle()
+        }
     }
-
     
     // MARK: - Video + Depth Frame Processing
     
