@@ -727,14 +727,30 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         //        }
     }
 
-    // Function to print depth values from a CVPixelBuffer
-    func printDepthData(from depthData: AVDepthData) {
+    func printDepthData(depthData: AVDepthData, imageData: CVImageBuffer) {
         let depthPixelBuffer = depthData.depthDataMap
-        CVPixelBufferLockBaseAddress(depthPixelBuffer, .readOnly)
-        defer { CVPixelBufferUnlockBaseAddress(depthPixelBuffer, .readOnly) }
+        let colorPixelBuffer = imageData
         
-        let width = CVPixelBufferGetWidth(depthPixelBuffer)
-        let height = CVPixelBufferGetHeight(depthPixelBuffer)
+        CVPixelBufferLockBaseAddress(depthPixelBuffer, .readOnly)
+        CVPixelBufferLockBaseAddress(colorPixelBuffer, .readOnly)
+        defer {
+            CVPixelBufferUnlockBaseAddress(depthPixelBuffer, .readOnly)
+            CVPixelBufferUnlockBaseAddress(colorPixelBuffer, .readOnly)
+        }
+        
+        let width = CVPixelBufferGetWidth(colorPixelBuffer)
+        let height = CVPixelBufferGetHeight(colorPixelBuffer)
+        
+        print("Image Width: \(width) | Image Height: \(height)")
+        
+        // Assuming the pixel buffer is in BGRA format
+        guard let colorData = CVPixelBufferGetBaseAddress(colorPixelBuffer) else {
+            print("Unable to get image buffer base address.")
+            return
+        }
+        
+        let bytesPerRow = CVPixelBufferGetBytesPerRow(colorPixelBuffer)
+        let bytesPerPixel = 4 // For BGRA format
         
         // Assuming a 32-bit float format for the depth data
         guard let rowData = CVPixelBufferGetBaseAddress(depthPixelBuffer) else {
@@ -742,13 +758,21 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             return
         }
         
-        // Calculate the number of bytes per row for the pixel buffer
-        let bytesPerRow = CVPixelBufferGetBytesPerRow(depthPixelBuffer)
-        
-        // Iterate over the depth map
+        // Iterate over the image buffer
         for y in stride(from: 0, to: height, by: 10) { // Sample every 10 pixels for example
             for x in stride(from: 0, to: width, by: 10) { // Sample every 10 pixels for example
-                let pixelOffset = y * bytesPerRow + x * 4 // 4 bytes per pixel for 32-bit float
+                let pixelOffset = y * bytesPerRow + x * bytesPerPixel
+                let pixel = colorData.advanced(by: pixelOffset).assumingMemoryBound(to: UInt8.self)
+                
+                // Extract BGRA components
+                let blue = pixel[0]
+                let green = pixel[1]
+                let red = pixel[2]
+                let alpha = pixel[3]
+                
+                // Print the (x, y) coordinates and color value in BGRA
+                print("Color at (\(x), \(y)): B:\(blue) G:\(green) R:\(red) A:\(alpha)")
+
                 let depthPointer = rowData.advanced(by: pixelOffset).assumingMemoryBound(to: Float.self)
                 let depth = depthPointer.pointee
                 
@@ -756,6 +780,8 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
                 print("Depth at (\(x), \(y)): \(depth)")
             }
         }
+        
+        ExternalData.renderingEnabled.toggle()
     }
 
     
@@ -782,9 +808,6 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         }
         
         let depthData = syncedDepthData.depthData
-        
-        printDepthData(from: depthData)
-        
         let depthPixelBuffer = depthData.depthDataMap
         let sampleBuffer = syncedVideoData.sampleBuffer
         guard let videoPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer),
@@ -792,7 +815,14 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             return
         }
         
+        print("ExternalData.isSavingFileAsPLY: \(ExternalData.isSavingFileAsPLY)")
         
+        if ExternalData.isSavingFileAsPLY {
+            printDepthData(depthData: depthData, imageData: videoPixelBuffer)
+            
+            ExternalData.isSavingFileAsPLY = false
+        }
+    
         globalDepthData = depthData
         globalVideoPixelBuffer = videoPixelBuffer
         
@@ -872,9 +902,7 @@ struct SwiftUIView: View {
                     
                     // Button to start/pause scanning
                     Button(action: {
-                        ExternalData.renderingEnabled.toggle()
-                        currentState = .start
-                        isScanComplete = false
+                        ExternalData.isSavingFileAsPLY = true
                     }) {
                         HStack {
                             Image(systemName: "play.circle") // Different SF Symbols for start and pause
