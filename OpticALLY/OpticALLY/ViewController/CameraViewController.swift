@@ -13,11 +13,88 @@ import Accelerate
 import SwiftUI
 import Vision
 import UIKit
+import SceneKit
+import ARKit
 
 struct ExternalData {
     static var renderingEnabled = true
     static var isSavingFileAsPLY = false
     static var exportPLYData: Data?
+    
+    // Function to convert depth and color data into a point cloud geometry
+    static func createPointCloudGeometry(depthData: AVDepthData, colorData: UnsafePointer<UInt8>, width: Int, height: Int, bytesPerRow: Int) -> SCNGeometry {
+        var vertices: [SCNVector3] = []
+        var colors: [UIColor] = []
+
+        let depthDataMap = depthData.depthDataMap
+        CVPixelBufferLockBaseAddress(depthDataMap, .readOnly)
+        defer { CVPixelBufferUnlockBaseAddress(depthDataMap, .readOnly) }
+
+        for y in 0..<height {
+            for x in 0..<width {
+                let depthOffset = y * CVPixelBufferGetBytesPerRow(depthDataMap) + x * MemoryLayout<Float>.size
+                let depthPointer = CVPixelBufferGetBaseAddress(depthDataMap)!.advanced(by: depthOffset).assumingMemoryBound(to: Float.self)
+                let depth = depthPointer.pointee
+
+                // Scale and offset the depth as needed to fit your scene
+                let vertex = SCNVector3(x: Float(x), y: Float(y), z: depth)
+
+                vertices.append(vertex)
+
+                let colorOffset = y * bytesPerRow + x * 4 // Assuming BGRA format
+                let bComponent = Double(colorData[colorOffset]) / 255.0
+                let gComponent = Double(colorData[colorOffset + 1]) / 255.0
+                let rComponent = Double(colorData[colorOffset + 2]) / 255.0
+                let aComponent = Double(colorData[colorOffset + 3]) / 255.0
+
+                let color = UIColor(red: CGFloat(rComponent), green: CGFloat(gComponent), blue: CGFloat(bComponent), alpha: CGFloat(aComponent))
+                colors.append(color)
+            }
+        }
+
+        // Create the geometry source for vertices
+        let vertexSource = SCNGeometrySource(vertices: vertices)
+
+        // Create the geometry source for colors
+        let colorData = Data(bytes: colors, count: colors.count * MemoryLayout<UIColor>.size)
+        let colorSource = SCNGeometrySource(data: colorData,
+                                            semantic: .color,
+                                            vectorCount: colors.count,
+                                            usesFloatComponents: true,
+                                            componentsPerVector: 4,
+                                            bytesPerComponent: MemoryLayout<CGFloat>.size,
+                                            dataOffset: 0,
+                                            dataStride: MemoryLayout<UIColor>.size)
+
+        // Create the geometry element
+        let indices: [Int32] = Array(0..<Int32(vertices.count))
+        let indexData = Data(bytes: indices, count: indices.count * MemoryLayout<Int32>.size)
+        let element = SCNGeometryElement(data: indexData,
+                                         primitiveType: .point,
+                                         primitiveCount: vertices.count,
+                                         bytesPerIndex: MemoryLayout<Int32>.size)
+
+        // Create the point cloud geometry
+        let pointCloudGeometry = SCNGeometry(sources: [vertexSource, colorSource], elements: [element])
+
+        // Set the shader modifier to change the point size
+        let pointSize: CGFloat = 5.0 // Adjust the point size as necessary
+        let shaderModifier = """
+            #pragma transparent
+            #pragma body
+            gl_PointSize = \(pointSize);
+        """
+        pointCloudGeometry.shaderModifiers = [.geometry: shaderModifier]
+
+        // Set the lighting model to constant to ensure the points are fully lit
+        pointCloudGeometry.firstMaterial?.lightingModel = .constant
+
+        // Set additional material properties as needed, for example, to make the points more visible
+        pointCloudGeometry.firstMaterial?.isDoubleSided = true
+
+        return pointCloudGeometry
+    }
+
 }
 
 @available(iOS 11.1, *)
