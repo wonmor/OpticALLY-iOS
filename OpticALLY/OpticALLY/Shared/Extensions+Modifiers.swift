@@ -163,3 +163,13 @@ extension Color {
     static var mainColor = Color(UIColor.systemGray)
     static var subColor = Color(UIColor.systemYellow)
 }
+
+extension Data {
+    func toArray<T>(type: T.Type, count: Int) -> [T] {
+        return withUnsafeBytes { (pointer) -> [T] in
+            let bufferPointer = pointer.bindMemory(to: T.self)
+            guard let address = bufferPointer.baseAddress else { return [] }
+            return Array(UnsafeBufferPointer(start: address, count: count))
+        }
+    }
+}

@@ -20,6 +20,7 @@ struct ExternalData {
     static var renderingEnabled = true
     static var isSavingFileAsPLY = false
     static var exportPLYData: Data?
+    static var pointCloudGeometry: SCNGeometry?
     
     // Function to convert depth and color data into a point cloud geometry
     static func createPointCloudGeometry(depthData: AVDepthData, colorData: UnsafePointer<UInt8>, width: Int, height: Int, bytesPerRow: Int) -> SCNGeometry {
@@ -55,16 +56,39 @@ struct ExternalData {
         // Create the geometry source for vertices
         let vertexSource = SCNGeometrySource(vertices: vertices)
 
-        // Create the geometry source for colors
-        let colorData = Data(bytes: colors, count: colors.count * MemoryLayout<UIColor>.size)
+        // Assuming the UIColor's data is not properly formatted for the SCNGeometrySource
+        // Instead, create an array of normalized float values representing the color data
+
+        var colorComponents: [CGFloat] = []
+        
+        var counter = 0
+
+        for y in 0..<height {
+            for x in 0..<width {
+                let colorOffset = y * bytesPerRow + x * 4 // Assuming BGRA format
+                let bComponent = CGFloat(colorData[colorOffset]) / 255.0
+                let gComponent = CGFloat(colorData[colorOffset + 1]) / 255.0
+                let rComponent = CGFloat(colorData[colorOffset + 2]) / 255.0
+                let aComponent = CGFloat(colorData[colorOffset + 3]) / 255.0
+                
+                print("Converting \(counter)th point: \([rComponent, gComponent, bComponent, aComponent])")
+
+                // Append color components in RGBA order, which is typically used in SceneKit
+                colorComponents += [rComponent, gComponent, bComponent, aComponent]
+                
+                counter += 1
+            }
+        }
+
+        let colorData = Data(buffer: UnsafeBufferPointer(start: &colorComponents, count: colorComponents.count))
         let colorSource = SCNGeometrySource(data: colorData,
                                             semantic: .color,
-                                            vectorCount: colors.count,
+                                            vectorCount: vertices.count,
                                             usesFloatComponents: true,
                                             componentsPerVector: 4,
                                             bytesPerComponent: MemoryLayout<CGFloat>.size,
                                             dataOffset: 0,
-                                            dataStride: MemoryLayout<UIColor>.size)
+                                            dataStride: MemoryLayout<CGFloat>.stride * 4)
 
         // Create the geometry element
         let indices: [Int32] = Array(0..<Int32(vertices.count))
@@ -75,7 +99,7 @@ struct ExternalData {
                                          bytesPerIndex: MemoryLayout<Int32>.size)
 
         // Create the point cloud geometry
-        let pointCloudGeometry = SCNGeometry(sources: [vertexSource, colorSource], elements: [element])
+        pointCloudGeometry = SCNGeometry(sources: [vertexSource, colorSource], elements: [element])
 
         // Set the shader modifier to change the point size
         let pointSize: CGFloat = 5.0 // Adjust the point size as necessary
@@ -84,17 +108,73 @@ struct ExternalData {
             #pragma body
             gl_PointSize = \(pointSize);
         """
-        pointCloudGeometry.shaderModifiers = [.geometry: shaderModifier]
+        pointCloudGeometry!.shaderModifiers = [.geometry: shaderModifier]
 
         // Set the lighting model to constant to ensure the points are fully lit
-        pointCloudGeometry.firstMaterial?.lightingModel = .constant
+        pointCloudGeometry!.firstMaterial?.lightingModel = .constant
 
         // Set additional material properties as needed, for example, to make the points more visible
-        pointCloudGeometry.firstMaterial?.isDoubleSided = true
+        pointCloudGeometry!.firstMaterial?.isDoubleSided = true
+        
+        print("Done constructing the 3D object!")
 
-        return pointCloudGeometry
+        return pointCloudGeometry!
     }
+    
+    static func exportGeometryAsPLY(to url: URL) {
+          guard let geometry = pointCloudGeometry,
+                let vertexSource = geometry.sources.first(where: { $0.semantic == .vertex }),
+                let colorSource = geometry.sources.first(where: { $0.semantic == .color }) else {
+              print("Unable to access vertex or color source from geometry")
+              return
+          }
 
+          // Access vertex data
+        guard let vertexData: Data? = vertexSource.data else {
+              print("Unable to access vertex data")
+              return
+          }
+          
+          // Access color data
+        guard let colorData: Data? = colorSource.data else {
+              print("Unable to access color data")
+              return
+          }
+
+          let vertexCount = vertexSource.vectorCount
+          let colorStride = colorSource.dataStride / MemoryLayout<CGFloat>.size
+          let vertices = vertexData!.toArray(type: SCNVector3.self, count: vertexCount)
+          let colors = colorData!.toArray(type: CGFloat.self, count: vertexCount * colorStride)
+
+          var plyString = "ply\n"
+          plyString += "format ascii 1.0\n"
+          plyString += "element vertex \(vertexCount)\n"
+          plyString += "property float x\n"
+          plyString += "property float y\n"
+          plyString += "property float z\n"
+          plyString += "property uchar red\n"
+          plyString += "property uchar green\n"
+          plyString += "property uchar blue\n"
+          plyString += "property uchar alpha\n"
+          plyString += "end_header\n"
+
+          for i in 0..<vertexCount {
+              let vertex = vertices[i]
+              let colorIndex = i * colorStride
+              let color = (0..<4).map { i -> UInt8 in
+                  let component = colors[colorIndex + i]
+                  return UInt8(component * 255)
+              }
+              plyString += "\(vertex.x) \(vertex.y) \(vertex.z) \(color[0]) \(color[1]) \(color[2]) \(color[3])\n"
+          }
+
+          do {
+              try plyString.write(to: url, atomically: true, encoding: .ascii)
+              print("PLY file was successfully saved to: \(url.path)")
+          } catch {
+              print("Failed to write PLY file: \(error)")
+          }
+      }
 }
 
 @available(iOS 11.1, *)
@@ -710,100 +790,6 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         }
     }
     
-    // MARK: - Save Points to File
-    // Modified by John Seong from the code of following:
-    // https://developer.apple.com/forums/thread/658109
-    
-    private func savePointsToFileAsPLY() {
-        print("Running PLY Export...")
-        
-        guard !ExternalData.isSavingFileAsPLY else { return }
-        ExternalData.isSavingFileAsPLY = true
-        
-        let depthMap: CVPixelBuffer = globalDepthData.depthDataMap
-        let width = CVPixelBufferGetWidth(depthMap)
-        let height = CVPixelBufferGetHeight(depthMap)
-        
-        // Lock the buffers for reading
-        CVPixelBufferLockBaseAddress(depthMap, .readOnly)
-        CVPixelBufferLockBaseAddress(globalVideoPixelBuffer, .readOnly)
-        
-        // Access the data in the buffers
-        let floatBuffer = unsafeBitCast(CVPixelBufferGetBaseAddress(depthMap), to: UnsafeMutablePointer<Float>.self)
-        
-        print("Dot Projector Count: \(width * height)")
-        
-        // 1. Setup Headers
-        // width * height = currentPointCount
-        var fileToWrite = ""
-        let headers = ["ply",
-                       "format ascii 1.0",
-                       "element vertex \(width * height)",
-                       "property float x",
-                       "property float y",
-                       "property float z",
-                       "property uchar red",
-                       "property uchar green",
-                       "property uchar blue",
-                       "property uchar alpha",
-                       "element face 0",
-                       "property list uchar int vertex_indices",
-                       "end_header"]
-        for header in headers {
-            fileToWrite += header
-            fileToWrite += "\r\n"
-        }
-        
-        // 2. Add Point Data
-        for y in 0..<height {
-            for x in 0..<width {
-                // Get depth value for the point (z coordinate)
-                let depthValue = floatBuffer[y * width + x]
-                
-                // Get color value for the point from globalVideoPixelBuffer
-                let pixelDataLocation: Int = (y * width + x) * 4 // * 4 for BGRA format
-                let bComponent = UInt8(255 * clamp(value: floatBuffer[pixelDataLocation], lower: 0, upper: 1))
-                let gComponent = UInt8(255 * clamp(value: floatBuffer[pixelDataLocation + 1], lower: 0, upper: 1))
-                let rComponent = UInt8(255 * clamp(value: floatBuffer[pixelDataLocation + 2], lower: 0, upper: 1))
-                let aComponent = UInt8(255 * clamp(value: floatBuffer[pixelDataLocation + 3], lower: 0, upper: 1))
-                
-                // Construct the point value line and add to fileToWrite
-                let pvValue = "\(x) \(y) \(depthValue) \(rComponent) \(gComponent) \(bComponent) \(aComponent)"
-                fileToWrite += pvValue
-                fileToWrite += "\r\n"
-            }
-        }
-        
-        // Helper function to clamp values between a range
-        func clamp<T: Comparable>(value: T, lower: T, upper: T) -> T {
-            return min(max(value, lower), upper)
-        }
-        
-        // Unlock the buffers after reading
-        CVPixelBufferUnlockBaseAddress(depthMap, .readOnly)
-        CVPixelBufferUnlockBaseAddress(globalVideoPixelBuffer, .readOnly)
-        
-        // Unlock the buffers after reading
-        CVPixelBufferUnlockBaseAddress(depthMap, .readOnly)
-        CVPixelBufferUnlockBaseAddress(globalVideoPixelBuffer, .readOnly)
-        
-        ExternalData.exportPLYData = Data(fileToWrite.utf8)
-        ExternalData.isSavingFileAsPLY = false
-        
-        // 6. Define File Path
-        //        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
-        //        let documentsDirectory = paths[0]
-        //        let file = documentsDirectory.appendingPathComponent("ply_\(UUID().uuidString).ply")
-        //
-        //        do {
-        //            // 7. Write to File
-        //            try fileToWrite.write(to: file, atomically: true, encoding: String.Encoding.ascii)
-        //            self.isSavingFile = false
-        //        } catch {
-        //            print("Failed to write PLY file", error)
-        //        }
-    }
-
     func printDepthData(depthData: AVDepthData, imageData: CVImageBuffer) {
         let depthPixelBuffer = depthData.depthDataMap
         let colorPixelBuffer = imageData
@@ -884,6 +870,18 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         }
         
         print("Completed iteration")
+        
+        // Assuming colorData is the base address for the BGRA image buffer
+        let colorBaseAddress = CVPixelBufferGetBaseAddress(colorPixelBuffer)!.assumingMemoryBound(to: UInt8.self)
+        
+        // Call the point cloud creation function
+        let pointCloudGeometry = ExternalData.createPointCloudGeometry(
+            depthData: depthData,
+            colorData: colorBaseAddress,
+            width: commonWidth,
+            height: commonHeight,
+            bytesPerRow: colorBytesPerRow // Use the correct bytes per row for color data
+        )
         
         // Synchronize access to the shared resource
         DispatchQueue.main.async {
