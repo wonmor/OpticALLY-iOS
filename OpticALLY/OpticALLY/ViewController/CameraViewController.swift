@@ -211,23 +211,6 @@ struct ExternalData {
       }
 }
 
-struct ConsoleView: View {
-    @ObservedObject var logManager = LogManager.shared
-
-    var body: some View {
-        ScrollView {
-            if let lastLog = logManager.latestLog {
-                Text(lastLog)
-                    .padding()
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-        }
-        .onDisappear {
-            logManager.stopTimer()
-        }
-    }
-}
-
 @available(iOS 11.1, *)
 class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDelegate {
     
@@ -1039,6 +1022,8 @@ struct SwiftUIView: View {
     @State private var showDropdown: Bool = false
     @State private var showConsoleOutput: Bool = false
     
+    @ObservedObject var logManager = LogManager.shared
+    
     let maxOffset: CGFloat = 30.0 // change this to control how much the finger moves
     
     var body: some View {
@@ -1064,7 +1049,16 @@ struct SwiftUIView: View {
                     }
                     
                     if showConsoleOutput {
-                        ConsoleView()
+                        ScrollView {
+                            if let lastLog = logManager.latestLog {
+                                Text(lastLog)
+                                    .padding()
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                        }
+                        .onDisappear {
+                            logManager.stopTimer()
+                        }
                         
                     } else {
                         Spacer()
@@ -1077,15 +1071,29 @@ struct SwiftUIView: View {
                         ExternalData.isSavingFileAsPLY = true
                     }) {
                         if showConsoleOutput {
-                            HStack {
-                                Image(systemName: "circle.dotted") // Different SF Symbols for start and pause
-                                Text("READING...")
-                                    .font(.title3)
-                                    .bold()
+                            if let lastLog = logManager.latestLog {
+                                if lastLog.lowercased().contains("done") {
+                                    HStack {
+                                        Image(systemName: "checkmark.circle") // Different SF Symbols for start and pause
+                                        Text("COMPLETED")
+                                            .font(.title3)
+                                            .bold()
+                                    }
+                                    .foregroundColor(.white)
+                                    .padding()
+                                    .background(Capsule().fill(Color.black))
+                                } else {
+                                    HStack {
+                                        Image(systemName: "circle.dotted") // Different SF Symbols for start and pause
+                                        Text("READING...")
+                                            .font(.title3)
+                                            .bold()
+                                    }
+                                    .foregroundColor(.white)
+                                    .padding()
+                                    .background(Capsule().fill(Color.black))
+                                }
                             }
-                            .foregroundColor(.white)
-                            .padding()
-                            .background(Capsule().fill(Color.black))
                         } else {
                             HStack {
                                 Image(systemName: "play.circle") // Different SF Symbols for start and pause
