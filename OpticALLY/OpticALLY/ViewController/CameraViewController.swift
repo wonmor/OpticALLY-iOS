@@ -22,26 +22,26 @@ class LogManager: ObservableObject {
     private var logs: [String] = []
     @Published var latestLog: String?
     private var timer: Timer?
-
+    
     private init() {
         // Set up a timer that updates `latestLog` every 3 seconds
         timer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { [weak self] _ in
             self?.updateLatestLog()
         }
     }
-
+    
     func log(_ message: String) {
         DispatchQueue.main.async {
             self.logs.append(message)
         }
     }
-
+    
     private func updateLatestLog() {
         DispatchQueue.main.async {
             self.latestLog = self.logs.last
         }
     }
-
+    
     func stopTimer() {
         timer?.invalidate()
         timer = nil
@@ -58,43 +58,43 @@ struct ExternalData {
     static func createPointCloudGeometry(depthData: AVDepthData, colorData: UnsafePointer<UInt8>, width: Int, height: Int, bytesPerRow: Int) -> SCNGeometry {
         var vertices: [SCNVector3] = []
         var colors: [UIColor] = []
-
+        
         let depthDataMap = depthData.depthDataMap
         CVPixelBufferLockBaseAddress(depthDataMap, .readOnly)
         defer { CVPixelBufferUnlockBaseAddress(depthDataMap, .readOnly) }
-
+        
         for y in 0..<height {
             for x in 0..<width {
                 let depthOffset = y * CVPixelBufferGetBytesPerRow(depthDataMap) + x * MemoryLayout<Float>.size
                 let depthPointer = CVPixelBufferGetBaseAddress(depthDataMap)!.advanced(by: depthOffset).assumingMemoryBound(to: Float.self)
                 let depth = depthPointer.pointee
-
+                
                 // Scale and offset the depth as needed to fit your scene
                 let vertex = SCNVector3(x: Float(x), y: Float(y), z: depth)
-
+                
                 vertices.append(vertex)
-
+                
                 let colorOffset = y * bytesPerRow + x * 4 // Assuming BGRA format
                 let bComponent = Double(colorData[colorOffset]) / 255.0
                 let gComponent = Double(colorData[colorOffset + 1]) / 255.0
                 let rComponent = Double(colorData[colorOffset + 2]) / 255.0
                 let aComponent = Double(colorData[colorOffset + 3]) / 255.0
-
+                
                 let color = UIColor(red: CGFloat(rComponent), green: CGFloat(gComponent), blue: CGFloat(bComponent), alpha: CGFloat(aComponent))
                 colors.append(color)
             }
         }
-
+        
         // Create the geometry source for vertices
         let vertexSource = SCNGeometrySource(vertices: vertices)
-
+        
         // Assuming the UIColor's data is not properly formatted for the SCNGeometrySource
         // Instead, create an array of normalized float values representing the color data
-
+        
         var colorComponents: [CGFloat] = []
         
         var counter = 0
-
+        
         for y in 0..<height {
             for x in 0..<width {
                 let colorOffset = y * bytesPerRow + x * 4 // Assuming BGRA format
@@ -105,14 +105,14 @@ struct ExternalData {
                 
                 print("Converting \(counter)th point: \([rComponent, gComponent, bComponent, aComponent])")
                 LogManager.shared.log("Converting \(counter)th point: \([rComponent, gComponent, bComponent, aComponent])")
-
+                
                 // Append color components in RGBA order, which is typically used in SceneKit
                 colorComponents += [rComponent, gComponent, bComponent, aComponent]
                 
                 counter += 1
             }
         }
-
+        
         let colorData = Data(buffer: UnsafeBufferPointer(start: &colorComponents, count: colorComponents.count))
         let colorSource = SCNGeometrySource(data: colorData,
                                             semantic: .color,
@@ -122,7 +122,7 @@ struct ExternalData {
                                             bytesPerComponent: MemoryLayout<CGFloat>.size,
                                             dataOffset: 0,
                                             dataStride: MemoryLayout<CGFloat>.stride * 4)
-
+        
         // Create the geometry element
         let indices: [Int32] = Array(0..<Int32(vertices.count))
         let indexData = Data(bytes: indices, count: indices.count * MemoryLayout<Int32>.size)
@@ -130,10 +130,10 @@ struct ExternalData {
                                          primitiveType: .point,
                                          primitiveCount: vertices.count,
                                          bytesPerIndex: MemoryLayout<Int32>.size)
-
+        
         // Create the point cloud geometry
         pointCloudGeometry = SCNGeometry(sources: [vertexSource, colorSource], elements: [element])
-
+        
         // Set the shader modifier to change the point size
         let pointSize: CGFloat = 5.0 // Adjust the point size as necessary
         let shaderModifier = """
@@ -142,73 +142,73 @@ struct ExternalData {
             gl_PointSize = \(pointSize);
         """
         pointCloudGeometry!.shaderModifiers = [.geometry: shaderModifier]
-
+        
         // Set the lighting model to constant to ensure the points are fully lit
         pointCloudGeometry!.firstMaterial?.lightingModel = .constant
-
+        
         // Set additional material properties as needed, for example, to make the points more visible
         pointCloudGeometry!.firstMaterial?.isDoubleSided = true
         
         print("Done constructing the 3D object!")
         LogManager.shared.log("Done constructing the 3D object!")
-
+        
         return pointCloudGeometry!
     }
     
     static func exportGeometryAsPLY(to url: URL) {
-          guard let geometry = pointCloudGeometry,
-                let vertexSource = geometry.sources.first(where: { $0.semantic == .vertex }),
-                let colorSource = geometry.sources.first(where: { $0.semantic == .color }) else {
-              print("Unable to access vertex or color source from geometry")
-              return
-          }
-
-          // Access vertex data
+        guard let geometry = pointCloudGeometry,
+              let vertexSource = geometry.sources.first(where: { $0.semantic == .vertex }),
+              let colorSource = geometry.sources.first(where: { $0.semantic == .color }) else {
+            print("Unable to access vertex or color source from geometry")
+            return
+        }
+        
+        // Access vertex data
         guard let vertexData: Data? = vertexSource.data else {
-              print("Unable to access vertex data")
-              return
-          }
-          
-          // Access color data
+            print("Unable to access vertex data")
+            return
+        }
+        
+        // Access color data
         guard let colorData: Data? = colorSource.data else {
-              print("Unable to access color data")
-              return
-          }
-
-          let vertexCount = vertexSource.vectorCount
-          let colorStride = colorSource.dataStride / MemoryLayout<CGFloat>.size
-          let vertices = vertexData!.toArray(type: SCNVector3.self, count: vertexCount)
-          let colors = colorData!.toArray(type: CGFloat.self, count: vertexCount * colorStride)
-
-          var plyString = "ply\n"
-          plyString += "format ascii 1.0\n"
-          plyString += "element vertex \(vertexCount)\n"
-          plyString += "property float x\n"
-          plyString += "property float y\n"
-          plyString += "property float z\n"
-          plyString += "property uchar red\n"
-          plyString += "property uchar green\n"
-          plyString += "property uchar blue\n"
-          plyString += "property uchar alpha\n"
-          plyString += "end_header\n"
-
-          for i in 0..<vertexCount {
-              let vertex = vertices[i]
-              let colorIndex = i * colorStride
-              let color = (0..<4).map { i -> UInt8 in
-                  let component = colors[colorIndex + i]
-                  return UInt8(component * 255)
-              }
-              plyString += "\(vertex.x) \(vertex.y) \(vertex.z) \(color[0]) \(color[1]) \(color[2]) \(color[3])\n"
-          }
-
-          do {
-              try plyString.write(to: url, atomically: true, encoding: .ascii)
-              print("PLY file was successfully saved to: \(url.path)")
-          } catch {
-              print("Failed to write PLY file: \(error)")
-          }
-      }
+            print("Unable to access color data")
+            return
+        }
+        
+        let vertexCount = vertexSource.vectorCount
+        let colorStride = colorSource.dataStride / MemoryLayout<CGFloat>.size
+        let vertices = vertexData!.toArray(type: SCNVector3.self, count: vertexCount)
+        let colors = colorData!.toArray(type: CGFloat.self, count: vertexCount * colorStride)
+        
+        var plyString = "ply\n"
+        plyString += "format ascii 1.0\n"
+        plyString += "element vertex \(vertexCount)\n"
+        plyString += "property float x\n"
+        plyString += "property float y\n"
+        plyString += "property float z\n"
+        plyString += "property uchar red\n"
+        plyString += "property uchar green\n"
+        plyString += "property uchar blue\n"
+        plyString += "property uchar alpha\n"
+        plyString += "end_header\n"
+        
+        for i in 0..<vertexCount {
+            let vertex = vertices[i]
+            let colorIndex = i * colorStride
+            let color = (0..<4).map { i -> UInt8 in
+                let component = colors[colorIndex + i]
+                return UInt8(component * 255)
+            }
+            plyString += "\(vertex.x) \(vertex.y) \(vertex.z) \(color[0]) \(color[1]) \(color[2]) \(color[3])\n"
+        }
+        
+        do {
+            try plyString.write(to: url, atomically: true, encoding: .ascii)
+            print("PLY file was successfully saved to: \(url.path)")
+        } catch {
+            print("Failed to write PLY file: \(error)")
+        }
+    }
 }
 
 @available(iOS 11.1, *)
@@ -866,7 +866,7 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             depthBytesPerPixel = 4
         case kCVPixelFormatType_DepthFloat16:
             depthBytesPerPixel = 2
-        // Add more cases as necessary for different formats
+            // Add more cases as necessary for different formats
         default:
             print("Unsupported depth pixel format type")
             return
@@ -892,7 +892,7 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
                 
                 // Print the (x, y) coordinates and color value in BGRA
                 print("Color at (\(x), \(y)): B:\(blue) G:\(green) R:\(red) A:\(alpha)")
-
+                
                 // Calculate the depth data's corresponding pixel offset
                 let depthPixelOffset = y * depthBytesPerRow + x * depthBytesPerPixel
                 let depthPixel = depthDataAddress.advanced(by: depthPixelOffset).assumingMemoryBound(to: Float.self)
@@ -960,7 +960,7 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             
             ExternalData.isSavingFileAsPLY = false
         }
-    
+        
         globalDepthData = depthData
         globalVideoPixelBuffer = videoPixelBuffer
         
@@ -986,31 +986,42 @@ enum CurrentState {
     case begin, start
 }
 
-struct DropdownView: View {
-    var body: some View {
-        VStack {
-            Button(action: {
-                ExternalData.renderingEnabled = true
-                ExternalData.isSavingFileAsPLY = true
-                
-                DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                    ExternalData.renderingEnabled = false
-                }
-            }) {
-                Text(".PLY")
-                    .padding()
-                    .foregroundColor(.white)
-                    .background(Capsule().fill(Color.gray.opacity(0.4)))
-            }
-        }
-        .padding(.top, 5)
-    }
-}
-
 struct SwiftUIScanView: View {
     var body: some View {
         Text("Scan Complete!")
     }
+}
+
+// ViewModel to handle the export and share
+class ExportViewModel: ObservableObject {
+    @Published var fileURL: URL?
+    @Published var showShareSheet = false
+    
+    func exportPLY() {
+        // Determine a temporary file URL to save the PLY file
+        let tempDirectory = FileManager.default.temporaryDirectory
+        let fileURL = tempDirectory.appendingPathComponent("model.ply")
+        
+        // Export the PLY data to the file
+        ExternalData.exportGeometryAsPLY(to: fileURL)
+        
+        // Update the state to indicate that there's a file to share
+        DispatchQueue.main.async {
+            self.fileURL = fileURL
+            self.showShareSheet = true
+        }
+    }
+}
+
+struct ShareSheet: UIViewControllerRepresentable {
+    var fileURL: URL
+    
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        let controller = UIActivityViewController(activityItems: [fileURL], applicationActivities: nil)
+        return controller
+    }
+    
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
 struct SwiftUIView: View {
@@ -1023,6 +1034,7 @@ struct SwiftUIView: View {
     @State private var showConsoleOutput: Bool = false
     
     @ObservedObject var logManager = LogManager.shared
+    @StateObject private var exportViewModel = ExportViewModel()
     
     let maxOffset: CGFloat = 30.0 // change this to control how much the finger moves
     
@@ -1075,15 +1087,59 @@ struct SwiftUIView: View {
                         if showConsoleOutput {
                             if let lastLog = logManager.latestLog {
                                 if lastLog.lowercased().contains("done") {
-                                    HStack {
-                                        Image(systemName: "checkmark.circle") // Symbol for completion
-                                        Text("COMPLETED")
-                                            .font(.title3)
-                                            .bold()
+                                    VStack {
+                                        Button(action: {
+                                            // Toggle the dropdown
+                                            showDropdown.toggle()
+                                        }) {
+                                            HStack {
+                                                Image(systemName: "arrow.down.circle")
+                                                Text("DOWNLOAD")
+                                                    .font(.body)
+                                                    .bold()
+                                            }
+                                            .foregroundColor(.black)
+                                            .padding()
+                                            .background(Capsule().fill(Color.white))
+                                        }
+                                        
+                                        // Dropdown list view
+                                        if showDropdown {
+                                            VStack {
+                                                Button(action: {
+                                                    exportViewModel.exportPLY()
+                                                }) {
+                                                    Text(".PLY")
+                                                        .padding()
+                                                        .foregroundColor(.white)
+                                                        .background(Capsule().fill(Color.gray.opacity(0.4)))
+                                                }
+                                            }
+                                            .padding(.top, 5)
+                                            .sheet(isPresented: $exportViewModel.showShareSheet, onDismiss: {
+                                                exportViewModel.showShareSheet = false
+                                            }) {
+                                                // This will present the share sheet
+                                                if let fileURL = exportViewModel.fileURL {
+                                                    ShareSheet(fileURL: fileURL)
+                                                }
+                                            }
+                                            
+                                        } else {
+                                            Button(action: {
+                                                
+                                            }) {
+                                                Text("RESCAN")
+                                                    .font(.body)
+                                                    .bold()
+                                                    .foregroundColor(.white)
+                                                    .padding()
+                                            }
+                                            .background(Capsule().fill(Color.black).overlay(Capsule().stroke(Color.white, lineWidth: 2)))
+                                        }
+                                        
                                     }
-                                    .foregroundColor(.white)
                                     .padding()
-                                    .background(Capsule().fill(Color.black).overlay(Capsule().stroke(Color.white, lineWidth: 2)))
                                 } else {
                                     HStack {
                                         Image(systemName: "circle.dotted") // Different SF Symbols for start and pause
@@ -1171,7 +1227,17 @@ struct SwiftUIView: View {
                             
                             // Dropdown list view
                             if showDropdown {
-                                DropdownView()
+                                VStack {
+                                    Button(action: {
+                                        
+                                    }) {
+                                        Text(".PLY")
+                                            .padding()
+                                            .foregroundColor(.white)
+                                            .background(Capsule().fill(Color.gray.opacity(0.4)))
+                                    }
+                                }
+                                .padding(.top, 5)
                                 
                             } else {
                                 Button(action: {
