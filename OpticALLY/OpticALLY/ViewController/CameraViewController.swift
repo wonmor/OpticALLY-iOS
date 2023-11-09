@@ -17,6 +17,37 @@ import SceneKit
 import ARKit
 import Combine
 
+class LogManager: ObservableObject {
+    static let shared = LogManager()
+    private var logs: [String] = []
+    @Published var latestLog: String?
+    private var timer: Timer?
+
+    private init() {
+        // Set up a timer that updates `latestLog` every 3 seconds
+        timer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { [weak self] _ in
+            self?.updateLatestLog()
+        }
+    }
+
+    func log(_ message: String) {
+        DispatchQueue.main.async {
+            self.logs.append(message)
+        }
+    }
+
+    private func updateLatestLog() {
+        DispatchQueue.main.async {
+            self.latestLog = self.logs.last
+        }
+    }
+
+    func stopTimer() {
+        timer?.invalidate()
+        timer = nil
+    }
+}
+
 struct ExternalData {
     static var renderingEnabled = true
     static var isSavingFileAsPLY = false
@@ -72,9 +103,8 @@ struct ExternalData {
                 let rComponent = CGFloat(colorData[colorOffset + 2]) / 255.0
                 let aComponent = CGFloat(colorData[colorOffset + 3]) / 255.0
                 
-                ConsoleOutputCatcher.shared.catchOutput {
-                    print("Converting \(counter)th point: \([rComponent, gComponent, bComponent, aComponent])")
-                }
+                print("Converting \(counter)th point: \([rComponent, gComponent, bComponent, aComponent])")
+                LogManager.shared.log("Converting \(counter)th point: \([rComponent, gComponent, bComponent, aComponent])")
 
                 // Append color components in RGBA order, which is typically used in SceneKit
                 colorComponents += [rComponent, gComponent, bComponent, aComponent]
@@ -119,9 +149,8 @@ struct ExternalData {
         // Set additional material properties as needed, for example, to make the points more visible
         pointCloudGeometry!.firstMaterial?.isDoubleSided = true
         
-        ConsoleOutputCatcher.shared.catchOutput {
-            print("Done constructing the 3D object!")
-        }
+        print("Done constructing the 3D object!")
+        LogManager.shared.log("Done constructing the 3D object!")
 
         return pointCloudGeometry!
     }
@@ -180,6 +209,23 @@ struct ExternalData {
               print("Failed to write PLY file: \(error)")
           }
       }
+}
+
+struct ConsoleView: View {
+    @ObservedObject var logManager = LogManager.shared
+
+    var body: some View {
+        ScrollView {
+            if let lastLog = logManager.latestLog {
+                Text(lastLog)
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+        .onDisappear {
+            logManager.stopTimer()
+        }
+    }
 }
 
 @available(iOS 11.1, *)
@@ -992,8 +1038,6 @@ struct SwiftUIView: View {
     @State private var isScanComplete: Bool = false
     @State private var showDropdown: Bool = false
     @State private var showConsoleOutput: Bool = false
-    @State private var consoleOutput = ""
-    @State private var cancellables = Set<AnyCancellable>()
     
     let maxOffset: CGFloat = 30.0 // change this to control how much the finger moves
     
@@ -1020,21 +1064,8 @@ struct SwiftUIView: View {
                     }
                     
                     if showConsoleOutput {
-                        ScrollView {
-                            Text(consoleOutput).padding()
-                        }
-                        .onAppear {
-                            ConsoleOutputCatcher.shared.outputPublisher
-                                .receive(on: RunLoop.main)
-                                .sink { output in
-                                    consoleOutput += output
-                                }
-                                .store(in: &cancellables)
-                        }
-                        .onDisappear {
-                            // Clean up the cancellables if the view disappears
-                            cancellables.removeAll()
-                        }
+                        ConsoleView()
+                        
                     } else {
                         Spacer()
                     }
@@ -1042,6 +1073,7 @@ struct SwiftUIView: View {
                     // Button to start/pause scanning
                     Button(action: {
                         showConsoleOutput = true
+                        
                         ExternalData.isSavingFileAsPLY = true
                     }) {
                         if showConsoleOutput {
@@ -1067,7 +1099,6 @@ struct SwiftUIView: View {
                         }
                     }
                 }
-                .background(showConsoleOutput ? Color.black.opacity(0.8).blur(radius: 40.0) : Color.clear.blur(radius: 0.0))
                 
             case .start:
                 VStack {
