@@ -10,6 +10,7 @@
 		9614F0AF2ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */; };
 		9614F0B02ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */; };
 		9614F0B12ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */; };
+		96491C5F2AFD746300FD3666 /* ConsoleOutputCatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96491C5E2AFD746300FD3666 /* ConsoleOutputCatcher.swift */; };
 		9679F8B02AD08C7000686F13 /* ScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8AF2AD08C7000686F13 /* ScanView.swift */; };
 		9679F8CD2AD0907A00686F13 /* ScanViewControllerWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8B22AD0907900686F13 /* ScanViewControllerWrapper.swift */; };
 		9679F8CE2AD0907A00686F13 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8B32AD0907900686F13 /* AppDelegate.swift */; };
@@ -70,6 +71,7 @@
 
 /* Begin PBXFileReference section */
 		9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = RobotoSlab.ttf; sourceTree = "<group>"; };
+		96491C5E2AFD746300FD3666 /* ConsoleOutputCatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsoleOutputCatcher.swift; sourceTree = "<group>"; };
 		9679F8AF2AD08C7000686F13 /* ScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanView.swift; sourceTree = "<group>"; };
 		9679F8B12AD0907800686F13 /* OpticALLY-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "OpticALLY-Bridging-Header.h"; sourceTree = "<group>"; };
 		9679F8B22AD0907900686F13 /* ScanViewControllerWrapper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScanViewControllerWrapper.swift; sourceTree = "<group>"; };
@@ -191,6 +193,7 @@
 			children = (
 				969E42E82ADC9ABD00E77BA7 /* Resources */,
 				969AC27B2AB6E8AE0096892E /* Constants.swift */,
+				96491C5E2AFD746300FD3666 /* ConsoleOutputCatcher.swift */,
 				969AC2812AB7554C0096892E /* Extensions+Modifiers.swift */,
 			);
 			path = Shared;
@@ -450,6 +453,7 @@
 				967EE08F2AAEDA82000C4D5F /* EyesTrackingView.swift in Sources */,
 				9679F8DB2AD0907A00686F13 /* ResourceLoader.swift in Sources */,
 				9679F8B02AD08C7000686F13 /* ScanView.swift in Sources */,
+				96491C5F2AFD746300FD3666 /* ConsoleOutputCatcher.swift in Sources */,
 				9679F8DF2AD0907A00686F13 /* PointCloudMetalView.mm in Sources */,
 				969AC2822AB7554C0096892E /* Extensions+Modifiers.swift in Sources */,
 				9679F8D12AD0907A00686F13 /* AAPLTransforms.mm in Sources */,

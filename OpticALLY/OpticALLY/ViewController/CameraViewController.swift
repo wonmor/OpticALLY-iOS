@@ -17,15 +17,11 @@ import SceneKit
 import ARKit
 import Combine
 
-class ExternalData: ObservableObject {
-    static let shared = ExternalData()
-    
+struct ExternalData {
     static var renderingEnabled = true
     static var isSavingFileAsPLY = false
     static var exportPLYData: Data?
     static var pointCloudGeometry: SCNGeometry?
-    
-    @Published var shouldRefreshSwiftUIView: Bool = false
     
     // Function to convert depth and color data into a point cloud geometry
     static func createPointCloudGeometry(depthData: AVDepthData, colorData: UnsafePointer<UInt8>, width: Int, height: Int, bytesPerRow: Int) -> SCNGeometry {
@@ -241,24 +237,17 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     private var lastScaleDiff = Float(0.0)
     
     private var lastZoom = Float(0.0)
-
+    
     private var lastXY = CGPoint(x: 0, y: 0)
     
     private var viewFrameSize = CGSize()
     
     private var autoPanningIndex = Int(-1) // start with auto-panning off
     
-    private var swiftUIHostingController: UIHostingController<SwiftUIView>?
-    
-    private var cancellables = Set<AnyCancellable>()
-    
     // MARK: - View Controller Life Cycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        // Setup observers
-       setupSwiftUIRefreshObserver()
         
         viewFrameSize = self.view.frame.size
         
@@ -320,34 +309,6 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             self.configureSession()
         }
     }
-    
-    private func setupSwiftUIRefreshObserver() {
-           ExternalData.shared.$shouldRefreshSwiftUIView
-               .receive(on: RunLoop.main)
-               .sink { [weak self] shouldRefresh in
-                   if shouldRefresh {
-                       self?.refreshSwiftUIView()
-                       ExternalData.shared.shouldRefreshSwiftUIView = false // Reset the flag
-                   }
-               }
-               .store(in: &cancellables) // Assuming you have a collection of AnyCancellable to store your subscriptions
-       }
-
-       private func refreshSwiftUIView() {
-           // Remove the old hosting controller if it exists
-           swiftUIHostingController?.willMove(toParent: nil)
-           swiftUIHostingController?.view.removeFromSuperview()
-           swiftUIHostingController?.removeFromParent()
-           
-           // Create a new hosting controller with the updated SwiftUI view
-           swiftUIHostingController = UIHostingController(rootView: SwiftUIView())
-           addChild(swiftUIHostingController!)
-           view.addSubview(swiftUIHostingController!.view)
-           swiftUIHostingController!.didMove(toParent: self)
-
-           // Layout the hosting controller's view as needed
-           swiftUIHostingController!.view.frame = self.view.bounds
-       }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -964,8 +925,6 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         if ExternalData.isSavingFileAsPLY {
             printDepthData(depthData: depthData, imageData: videoPixelBuffer)
             
-            // Trigger the refresh
-            ExternalData.shared.shouldRefreshSwiftUIView = true
             ExternalData.isSavingFileAsPLY = false
         }
     
@@ -1028,6 +987,9 @@ struct SwiftUIView: View {
     @State private var currentState: CurrentState = .begin
     @State private var isScanComplete: Bool = false
     @State private var showDropdown: Bool = false
+    @State private var consoleOutput = ""
+    
+    var cancellables = Set<AnyCancellable>()
     
     let maxOffset: CGFloat = 30.0 // change this to control how much the finger moves
     
@@ -1053,12 +1015,30 @@ struct SwiftUIView: View {
                             }
                     }
                     
-                    Text("Move your finger\nto pan around")
-                        .font(.title3)
-                        .bold()
-                        .padding()
-                        .multilineTextAlignment(.center)
-                        .foregroundColor(.white)
+                    if ExternalData.isSavingFileAsPLY {
+                        ScrollView {
+                            Text(consoleOutput).padding()
+                        }
+                        .onAppear {
+                            ConsoleOutputCatcher.shared.outputPublisher
+                                .receive(on: RunLoop.main)
+                                .sink { output in
+                                    consoleOutput += output
+                                }
+                                .store(in: &cancellables)
+                        }
+                        .onDisappear {
+                            // Clean up the cancellables if the view disappears
+                            cancellables.removeAll()
+                        }
+                    } else {
+                        Text("Move your finger\nto pan around")
+                            .font(.title3)
+                            .bold()
+                            .padding()
+                            .multilineTextAlignment(.center)
+                            .foregroundColor(.white)
+                    }
                     
                     // Button to start/pause scanning
                     Button(action: {
