@@ -72,7 +72,9 @@ struct ExternalData {
                 let rComponent = CGFloat(colorData[colorOffset + 2]) / 255.0
                 let aComponent = CGFloat(colorData[colorOffset + 3]) / 255.0
                 
-                print("Converting \(counter)th point: \([rComponent, gComponent, bComponent, aComponent])")
+                ConsoleOutputCatcher.shared.catchOutput {
+                    print("Converting \(counter)th point: \([rComponent, gComponent, bComponent, aComponent])")
+                }
 
                 // Append color components in RGBA order, which is typically used in SceneKit
                 colorComponents += [rComponent, gComponent, bComponent, aComponent]
@@ -117,7 +119,9 @@ struct ExternalData {
         // Set additional material properties as needed, for example, to make the points more visible
         pointCloudGeometry!.firstMaterial?.isDoubleSided = true
         
-        print("Done constructing the 3D object!")
+        ConsoleOutputCatcher.shared.catchOutput {
+            print("Done constructing the 3D object!")
+        }
 
         return pointCloudGeometry!
     }
@@ -1040,15 +1044,27 @@ struct SwiftUIView: View {
                         showConsoleOutput = true
                         ExternalData.isSavingFileAsPLY = true
                     }) {
-                        HStack {
-                            Image(systemName: "play.circle") // Different SF Symbols for start and pause
-                            Text("SCAN")
-                                .font(.title3)
-                                .bold()
+                        if showConsoleOutput {
+                            HStack {
+                                Image(systemName: "circle.dotted") // Different SF Symbols for start and pause
+                                Text("READING...")
+                                    .font(.title3)
+                                    .bold()
+                            }
+                            .foregroundColor(.white)
+                            .padding()
+                            .background(Capsule().fill(Color.black))
+                        } else {
+                            HStack {
+                                Image(systemName: "play.circle") // Different SF Symbols for start and pause
+                                Text("SCAN")
+                                    .font(.title3)
+                                    .bold()
+                            }
+                            .foregroundColor(.white)
+                            .padding()
+                            .background(Capsule().fill(Color.black))
                         }
-                        .foregroundColor(.white)
-                        .padding()
-                        .background(Capsule().fill(Color.black))
                     }
                 }
                 .background(showConsoleOutput ? Color.black.opacity(0.8).blur(radius: 40.0) : Color.clear.blur(radius: 0.0))
