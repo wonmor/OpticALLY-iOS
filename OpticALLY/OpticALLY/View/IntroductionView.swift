@@ -41,7 +41,7 @@ struct IntroductionView: View {
         ZStack {
             // Background video player
             BackgroundVideoPlayer()
-                .opacity(0.35)
+                .opacity(0.25)
                 .edgesIgnoringSafeArea(.all)
             
             // All your other views go here
@@ -84,9 +84,11 @@ struct TitleView: View {
             Text("Welcome to")
                 .font(.system(size: 36, weight: .bold))
                 .foregroundColor(.mainColor)
+                .monospaced()
             
             Text("Harolden")
                 .font(.system(size: 36, weight: .bold))
+                .monospaced()
         }
     }
 }

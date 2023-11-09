@@ -195,10 +195,27 @@ struct ExternalData {
         for i in 0..<vertexCount {
             let vertex = vertices[i]
             let colorIndex = i * colorStride
-            let color = (0..<4).map { i -> UInt8 in
-                let component = colors[colorIndex + i]
-                return UInt8(component * 255)
+
+            // Ensure the index is within the bounds of the colors array
+            guard colorIndex + 3 < colors.count else {
+                print("Color data index out of range for vertex \(i).")
+                continue
             }
+            
+            let color: [UInt8] = (0..<4).compactMap { i -> UInt8? in
+                let index = colorIndex + i
+                guard index < colors.count else {
+                    return nil
+                }
+                return UInt8(colors[index] * 255)
+            }
+            
+            // Only proceed if we have all four color components
+            guard color.count == 4 else {
+                print("Incomplete color data for vertex \(i).")
+                continue
+            }
+            
             plyString += "\(vertex.x) \(vertex.y) \(vertex.z) \(color[0]) \(color[1]) \(color[2]) \(color[3])\n"
         }
         
