@@ -1032,12 +1032,7 @@ struct SwiftUIView: View {
                             cancellables.removeAll()
                         }
                     } else {
-                        Text("Move your finger\nto pan around")
-                            .font(.title3)
-                            .bold()
-                            .padding()
-                            .multilineTextAlignment(.center)
-                            .foregroundColor(.white)
+                        Spacer()
                     }
                     
                     // Button to start/pause scanning
@@ -1056,7 +1051,7 @@ struct SwiftUIView: View {
                         .background(Capsule().fill(Color.black))
                     }
                 }
-                .background(Color.black.opacity(0.8).blur(radius: 40.0))
+                .background(showConsoleOutput ? Color.black.opacity(0.8).blur(radius: 40.0) : Color.clear.blur(radius: 0.0))
                 
             case .start:
                 VStack {
