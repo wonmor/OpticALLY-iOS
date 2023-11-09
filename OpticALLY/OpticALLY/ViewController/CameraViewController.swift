@@ -15,12 +15,17 @@ import Vision
 import UIKit
 import SceneKit
 import ARKit
+import Combine
 
-struct ExternalData {
+class ExternalData: ObservableObject {
+    static let shared = ExternalData()
+    
     static var renderingEnabled = true
     static var isSavingFileAsPLY = false
     static var exportPLYData: Data?
     static var pointCloudGeometry: SCNGeometry?
+    
+    @Published var shouldRefreshSwiftUIView: Bool = false
     
     // Function to convert depth and color data into a point cloud geometry
     static func createPointCloudGeometry(depthData: AVDepthData, colorData: UnsafePointer<UInt8>, width: Int, height: Int, bytesPerRow: Int) -> SCNGeometry {
@@ -236,17 +241,24 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     private var lastScaleDiff = Float(0.0)
     
     private var lastZoom = Float(0.0)
-    
+
     private var lastXY = CGPoint(x: 0, y: 0)
     
     private var viewFrameSize = CGSize()
     
     private var autoPanningIndex = Int(-1) // start with auto-panning off
     
+    private var swiftUIHostingController: UIHostingController<SwiftUIView>?
+    
+    private var cancellables = Set<AnyCancellable>()
+    
     // MARK: - View Controller Life Cycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // Setup observers
+       setupSwiftUIRefreshObserver()
         
         viewFrameSize = self.view.frame.size
         
@@ -308,6 +320,34 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             self.configureSession()
         }
     }
+    
+    private func setupSwiftUIRefreshObserver() {
+           ExternalData.shared.$shouldRefreshSwiftUIView
+               .receive(on: RunLoop.main)
+               .sink { [weak self] shouldRefresh in
+                   if shouldRefresh {
+                       self?.refreshSwiftUIView()
+                       ExternalData.shared.shouldRefreshSwiftUIView = false // Reset the flag
+                   }
+               }
+               .store(in: &cancellables) // Assuming you have a collection of AnyCancellable to store your subscriptions
+       }
+
+       private func refreshSwiftUIView() {
+           // Remove the old hosting controller if it exists
+           swiftUIHostingController?.willMove(toParent: nil)
+           swiftUIHostingController?.view.removeFromSuperview()
+           swiftUIHostingController?.removeFromParent()
+           
+           // Create a new hosting controller with the updated SwiftUI view
+           swiftUIHostingController = UIHostingController(rootView: SwiftUIView())
+           addChild(swiftUIHostingController!)
+           view.addSubview(swiftUIHostingController!.view)
+           swiftUIHostingController!.didMove(toParent: self)
+
+           // Layout the hosting controller's view as needed
+           swiftUIHostingController!.view.frame = self.view.bounds
+       }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -924,6 +964,8 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         if ExternalData.isSavingFileAsPLY {
             printDepthData(depthData: depthData, imageData: videoPixelBuffer)
             
+            // Trigger the refresh
+            ExternalData.shared.shouldRefreshSwiftUIView = true
             ExternalData.isSavingFileAsPLY = false
         }
     
@@ -934,9 +976,17 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     }
     
     @IBSegueAction func embedSwiftUIView(_ coder: NSCoder) -> UIViewController? {
-        let hostingController = UIHostingController(coder: coder, rootView: SwiftUIView())
-        hostingController?.view.backgroundColor = .clear
-        return hostingController
+        // Upon Scan Completion...
+        if let pointCloudGeometry = ExternalData.pointCloudGeometry {
+            let hostingController = UIHostingController(coder: coder, rootView: SwiftUIScanView())!
+            hostingController.view.backgroundColor = .clear
+            return hostingController
+            
+        } else {
+            let hostingController = UIHostingController(coder: coder, rootView: SwiftUIView())!
+            hostingController.view.backgroundColor = .clear
+            return hostingController
+        }
     }
 }
 
@@ -962,6 +1012,12 @@ struct DropdownView: View {
             }
         }
         .padding(.top, 5)
+    }
+}
+
+struct SwiftUIScanView: View {
+    var body: some View {
+        Text("Scan Complete!")
     }
 }
 
@@ -1010,7 +1066,7 @@ struct SwiftUIView: View {
                     }) {
                         HStack {
                             Image(systemName: "play.circle") // Different SF Symbols for start and pause
-                            Text("START")
+                            Text("SCAN")
                                 .font(.title3)
                                 .bold()
                         }
