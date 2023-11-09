@@ -987,9 +987,9 @@ struct SwiftUIView: View {
     @State private var currentState: CurrentState = .begin
     @State private var isScanComplete: Bool = false
     @State private var showDropdown: Bool = false
+    @State private var showConsoleOutput: Bool = false
     @State private var consoleOutput = ""
-    
-    var cancellables = Set<AnyCancellable>()
+    @State private var cancellables = Set<AnyCancellable>()
     
     let maxOffset: CGFloat = 30.0 // change this to control how much the finger moves
     
@@ -1015,7 +1015,7 @@ struct SwiftUIView: View {
                             }
                     }
                     
-                    if ExternalData.isSavingFileAsPLY {
+                    if showConsoleOutput {
                         ScrollView {
                             Text(consoleOutput).padding()
                         }
@@ -1042,6 +1042,7 @@ struct SwiftUIView: View {
                     
                     // Button to start/pause scanning
                     Button(action: {
+                        showConsoleOutput = true
                         ExternalData.isSavingFileAsPLY = true
                     }) {
                         HStack {
