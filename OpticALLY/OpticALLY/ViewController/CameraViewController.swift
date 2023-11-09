@@ -1054,6 +1054,8 @@ struct SwiftUIView: View {
                                 Text(lastLog)
                                     .padding()
                                     .frame(maxWidth: .infinity, alignment: .leading)
+                                    .multilineTextAlignment(.center)
+                                    .monospaced()
                             }
                         }
                         .onDisappear {
@@ -1074,14 +1076,14 @@ struct SwiftUIView: View {
                             if let lastLog = logManager.latestLog {
                                 if lastLog.lowercased().contains("done") {
                                     HStack {
-                                        Image(systemName: "checkmark.circle") // Different SF Symbols for start and pause
+                                        Image(systemName: "checkmark.circle") // Symbol for completion
                                         Text("COMPLETED")
                                             .font(.title3)
                                             .bold()
                                     }
                                     .foregroundColor(.white)
                                     .padding()
-                                    .background(Capsule().fill(Color.black))
+                                    .background(Capsule().fill(Color.black).overlay(Capsule().stroke(Color.white, lineWidth: 2)))
                                 } else {
                                     HStack {
                                         Image(systemName: "circle.dotted") // Different SF Symbols for start and pause
@@ -1091,7 +1093,7 @@ struct SwiftUIView: View {
                                     }
                                     .foregroundColor(.white)
                                     .padding()
-                                    .background(Capsule().fill(Color.black))
+                                    .background(Capsule().fill(Color.black).overlay(Capsule().stroke(Color.white, lineWidth: 2)))
                                 }
                             }
                         } else {
@@ -1103,7 +1105,7 @@ struct SwiftUIView: View {
                             }
                             .foregroundColor(.white)
                             .padding()
-                            .background(Capsule().fill(Color.black))
+                            .background(Capsule().fill(Color.black).overlay(Capsule().stroke(Color.white, lineWidth: 2)))
                         }
                     }
                 }
