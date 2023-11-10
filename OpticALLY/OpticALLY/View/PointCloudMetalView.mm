@@ -106,20 +106,62 @@ simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
     _commandQueue = [self.device newCommandQueue];
 }
 
-- (void)setDepthFrame:(AVDepthData* _Nonnull)depth withTexture:(_Nonnull CVPixelBufferRef)unormTexture {
-    dispatch_sync(_syncQueue, ^{
-        self->_internalDepthFrame = depth;
-        CVPixelBufferRelease(self->_internalColorTexture);
-        self->_internalColorTexture = unormTexture;
-        CVPixelBufferRetain(self->_internalColorTexture);
-    });
+- (void)clearView {
+    // Logic to clear the view
+    // For example, setting internal variables to nil
+    _internalDepthFrame = nil;
+    _internalColorTexture = nil;
     
+    // Redraw the view
+    [self setNeedsDisplay];
+}
+
+- (void)setDepthFrame:(AVDepthData* _Nullable)depth withTexture:(CVPixelBufferRef _Nullable)texture {
+    dispatch_sync(_syncQueue, ^{
+        if (depth == nil || texture == nil) {
+            // Clear or reset internal variables and states
+            self->_internalDepthFrame = nil;
+            if (self->_internalColorTexture) {
+                CVPixelBufferRelease(self->_internalColorTexture);
+                self->_internalColorTexture = nil;
+            }
+            // Add any additional logic to signal that there's no data to render
+            // For example:
+            self->_shouldRender3DContent = NO;
+        } else {
+            // Handle non-nil depth and texture as before
+            self->_shouldRender3DContent = YES;
+            self->_internalDepthFrame = depth;
+            if (self->_internalColorTexture) {
+                CVPixelBufferRelease(self->_internalColorTexture);
+            }
+            self->_internalColorTexture = texture;
+            CVPixelBufferRetain(self->_internalColorTexture);
+        }
+    });
+
+    // Trigger a redraw of the view
     dispatch_async(dispatch_get_main_queue(), ^{
         [self setNeedsDisplay];
     });
 }
 
+
 - (void)drawRect:(CGRect)rect {
+    if (!_shouldRender3DContent) {
+        // Clear the view or skip drawing
+        // For example, you might clear the current drawable:
+        id<MTLCommandBuffer> commandBuffer = [_commandQueue commandBuffer];
+        MTLRenderPassDescriptor *renderPassDescriptor = self.currentRenderPassDescriptor;
+        if (renderPassDescriptor != nil) {
+            id<MTLRenderCommandEncoder> renderEncoder = [commandBuffer renderCommandEncoderWithDescriptor:renderPassDescriptor];
+            [renderEncoder endEncoding];
+            [commandBuffer presentDrawable:self.currentDrawable];
+        }
+        [commandBuffer commit];
+        return;
+    }
+    
     __block AVDepthData* depthData = nil;
     __block CVPixelBufferRef colorFrame = nullptr;
     

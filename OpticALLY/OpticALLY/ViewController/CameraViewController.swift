@@ -975,6 +975,9 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         if ExternalData.isSavingFileAsPLY {
             printDepthData(depthData: depthData, imageData: videoPixelBuffer)
             
+            // Set cloudView to empty depth data and texture
+            cloudView?.setDepthFrame(nil, withTexture: nil)
+            
             ExternalData.isSavingFileAsPLY = false
         }
         
@@ -1082,7 +1085,7 @@ struct SwiftUIView: View {
                             if let lastLog = logManager.latestLog {
                                 Text(lastLog)
                                     .padding()
-                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .frame(maxWidth: .infinity, alignment: .center)
                                     .multilineTextAlignment(.center)
                                     .monospaced()
                             }
@@ -1092,7 +1095,13 @@ struct SwiftUIView: View {
                         }
                         
                     } else {
-                        Spacer()
+                        ScrollView {
+                            Text("3D SCAN")
+                                .padding()
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .multilineTextAlignment(.center)
+                                .monospaced()
+                        }
                     }
                     
                     // Button to start/pause scanning
@@ -1106,12 +1115,26 @@ struct SwiftUIView: View {
                                 if lastLog.lowercased().contains("done") {
                                     VStack {
                                         Button(action: {
+                                            
+                                        }) {
+                                            HStack {
+                                                Image(systemName: "checkmark.circle.fill")
+                                                Text("PROCEED")
+                                                    .font(.body)
+                                                    .bold()
+                                            }
+                                            .foregroundColor(.black)
+                                            .padding()
+                                            .background(Capsule().fill(Color.blue.opacity(0.5)))
+                                        }
+                                        
+                                        Button(action: {
                                             // Toggle the dropdown
                                             showDropdown.toggle()
                                         }) {
                                             HStack {
-                                                Image(systemName: "arrow.down.circle")
-                                                Text("DOWNLOAD")
+                                                Image(systemName: "square.and.arrow.down")
+                                                Text("EXPORT")
                                                     .font(.body)
                                                     .bold()
                                             }

@@ -16,8 +16,10 @@ A view implementing point cloud rendering
 
 @interface PointCloudMetalView : MTKView
 
+@property (nonatomic, assign) BOOL shouldRender3DContent;
+
 // Update depth frame
-- (void)setDepthFrame:(AVDepthData* _Nonnull)depth withTexture:(_Nonnull CVPixelBufferRef)unormTexture;
+- (void)setDepthFrame:(AVDepthData* _Nullable)depth withTexture:(_Nullable CVPixelBufferRef)texture;
 
 // Rotate around the Y axis
 - (void)yawAroundCenter:(float)angle;
