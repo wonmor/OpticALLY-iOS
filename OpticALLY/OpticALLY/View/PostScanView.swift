@@ -38,8 +38,14 @@ struct SceneKitView: UIViewRepresentable {
 
 struct PostScanView: View {
     var body: some View {
-        SceneKitView(geometry: ExternalData.pointCloudGeometry)
-            .ignoresSafeArea()
+        VStack {
+            Text("model.ply")
+                .font(.system(.title, design: .monospaced)) // Using monospaced font
+                .padding()
+            
+            SceneKitView(geometry: ExternalData.pointCloudGeometry)
+                .ignoresSafeArea()
+        }
     }
 }
 
