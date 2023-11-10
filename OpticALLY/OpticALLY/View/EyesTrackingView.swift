@@ -42,9 +42,11 @@ struct EyesTrackingView: View {
             VStack {
                 Text("Pupillary Distance")
                     .bold()
+                    .monospaced()
                 
                 Text(viewModel.distanceText.isEmpty ? "Measuring..." : viewModel.distanceText)
                     .font(.title)
+                    .monospaced()
                 
                 // Conditionally display the "Next" button when viewModel.distanceText is not empty
             }
