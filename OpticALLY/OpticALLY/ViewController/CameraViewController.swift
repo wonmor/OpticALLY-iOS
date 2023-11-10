@@ -989,27 +989,14 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     
     @IBSegueAction func embedSwiftUIView(_ coder: NSCoder) -> UIViewController? {
         // Upon Scan Completion...
-        if let pointCloudGeometry = ExternalData.pointCloudGeometry {
-            let hostingController = UIHostingController(coder: coder, rootView: SwiftUIScanView())!
-            hostingController.view.backgroundColor = .clear
-            return hostingController
-            
-        } else {
-            let hostingController = UIHostingController(coder: coder, rootView: SwiftUIView())!
-            hostingController.view.backgroundColor = .clear
-            return hostingController
-        }
+        let hostingController = UIHostingController(coder: coder, rootView: SwiftUIView())!
+        hostingController.view.backgroundColor = .clear
+        return hostingController
     }
 }
 
 enum CurrentState {
     case begin, start
-}
-
-struct SwiftUIScanView: View {
-    var body: some View {
-        Text("Scan Complete!")
-    }
 }
 
 // ViewModel to handle the export and share
@@ -1054,6 +1041,7 @@ struct SwiftUIView: View {
     @State private var showConsoleOutput: Bool = false
     
     @ObservedObject var logManager = LogManager.shared
+    @EnvironmentObject var globalState: GlobalState
     @StateObject private var exportViewModel = ExportViewModel()
     
     let maxOffset: CGFloat = 30.0 // change this to control how much the finger moves
@@ -1096,7 +1084,7 @@ struct SwiftUIView: View {
                         
                     } else {
                         ScrollView {
-                            Text("3D SCAN")
+                            Text("HAROLDEN\n3D CAPTURE")
                                 .padding()
                                 .frame(maxWidth: .infinity, alignment: .center)
                                 .multilineTextAlignment(.center)
@@ -1115,7 +1103,7 @@ struct SwiftUIView: View {
                                 if lastLog.lowercased().contains("done") {
                                     VStack {
                                         Button(action: {
-                                            
+                                            globalState.currentView = .introduction
                                         }) {
                                             HStack {
                                                 Image(systemName: "checkmark.circle.fill")
@@ -1123,9 +1111,9 @@ struct SwiftUIView: View {
                                                     .font(.body)
                                                     .bold()
                                             }
-                                            .foregroundColor(.black)
+                                            .foregroundColor(.white)
                                             .padding()
-                                            .background(Capsule().fill(Color.blue.opacity(0.5)))
+                                            .background(Capsule().fill(Color(.darkGray)))
                                         }
                                         
                                         Button(action: {

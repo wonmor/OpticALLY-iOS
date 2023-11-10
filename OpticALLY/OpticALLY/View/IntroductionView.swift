@@ -35,7 +35,7 @@ struct BackgroundVideoPlayer: UIViewControllerRepresentable {
 }
 
 struct IntroductionView: View {
-    @Binding var currentView: ViewState  // Add this binding
+    @EnvironmentObject var globalState: GlobalState
     
     var body: some View {
         ZStack {
@@ -54,7 +54,7 @@ struct IntroductionView: View {
                     
                     Button(action: {
                         withAnimation {
-                            currentView = .tracking
+                            globalState.currentView = .tracking
                         }
                     }) {
                         Text("Continue")

@@ -19,6 +19,16 @@ let devicePPI: Double = {
     }
 }()
 
+enum ViewState {
+    case introduction
+    case tracking
+    case scanning
+}
+
+class GlobalState: ObservableObject {
+    @Published var currentView: ViewState = .introduction
+}
+
 @main
 struct OpticALLYApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
@@ -38,6 +48,7 @@ struct OpticALLYApp: App {
         WindowGroup {
             ContentView()
                 .preferredColorScheme(.dark)
+                .environmentObject(GlobalState())
         }
     }
 }

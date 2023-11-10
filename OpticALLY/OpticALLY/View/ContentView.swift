@@ -7,26 +7,19 @@
 
 import SwiftUI
 
-enum ViewState {
-    case introduction
-    case tracking
-    case scanning
-}
-
 struct ContentView: View {
-    @State private var currentView: ViewState = .introduction
-    
     @Environment(\.scenePhase) var scenePhase
+    @EnvironmentObject var globalState: GlobalState
     
     var body: some View {
         Group {
-            switch currentView {
+            switch globalState.currentView {
             case .introduction:
-                IntroductionView(currentView: $currentView)
+                IntroductionView()
                     .transition(.opacity)
                 
             case .tracking:
-                EyesTrackingView(currentView: $currentView)
+                EyesTrackingView()
                     .transition(.opacity)
                 
             case .scanning:
@@ -43,5 +36,6 @@ struct ContentView: View {
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
+            .environmentObject(GlobalState())
     }
 }

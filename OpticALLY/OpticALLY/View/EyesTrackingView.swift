@@ -17,6 +17,8 @@ import ARKit
 struct EyesTrackingView: View {
     @ObservedObject var viewModel = EyesTrackingViewModel()
     
+    @EnvironmentObject var globalState: GlobalState
+    
     @State private var randomX: CGFloat = CGFloat.random(in: 0..<UIScreen.main.bounds.width)
     @State private var randomY: CGFloat = CGFloat.random(in: 0..<UIScreen.main.bounds.height)
     
@@ -24,8 +26,6 @@ struct EyesTrackingView: View {
     
     @State private var blurAmount: CGFloat = 20.0
     @State private var clickable: Bool = false
-    
-    @Binding var currentView: ViewState  // Add this binding
     
     var body: some View {
         ZStack {
@@ -62,7 +62,7 @@ struct EyesTrackingView: View {
                 Button(action: {
                     // Action for when the "Next" button is pressed
                     if clickable {
-                        currentView = .scanning
+                        globalState.currentView = .scanning
                     }
                 }) {
                     HStack {
@@ -163,9 +163,7 @@ struct ARViewContainer: UIViewRepresentable {
 }
 
 struct EyesTrackingViews_Previews: PreviewProvider {
-    @State static var currentViewMock: ViewState = .tracking
-    
     static var previews: some View {
-        EyesTrackingView(currentView: $currentViewMock)
+        EyesTrackingView()
     }
 }
