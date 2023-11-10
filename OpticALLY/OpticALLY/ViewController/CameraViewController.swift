@@ -1103,20 +1103,6 @@ struct SwiftUIView: View {
                                 if lastLog.lowercased().contains("done") {
                                     VStack {
                                         Button(action: {
-                                            globalState.currentView = .introduction
-                                        }) {
-                                            HStack {
-                                                Image(systemName: "checkmark.circle.fill")
-                                                Text("PROCEED")
-                                                    .font(.body)
-                                                    .bold()
-                                            }
-                                            .foregroundColor(.white)
-                                            .padding()
-                                            .background(Capsule().fill(Color(.darkGray)))
-                                        }
-                                        
-                                        Button(action: {
                                             // Toggle the dropdown
                                             showDropdown.toggle()
                                         }) {
@@ -1155,9 +1141,9 @@ struct SwiftUIView: View {
                                             
                                         } else {
                                             Button(action: {
-                                                
+                                                globalState.currentView = .introduction
                                             }) {
-                                                Text("RESCAN")
+                                                Text("CONTINUE")
                                                     .font(.body)
                                                     .bold()
                                                     .foregroundColor(.white)
