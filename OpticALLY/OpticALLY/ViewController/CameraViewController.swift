@@ -1143,13 +1143,16 @@ struct SwiftUIView: View {
                                             Button(action: {
                                                 globalState.currentView = .introduction
                                             }) {
-                                                Text("CONTINUE")
-                                                    .font(.body)
-                                                    .bold()
-                                                    .foregroundColor(.white)
-                                                    .padding()
+                                                HStack {
+                                                    Image(systemName: "checkmark.circle.fill")
+                                                    Text("CONTINUE")
+                                                        .font(.body)
+                                                        .bold()
+                                                }
+                                                .padding()
+                                                .foregroundColor(.white)
+                                                .background(Capsule().fill(Color.black).overlay(Capsule().stroke(Color.white, lineWidth: 2)))
                                             }
-                                            .background(Capsule().fill(Color.black).overlay(Capsule().stroke(Color.white, lineWidth: 2)))
                                         }
                                         
                                     }
