@@ -23,6 +23,7 @@ enum ViewState {
     case introduction
     case tracking
     case scanning
+    case postScanning
 }
 
 class GlobalState: ObservableObject {

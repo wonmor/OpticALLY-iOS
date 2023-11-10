@@ -1141,7 +1141,7 @@ struct SwiftUIView: View {
                                             
                                         } else {
                                             Button(action: {
-                                                globalState.currentView = .introduction
+                                                globalState.currentView = .postScanning
                                             }) {
                                                 HStack {
                                                     Image(systemName: "checkmark.circle.fill")

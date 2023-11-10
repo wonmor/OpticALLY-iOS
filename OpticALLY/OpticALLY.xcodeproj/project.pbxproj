@@ -10,6 +10,7 @@
 		9614F0AF2ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */; };
 		9614F0B02ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */; };
 		9614F0B12ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */; };
+		963DF9B32AFEDAF700E6E589 /* PostScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 963DF9B22AFEDAF600E6E589 /* PostScanView.swift */; };
 		96491C5F2AFD746300FD3666 /* ConsoleOutputCatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96491C5E2AFD746300FD3666 /* ConsoleOutputCatcher.swift */; };
 		9679F8B02AD08C7000686F13 /* ScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8AF2AD08C7000686F13 /* ScanView.swift */; };
 		9679F8CD2AD0907A00686F13 /* ScanViewControllerWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8B22AD0907900686F13 /* ScanViewControllerWrapper.swift */; };
@@ -71,6 +72,7 @@
 
 /* Begin PBXFileReference section */
 		9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = RobotoSlab.ttf; sourceTree = "<group>"; };
+		963DF9B22AFEDAF600E6E589 /* PostScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostScanView.swift; sourceTree = "<group>"; };
 		96491C5E2AFD746300FD3666 /* ConsoleOutputCatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsoleOutputCatcher.swift; sourceTree = "<group>"; };
 		9679F8AF2AD08C7000686F13 /* ScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanView.swift; sourceTree = "<group>"; };
 		9679F8B12AD0907800686F13 /* OpticALLY-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "OpticALLY-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -274,6 +276,7 @@
 				967EE0662AAE06FB000C4D5F /* ContentView.swift */,
 				9679F8AF2AD08C7000686F13 /* ScanView.swift */,
 				9679F8BD2AD0907900686F13 /* HomeView.swift */,
+				963DF9B22AFEDAF600E6E589 /* PostScanView.swift */,
 				9679F8B72AD0907900686F13 /* HomeViewContainer.swift */,
 				9679F8CC2AD0907A00686F13 /* CameraView.swift */,
 				969AC27F2AB7550C0096892E /* IntroductionView.swift */,
@@ -462,6 +465,7 @@
 				9679F8CD2AD0907A00686F13 /* ScanViewControllerWrapper.swift in Sources */,
 				9679F8D42AD0907A00686F13 /* PreviewMetalView.swift in Sources */,
 				9679F8DD2AD0907A00686F13 /* CameraViewController.swift in Sources */,
+				963DF9B32AFEDAF700E6E589 /* PostScanView.swift in Sources */,
 				9679F8D02AD0907A00686F13 /* HomeViewContainer.swift in Sources */,
 				9679F8E12AD0907A00686F13 /* CameraView.swift in Sources */,
 				9679F8D52AD0907A00686F13 /* HistogramCalculator.m in Sources */,
