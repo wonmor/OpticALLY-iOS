@@ -106,6 +106,108 @@ simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
     _commandQueue = [self.device newCommandQueue];
 }
 
+- (void)exportPointCloudToPLY {
+    if (!_internalDepthFrame || !_internalColorTexture) {
+        NSLog(@"No depth frame or color texture available for export.");
+        return;
+    }
+
+    NSArray<NSValue *> *worldSpacePoints = [self unprojectDepthPoints];
+    
+    // Initialize a mutable string to store the .ply file content
+    NSMutableString *plyContent = [NSMutableString string];
+
+    // Write PLY header
+    [plyContent appendString:@"ply\n"];
+    [plyContent appendString:@"format ascii 1.0\n"];
+    [plyContent appendFormat:@"element vertex %lu\n", (unsigned long)worldSpacePoints.count];
+    [plyContent appendString:@"property float x\n"];
+    [plyContent appendString:@"property float y\n"];
+    [plyContent appendString:@"property float z\n"];
+    [plyContent appendString:@"property uchar red\n"];
+    [plyContent appendString:@"property uchar green\n"];
+    [plyContent appendString:@"property uchar blue\n"];
+    [plyContent appendString:@"end_header\n"];
+
+    // Write vertex data
+    for (NSValue *value in worldSpacePoints) {
+        simd::float3 point;
+        [value getValue:&point];
+
+        // Now use 'point' as your simd::float3
+        UIColor *color = [self colorForPoint:point];
+        CGFloat r, g, b;
+        [color getRed:&r green:&g blue:&b alpha:nil];
+
+        [plyContent appendFormat:@"%f %f %f %d %d %d\n",
+            point.x, point.y, point.z,
+            (int)(r * 255), (int)(g * 255), (int)(b * 255)];
+    }
+
+    // Write the string to a file
+    NSString *filePath = [self documentsPathForFileName:@"pointcloud.ply"];
+    NSError *error = nil;
+    [plyContent writeToFile:filePath atomically:YES encoding:NSUTF8StringEncoding error:&error];
+    if (error) {
+        NSLog(@"Error writing PLY file: %@", error.localizedDescription);
+    } else {
+        NSLog(@"PLY file written to %@", filePath);
+    }
+}
+
+- (NSArray<NSValue *> *)unprojectDepthPoints {
+    NSMutableArray<NSValue *> *worldSpacePoints = [NSMutableArray array];
+
+    AVDepthData *depthData = _internalDepthFrame;
+    CVPixelBufferRef depthPixelBuffer = depthData.depthDataMap;
+    CVPixelBufferLockBaseAddress(depthPixelBuffer, kCVPixelBufferLock_ReadOnly);
+
+    int width = (int)CVPixelBufferGetWidth(depthPixelBuffer);
+    int height = (int)CVPixelBufferGetHeight(depthPixelBuffer);
+    uint16_t *depthBuffer = (uint16_t *)CVPixelBufferGetBaseAddress(depthPixelBuffer);
+
+    matrix_float3x3 intrinsicsInverse = simd_inverse(depthData.cameraCalibrationData.intrinsicMatrix);
+
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            uint16_t depth = depthBuffer[y * width + x];
+            float depthInMeters = (float)depth / 1000.0f; // Convert depth to meters
+
+            simd::float3 depthPoint = { (float)x, (float)y, 1.0f };
+            simd::float3 worldPoint = depthInMeters * simd_mul(intrinsicsInverse, depthPoint);
+
+            [worldSpacePoints addObject:[NSValue valueWithBytes:&worldPoint objCType:@encode(simd::float3)]];
+        }
+    }
+
+    CVPixelBufferUnlockBaseAddress(depthPixelBuffer, kCVPixelBufferLock_ReadOnly);
+
+    return worldSpacePoints;
+}
+
+- (UIColor *)colorForPoint:(simd::float3)point {
+    CVPixelBufferLockBaseAddress(_internalColorTexture, kCVPixelBufferLock_ReadOnly);
+
+    int width = (int)CVPixelBufferGetWidth(_internalColorTexture);
+    int height = (int)CVPixelBufferGetHeight(_internalColorTexture);
+    unsigned char *colorBuffer = (unsigned char *)CVPixelBufferGetBaseAddress(_internalColorTexture);
+
+    int index = ((int)point.y * width + (int)point.x) * 4; // Assuming RGBA
+    CGFloat red = (CGFloat)colorBuffer[index] / 255.0;
+    CGFloat green = (CGFloat)colorBuffer[index + 1] / 255.0;
+    CGFloat blue = (CGFloat)colorBuffer[index + 2] / 255.0;
+
+    CVPixelBufferUnlockBaseAddress(_internalColorTexture, kCVPixelBufferLock_ReadOnly);
+
+    return [UIColor colorWithRed:red green:green blue:blue alpha:1.0];
+}
+
+- (NSString *)documentsPathForFileName:(NSString *)name {
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *documentsPath = [paths objectAtIndex:0];
+    return [documentsPath stringByAppendingPathComponent:name];
+}
+
 - (void)clearView {
     // Logic to clear the view
     // For example, setting internal variables to nil
