@@ -59,18 +59,19 @@ struct ExternalData {
         var vertices: [SCNVector3] = []
         var colors: [UIColor] = []
         
-        let depthDataMap = depthData.depthDataMap
+        let convertedDepthData = depthData.converting(toDepthDataType: kCVPixelFormatType_DepthFloat32)
+        let depthDataMap = convertedDepthData.depthDataMap
         CVPixelBufferLockBaseAddress(depthDataMap, .readOnly)
         defer { CVPixelBufferUnlockBaseAddress(depthDataMap, .readOnly) }
         
         for y in 0..<height {
             for x in 0..<width {
-                let depthOffset = y * CVPixelBufferGetBytesPerRow(depthDataMap) + x * MemoryLayout<Float>.size
-                let depthPointer = CVPixelBufferGetBaseAddress(depthDataMap)!.advanced(by: depthOffset).assumingMemoryBound(to: Float.self)
+                let depthOffset = y * CVPixelBufferGetBytesPerRow(depthDataMap) + x * MemoryLayout<Float32>.size
+                let depthPointer = CVPixelBufferGetBaseAddress(depthDataMap)!.advanced(by: depthOffset).assumingMemoryBound(to: Float32.self)
                 let depth = depthPointer.pointee
                 
                 // Scale and offset the depth as needed to fit your scene
-                let vertex = SCNVector3(x: Float(x), y: Float(y), z: depth)
+                let vertex = SCNVector3(x: Float(x), y: Float(y), z: Float(depth))
                 
                 vertices.append(vertex)
                 
@@ -195,7 +196,7 @@ struct ExternalData {
         for i in 0..<vertexCount {
             let vertex = vertices[i]
             let colorIndex = i * colorStride
-
+            
             // Ensure the index is within the bounds of the colors array
             guard colorIndex + 3 < colors.count else {
                 print("Color data index out of range for vertex \(i).")
@@ -976,7 +977,7 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             printDepthData(depthData: depthData, imageData: videoPixelBuffer)
             
             // Set cloudView to empty depth data and texture
-            cloudView?.setDepthFrame(nil, withTexture: nil)
+            // cloudView?.setDepthFrame(nil, withTexture: nil)
             
             ExternalData.isSavingFileAsPLY = false
         }
@@ -1017,6 +1018,7 @@ class ExportViewModel: ObservableObject {
             self.fileURL = fileURL
             self.showShareSheet = true
         }
+        
     }
 }
 

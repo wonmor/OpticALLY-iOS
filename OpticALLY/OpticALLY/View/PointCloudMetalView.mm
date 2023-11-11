@@ -106,53 +106,62 @@ simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
     _commandQueue = [self.device newCommandQueue];
 }
 
-- (void)exportPointCloudToPLY {
-    if (!_internalDepthFrame || !_internalColorTexture) {
-        NSLog(@"No depth frame or color texture available for export.");
-        return;
-    }
-
-    NSArray<NSValue *> *worldSpacePoints = [self unprojectDepthPoints];
-    
-    // Initialize a mutable string to store the .ply file content
-    NSMutableString *plyContent = [NSMutableString string];
-
-    // Write PLY header
-    [plyContent appendString:@"ply\n"];
-    [plyContent appendString:@"format ascii 1.0\n"];
-    [plyContent appendFormat:@"element vertex %lu\n", (unsigned long)worldSpacePoints.count];
-    [plyContent appendString:@"property float x\n"];
-    [plyContent appendString:@"property float y\n"];
-    [plyContent appendString:@"property float z\n"];
-    [plyContent appendString:@"property uchar red\n"];
-    [plyContent appendString:@"property uchar green\n"];
-    [plyContent appendString:@"property uchar blue\n"];
-    [plyContent appendString:@"end_header\n"];
-
-    // Write vertex data
-    for (NSValue *value in worldSpacePoints) {
-        simd::float3 point;
-        [value getValue:&point];
-
-        // Now use 'point' as your simd::float3
-        UIColor *color = [self colorForPoint:point];
-        CGFloat r, g, b;
-        [color getRed:&r green:&g blue:&b alpha:nil];
-
-        [plyContent appendFormat:@"%f %f %f %d %d %d\n",
-            point.x, point.y, point.z,
-            (int)(r * 255), (int)(g * 255), (int)(b * 255)];
-    }
-
-    // Write the string to a file
-    NSString *filePath = [self documentsPathForFileName:@"pointcloud.ply"];
-    NSError *error = nil;
-    [plyContent writeToFile:filePath atomically:YES encoding:NSUTF8StringEncoding error:&error];
-    if (error) {
-        NSLog(@"Error writing PLY file: %@", error.localizedDescription);
-    } else {
-        NSLog(@"PLY file written to %@", filePath);
-    }
+- (void)exportPointCloudToPLYWithCompletion:(void (^)(void))completion {
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        if (!_internalDepthFrame || !_internalColorTexture) {
+            NSLog(@"No depth frame or color texture available for export.");
+            return;
+        }
+        
+        NSArray<NSValue *> *worldSpacePoints = [self unprojectDepthPoints];
+        
+        // Initialize a mutable string to store the .ply file content
+        NSMutableString *plyContent = [NSMutableString string];
+        
+        // Write PLY header
+        [plyContent appendString:@"ply\n"];
+        [plyContent appendString:@"format ascii 1.0\n"];
+        [plyContent appendFormat:@"element vertex %lu\n", (unsigned long)worldSpacePoints.count];
+        [plyContent appendString:@"property float x\n"];
+        [plyContent appendString:@"property float y\n"];
+        [plyContent appendString:@"property float z\n"];
+        [plyContent appendString:@"property uchar red\n"];
+        [plyContent appendString:@"property uchar green\n"];
+        [plyContent appendString:@"property uchar blue\n"];
+        [plyContent appendString:@"end_header\n"];
+        
+        // Write vertex data
+        for (NSValue *value in worldSpacePoints) {
+            simd::float3 point;
+            [value getValue:&point];
+            
+            // Now use 'point' as your simd::float3
+            UIColor *color = [self colorForPoint:point];
+            CGFloat r, g, b;
+            [color getRed:&r green:&g blue:&b alpha:nil];
+            
+            [plyContent appendFormat:@"%f %f %f %d %d %d\n",
+             point.x, point.y, point.z,
+             (int)(r * 255), (int)(g * 255), (int)(b * 255)];
+        }
+        
+        // Write the string to a file
+        NSString *filePath = [self documentsPathForFileName:@"pointcloud.ply"];
+        NSError *error = nil;
+        [plyContent writeToFile:filePath atomically:YES encoding:NSUTF8StringEncoding error:&error];
+        if (error) {
+            NSLog(@"Error writing PLY file: %@", error.localizedDescription);
+        } else {
+            NSLog(@"PLY file written to %@", filePath);
+        }
+        
+        // When export is done
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (completion) {
+                completion();
+            }
+        });
+    });
 }
 
 - (NSArray<NSValue *> *)unprojectDepthPoints {
@@ -211,26 +220,16 @@ simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
 - (void)clearView {
     // Logic to clear the view
     // For example, setting internal variables to nil
-    _internalDepthFrame = nil;
-    _internalColorTexture = nil;
-    
+//    _internalDepthFrame = nil;
+//    _internalColorTexture = nil;
+//    
     // Redraw the view
     [self setNeedsDisplay];
 }
 
 - (void)setDepthFrame:(AVDepthData* _Nullable)depth withTexture:(CVPixelBufferRef _Nullable)texture {
     dispatch_sync(_syncQueue, ^{
-        if (depth == nil || texture == nil) {
-            // Clear or reset internal variables and states
-            self->_internalDepthFrame = nil;
-            if (self->_internalColorTexture) {
-                CVPixelBufferRelease(self->_internalColorTexture);
-                self->_internalColorTexture = nil;
-            }
-            // Add any additional logic to signal that there's no data to render
-            // For example:
-            self->_shouldRender3DContent = NO;
-        } else {
+
             // Handle non-nil depth and texture as before
             self->_shouldRender3DContent = YES;
             self->_internalDepthFrame = depth;
@@ -239,7 +238,7 @@ simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
             }
             self->_internalColorTexture = texture;
             CVPixelBufferRetain(self->_internalColorTexture);
-        }
+        
     });
 
     // Trigger a redraw of the view
