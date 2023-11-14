@@ -1005,7 +1005,13 @@ class ExportViewModel: ObservableObject {
     @Published var fileURL: URL?
     @Published var showShareSheet = false
     
-    func exportPLY() {
+    var objcExporter: PointCloudMetalView // Replace with your actual Objective-C class name
+
+    init() {
+        objcExporter = PointCloudMetalView() // Initialize the Objective-C class
+    }
+    
+    func exportPLY(completion: @escaping () -> Void) {
         // Determine a temporary file URL to save the PLY file
         let tempDirectory = FileManager.default.temporaryDirectory
         let fileURL = tempDirectory.appendingPathComponent("model.ply")
@@ -1013,12 +1019,15 @@ class ExportViewModel: ObservableObject {
         // Export the PLY data to the file
         ExternalData.exportGeometryAsPLY(to: fileURL)
         
-        // Update the state to indicate that there's a file to share
-        DispatchQueue.main.async {
-            self.fileURL = fileURL
-            self.showShareSheet = true
+        objcExporter.exportPointCloudPLY {
+            // This will be called when the export is completed
+            completion()
         }
-        
+//        // Update the state to indicate that there's a file to share
+//        DispatchQueue.main.async {
+//            self.fileURL = fileURL
+//            self.showShareSheet = true
+//        }
     }
 }
 
@@ -1123,7 +1132,21 @@ struct SwiftUIView: View {
                                         if showDropdown {
                                             VStack {
                                                 Button(action: {
-                                                    exportViewModel.exportPLY()
+                                                    exportViewModel.exportPLY {
+                                                        if let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+                                                                let plyFilePath = documentsPath.appendingPathComponent("pointcloud.ply")
+                                                            
+                                                                if FileManager.default.fileExists(atPath: plyFilePath.path) {
+                                                                    DispatchQueue.main.async {
+                                                                        let activityViewController = UIActivityViewController(activityItems: [plyFilePath], applicationActivities: nil)
+                                                                        // Present the share sheet
+                                                                        if let viewController = UIApplication.shared.windows.first?.rootViewController {
+                                                                            viewController.present(activityViewController, animated: true, completion: nil)
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                    }
                                                 }) {
                                                     Text(".PLY")
                                                         .padding()

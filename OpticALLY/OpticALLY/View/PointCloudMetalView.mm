@@ -106,62 +106,100 @@ simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
     _commandQueue = [self.device newCommandQueue];
 }
 
-- (void)exportPointCloudToPLYWithCompletion:(void (^)(void))completion {
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        if (!_internalDepthFrame || !_internalColorTexture) {
-            NSLog(@"No depth frame or color texture available for export.");
-            return;
+// PointXYZ structure
+typedef struct {
+    float x, y, z;
+} PointXYZ;
+
+// Method to convert depth data to world space points
+- (NSArray<NSValue *> *)getPointsWithDepthData:(AVDepthData *)avDepthData {
+    // Ensure camera calibration data is available
+    if (!avDepthData.cameraCalibrationData) {
+        return @[];
+    }
+
+    matrix_float3x3 intrinsicMatrix = avDepthData.cameraCalibrationData.intrinsicMatrix;
+    CVPixelBufferRef depthDataMap = avDepthData.depthDataMap;
+    
+    CVPixelBufferLockBaseAddress(depthDataMap, kCVPixelBufferLock_ReadOnly);
+
+    int width = CVPixelBufferGetWidth(depthDataMap);
+    int height = CVPixelBufferGetHeight(depthDataMap);
+
+    NSMutableArray<NSValue *> *points = [NSMutableArray array];
+
+    // Define PHOTO_WIDTH and PHOTO_HEIGHT based on your application's needs
+    float PHOTO_WIDTH = 640.0; // example value
+    float PHOTO_HEIGHT = 480.0; // example value
+
+    float focalX = (float)width * (intrinsicMatrix.columns[0][0] / PHOTO_WIDTH);
+    float focalY = (float)height * (intrinsicMatrix.columns[1][1] / PHOTO_HEIGHT);
+    float principalPointX = (float)width * (intrinsicMatrix.columns[2][0] / PHOTO_WIDTH);
+    float principalPointY = (float)height * (intrinsicMatrix.columns[2][1] / PHOTO_HEIGHT);
+
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            float Z = [self getDistanceAt:CGPointMake(x, y) depthMap:depthDataMap width:width height:height];
+            float X = (float)(x - principalPointX) * Z / focalX;
+            float Y = (float)(y - principalPointY) * Z / focalY;
+
+            PointXYZ point = {X, Y, Z};
+            [points addObject:[NSValue valueWithBytes:&point objCType:@encode(PointXYZ)]];
         }
-        
-        NSArray<NSValue *> *worldSpacePoints = [self unprojectDepthPoints];
-        
-        // Initialize a mutable string to store the .ply file content
-        NSMutableString *plyContent = [NSMutableString string];
-        
-        // Write PLY header
-        [plyContent appendString:@"ply\n"];
-        [plyContent appendString:@"format ascii 1.0\n"];
-        [plyContent appendFormat:@"element vertex %lu\n", (unsigned long)worldSpacePoints.count];
-        [plyContent appendString:@"property float x\n"];
-        [plyContent appendString:@"property float y\n"];
-        [plyContent appendString:@"property float z\n"];
-        [plyContent appendString:@"property uchar red\n"];
-        [plyContent appendString:@"property uchar green\n"];
-        [plyContent appendString:@"property uchar blue\n"];
-        [plyContent appendString:@"end_header\n"];
-        
-        // Write vertex data
-        for (NSValue *value in worldSpacePoints) {
-            simd::float3 point;
-            [value getValue:&point];
-            
-            // Now use 'point' as your simd::float3
-            UIColor *color = [self colorForPoint:point];
-            CGFloat r, g, b;
-            [color getRed:&r green:&g blue:&b alpha:nil];
-            
-            [plyContent appendFormat:@"%f %f %f %d %d %d\n",
-             point.x, point.y, point.z,
-             (int)(r * 255), (int)(g * 255), (int)(b * 255)];
-        }
-        
-        // Write the string to a file
-        NSString *filePath = [self documentsPathForFileName:@"pointcloud.ply"];
-        NSError *error = nil;
-        [plyContent writeToFile:filePath atomically:YES encoding:NSUTF8StringEncoding error:&error];
-        if (error) {
-            NSLog(@"Error writing PLY file: %@", error.localizedDescription);
-        } else {
-            NSLog(@"PLY file written to %@", filePath);
-        }
-        
-        // When export is done
+    }
+
+    CVPixelBufferUnlockBaseAddress(depthDataMap, kCVPixelBufferLock_ReadOnly);
+    return points;
+}
+
+// Conversion from PointXYZ to simd::float3, if needed
+- (simd::float3)convertToPointXYZ:(PointXYZ)point {
+    return simd_make_float3(point.x, point.y, point.z);
+}
+
+// Method to get distance from depth map
+- (float)getDistanceAt:(CGPoint)point depthMap:(CVPixelBufferRef)depthMap width:(int)width height:(int)height {
+    uint16_t *depthBuffer = (uint16_t *)CVPixelBufferGetBaseAddress(depthMap);
+    uint16_t depth = depthBuffer[(int)point.y * width + (int)point.x];
+    return (float)depth / 1000.0f; // Convert depth to meters
+}
+
+// Modified exportPointCloudPLY method
+- (void)exportPointCloudPLY:(void (^)(void))completion {
+    NSArray<NSValue *> *worldSpacePoints = [self getPointsWithDepthData:_internalDepthFrame];
+
+    NSMutableString *plyContent = [NSMutableString string];
+    [plyContent appendString:@"ply\nformat ascii 1.0\n"];
+    [plyContent appendFormat:@"element vertex %lu\n", (unsigned long)worldSpacePoints.count];
+    [plyContent appendString:@"property float x\nproperty float y\nproperty float z\n"];
+    [plyContent appendString:@"property uchar red\nproperty uchar green\nproperty uchar blue\nend_header\n"];
+
+    for (NSValue *value in worldSpacePoints) {
+        PointXYZ point;
+        [value getValue:&point];
+
+        UIColor *color = [self colorForPoint:[self convertToPointXYZ:point]];
+        CGFloat r, g, b;
+        [color getRed:&r green:&g blue:&b alpha:nil];
+
+        [plyContent appendFormat:@"%f %f %f %d %d %d\n", point.x, point.y, point.z, (int)(r * 255), (int)(g * 255), (int)(b * 255)];
+    }
+
+    NSString *filePath = [self documentsPathForFileName:@"pointcloud.ply"];
+    NSError *error = nil;
+    [plyContent writeToFile:filePath atomically:YES encoding:NSUTF8StringEncoding error:&error];
+
+    if (error) {
+        NSLog(@"Error writing PLY file: %@", error.localizedDescription);
+    } else {
+        NSLog(@"PLY file written to %@", filePath);
+    }
+
+    if (completion) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            if (completion) {
-                completion();
-            }
+            completion();
         });
-    });
+    }
 }
 
 - (NSArray<NSValue *> *)unprojectDepthPoints {

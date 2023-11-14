@@ -36,8 +36,7 @@ A view implementing point cloud rendering
 // Resets translation, rotation and zoom
 - (void)resetView;
 
-// PointCloudMetalView.h
-- (void)exportPointCloudToPLYWithCompletion:(void (^_Nullable)(void))completion;
+- (void)exportPointCloudPLY:(void (^)(void))completion;
 
 @end
 
