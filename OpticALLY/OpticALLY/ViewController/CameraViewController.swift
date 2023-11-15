@@ -8,6 +8,7 @@
 import UIKit
 import AVFoundation
 import CoreVideo
+import CoreGraphics
 import MobileCoreServices
 import Accelerate
 import SwiftUI
@@ -54,66 +55,52 @@ struct ExternalData {
     static var exportPLYData: Data?
     static var pointCloudGeometry: SCNGeometry?
     
-    // Function to convert depth and color data into a point cloud geometry
-    static func createPointCloudGeometry(depthData: AVDepthData, colorData: UnsafePointer<UInt8>, width: Int, height: Int, bytesPerRow: Int) -> SCNGeometry {
+    static func createPointCloudGeometry(depthDataArray: [AVDepthData], imageDataArray: [CVImageBuffer]) -> SCNGeometry? {
+        guard !depthDataArray.isEmpty, depthDataArray.count == imageDataArray.count else {
+            print("Depth data array and image data array must be of the same length and not empty.")
+            return nil
+        }
+
         var vertices: [SCNVector3] = []
-        var colors: [UIColor] = []
-        
-        let convertedDepthData = depthData.converting(toDepthDataType: kCVPixelFormatType_DepthFloat32)
-        let depthDataMap = convertedDepthData.depthDataMap
-        CVPixelBufferLockBaseAddress(depthDataMap, .readOnly)
-        defer { CVPixelBufferUnlockBaseAddress(depthDataMap, .readOnly) }
-        
-        for y in 0..<height {
-            for x in 0..<width {
-                let depthOffset = y * CVPixelBufferGetBytesPerRow(depthDataMap) + x * MemoryLayout<Float32>.size
-                let depthPointer = CVPixelBufferGetBaseAddress(depthDataMap)!.advanced(by: depthOffset).assumingMemoryBound(to: Float32.self)
-                let depth = depthPointer.pointee
-                
-                // Scale and offset the depth as needed to fit your scene
-                let vertex = SCNVector3(x: Float(x), y: Float(y), z: Float(depth))
-                
-                vertices.append(vertex)
-                
-                let colorOffset = y * bytesPerRow + x * 4 // Assuming BGRA format
-                let bComponent = Double(colorData[colorOffset]) / 255.0
-                let gComponent = Double(colorData[colorOffset + 1]) / 255.0
-                let rComponent = Double(colorData[colorOffset + 2]) / 255.0
-                let aComponent = Double(colorData[colorOffset + 3]) / 255.0
-                
-                let color = UIColor(red: CGFloat(rComponent), green: CGFloat(gComponent), blue: CGFloat(bComponent), alpha: CGFloat(aComponent))
-                colors.append(color)
-            }
-        }
-        
-        // Create the geometry source for vertices
-        let vertexSource = SCNGeometrySource(vertices: vertices)
-        
-        // Assuming the UIColor's data is not properly formatted for the SCNGeometrySource
-        // Instead, create an array of normalized float values representing the color data
-        
         var colorComponents: [CGFloat] = []
-        
-        var counter = 0
-        
-        for y in 0..<height {
-            for x in 0..<width {
-                let colorOffset = y * bytesPerRow + x * 4 // Assuming BGRA format
-                let bComponent = CGFloat(colorData[colorOffset]) / 255.0
-                let gComponent = CGFloat(colorData[colorOffset + 1]) / 255.0
-                let rComponent = CGFloat(colorData[colorOffset + 2]) / 255.0
-                let aComponent = CGFloat(colorData[colorOffset + 3]) / 255.0
-                
-                print("Converting \(counter)th point: \([rComponent, gComponent, bComponent, aComponent])")
-                LogManager.shared.log("Converting \(counter)th point: \([rComponent, gComponent, bComponent, aComponent])")
-                
-                // Append color components in RGBA order, which is typically used in SceneKit
-                colorComponents += [rComponent, gComponent, bComponent, aComponent]
-                
-                counter += 1
+
+        for (depthData, imageData) in zip(depthDataArray, imageDataArray) {
+            let convertedDepthData = depthData.converting(toDepthDataType: kCVPixelFormatType_DepthFloat32)
+            let depthDataMap = convertedDepthData.depthDataMap
+            CVPixelBufferLockBaseAddress(depthDataMap, .readOnly)
+            defer { CVPixelBufferUnlockBaseAddress(depthDataMap, .readOnly) }
+
+            CVPixelBufferLockBaseAddress(imageData, .readOnly)
+            defer { CVPixelBufferUnlockBaseAddress(imageData, .readOnly) }
+
+            let width = CVPixelBufferGetWidth(imageData)
+            let height = CVPixelBufferGetHeight(imageData)
+            let bytesPerRow = CVPixelBufferGetBytesPerRow(imageData)
+
+            for y in 0..<height {
+                for x in 0..<width {
+                    let depthOffset = y * CVPixelBufferGetBytesPerRow(depthDataMap) + x * MemoryLayout<Float32>.size
+                    let depthPointer = CVPixelBufferGetBaseAddress(depthDataMap)!.advanced(by: depthOffset).assumingMemoryBound(to: Float32.self)
+                    let depth = depthPointer.pointee
+
+                    let vertex = SCNVector3(x: Float(x), y: Float(y), z: Float(depth))
+                    vertices.append(vertex)
+
+                    let colorOffset = y * bytesPerRow + x * 4 // Assuming BGRA format
+                    let colorData = CVPixelBufferGetBaseAddress(imageData)!.advanced(by: colorOffset).assumingMemoryBound(to: UInt8.self)
+                    
+                    let bComponent = CGFloat(colorData[0]) / 255.0
+                    let gComponent = CGFloat(colorData[1]) / 255.0
+                    let rComponent = CGFloat(colorData[2]) / 255.0
+                    let aComponent = CGFloat(colorData[3]) / 255.0
+                    
+                    colorComponents += [rComponent, gComponent, bComponent, aComponent]
+                }
             }
         }
-        
+
+        let vertexSource = SCNGeometrySource(vertices: vertices)
+
         let colorData = Data(buffer: UnsafeBufferPointer(start: &colorComponents, count: colorComponents.count))
         let colorSource = SCNGeometrySource(data: colorData,
                                             semantic: .color,
@@ -123,37 +110,20 @@ struct ExternalData {
                                             bytesPerComponent: MemoryLayout<CGFloat>.size,
                                             dataOffset: 0,
                                             dataStride: MemoryLayout<CGFloat>.stride * 4)
-        
-        // Create the geometry element
+
         let indices: [Int32] = Array(0..<Int32(vertices.count))
         let indexData = Data(bytes: indices, count: indices.count * MemoryLayout<Int32>.size)
         let element = SCNGeometryElement(data: indexData,
                                          primitiveType: .point,
                                          primitiveCount: vertices.count,
                                          bytesPerIndex: MemoryLayout<Int32>.size)
-        
-        // Create the point cloud geometry
-        pointCloudGeometry = SCNGeometry(sources: [vertexSource, colorSource], elements: [element])
-        
-        // Set the shader modifier to change the point size
-        let pointSize: CGFloat = 5.0 // Adjust the point size as necessary
-        let shaderModifier = """
-            #pragma transparent
-            #pragma body
-            gl_PointSize = \(pointSize);
-        """
-        pointCloudGeometry!.shaderModifiers = [.geometry: shaderModifier]
-        
-        // Set the lighting model to constant to ensure the points are fully lit
-        pointCloudGeometry!.firstMaterial?.lightingModel = .constant
-        
-        // Set additional material properties as needed, for example, to make the points more visible
-        pointCloudGeometry!.firstMaterial?.isDoubleSided = true
-        
-        print("Done constructing the 3D object!")
-        LogManager.shared.log("Done constructing the 3D object!")
-        
-        return pointCloudGeometry!
+
+        let pointCloudGeometry = SCNGeometry(sources: [vertexSource, colorSource], elements: [element])
+        pointCloudGeometry.shaderModifiers = [.geometry: "#pragma transparent\n#pragma body\ngl_PointSize = 5.0;"]
+        pointCloudGeometry.firstMaterial?.lightingModel = .constant
+        pointCloudGeometry.firstMaterial?.isDoubleSided = true
+
+        return pointCloudGeometry
     }
     
     static func exportGeometryAsPLY(to url: URL) {
@@ -842,104 +812,94 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         }
     }
     
-    func printDepthData(depthData: AVDepthData, imageData: CVImageBuffer) {
-        let depthPixelBuffer = depthData.depthDataMap
-        let colorPixelBuffer = imageData
-        
-        CVPixelBufferLockBaseAddress(depthPixelBuffer, .readOnly)
-        CVPixelBufferLockBaseAddress(colorPixelBuffer, .readOnly)
-        defer {
-            CVPixelBufferUnlockBaseAddress(depthPixelBuffer, .readOnly)
-            CVPixelBufferUnlockBaseAddress(colorPixelBuffer, .readOnly)
-        }
-        
-        let colorWidth = CVPixelBufferGetWidth(colorPixelBuffer)
-        let colorHeight = CVPixelBufferGetHeight(colorPixelBuffer)
-        let depthWidth = CVPixelBufferGetWidth(depthPixelBuffer)
-        let depthHeight = CVPixelBufferGetHeight(depthPixelBuffer)
-        
-        print("Image Width: \(colorWidth) | Image Height: \(colorHeight)")
-        print("Depth Data Width: \(depthWidth) | Depth Data Height: \(depthHeight)")
-        
-        guard let colorData = CVPixelBufferGetBaseAddress(colorPixelBuffer) else {
-            print("Unable to get image buffer base address.")
+    func printDepthData(depthDataArray: [AVDepthData], imageDataArray: [CVImageBuffer]) {
+        // Ensure the arrays have the same length
+        guard depthDataArray.count == imageDataArray.count else {
+            print("Depth data and image data arrays are not of the same length.")
             return
         }
-        
-        let colorBytesPerRow = CVPixelBufferGetBytesPerRow(colorPixelBuffer)
-        let colorBytesPerPixel = 4 // BGRA format
-        
-        guard let depthDataAddress = CVPixelBufferGetBaseAddress(depthPixelBuffer) else {
-            print("Unable to get depth buffer base address.")
-            return
-        }
-        
-        let depthBytesPerRow = CVPixelBufferGetBytesPerRow(depthPixelBuffer)
-        // Determine the bytes per pixel based on the depth format type
-        let depthPixelFormatType = CVPixelBufferGetPixelFormatType(depthPixelBuffer)
-        var depthBytesPerPixel: Int = 0 // Initialize with zero
-        
-        switch depthPixelFormatType {
-        case kCVPixelFormatType_DepthFloat32:
-            depthBytesPerPixel = 4
-        case kCVPixelFormatType_DepthFloat16:
-            depthBytesPerPixel = 2
-            // Add more cases as necessary for different formats
-        default:
-            print("Unsupported depth pixel format type")
-            return
-        }
-        
-        // Ensure that you're iterating within the bounds of both buffers
-        let commonWidth = min(colorWidth, depthWidth)
-        let commonHeight = min(colorHeight, depthHeight)
-        
-        print("Starting iteration with commonWidth: \(commonWidth), commonHeight: \(commonHeight)")
-        
-        // Iterate over the image buffer
-        for y in stride(from: 0, to: commonHeight, by: 10) {
-            for x in stride(from: 0, to: commonWidth, by: 10) {
-                let colorPixelOffset = y * colorBytesPerRow + x * colorBytesPerPixel
-                let colorPixel = colorData.advanced(by: colorPixelOffset).assumingMemoryBound(to: UInt8.self)
-                
-                // Extract BGRA components
-                let blue = colorPixel[0]
-                let green = colorPixel[1]
-                let red = colorPixel[2]
-                let alpha = colorPixel[3]
-                
-                // Print the (x, y) coordinates and color value in BGRA
-                print("Color at (\(x), \(y)): B:\(blue) G:\(green) R:\(red) A:\(alpha)")
-                
-                // Calculate the depth data's corresponding pixel offset
-                let depthPixelOffset = y * depthBytesPerRow + x * depthBytesPerPixel
-                let depthPixel = depthDataAddress.advanced(by: depthPixelOffset).assumingMemoryBound(to: Float.self)
-                let depthValue = depthPixel.pointee
-                
-                // Print the (x, y) coordinates and depth value
-                print("Depth at (\(x), \(y)): \(depthValue)")
+
+        for (index, depthData) in depthDataArray.enumerated() {
+            let imageData = imageDataArray[index]
+
+            CVPixelBufferLockBaseAddress(imageData, .readOnly)
+            defer {
+                CVPixelBufferUnlockBaseAddress(imageData, .readOnly)
+            }
+
+            let colorWidth = CVPixelBufferGetWidth(imageData)
+            let colorHeight = CVPixelBufferGetHeight(imageData)
+            guard let colorData = CVPixelBufferGetBaseAddress(imageData) else {
+                print("Unable to get image buffer base address.")
+                continue
+            }
+
+            let colorBytesPerRow = CVPixelBufferGetBytesPerRow(imageData)
+            let colorBytesPerPixel = 4 // Assuming BGRA format
+
+            let depthPixelBuffer = depthData.depthDataMap
+            CVPixelBufferLockBaseAddress(depthPixelBuffer, .readOnly)
+            defer {
+                CVPixelBufferUnlockBaseAddress(depthPixelBuffer, .readOnly)
+            }
+
+            let depthWidth = CVPixelBufferGetWidth(depthPixelBuffer)
+            let depthHeight = CVPixelBufferGetHeight(depthPixelBuffer)
+            guard let depthDataAddress = CVPixelBufferGetBaseAddress(depthPixelBuffer) else {
+                print("Unable to get depth buffer base address.")
+                continue
+            }
+
+            let depthBytesPerRow = CVPixelBufferGetBytesPerRow(depthPixelBuffer)
+            let depthPixelFormatType = CVPixelBufferGetPixelFormatType(depthPixelBuffer)
+            var depthBytesPerPixel: Int = 0
+
+            switch depthPixelFormatType {
+            case kCVPixelFormatType_DepthFloat32:
+                depthBytesPerPixel = 4
+            case kCVPixelFormatType_DepthFloat16:
+                depthBytesPerPixel = 2
+                // Add more cases as necessary for different formats
+            default:
+                print("Unsupported depth pixel format type")
+                continue
+            }
+
+            let commonWidth = min(colorWidth, depthWidth)
+            let commonHeight = min(colorHeight, depthHeight)
+
+            for y in stride(from: 0, to: commonHeight, by: 10) {
+                for x in stride(from: 0, to: commonWidth, by: 10) {
+                    let colorPixelOffset = y * colorBytesPerRow + x * colorBytesPerPixel
+                    let colorPixel = colorData.advanced(by: colorPixelOffset).assumingMemoryBound(to: UInt8.self)
+
+                    let blue = colorPixel[0]
+                    let green = colorPixel[1]
+                    let red = colorPixel[2]
+                    let alpha = colorPixel[3]
+
+                    print("Color at (\(x), \(y)): B:\(blue) G:\(green) R:\(red) A:\(alpha)")
+
+                    let depthPixelOffset = y * depthBytesPerRow + x * depthBytesPerPixel
+                    let depthPixel = depthDataAddress.advanced(by: depthPixelOffset).assumingMemoryBound(to: Float.self)
+                    let depthValue = depthPixel.pointee
+
+                    print("Depth at (\(x), \(y)): \(depthValue)")
+                }
             }
         }
         
-        print("Completed iteration")
-        
-        // Assuming colorData is the base address for the BGRA image buffer
-        let colorBaseAddress = CVPixelBufferGetBaseAddress(colorPixelBuffer)!.assumingMemoryBound(to: UInt8.self)
-        
-        // Call the point cloud creation function
-        let pointCloudGeometry = ExternalData.createPointCloudGeometry(
-            depthData: depthData,
-            colorData: colorBaseAddress,
-            width: commonWidth,
-            height: commonHeight,
-            bytesPerRow: colorBytesPerRow // Use the correct bytes per row for color data
-        )
-        
+        let pointCloudGeometry = ExternalData.createPointCloudGeometry(depthDataArray: depthDataArray, imageDataArray: imageDataArray)
+
         // Synchronize access to the shared resource
         DispatchQueue.main.async {
             ExternalData.renderingEnabled.toggle()
         }
     }
+    
+    var accumulatedDepthData = [AVDepthData]()
+    var accumulatedVideoData = [CVImageBuffer]()
+    var accumulationStartTime: Date?
     
     // MARK: - Video + Depth Frame Processing
     
@@ -949,13 +909,10 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             return
         }
         
-        // Read all outputs
-        guard ExternalData.renderingEnabled,
-              let syncedDepthData: AVCaptureSynchronizedDepthData =
+        guard let syncedDepthData: AVCaptureSynchronizedDepthData =
                 synchronizedDataCollection.synchronizedData(for: depthDataOutput) as? AVCaptureSynchronizedDepthData,
               let syncedVideoData: AVCaptureSynchronizedSampleBufferData =
                 synchronizedDataCollection.synchronizedData(for: videoDataOutput) as? AVCaptureSynchronizedSampleBufferData else {
-            // only work on synced pairs
             return
         }
         
@@ -964,28 +921,31 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         }
         
         let depthData = syncedDepthData.depthData
-        let depthPixelBuffer = depthData.depthDataMap
-        let sampleBuffer = syncedVideoData.sampleBuffer
-        guard let videoPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer),
-              let formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer) else {
+        guard let sampleBuffer: CMSampleBuffer? = syncedVideoData.sampleBuffer,
+              let videoPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer!) else {
             return
         }
         
-        print("ExternalData.isSavingFileAsPLY: \(ExternalData.isSavingFileAsPLY)")
-        
         if ExternalData.isSavingFileAsPLY {
-            printDepthData(depthData: depthData, imageData: videoPixelBuffer)
+            if accumulationStartTime == nil {
+                accumulationStartTime = Date()
+            }
             
-            // Set cloudView to empty depth data and texture
-            // cloudView?.setDepthFrame(nil, withTexture: nil)
-            
-            ExternalData.isSavingFileAsPLY = false
+            if let startTime = accumulationStartTime, Date().timeIntervalSince(startTime) <= 3 {
+                accumulatedDepthData.append(depthData)
+                accumulatedVideoData.append(videoPixelBuffer)
+            } else {
+                printDepthData(depthDataArray: accumulatedDepthData, imageDataArray: accumulatedVideoData)
+                accumulatedDepthData.removeAll()
+                accumulatedVideoData.removeAll()
+                accumulationStartTime = nil
+                ExternalData.isSavingFileAsPLY = false
+            }
+        } else {
+            globalDepthData = depthData
+            globalVideoPixelBuffer = videoPixelBuffer
+            cloudView?.setDepthFrame(depthData, withTexture: videoPixelBuffer)
         }
-        
-        globalDepthData = depthData
-        globalVideoPixelBuffer = videoPixelBuffer
-        
-        cloudView?.setDepthFrame(depthData, withTexture: videoPixelBuffer)
     }
     
     @IBSegueAction func embedSwiftUIView(_ coder: NSCoder) -> UIViewController? {
@@ -1019,15 +979,15 @@ class ExportViewModel: ObservableObject {
         // Export the PLY data to the file
         ExternalData.exportGeometryAsPLY(to: fileURL)
         
-        objcExporter.exportPointCloudPLY {
-            // This will be called when the export is completed
-            completion()
-        }
-//        // Update the state to indicate that there's a file to share
-//        DispatchQueue.main.async {
-//            self.fileURL = fileURL
-//            self.showShareSheet = true
+//        objcExporter.exportPointCloudPLY {
+//            // This will be called when the export is completed
+//            completion()
 //        }
+        // Update the state to indicate that there's a file to share
+        DispatchQueue.main.async {
+            self.fileURL = fileURL
+            self.showShareSheet = true
+        }
     }
 }
 
