@@ -72,7 +72,7 @@ struct ExternalData {
                 
                 // Scale and offset the depth as needed to fit your scene
                 // Here you might need to adjust the scaling factor based on your depth data
-                let depth = depthValue * 0.5
+                let depth = depthValue * 0.5 // temp
                 let vertex = SCNVector3(x: Float(x), y: Float(y), z: depth)
                 
                 vertices.append(vertex)
