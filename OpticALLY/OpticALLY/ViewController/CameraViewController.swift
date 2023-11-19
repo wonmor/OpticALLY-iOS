@@ -59,19 +59,21 @@ struct ExternalData {
         var vertices: [SCNVector3] = []
         var colors: [UIColor] = []
         
-        let convertedDepthData = depthData.converting(toDepthDataType: kCVPixelFormatType_DepthFloat32)
+        let convertedDepthData = depthData.converting(toDepthDataType: kCVPixelFormatType_DepthFloat16)
         let depthDataMap = convertedDepthData.depthDataMap
         CVPixelBufferLockBaseAddress(depthDataMap, .readOnly)
         defer { CVPixelBufferUnlockBaseAddress(depthDataMap, .readOnly) }
         
         for y in 0..<height {
             for x in 0..<width {
-                let depthOffset = y * CVPixelBufferGetBytesPerRow(depthDataMap) + x * MemoryLayout<Float32>.size
-                let depthPointer = CVPixelBufferGetBaseAddress(depthDataMap)!.advanced(by: depthOffset).assumingMemoryBound(to: Float32.self)
-                let depth = depthPointer.pointee
+                let depthOffset = y * CVPixelBufferGetBytesPerRow(depthDataMap) + x * MemoryLayout<UInt16>.size
+                let depthPointer = CVPixelBufferGetBaseAddress(depthDataMap)!.advanced(by: depthOffset).assumingMemoryBound(to: UInt16.self)
+                let depthValue = Float(depthPointer.pointee) // Convert UInt16 to Float
                 
                 // Scale and offset the depth as needed to fit your scene
-                let vertex = SCNVector3(x: Float(x), y: Float(y), z: Float(depth))
+                // Here you might need to adjust the scaling factor based on your depth data
+                let depth = depthValue * 0.5
+                let vertex = SCNVector3(x: Float(x), y: Float(y), z: depth)
                 
                 vertices.append(vertex)
                 
