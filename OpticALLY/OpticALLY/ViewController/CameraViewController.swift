@@ -55,39 +55,24 @@ struct ExternalData {
     static var pointCloudGeometry: SCNGeometry?
     
     // Function to convert depth and color data into a point cloud geometry
-    static func createPointCloudGeometry(depthData: AVDepthData,
-                                         colorData: UnsafePointer<UInt8>,
-                                         width: Int,
-                                         height: Int,
-                                         bytesPerRow: Int,
-                                         calibrationData: AVCameraCalibrationData) -> SCNGeometry {
-
+    static func createPointCloudGeometry(depthData: AVDepthData, colorData: UnsafePointer<UInt8>, width: Int, height: Int, bytesPerRow: Int) -> SCNGeometry {
         var vertices: [SCNVector3] = []
         var colors: [UIColor] = []
-
-        // Convert depth data to the desired format
+        
         let convertedDepthData = depthData.converting(toDepthDataType: kCVPixelFormatType_DepthFloat32)
         let depthDataMap = convertedDepthData.depthDataMap
         CVPixelBufferLockBaseAddress(depthDataMap, .readOnly)
         defer { CVPixelBufferUnlockBaseAddress(depthDataMap, .readOnly) }
-
-        // Using camera intrinsic matrix for accurate depth mapping
-        let intrinsicMatrix = calibrationData.intrinsicMatrix
-        let referenceDimensions = calibrationData.intrinsicMatrixReferenceDimensions
-        let scaleX = Float(width) / Float(referenceDimensions.width)
-        let scaleY = Float(height) / Float(referenceDimensions.height)
-
+        
         for y in 0..<height {
             for x in 0..<width {
                 let depthOffset = y * CVPixelBufferGetBytesPerRow(depthDataMap) + x * MemoryLayout<Float32>.size
                 let depthPointer = CVPixelBufferGetBaseAddress(depthDataMap)!.advanced(by: depthOffset).assumingMemoryBound(to: Float32.self)
                 let depth = depthPointer.pointee
-
-                // Compute the 3D point from the depth data
-                let xf = (Float(x) - intrinsicMatrix[2][0] * scaleX) / (intrinsicMatrix[0][0] * scaleX)
-                let yf = (Float(y) - intrinsicMatrix[2][1] * scaleY) / (intrinsicMatrix[1][1] * scaleY)
-                let vertex = SCNVector3(x: xf * depth, y: yf * depth, z: depth)
-
+                
+                // Scale and offset the depth as needed to fit your scene
+                let vertex = SCNVector3(x: Float(x), y: Float(y), z: Float(depth))
+                
                 vertices.append(vertex)
                 
                 let colorOffset = y * bytesPerRow + x * 4 // Assuming BGRA format
@@ -861,11 +846,6 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         let depthPixelBuffer = depthData.depthDataMap
         let colorPixelBuffer = imageData
         
-        guard let calibrationData = depthData.cameraCalibrationData else {
-           print("Camera calibration data is missing")
-           return
-       }
-        
         CVPixelBufferLockBaseAddress(depthPixelBuffer, .readOnly)
         CVPixelBufferLockBaseAddress(colorPixelBuffer, .readOnly)
         defer {
@@ -948,13 +928,12 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         
         // Call the point cloud creation function
         let pointCloudGeometry = ExternalData.createPointCloudGeometry(
-                depthData: depthData,
-                colorData: colorBaseAddress, // Assuming you have this from your existing implementation
-                width: commonWidth,
-                height: commonHeight,
-                bytesPerRow: colorBytesPerRow, // Again, assuming existing implementation
-                calibrationData: calibrationData // Passing the calibration data
-            )
+            depthData: depthData,
+            colorData: colorBaseAddress,
+            width: commonWidth,
+            height: commonHeight,
+            bytesPerRow: colorBytesPerRow // Use the correct bytes per row for color data
+        )
         
         // Synchronize access to the shared resource
         DispatchQueue.main.async {
