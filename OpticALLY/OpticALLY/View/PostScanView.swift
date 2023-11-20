@@ -22,6 +22,9 @@ struct SceneKitView: UIViewRepresentable {
         if let geometry = geometry {
             let node = SCNNode(geometry: geometry)
             node.position = SCNVector3(x: 0, y: 0, z: 0)
+
+            node.eulerAngles.z = .pi / -2
+
             scene.rootNode.addChildNode(node)
         }
 
@@ -35,6 +38,7 @@ struct SceneKitView: UIViewRepresentable {
         // Update the view if needed
     }
 }
+
 
 struct PostScanView: View {
     var body: some View {

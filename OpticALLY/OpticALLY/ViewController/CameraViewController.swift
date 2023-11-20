@@ -69,10 +69,8 @@ struct ExternalData {
                 let depthOffset = y * CVPixelBufferGetBytesPerRow(depthDataMap) + x * MemoryLayout<UInt16>.size
                 let depthPointer = CVPixelBufferGetBaseAddress(depthDataMap)!.advanced(by: depthOffset).assumingMemoryBound(to: UInt16.self)
                 let depthValue = Float(depthPointer.pointee) // Convert UInt16 to Float
-                
-                // Scale and offset the depth as needed to fit your scene
-                // Here you might need to adjust the scaling factor based on your depth data
-                let depth = depthValue * 0.5 // temp
+            
+                let depth = depthValue
                 let vertex = SCNVector3(x: Float(x), y: Float(y), z: depth)
                 
                 vertices.append(vertex)
