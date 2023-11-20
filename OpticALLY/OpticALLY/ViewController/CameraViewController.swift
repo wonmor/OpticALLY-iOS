@@ -74,11 +74,17 @@ struct ExternalData {
                 let depthOffset = y * CVPixelBufferGetBytesPerRow(depthDataMap) + x * MemoryLayout<UInt16>.size
                 let depthPointer = CVPixelBufferGetBaseAddress(depthDataMap)!.advanced(by: depthOffset).assumingMemoryBound(to: UInt16.self)
                 let depthValue = Float(depthPointer.pointee) // Convert UInt16 to Float
-            
-                let depth = depthValue * 0.5 // Temporary value for scaling depth data...
-                let vertex = SCNVector3(x: Float(x), y: Float(y), z: depth)
-                
+
+                // Changed THis
+//                let depth = depthValue * 0.5 // Temporary value for scaling depth data...
+//                let vertex = SCNVector3(x: Float(x), y: Float(y), z: depth)
+//              Revised to This
+                let xrw = (Float(x) - cameraIntrinsics[2][0]) * depthValue / cameraIntrinsics[0][0]
+                let yrw = (Float(y) - cameraIntrinsics[2][1]) * depthValue / cameraIntrinsics[1][1]
+                let vertex = SCNVector3(x: xrw, y: yrw, z: depthValue)
+
                 vertices.append(vertex)
+                
                 
                 let colorOffset = y * bytesPerRow + x * 4 // Assuming BGRA format
                 let bComponent = Double(colorData[colorOffset]) / 255.0
@@ -163,12 +169,12 @@ struct ExternalData {
     
     static func exportGeometryAsPLY(to url: URL) {
         guard let geometry = pointCloudGeometry,
-              let vertexSource = geometry.sources.first(where: { $0.semantic == .vertex }),
-              let colorSource = geometry.sources.first(where: { $0.semantic == .color }) else {
+                let vertexSource = geometry.sources.first(where: { $0.semantic == .vertex }),
+                let colorSource = geometry.sources.first(where: { $0.semantic == .color }) else {
             print("Unable to access vertex or color source from geometry")
             return
         }
-        
+
         // Access vertex data
         guard let vertexData: Data? = vertexSource.data else {
             print("Unable to access vertex data")
@@ -180,54 +186,26 @@ struct ExternalData {
             print("Unable to access color data")
             return
         }
-        
+
         let vertexCount = vertexSource.vectorCount
-        let colorStride = colorSource.dataStride / MemoryLayout<CGFloat>.size
-        let vertices = vertexData!.toArray(type: SCNVector3.self, count: vertexCount)
-        let colors = colorData!.toArray(type: CGFloat.self, count: vertexCount * colorStride)
-        
-        var plyString = "ply\n"
-        plyString += "format ascii 1.0\n"
-        plyString += "element vertex \(vertexCount)\n"
-        plyString += "property float x\n"
-        plyString += "property float y\n"
-        plyString += "property float z\n"
-        plyString += "property uchar red\n"
-        plyString += "property uchar green\n"
-        plyString += "property uchar blue\n"
-        plyString += "property uchar alpha\n"
+        let vertices = vertexSource.data.toArray(type: SCNVector3.self, count: vertexCount)
+        let colors = colorSource.data.toArray(type: Float.self, count: vertexCount * 4)
+
+        var plyString = "ply\nformat ascii 1.0\nelement vertex \(vertexCount)\n"
+        plyString += "property float x\nproperty float y\nproperty float z\n"
+        plyString += "property uchar red\nproperty uchar green\nproperty uchar blue\nproperty uchar alpha\n"
         plyString += "end_header\n"
-        
+
         for i in 0..<vertexCount {
             let vertex = vertices[i]
-            let colorIndex = i * colorStride
-            
-            // Ensure the index is within the bounds of the colors array
-            guard colorIndex + 3 < colors.count else {
-                print("Color data index out of range for vertex \(i).")
-                continue
-            }
-            
-            let color: [UInt8] = (0..<4).compactMap { i -> UInt8? in
-                let index = colorIndex + i
-                guard index < colors.count else {
-                    return nil
-                }
-                return UInt8(colors[index] * 255)
-            }
-            
-            // Only proceed if we have all four color components
-            guard color.count == 4 else {
-                print("Incomplete color data for vertex \(i).")
-                continue
-            }
-            
+            let colorIndex = i * 4
+            let color = colors[colorIndex..<colorIndex + 4].map { UInt8($0 * 255) }
             plyString += "\(vertex.x) \(vertex.y) \(vertex.z) \(color[0]) \(color[1]) \(color[2]) \(color[3])\n"
         }
-        
+
         do {
             try plyString.write(to: url, atomically: true, encoding: .ascii)
-            print("PLY file was successfully saved to: \(url.path)")
+            print("PLY file successfully saved to: \(url.path)")
         } catch {
             print("Failed to write PLY file: \(error)")
         }
