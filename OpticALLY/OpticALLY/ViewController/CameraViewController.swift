@@ -119,15 +119,12 @@ struct ExternalData {
                 
                 let depth = depthValue
                 
-                // Apply lens distortion correction
-                let correctedPoint = correctLensDistortion(x: Float(x), y: Float(y), lookupTable: inverseLensDistortionLookupTable!, lensDistortionCenter: calibrationData.lensDistortionCenter, imageSize: CGSize(width: width, height: height))
-                
                 // Convert 2D image point to 3D world coordinates
-                let imagePoint = simd_float3(Float(correctedPoint.x), Float(correctedPoint.y), 1.0)
+                let imagePoint = simd_float3(Float(x), Float(y), 1.0)
                 let worldPoint = intrinsicsInverse * imagePoint * Float(depthValue)
-                
+
                 // Create vertex with worldPoint
-                let vertex = SCNVector3(worldPoint.x, worldPoint.y, worldPoint.z)
+                let vertex = SCNVector3(x: worldPoint.x, y: worldPoint.y, z: worldPoint.z)
                 vertices.append(vertex)
                 
                 let colorOffset = y * bytesPerRow + x * 4 // Assuming BGRA format
