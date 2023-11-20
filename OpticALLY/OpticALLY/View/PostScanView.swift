@@ -43,7 +43,7 @@ struct SceneKitView: UIViewRepresentable {
 struct PostScanView: View {
     var body: some View {
         VStack {
-            Text("model.ply")
+            Text("Preview")
                 .font(.system(.title, design: .monospaced)) // Using monospaced font
                 .padding()
             

@@ -54,10 +54,51 @@ struct ExternalData {
     static var exportPLYData: Data?
     static var pointCloudGeometry: SCNGeometry?
     
+    static func correctLensDistortion(x: Float, y: Float, lookupTable: [Float], lensDistortionCenter: CGPoint, imageSize: CGSize) -> CGPoint {
+        // Calculate the normalized coordinates (ranging from -1 to 1)
+        let normalizedX = (x / Float(imageSize.width) - 0.5) * 2.0
+        let normalizedY = (y / Float(imageSize.height) - 0.5) * 2.0
+        
+        // Calculate the radial distance from the distortion center
+        let dx = normalizedX - Float(lensDistortionCenter.x)
+        let dy = normalizedY - Float(lensDistortionCenter.y)
+        let r = sqrt(dx * dx + dy * dy)
+        
+        // The lookup table is typically indexed by the radial distance.
+        // Here we need to map the radial distance to the lookup table index.
+        let maxTableIndex = Float(lookupTable.count - 1)
+        let tableIndex = min(maxTableIndex, r * maxTableIndex)
+        
+        // Interpolate between the nearest values in the lookup table
+        let lowerIndex = Int(floor(tableIndex))
+        let upperIndex = Int(ceil(tableIndex))
+        let t = tableIndex - Float(lowerIndex)
+        let interpolatedValue = (1.0 - t) * lookupTable[lowerIndex] + t * lookupTable[min(upperIndex, lookupTable.count - 1)]
+        
+        // Apply the distortion correction
+        let correctedX = dx * interpolatedValue / r
+        let correctedY = dy * interpolatedValue / r
+        
+        // Convert back to pixel coordinates
+        let unnormalizedX = (correctedX / 2.0 + 0.5) * Float(imageSize.width)
+        let unnormalizedY = (correctedY / 2.0 + 0.5) * Float(imageSize.height)
+        
+        return CGPoint(x: CGFloat(unnormalizedX), y: CGFloat(unnormalizedY))
+    }
+    
     // Function to convert depth and color data into a point cloud geometry
-    static func createPointCloudGeometry(depthData: AVDepthData, colorData: UnsafePointer<UInt8>, width: Int, height: Int, bytesPerRow: Int) -> SCNGeometry {
+    static func createPointCloudGeometry(depthData: AVDepthData, colorData: UnsafePointer<UInt8>, width: Int, height: Int, bytesPerRow: Int, calibrationData: AVCameraCalibrationData) -> SCNGeometry {
         var vertices: [SCNVector3] = []
         var colors: [UIColor] = []
+        
+        guard let lensDistortionLookupTable = calibrationData.lensDistortionLookupTable as? [Float],
+              let inverseLensDistortionLookupTable = calibrationData.inverseLensDistortionLookupTable as? [Float] else {
+            fatalError("Lens distortion lookup tables not available")
+        }
+        
+        // Camera Intrinsics
+        let intrinsics = calibrationData.intrinsicMatrix
+        let intrinsicsInverse = simd_inverse(intrinsics)
         
         let convertedDepthData = depthData.converting(toDepthDataType: kCVPixelFormatType_DepthFloat16)
         let depthDataMap = convertedDepthData.depthDataMap
@@ -69,10 +110,18 @@ struct ExternalData {
                 let depthOffset = y * CVPixelBufferGetBytesPerRow(depthDataMap) + x * MemoryLayout<UInt16>.size
                 let depthPointer = CVPixelBufferGetBaseAddress(depthDataMap)!.advanced(by: depthOffset).assumingMemoryBound(to: UInt16.self)
                 let depthValue = Float(depthPointer.pointee) // Convert UInt16 to Float
-            
-                let depth = depthValue
-                let vertex = SCNVector3(x: Float(x), y: Float(y), z: depth)
                 
+                let depth = depthValue
+                
+                // Apply lens distortion correction
+                let correctedPoint = correctLensDistortion(x: Float(x), y: Float(y), lookupTable: inverseLensDistortionLookupTable, lensDistortionCenter: calibrationData.lensDistortionCenter, imageSize: CGSize(width: width, height: height))
+                
+                // Convert 2D image point to 3D world coordinates
+                let imagePoint = simd_float3(correctedPoint.x, correctedPoint.y, 1.0)
+                let worldPoint = intrinsicsInverse * imagePoint * Float(depthValue)
+                
+                // Create vertex with worldPoint
+                let vertex = SCNVector3(worldPoint.x, worldPoint.y, worldPoint.z)
                 vertices.append(vertex)
                 
                 let colorOffset = y * bytesPerRow + x * 4 // Assuming BGRA format
@@ -932,7 +981,8 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             colorData: colorBaseAddress,
             width: commonWidth,
             height: commonHeight,
-            bytesPerRow: colorBytesPerRow // Use the correct bytes per row for color data
+            bytesPerRow: colorBytesPerRow,
+            calibrationData: depthData.cameraCalibrationData!
         )
         
         // Synchronize access to the shared resource
