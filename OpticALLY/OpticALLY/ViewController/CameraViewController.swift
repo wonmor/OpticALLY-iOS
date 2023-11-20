@@ -117,7 +117,7 @@ struct ExternalData {
                 let correctedPoint = correctLensDistortion(x: Float(x), y: Float(y), lookupTable: inverseLensDistortionLookupTable, lensDistortionCenter: calibrationData.lensDistortionCenter, imageSize: CGSize(width: width, height: height))
                 
                 // Convert 2D image point to 3D world coordinates
-                let imagePoint = simd_float3(correctedPoint.x, correctedPoint.y, 1.0)
+                let imagePoint = simd_float3(Float(correctedPoint.x), Float(correctedPoint.y), 1.0)
                 let worldPoint = intrinsicsInverse * imagePoint * Float(depthValue)
                 
                 // Create vertex with worldPoint
