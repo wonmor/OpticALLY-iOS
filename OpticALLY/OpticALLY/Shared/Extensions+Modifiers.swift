@@ -172,4 +172,12 @@ extension Data {
             return Array(UnsafeBufferPointer(start: address, count: count))
         }
     }
+    
+    func toFloatArray() -> [Float] {
+        var array = [Float](repeating: 0.0, count: self.count / MemoryLayout<Float>.size)
+        _ = self.withUnsafeBytes {
+            array = UnsafeBufferPointer<Float>(start: $0.bindMemory(to: Float.self).baseAddress, count: array.count).map { $0 }
+        }
+        return array
+    }
 }

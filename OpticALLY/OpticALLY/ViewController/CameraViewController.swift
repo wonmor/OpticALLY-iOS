@@ -91,8 +91,14 @@ struct ExternalData {
         var vertices: [SCNVector3] = []
         var colors: [UIColor] = []
         
-        guard let lensDistortionLookupTable = calibrationData.lensDistortionLookupTable as? [Float],
-              let inverseLensDistortionLookupTable = calibrationData.inverseLensDistortionLookupTable as? [Float] else {
+        
+        guard let data = calibrationData.lensDistortionLookupTable,
+              let lensDistortionLookupTable: [Float]? = data.toFloatArray() else {
+            fatalError("Lens distortion lookup tables not available")
+        }
+        
+        guard let data2 = calibrationData.inverseLensDistortionLookupTable,
+              let inverseLensDistortionLookupTable: [Float]? = data.toFloatArray() else {
             fatalError("Lens distortion lookup tables not available")
         }
         
@@ -114,7 +120,7 @@ struct ExternalData {
                 let depth = depthValue
                 
                 // Apply lens distortion correction
-                let correctedPoint = correctLensDistortion(x: Float(x), y: Float(y), lookupTable: inverseLensDistortionLookupTable, lensDistortionCenter: calibrationData.lensDistortionCenter, imageSize: CGSize(width: width, height: height))
+                let correctedPoint = correctLensDistortion(x: Float(x), y: Float(y), lookupTable: inverseLensDistortionLookupTable!, lensDistortionCenter: calibrationData.lensDistortionCenter, imageSize: CGSize(width: width, height: height))
                 
                 // Convert 2D image point to 3D world coordinates
                 let imagePoint = simd_float3(Float(correctedPoint.x), Float(correctedPoint.y), 1.0)
