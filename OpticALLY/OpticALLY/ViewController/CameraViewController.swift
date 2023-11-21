@@ -65,6 +65,8 @@ struct ExternalData {
     static func reset() {
         renderingEnabled = true
         isSavingFileAsPLY = false
+   
+        pointCloudGeometry = nil
     }
     
     // Function to convert depth and color data into a point cloud geometry
