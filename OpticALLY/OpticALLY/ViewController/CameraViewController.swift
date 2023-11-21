@@ -196,6 +196,24 @@ struct ExternalData {
             print("Failed to write PLY file: \(error)")
         }
     }
+    
+    static func exportGeometryAsUSDZ(to url: URL) {
+        guard let geometry = pointCloudGeometry else {
+            print("Point cloud geometry is not available")
+            return
+        }
+
+        let scene = SCNScene()
+        let node = SCNNode(geometry: geometry)
+        scene.rootNode.addChildNode(node)
+
+        do {
+            try scene.write(to: url, options: nil, delegate: nil, progressHandler: nil)
+            print("USDZ file successfully saved to: \(url.path)")
+        } catch {
+            print("Failed to write USDZ file: \(error)")
+        }
+    }
 }
 
 @available(iOS 11.1, *)
@@ -988,7 +1006,21 @@ class ExportViewModel: ObservableObject {
             self.fileURL = fileURL
             self.showShareSheet = true
         }
+    }
+    
+    func exportUSDZ() {
+        // Determine a temporary file URL to save the PLY file
+        let tempDirectory = FileManager.default.temporaryDirectory
+        let fileURL = tempDirectory.appendingPathComponent("model.usdz")
         
+        // Export the PLY data to the file
+        ExternalData.exportGeometryAsPLY(to: fileURL)
+        
+        // Update the state to indicate that there's a file to share
+        DispatchQueue.main.async {
+            self.fileURL = fileURL
+            self.showShareSheet = true
+        }
     }
 }
 
@@ -1096,6 +1128,15 @@ struct SwiftUIView: View {
                                                     exportViewModel.exportPLY()
                                                 }) {
                                                     Text(".PLY")
+                                                        .padding()
+                                                        .foregroundColor(.white)
+                                                        .background(Capsule().fill(Color.gray.opacity(0.4)))
+                                                }
+                                                
+                                                Button(action: {
+                                                    exportViewModel.exportUSDZ()
+                                                }) {
+                                                    Text(".USDZ")
                                                         .padding()
                                                         .foregroundColor(.white)
                                                         .background(Capsule().fill(Color.gray.opacity(0.4)))
