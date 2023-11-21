@@ -54,6 +54,14 @@ struct ExternalData {
     static var exportPLYData: Data?
     static var pointCloudGeometry: SCNGeometry?
     
+    // Function to reset all variables
+    static func reset() {
+        renderingEnabled = true
+        isSavingFileAsPLY = false
+        exportPLYData = nil
+        pointCloudGeometry = nil
+    }
+    
     // Function to convert depth and color data into a point cloud geometry
     static func createPointCloudGeometry(depthData: AVDepthData, colorData: UnsafePointer<UInt8>, width: Int, height: Int, bytesPerRow: Int, calibrationData: AVCameraCalibrationData) -> SCNGeometry {
         var vertices: [SCNVector3] = []

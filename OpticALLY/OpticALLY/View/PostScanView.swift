@@ -41,20 +41,46 @@ struct SceneKitView: UIViewRepresentable {
 
 
 struct PostScanView: View {
+    @EnvironmentObject var globalState: GlobalState
+
     var body: some View {
         VStack {
-            Text("Preview")
-                .font(.system(.title, design: .monospaced)) // Using monospaced font
-                .padding()
-            
+            HStack {
+                Button(action: {
+                    ExternalData.reset()
+                    globalState.currentView = .scanning
+                }) {
+                    Image(systemName: "arrow.left") // You can customize this with your own back button image
+                        .foregroundStyle(.white)
+                        .font(.title)
+                        .padding()
+                }
+                
+                Text("Preview")
+                    .font(.system(.title, design: .monospaced)) // Using monospaced font
+                Spacer()
+            }
+            .padding(.top)
+
             SceneKitView(geometry: ExternalData.pointCloudGeometry)
-                .ignoresSafeArea()
+                .ignoresSafeArea(edges: .bottom)
+
+            Spacer()
+
+            // Dummy facial feature description
+            Text("Facial Feature Analysis\n[Data not available]")
+                .font(.title3)
+                .multilineTextAlignment(.center)
+                .monospaced()
+                .padding()
         }
     }
 }
 
+
 struct PostScanView_Previews: PreviewProvider {
     static var previews: some View {
         PostScanView()
+            .preferredColorScheme(.dark)
     }
 }
