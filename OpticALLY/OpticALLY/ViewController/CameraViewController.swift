@@ -17,6 +17,13 @@ import SceneKit
 import ARKit
 import Combine
 
+extension LogManager {
+    func clearLogs() {
+        logs.removeAll()
+        latestLog = nil
+    }
+}
+
 class LogManager: ObservableObject {
     static let shared = LogManager()
     private var logs: [String] = []
@@ -58,8 +65,6 @@ struct ExternalData {
     static func reset() {
         renderingEnabled = true
         isSavingFileAsPLY = false
-        exportPLYData = nil
-        pointCloudGeometry = nil
     }
     
     // Function to convert depth and color data into a point cloud geometry
@@ -255,8 +260,8 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     
     private let dataOutputQueue = DispatchQueue(label: "video data queue", qos: .userInitiated, attributes: [], autoreleaseFrequency: .workItem)
     
-    private let videoDataOutput = AVCaptureVideoDataOutput()
-    private let depthDataOutput = AVCaptureDepthDataOutput()
+    private var videoDataOutput = AVCaptureVideoDataOutput()
+    private var depthDataOutput = AVCaptureDepthDataOutput()
     private var outputSynchronizer: AVCaptureDataOutputSynchronizer?
     
     private var globalDepthData: AVDepthData!
