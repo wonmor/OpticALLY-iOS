@@ -61,12 +61,8 @@ struct ExternalData {
     static var exportPLYData: Data?
     static var pointCloudGeometry: SCNGeometry?
     
-    // Function to reset all variables
     static func reset() {
-        renderingEnabled = true
-        isSavingFileAsPLY = false
-   
-        pointCloudGeometry = nil
+        // Function to reset all variables
     }
     
     // Function to convert depth and color data into a point cloud geometry
