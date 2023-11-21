@@ -75,16 +75,11 @@ struct ExternalData {
                 let depthPointer = CVPixelBufferGetBaseAddress(depthDataMap)!.advanced(by: depthOffset).assumingMemoryBound(to: UInt16.self)
                 let depthValue = Float(depthPointer.pointee) // Convert UInt16 to Float
 
-                // Changed THis
-//                let depth = depthValue * 0.5 // Temporary value for scaling depth data...
-//                let vertex = SCNVector3(x: Float(x), y: Float(y), z: depth)
-//              Revised to This
                 let xrw = (Float(x) - cameraIntrinsics[2][0]) * depthValue / cameraIntrinsics[0][0]
                 let yrw = (Float(y) - cameraIntrinsics[2][1]) * depthValue / cameraIntrinsics[1][1]
                 let vertex = SCNVector3(x: xrw, y: yrw, z: depthValue)
 
                 vertices.append(vertex)
-                
                 
                 let colorOffset = y * bytesPerRow + x * 4 // Assuming BGRA format
                 let bComponent = Double(colorData[colorOffset]) / 255.0
