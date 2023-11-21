@@ -1014,7 +1014,7 @@ class ExportViewModel: ObservableObject {
         let fileURL = tempDirectory.appendingPathComponent("model.usdz")
         
         // Export the PLY data to the file
-        ExternalData.exportGeometryAsPLY(to: fileURL)
+        ExternalData.exportGeometryAsUSDZ(to: fileURL)
         
         // Update the state to indicate that there's a file to share
         DispatchQueue.main.async {
