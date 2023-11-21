@@ -146,15 +146,6 @@ struct ExternalData {
         // Create the point cloud geometry
         pointCloudGeometry = SCNGeometry(sources: [vertexSource, colorSource], elements: [element])
         
-        // Set the shader modifier to change the point size
-        let pointSize: CGFloat = 5.0 // Adjust the point size as necessary
-        let shaderModifier = """
-            #pragma transparent
-            #pragma body
-            gl_PointSize = \(pointSize);
-        """
-        pointCloudGeometry!.shaderModifiers = [.geometry: shaderModifier]
-        
         // Set the lighting model to constant to ensure the points are fully lit
         pointCloudGeometry!.firstMaterial?.lightingModel = .constant
         
