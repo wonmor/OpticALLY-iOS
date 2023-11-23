@@ -71,6 +71,7 @@ struct ExternalData {
         var colors: [UIColor] = []
         
         let cameraIntrinsics = calibrationData.intrinsicMatrix
+        let intrinsicMatrixReferenceDimensions = calibrationData.intrinsicMatrixReferenceDimensions
         let lensDistortionLookupTable = calibrationData.lensDistortionLookupTable
         let inverseLensDistortionLookupTable = calibrationData.inverseLensDistortionLookupTable
         let lensDistortionCenter = calibrationData.lensDistortionCenter
@@ -82,12 +83,19 @@ struct ExternalData {
         
         for y in 0..<height {
             for x in 0..<width {
+                let scaleX = Float(width) / Float(intrinsicMatrixReferenceDimensions.width)
+                let scaleY = Float(height) / Float(intrinsicMatrixReferenceDimensions.height)
+
+                let scaledX = Float(x) * scaleX
+                let scaledY = Float(y) * scaleY
+                
                 let depthOffset = y * CVPixelBufferGetBytesPerRow(depthDataMap) + x * MemoryLayout<UInt16>.size
                 let depthPointer = CVPixelBufferGetBaseAddress(depthDataMap)!.advanced(by: depthOffset).assumingMemoryBound(to: UInt16.self)
                 let depthValue = Float(depthPointer.pointee) // Convert UInt16 to Float
 
-                let xrw = (Float(x) - cameraIntrinsics[2][0]) * depthValue / cameraIntrinsics[0][0]
-                let yrw = (Float(y) - cameraIntrinsics[2][1]) * depthValue / cameraIntrinsics[1][1]
+                let xrw = (scaledX - cameraIntrinsics[2][0]) * depthValue / cameraIntrinsics[0][0]
+                let yrw = (scaledY - cameraIntrinsics[2][1]) * depthValue / cameraIntrinsics[1][1]
+
                 let vertex = SCNVector3(x: xrw, y: yrw, z: depthValue)
 
                 vertices.append(vertex)
