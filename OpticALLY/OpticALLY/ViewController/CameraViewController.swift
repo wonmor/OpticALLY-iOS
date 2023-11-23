@@ -70,11 +70,7 @@ struct ExternalData {
         var vertices: [SCNVector3] = []
         var colors: [UIColor] = []
         
-        let cameraIntrinsics = calibrationData.intrinsicMatrix
-        let intrinsicMatrixReferenceDimensions = calibrationData.intrinsicMatrixReferenceDimensions
-        let lensDistortionLookupTable = calibrationData.lensDistortionLookupTable
-        let inverseLensDistortionLookupTable = calibrationData.inverseLensDistortionLookupTable
-        let lensDistortionCenter = calibrationData.lensDistortionCenter
+        var cameraIntrinsics = calibrationData.intrinsicMatrix
         
         let convertedDepthData = depthData.converting(toDepthDataType: kCVPixelFormatType_DepthFloat16)
         let depthDataMap = convertedDepthData.depthDataMap
@@ -83,19 +79,12 @@ struct ExternalData {
         
         for y in 0..<height {
             for x in 0..<width {
-                let scaleX = Float(width) / Float(intrinsicMatrixReferenceDimensions.width)
-                let scaleY = Float(height) / Float(intrinsicMatrixReferenceDimensions.height)
-
-                let scaledX = Float(x) * scaleX
-                let scaledY = Float(y) * scaleY
-                
                 let depthOffset = y * CVPixelBufferGetBytesPerRow(depthDataMap) + x * MemoryLayout<UInt16>.size
                 let depthPointer = CVPixelBufferGetBaseAddress(depthDataMap)!.advanced(by: depthOffset).assumingMemoryBound(to: UInt16.self)
                 let depthValue = Float(depthPointer.pointee) // Convert UInt16 to Float
 
-                let xrw = (scaledX - cameraIntrinsics[2][0]) * depthValue / cameraIntrinsics[0][0]
-                let yrw = (scaledY - cameraIntrinsics[2][1]) * depthValue / cameraIntrinsics[1][1]
-
+                let xrw = (Float(x) - cameraIntrinsics.columns.2.x) * depthValue / cameraIntrinsics.columns.0.x
+                let yrw = (Float(y) - cameraIntrinsics.columns.2.y) * depthValue / cameraIntrinsics.columns.1.y
                 let vertex = SCNVector3(x: xrw, y: yrw, z: depthValue)
 
                 vertices.append(vertex)
