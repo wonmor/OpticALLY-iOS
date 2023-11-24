@@ -1,152 +1,118 @@
-//
-//  IntroductionView.swift
-//  ClassFinder
-//
-//  Created by John Seong on 8/22/23.
-//
-
 import SwiftUI
 import AVKit
 
+struct TextOverlayView: View {
+    @EnvironmentObject var globalState: GlobalState
+    
+    var body: some View {
+        VStack {
+            VStack {
+                Text("HAROLDEN")
+                    .font(.system(size: 48, weight: .bold))
+                    .monospaced()
+                    .cornerRadius(10)
+                
+                Text("LOS ANGELES")
+                    .font(.title)
+            }
+            .padding()
+            
+            Button(action: {
+                globalState.currentView = .scanning
+            }) {
+                HStack {
+                    Image(systemName: "eyeglasses")
+                    Text("EXPLORE")
+                        .font(.body)
+                        .bold()
+                }
+                .foregroundColor(.white)
+                .padding()
+                .background(Capsule().fill(Color.black))
+            }
+            .padding(.bottom)
+        }
+        .background(.white)
+        .clipShape(RoundedRectangle(cornerSize: CGSize(width: 20, height: 10)))
+        .foregroundStyle(.black)
+    }
+}
+
 struct BackgroundVideoPlayer: UIViewControllerRepresentable {
+    var firstVideoName: String
+    var secondVideoName: String
+    @Binding var playSecondVideo: Bool
+
     func makeUIViewController(context: Context) -> AVPlayerViewController {
         let playerViewController = AVPlayerViewController()
-        
-        // Assuming the video is in the app's resources bundle.
-        if let fileURL = Bundle.main.url(forResource: "promo", withExtension: "mp4") {
+        setupPlayer(for: playerViewController, with: firstVideoName, playMuted: false)
+
+        NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: playerViewController.player?.currentItem, queue: .main) { _ in
+            withAnimation {
+                if !self.playSecondVideo {
+                    self.playSecondVideo = true
+                }
+                self.setupPlayer(for: playerViewController, with: self.secondVideoName, playMuted: true)
+            }
+        }
+
+        return playerViewController
+    }
+
+    func updateUIViewController(_ uiViewController: AVPlayerViewController, context: Context) {
+        if playSecondVideo {
+            setupPlayer(for: uiViewController, with: secondVideoName, playMuted: true)
+        }
+    }
+
+    private func setupPlayer(for playerViewController: AVPlayerViewController, with videoName: String, playMuted: Bool) {
+        if let fileURL = Bundle.main.url(forResource: videoName, withExtension: "mp4") {
             let player = AVPlayer(url: fileURL)
             playerViewController.player = player
             playerViewController.showsPlaybackControls = false
             playerViewController.videoGravity = .resizeAspectFill
-            playerViewController.player?.isMuted = true
+            playerViewController.player?.isMuted = playMuted
             playerViewController.player?.play()
-            playerViewController.player?.actionAtItemEnd = .none
-            
-            NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: playerViewController.player?.currentItem, queue: .main) { _ in
-                playerViewController.player?.seek(to: CMTime.zero)
-                playerViewController.player?.play()
-            }
         }
-        
-        return playerViewController
     }
-
-    func updateUIViewController(_ uiViewController: AVPlayerViewController, context: Context) {}
 }
 
 struct IntroductionView: View {
-    @EnvironmentObject var globalState: GlobalState
-    
+    @State private var playSecondVideo = false
+
     var body: some View {
         ZStack {
-            // Background video player
-            BackgroundVideoPlayer()
-                .opacity(0.25)
+            BackgroundVideoPlayer(firstVideoName: "glasses", secondVideoName: "promo", playSecondVideo: $playSecondVideo)
+                .opacity(playSecondVideo ? 0.5 : 0.8)
+                .overlay(
+                    TextOverlayView(), // Overlay view
+                    alignment: .center
+                )
                 .edgesIgnoringSafeArea(.all)
-            
-            // All your other views go here
-            ScrollView {
-                VStack(alignment: .center) {
-                    Spacer()
-                    TitleView()
-                    InformationContainerView()
-                    Spacer(minLength: 30)
-                    
-                    Button(action: {
-                        withAnimation {
-                            globalState.currentView = .tracking
-                        }
-                    }) {
-                        Text("Continue")
-                            .customButton()
-                    }
-                    .padding(.horizontal)
-                }
-            }
         }
+        .animation(.easeInOut, value: playSecondVideo)
     }
 }
 
 struct TitleView: View {
     var body: some View {
         VStack {
-            Image("1024")
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 180, alignment: .center)
-                .clipShape(RoundedRectangle(cornerRadius: 20)) // Clips the image as a rounded rectangle
-                .overlay(
-                    RoundedRectangle(cornerRadius: 20) // Applies a border on top of the rounded rectangle image
-                        .stroke(Color.primary, lineWidth: 2) // Adjust the color and line width as needed
-                )
-                .accessibility(hidden: true)
-            
-            Text("Welcome to")
-                .font(.system(size: 36, weight: .bold))
-                .foregroundColor(.mainColor)
+            Text("HAROLDEN")
+                .font(.system(size: 48, weight: .bold))
                 .monospaced()
+                .cornerRadius(10)
             
-            Text("Harolden")
-                .font(.system(size: 36, weight: .bold))
-                .monospaced()
+            Text("LOS ANGELES")
+                .font(.title)
         }
+        .foregroundStyle(.black)
     }
 }
 
-struct InformationContainerView: View {
-    var body: some View {
-        VStack(alignment: .leading) {
-            InformationDetailView(title: "Custom Eyewear", subTitle: "Tailor eyewear based on your face's unique dimensions.", imageName: "eyeglasses")
-            
-            InformationDetailView(title: "3D Facial Scanning", subTitle: "Get a precise 3D model of your face using our AR technology.", imageName: "face.dashed")
-            
-            InformationDetailView(title: "Pupillary Distance", subTitle: "Accurately measure your pupillary distance for a perfect fit.", imageName: "ruler.fill")
-        }
-        .padding(.horizontal)
-    }
-}
-
-
-struct InformationDetailView: View {
-    var title: String = "title"
-    var subTitle: String = "subTitle"
-    var imageName: String = "car"
-    var backgroundLabel: String? = nil  // Optional background label property
-    
-    var body: some View {
-        HStack(alignment: .center) {
-            // Container for the image and the label (if it exists)
-            VStack(spacing: 10) {
-                Image(systemName: imageName)
-                    .font(.largeTitle)
-                    .accessibility(hidden: true)
-                
-                // This displays the label (if it exists) next to the image
-                if let label = backgroundLabel {
-                    Text(label)
-                        .font(.caption)
-                        .bold()
-                        .foregroundColor(.mainColor)
-                        .padding(5)
-                        .background(Color.pink.opacity(0.2))
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                        .multilineTextAlignment(.center)
-                }
-            }
-            .padding()
-            
-            VStack(alignment: .leading) {
-                Text(title)
-                    .font(.headline)
-                    .foregroundColor(.primary)
-                    .accessibility(addTraits: .isHeader)
-                
-                Text(subTitle)
-                    .font(.body)
-                    .foregroundColor(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-        }
-        .padding(.top)
+struct IntroductionView_Previews: PreviewProvider {
+    static var previews: some View {
+        IntroductionView()
+            .environmentObject(GlobalState())
+            .preferredColorScheme(.dark)
     }
 }
