@@ -3,20 +3,27 @@ import AVKit
 
 struct TextOverlayView: View {
     @EnvironmentObject var globalState: GlobalState
-
+    
     var body: some View {
         VStack {
+            Image("1024")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 80, alignment: .center)
+                .accessibility(hidden: true)
+                .padding(.top)
+            
             VStack {
                 Text("HAROLDEN")
-                    .font(.system(size: 48, weight: .bold))
+                    .bold()
                     .monospaced()
                     .cornerRadius(10)
-
+                
                 Text("3D CAPTURE")
                     .font(.title)
             }
-            .padding()
-
+            .padding(.horizontal)
+            
             Button(action: {
                 globalState.currentView = .scanning
             }) {
@@ -42,17 +49,17 @@ struct TextOverlayView: View {
 
 struct BackgroundVideoPlayer: UIViewControllerRepresentable {
     var videoName: String
-
+    
     func makeUIViewController(context: Context) -> AVPlayerViewController {
         let playerViewController = AVPlayerViewController()
         setupPlayer(for: playerViewController, with: videoName, playMuted: false)
         return playerViewController
     }
-
+    
     func updateUIViewController(_ uiViewController: AVPlayerViewController, context: Context) {
         // This function can be used for future updates if needed
     }
-
+    
     private func setupPlayer(for playerViewController: AVPlayerViewController, with videoName: String, playMuted: Bool) {
         if let fileURL = Bundle.main.url(forResource: videoName, withExtension: "mp4") {
             let player = AVPlayer(url: fileURL)
@@ -67,7 +74,7 @@ struct BackgroundVideoPlayer: UIViewControllerRepresentable {
 
 struct IntroductionView: View {
     @State private var playSecondVideo = false
-
+    
     var body: some View {
         ZStack {
             BackgroundVideoPlayer(videoName: "glasses")
