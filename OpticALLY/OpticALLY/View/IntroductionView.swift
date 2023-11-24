@@ -3,7 +3,7 @@ import AVKit
 
 struct TextOverlayView: View {
     @EnvironmentObject var globalState: GlobalState
-    
+
     var body: some View {
         VStack {
             VStack {
@@ -11,12 +11,12 @@ struct TextOverlayView: View {
                     .font(.system(size: 48, weight: .bold))
                     .monospaced()
                     .cornerRadius(10)
-                
-                Text("LOS ANGELES")
+
+                Text("3D CAPTURE")
                     .font(.title)
             }
             .padding()
-            
+
             Button(action: {
                 globalState.currentView = .scanning
             }) {
@@ -28,41 +28,29 @@ struct TextOverlayView: View {
                 }
                 .foregroundColor(.white)
                 .padding()
-                .background(Capsule().fill(Color.black))
+                .background(Capsule().fill(Color.black).overlay(Capsule().stroke(Color.white, lineWidth: 2)))
             }
             .padding(.bottom)
         }
-        .background(.white)
+        .background(Color(.black))
         .clipShape(RoundedRectangle(cornerSize: CGSize(width: 20, height: 10)))
-        .foregroundStyle(.black)
+        .shadow(color: .black.opacity(0.8), radius: 10, x: 5, y: 5)
+        .foregroundStyle(.white)
+        .multilineTextAlignment(.center)
     }
 }
 
 struct BackgroundVideoPlayer: UIViewControllerRepresentable {
-    var firstVideoName: String
-    var secondVideoName: String
-    @Binding var playSecondVideo: Bool
+    var videoName: String
 
     func makeUIViewController(context: Context) -> AVPlayerViewController {
         let playerViewController = AVPlayerViewController()
-        setupPlayer(for: playerViewController, with: firstVideoName, playMuted: false)
-
-        NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: playerViewController.player?.currentItem, queue: .main) { _ in
-            withAnimation {
-                if !self.playSecondVideo {
-                    self.playSecondVideo = true
-                }
-                self.setupPlayer(for: playerViewController, with: self.secondVideoName, playMuted: true)
-            }
-        }
-
+        setupPlayer(for: playerViewController, with: videoName, playMuted: false)
         return playerViewController
     }
 
     func updateUIViewController(_ uiViewController: AVPlayerViewController, context: Context) {
-        if playSecondVideo {
-            setupPlayer(for: uiViewController, with: secondVideoName, playMuted: true)
-        }
+        // This function can be used for future updates if needed
     }
 
     private func setupPlayer(for playerViewController: AVPlayerViewController, with videoName: String, playMuted: Bool) {
@@ -82,8 +70,7 @@ struct IntroductionView: View {
 
     var body: some View {
         ZStack {
-            BackgroundVideoPlayer(firstVideoName: "glasses", secondVideoName: "promo", playSecondVideo: $playSecondVideo)
-                .opacity(playSecondVideo ? 0.5 : 0.8)
+            BackgroundVideoPlayer(videoName: "glasses")
                 .overlay(
                     TextOverlayView(), // Overlay view
                     alignment: .center
