@@ -83,9 +83,10 @@ struct ExternalData {
                 let depthPointer = CVPixelBufferGetBaseAddress(depthDataMap)!.advanced(by: depthOffset).assumingMemoryBound(to: UInt16.self)
                 let depthValue = Float(depthPointer.pointee) // Convert UInt16 to Float
 
+                let scaleFactor = Float(2.0) // Custom value for depth exaggeration
                 let xrw = (Float(x) - cameraIntrinsics.columns.2.x) * depthValue / cameraIntrinsics.columns.0.x
                 let yrw = (Float(y) - cameraIntrinsics.columns.2.y) * depthValue / cameraIntrinsics.columns.1.y
-                let vertex = SCNVector3(x: xrw, y: yrw, z: depthValue)
+                let vertex = SCNVector3(x: xrw, y: yrw, z: depthValue * scaleFactor)
 
                 vertices.append(vertex)
                 
@@ -118,7 +119,6 @@ struct ExternalData {
                 let rComponent = CGFloat(colorData[colorOffset + 2]) / 255.0
                 let aComponent = CGFloat(colorData[colorOffset + 3]) / 255.0
                 
-                print("Converting \(counter)th point: \([rComponent, gComponent, bComponent, aComponent])")
                 LogManager.shared.log("Converting \(counter)th point: \([rComponent, gComponent, bComponent, aComponent])")
                 
                 // Append color components in RGBA order, which is typically used in SceneKit
@@ -1138,7 +1138,7 @@ struct SwiftUIView: View {
                                                     Text(".PLY")
                                                         .padding()
                                                         .foregroundColor(.white)
-                                                        .background(Capsule().fill(Color.gray.opacity(0.4)))
+                                                        .background(Capsule().fill(Color.gray))
                                                 }
                                                 
                                                 Button(action: {
@@ -1147,7 +1147,7 @@ struct SwiftUIView: View {
                                                     Text(".USDZ")
                                                         .padding()
                                                         .foregroundColor(.white)
-                                                        .background(Capsule().fill(Color.gray.opacity(0.4)))
+                                                        .background(Capsule().fill(Color.gray))
                                                 }
                                             }
                                             .padding(.top, 5)
