@@ -34,7 +34,6 @@ struct TextOverlayView: View {
         }
         .background(Color(.black))
         .clipShape(RoundedRectangle(cornerSize: CGSize(width: 20, height: 10)))
-        .shadow(color: .black.opacity(0.8), radius: 10, x: 5, y: 5)
         .foregroundStyle(.white)
         .multilineTextAlignment(.center)
     }
