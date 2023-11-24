@@ -1,10 +1,3 @@
-/*
- See LICENSE folder for this sample’s licensing information.
- 
- Abstract:
- Contains view controller code for previewing live-captured content.
- */
-
 import UIKit
 import AVFoundation
 import CoreVideo
