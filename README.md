@@ -1,4 +1,4 @@
-<img width="357" alt="1024" src="https://github.com/wonmor/Project-Lightbulb/assets/35755386/2748c64c-007b-42c4-8ce9-0c5478782e30">
+<img width="100" alt="1024" src="https://github.com/wonmor/Project-Lightbulb/assets/35755386/2748c64c-007b-42c4-8ce9-0c5478782e30">
 
 # Harolden-iOS
 Project Lightbulb features an iOS app that can scan user's faces using LiDAR technology, designed for bespoke eyeglasses.
