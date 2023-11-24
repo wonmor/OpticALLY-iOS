@@ -1030,6 +1030,10 @@ class ExportViewModel: ObservableObject {
             self.showShareSheet = true
         }
     }
+    
+    func exportOBJ() {
+        
+    }
 }
 
 struct ShareSheet: UIViewControllerRepresentable {
@@ -1132,13 +1136,24 @@ struct SwiftUIView: View {
                                         // Dropdown list view
                                         if showDropdown {
                                             VStack {
-                                                Button(action: {
-                                                    exportViewModel.exportPLY()
-                                                }) {
-                                                    Text(".PLY")
-                                                        .padding()
-                                                        .foregroundColor(.white)
-                                                        .background(Capsule().fill(Color.gray))
+                                                HStack {
+                                                    Button(action: {
+                                                        exportViewModel.exportPLY()
+                                                    }) {
+                                                        Text(".PLY")
+                                                            .padding()
+                                                            .foregroundColor(.white)
+                                                            .background(Capsule().fill(Color(.darkGray)))
+                                                    }
+                                                    
+                                                    Button(action: {
+                                                        exportViewModel.exportOBJ()
+                                                    }) {
+                                                        Text(".OBJ")
+                                                            .padding()
+                                                            .foregroundColor(.white)
+                                                            .background(Capsule().fill(Color(.darkGray)))
+                                                    }
                                                 }
                                                 
                                                 Button(action: {
@@ -1147,7 +1162,7 @@ struct SwiftUIView: View {
                                                     Text(".USDZ")
                                                         .padding()
                                                         .foregroundColor(.white)
-                                                        .background(Capsule().fill(Color.gray))
+                                                        .background(Capsule().fill(Color(.darkGray)))
                                                 }
                                             }
                                             .padding(.top, 5)
@@ -1181,7 +1196,7 @@ struct SwiftUIView: View {
                                 } else {
                                     HStack {
                                         Image(systemName: "circle.dotted") // Different SF Symbols for start and pause
-                                        Text("READING...")
+                                        Text("READING")
                                             .font(.title3)
                                             .bold()
                                     }
