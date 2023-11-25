@@ -55,6 +55,7 @@
 		96F0CF1C2B12A3D500417716 /* ExportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF1B2B12A3D500417716 /* ExportView.swift */; };
 		96F0CF1E2B12A40200417716 /* FaceIDScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF1D2B12A40200417716 /* FaceIDScanView.swift */; };
 		96F0CF202B12A46500417716 /* CameraDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF1F2B12A46500417716 /* CameraDelegate.swift */; };
+		96F0CF222B12A51700417716 /* LogManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF212B12A51700417716 /* LogManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -120,6 +121,7 @@
 		96F0CF1B2B12A3D500417716 /* ExportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportView.swift; sourceTree = "<group>"; };
 		96F0CF1D2B12A40200417716 /* FaceIDScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceIDScanView.swift; sourceTree = "<group>"; };
 		96F0CF1F2B12A46500417716 /* CameraDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraDelegate.swift; sourceTree = "<group>"; };
+		96F0CF212B12A51700417716 /* LogManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -163,18 +165,6 @@
 			path = Storyboard;
 			sourceTree = "<group>";
 		};
-		9679F8EA2AD0958F00686F13 /* Utility */ = {
-			isa = PBXGroup;
-			children = (
-				9679F8B42AD0907900686F13 /* HistogramCalculator.h */,
-				9679F8BC2AD0907900686F13 /* HistogramCalculator.m */,
-				9679F8CA2AD0907A00686F13 /* AAPLTransforms.h */,
-				9679F8C82AD0907A00686F13 /* FilterRenderer.swift */,
-				9679F8B82AD0907900686F13 /* AAPLTransforms.mm */,
-			);
-			path = Utility;
-			sourceTree = "<group>";
-		};
 		9679F8EB2AD095AA00686F13 /* ViewController */ = {
 			isa = PBXGroup;
 			children = (
@@ -189,6 +179,11 @@
 				9679F8B92AD0907900686F13 /* Mixer.metal */,
 				9679F8C42AD0907900686F13 /* PassThrough.metal */,
 				9679F8B52AD0907900686F13 /* VideoMixer.swift */,
+				9679F8B42AD0907900686F13 /* HistogramCalculator.h */,
+				9679F8BC2AD0907900686F13 /* HistogramCalculator.m */,
+				9679F8CA2AD0907A00686F13 /* AAPLTransforms.h */,
+				9679F8C82AD0907A00686F13 /* FilterRenderer.swift */,
+				9679F8B82AD0907900686F13 /* AAPLTransforms.mm */,
 				9679F8C12AD0907900686F13 /* PointCloud.metal */,
 			);
 			path = Shader;
@@ -232,7 +227,6 @@
 				9679F8ED2AD0961600686F13 /* Shared */,
 				9679F8EC2AD095F200686F13 /* Shader */,
 				9679F8EB2AD095AA00686F13 /* ViewController */,
-				9679F8EA2AD0958F00686F13 /* Utility */,
 				9679F8E82AD0956E00686F13 /* Storyboard */,
 				967EE0912AAEDBD2000C4D5F /* ViewModel */,
 				967EE0902AAEDBBE000C4D5F /* View */,
@@ -240,6 +234,7 @@
 				9679F8B32AD0907900686F13 /* AppDelegate.swift */,
 				96F0CF1F2B12A46500417716 /* CameraDelegate.swift */,
 				96F0CF172B12A34400417716 /* ExternalData.swift */,
+				96F0CF212B12A51700417716 /* LogManager.swift */,
 				9679F8BA2AD0907900686F13 /* Info.plist */,
 				967EE0682AAE06FE000C4D5F /* Assets.xcassets */,
 				9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */,
@@ -465,6 +460,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				96F0CF222B12A51700417716 /* LogManager.swift in Sources */,
 				96F0CF1C2B12A3D500417716 /* ExportView.swift in Sources */,
 				9679F8DC2AD0907A00686F13 /* PassThrough.metal in Sources */,
 				967EE08F2AAEDA82000C4D5F /* EyesTrackingView.swift in Sources */,
