@@ -75,12 +75,12 @@ struct ExternalData {
                 let depthOffset = y * CVPixelBufferGetBytesPerRow(depthDataMap) + x * MemoryLayout<UInt16>.size
                 let depthPointer = CVPixelBufferGetBaseAddress(depthDataMap)!.advanced(by: depthOffset).assumingMemoryBound(to: UInt16.self)
                 let depthValue = Float(depthPointer.pointee) // Convert UInt16 to Float
-
+                
                 let scaleFactor = Float(2.0) // Custom value for depth exaggeration
                 let xrw = (Float(x) - cameraIntrinsics.columns.2.x) * depthValue / cameraIntrinsics.columns.0.x
                 let yrw = (Float(y) - cameraIntrinsics.columns.2.y) * depthValue / cameraIntrinsics.columns.1.y
                 let vertex = SCNVector3(x: xrw, y: yrw, z: depthValue * scaleFactor)
-
+                
                 vertices.append(vertex)
                 
                 let colorOffset = y * bytesPerRow + x * 4 // Assuming BGRA format
@@ -156,12 +156,12 @@ struct ExternalData {
     
     static func exportGeometryAsPLY(to url: URL) {
         guard let geometry = pointCloudGeometry,
-                let vertexSource = geometry.sources.first(where: { $0.semantic == .vertex }),
-                let colorSource = geometry.sources.first(where: { $0.semantic == .color }) else {
+              let vertexSource = geometry.sources.first(where: { $0.semantic == .vertex }),
+              let colorSource = geometry.sources.first(where: { $0.semantic == .color }) else {
             print("Unable to access vertex or color source from geometry")
             return
         }
-
+        
         // Access vertex data
         guard let vertexData: Data? = vertexSource.data else {
             print("Unable to access vertex data")
@@ -173,23 +173,23 @@ struct ExternalData {
             print("Unable to access color data")
             return
         }
-
+        
         let vertexCount = vertexSource.vectorCount
         let vertices = vertexSource.data.toArray(type: SCNVector3.self, count: vertexCount)
         let colors = colorSource.data.toArray(type: Float.self, count: vertexCount * 4)
-
+        
         var plyString = "ply\nformat ascii 1.0\nelement vertex \(vertexCount)\n"
         plyString += "property float x\nproperty float y\nproperty float z\n"
         plyString += "property uchar red\nproperty uchar green\nproperty uchar blue\nproperty uchar alpha\n"
         plyString += "end_header\n"
-
+        
         for i in 0..<vertexCount {
             let vertex = vertices[i]
             let colorIndex = i * 4
             let color = colors[colorIndex..<colorIndex + 4].map { UInt8($0 * 255) }
             plyString += "\(vertex.x) \(vertex.y) \(vertex.z) \(color[0]) \(color[1]) \(color[2]) \(color[3])\n"
         }
-
+        
         do {
             try plyString.write(to: url, atomically: true, encoding: .ascii)
             print("PLY file successfully saved to: \(url.path)")
@@ -203,11 +203,11 @@ struct ExternalData {
             print("Point cloud geometry is not available")
             return
         }
-
+        
         let scene = SCNScene()
         let node = SCNNode(geometry: geometry)
         scene.rootNode.addChildNode(node)
-
+        
         do {
             try scene.write(to: url, options: nil, delegate: nil, progressHandler: nil)
             print("USDZ file successfully saved to: \(url.path)")
@@ -1026,19 +1026,26 @@ class ExportViewModel: ObservableObject {
     }
     
     func exportOBJ() {
-            // Convert to PLY and get the file URL
-            exportPLY(showShareSheet: false) // Assuming this sets self.fileURL
-
+        // Convert to PLY and get the file URL
+        // Determine a temporary file URL to save the PLY file
+        let tempDirectory = FileManager.default.temporaryDirectory
+        let fileURL = tempDirectory.appendingPathComponent("model.ply")
+        
+        // Export the PLY data to the file
+        ExternalData.exportGeometryAsPLY(to: fileURL)
+        
+        // Update the state to indicate that there's a file to share
+        DispatchQueue.main.async {
             guard let plyFileURL = self.fileURL else {
                 print("Failed to get PLY file URL")
                 return
             }
-
+            
             // Start loading
             DispatchQueue.main.async {
                 self.isLoading = true
             }
-
+            
             // Prepare the request
             let url = URL(string: "https://harolden-server.apps.johnseong.com/convert-to-obj/")! // Replace with your actual API URL
             var request = URLRequest(url: url)
@@ -1047,7 +1054,7 @@ class ExportViewModel: ObservableObject {
             // Create a multipart form data body
             let boundary = "Boundary-\(UUID().uuidString)"
             request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-
+            
             var data = Data()
             data.append("--\(boundary)\r\n".data(using: .utf8)!)
             data.append("Content-Disposition: form-data; name=\"file\"; filename=\"model.ply\"\r\n".data(using: .utf8)!)
@@ -1055,7 +1062,7 @@ class ExportViewModel: ObservableObject {
             data.append(try! Data(contentsOf: plyFileURL))
             data.append("\r\n".data(using: .utf8)!)
             data.append("--\(boundary)--\r\n".data(using: .utf8)!)
-
+            
             // Upload the file
             let task = URLSession.shared.uploadTask(with: request, from: data) { data, response, error in
                 DispatchQueue.main.async {
@@ -1064,12 +1071,12 @@ class ExportViewModel: ObservableObject {
                         print("Error: \(error)")
                         return
                     }
-
+                    
                     guard let data = data else {
                         print("No data received")
                         return
                     }
-
+                    
                     // Save the OBJ file to a temporary location
                     let tempDirectory = FileManager.default.temporaryDirectory
                     let objFileURL = tempDirectory.appendingPathComponent("model.obj")
@@ -1084,6 +1091,7 @@ class ExportViewModel: ObservableObject {
             }
             task.resume()
         }
+    }
 }
 
 struct ShareSheet: UIViewControllerRepresentable {
