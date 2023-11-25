@@ -64,14 +64,14 @@ struct ExternalData {
         var vertices: [SCNVector3] = []
         var colors: [UIColor] = []
         var depthValues: [Float] = []
-
+        
         let cameraIntrinsics = calibrationData.intrinsicMatrix
-
+        
         let convertedDepthData = depthData.converting(toDepthDataType: kCVPixelFormatType_DepthFloat16)
         let depthDataMap = convertedDepthData.depthDataMap
         CVPixelBufferLockBaseAddress(depthDataMap, .readOnly)
         defer { CVPixelBufferUnlockBaseAddress(depthDataMap, .readOnly) }
-
+        
         // Collect all depth values
         for y in 0..<height {
             for x in 0..<width {
@@ -83,14 +83,14 @@ struct ExternalData {
         }
         
         let unsortedDepthValues = depthValues
-
+        
         // Sort the depth values
         depthValues.sort()
-
+        
         // Determine the depth threshold for the 30th percentile
         let index = Int(Float(depthValues.count) * percentile / 100.0)
         let depthThreshold = depthValues[max(0, min(index, depthValues.count - 1))]
-
+        
         var counter = 1
         
         // Process points with depth values lower than the threshold
@@ -99,24 +99,24 @@ struct ExternalData {
                 let depthOffset = y * CVPixelBufferGetBytesPerRow(depthDataMap) + x * MemoryLayout<UInt16>.size
                 let depthPointer = CVPixelBufferGetBaseAddress(depthDataMap)!.advanced(by: depthOffset).assumingMemoryBound(to: UInt16.self)
                 let depthValue = Float(depthPointer.pointee)
-
+                
                 if depthValue > depthThreshold {
                     continue // Skip this point
                 }
-
+                
                 let scaleFactor = Float(1.5) // Custom value for depth exaggeration
                 let xrw = (Float(x) - cameraIntrinsics.columns.2.x) * depthValue / cameraIntrinsics.columns.0.x
                 let yrw = (Float(y) - cameraIntrinsics.columns.2.y) * depthValue / cameraIntrinsics.columns.1.y
                 let vertex = SCNVector3(x: xrw, y: yrw, z: depthValue * scaleFactor)
-
+                
                 vertices.append(vertex)
-
+                
                 let colorOffset = y * bytesPerRow + x * 4 // Assuming BGRA format
                 let bComponent = Double(colorData[colorOffset]) / 255.0
                 let gComponent = Double(colorData[colorOffset + 1]) / 255.0
                 let rComponent = Double(colorData[colorOffset + 2]) / 255.0
                 let aComponent = Double(colorData[colorOffset + 3]) / 255.0
-
+                
                 let color = UIColor(red: CGFloat(rComponent), green: CGFloat(gComponent), blue: CGFloat(bComponent), alpha: CGFloat(aComponent))
                 colors.append(color)
                 
@@ -143,7 +143,7 @@ struct ExternalData {
             
             colorComponents += [red, green, blue, alpha]
         }
-
+        
         // Create the geometry source for colors
         let colorData = NSData(bytes: colorComponents, length: colorComponents.count * MemoryLayout<CGFloat>.size)
         let colorSource = SCNGeometrySource(data: colorData as Data,
@@ -154,7 +154,7 @@ struct ExternalData {
                                             bytesPerComponent: MemoryLayout<CGFloat>.size,
                                             dataOffset: 0,
                                             dataStride: MemoryLayout<CGFloat>.size * 4)
-
+        
         // Combine Vertex and Color Sources
         let geometrySources = [vertexSource, colorSource]
         
@@ -1021,21 +1021,23 @@ class ExportViewModel: ObservableObject {
     @Published var fileURL: URL?
     @Published var showShareSheet = false
     @Published var isLoading = false
-    @Published var estimatedExportTime: Int = 0
+    @Published var estimatedExportTime: Int? = nil
     
     private var exportStartTime: Date?
     
     func fetchExportDurations() {
         let db = Firestore.firestore()
-        db.collection("misc").document("render_time").getDocument { (document, error) in
+        db.collection("misc").document("render_time").getDocument { [weak self] (document, error) in
             if let document = document, document.exists {
-                if let durations = document.data()?["obj_duration"] as? [Int] {
-                    self.estimatedExportTime = self.calculateAverage(durations: durations)
+                if let durations = document.data()?["obj_duration"] as? [Int], !durations.isEmpty {
+                    self?.estimatedExportTime = self?.calculateAverage(durations: durations)
                 } else {
-                    // Handle the case where array doesn't exist
+                    // Handle the case where array doesn't exist or is empty
+                    self?.estimatedExportTime = nil // No data available
                 }
             } else {
                 // Handle the case where document doesn't exist
+                self?.estimatedExportTime = nil // No data available
             }
         }
     }
@@ -1056,13 +1058,25 @@ class ExportViewModel: ObservableObject {
     
     func updateExportDurationInFirestore(newDuration: Int) {
         let db = Firestore.firestore()
-        db.collection("misc").document("render_time").getDocument { (document, error) in
-            var durations = (document?.data()?["obj_duration"] as? [Int]) ?? []
-            if durations.count >= 20 {
-                durations.removeFirst() // Remove the oldest entry
+        let docRef = db.collection("misc").document("render_time")
+        
+        docRef.getDocument { (document, error) in
+            var durations: [Int]
+            
+            if let document = document, document.exists, let existingDurations = document.data()?["obj_duration"] as? [Int] {
+                durations = existingDurations
+                if durations.count >= 20 {
+                    durations.removeFirst() // Remove the oldest entry
+                }
+            } else {
+                // Document does not exist, start a new array
+                durations = []
             }
+            
             durations.append(newDuration) // Add the new duration
-            db.collection("misc").document("render_time").updateData(["obj_duration": durations])
+            
+            // Set the new array to the document, creating it if necessary
+            docRef.setData(["obj_duration": durations], merge: true)
         }
     }
     
@@ -1207,6 +1221,14 @@ struct SwiftUIView: View {
                         .bold()
                         .monospaced()
                         .foregroundColor(.black)
+                    
+                    if let estimatedTime = exportViewModel.estimatedExportTime {
+                        Text("Estimated:\n\(exportViewModel.estimatedExportTime!) sec.")
+                            .monospaced()
+                    } else {
+                        Text("Estimated:\nN/A")
+                            .monospaced()
+                    }
                 }
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 30) // Adjust horizontal padding for wider background
