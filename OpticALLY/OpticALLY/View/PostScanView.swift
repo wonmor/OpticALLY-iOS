@@ -7,9 +7,40 @@
 
 import SwiftUI
 import SceneKit
+import ModelIO
+import SceneKit.ModelIO
 
 struct SceneKitView: UIViewRepresentable {
     var geometry: SCNGeometry?
+    
+    func makeUIView(context: Context) -> SCNView {
+        let scnView = SCNView()
+        
+        // Configure the scene
+        let scene = SCNScene()
+        scnView.scene = scene
+        
+        // Check if geometry is provided
+        if let geometry = geometry {
+            let node = SCNNode(geometry: geometry)
+            node.position = SCNVector3(x: 0, y: 0, z: 0)
+            
+            node.eulerAngles.z = .pi / -2
+            
+            scene.rootNode.addChildNode(node)
+        }
+        
+        scnView.autoenablesDefaultLighting = true
+        scnView.allowsCameraControl = true
+        
+        return scnView
+    }
+    
+    func updateUIView(_ uiView: SCNView, context: Context) {}
+}
+
+struct SceneKitMDLView: UIViewRepresentable {
+    var mdlAsset: MDLAsset
 
     func makeUIView(context: Context) -> SCNView {
         let scnView = SCNView()
@@ -17,12 +48,15 @@ struct SceneKitView: UIViewRepresentable {
         // Configure the scene
         let scene = SCNScene()
         scnView.scene = scene
+        
+        if let object = mdlAsset.object(at: 0) as? MDLMesh, let geometry: SCNGeometry? = SCNGeometry(mdlMesh: object) {
+            // Modify each material to be double-sided
+            geometry!.materials.forEach { material in
+                material.isDoubleSided = true
+            }
 
-        // Check if geometry is provided
-        if let geometry = geometry {
             let node = SCNNode(geometry: geometry)
             node.position = SCNVector3(x: 0, y: 0, z: 0)
-
             node.eulerAngles.z = .pi / -2
 
             scene.rootNode.addChildNode(node)
@@ -34,15 +68,17 @@ struct SceneKitView: UIViewRepresentable {
         return scnView
     }
 
-    func updateUIView(_ uiView: SCNView, context: Context) {
-        // Update the view if needed
-    }
+    func updateUIView(_ uiView: SCNView, context: Context) {}
 }
-
 
 struct PostScanView: View {
     @EnvironmentObject var globalState: GlobalState
-
+    
+    @ObservedObject private var exportViewModel = ExportViewModel()
+    
+    @State private var isMesh: Bool = false
+    @State private var triggerUpdate: Bool = false
+    
     var body: some View {
         VStack {
             HStack {
@@ -56,23 +92,80 @@ struct PostScanView: View {
                         .padding()
                 }
                 
-                Text("Preview")
-                    .font(.system(.title, design: .monospaced)) // Using monospaced font
+                Text("Your Scan")
+                    .font(.system(.title)) // Using monospaced font
+                    .monospaced()
                 Spacer()
             }
             .padding(.top)
-
-            SceneKitView(geometry: ExternalData.pointCloudGeometry)
-                .ignoresSafeArea(edges: .bottom)
-
+            
+            if triggerUpdate {
+                SceneKitMDLView(mdlAsset: MDLAsset(url: exportViewModel.fileURL!))
+                    .onAppear(perform: {
+                        print("File URL: \(exportViewModel.fileURL!)")
+                    })
+                
+            } else {
+                SceneKitView(geometry: ExternalData.pointCloudGeometry)
+                    .ignoresSafeArea(edges: .bottom)
+            }
+            
             Spacer()
-
-            // Dummy facial feature description
-            Text("Facial Feature Analysis\n[Data not available]")
-                .font(.title3)
-                .multilineTextAlignment(.center)
-                .monospaced()
+            
+            if !isMesh {
+                Button(action: {
+                    exportViewModel.exportOBJ()
+                    isMesh = true
+                }) {
+                    HStack(spacing: 10) {
+                        Image(systemName: "square.stack.3d.forward.dottedline.fill")
+                        
+                        Text("Convert to Mesh")
+                            .bold()
+                            .font(.title3)
+                    }
+                    .padding()
+                    .foregroundColor(.white)
+                    .background(Capsule().fill(Color(.darkGray)))
+                }
                 .padding()
+            } else {
+                Text(".OBJ Conversion Complete!")
+                    .monospaced()
+            }
+            
+            // Display a loading spinner when isLoading is true
+            if exportViewModel.isLoading {
+                VStack(spacing: 10) { // Adjust spacing as needed
+                    ProgressView()
+                        .scaleEffect(1.5, anchor: .center) // Adjust size as needed
+                        .progressViewStyle(CircularProgressViewStyle(tint: .white)) // Spinner color
+                        .padding()
+                    
+                    Text("PROCESSING POINT CLOUD")
+                        .bold()
+                        .monospaced()
+                        .foregroundColor(.white)
+                    
+                    if exportViewModel.estimatedExportTime != nil {
+                        Text("Estimated:\n\(exportViewModel.estimatedExportTime!) sec.")
+                            .monospaced()
+                            .foregroundColor(.white)
+                    } else {
+                        Text("Estimated:\nN/A")
+                            .monospaced()
+                            .foregroundColor(.white)
+                    }
+                }
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 30) // Adjust horizontal padding for wider background
+                .padding(.vertical, 15) // Adjust vertical padding for background height
+                .zIndex(1) // Ensure the spinner and text are above other content
+                .onDisappear() {
+                    // Upon .OBJ conversion completion, refresh SceneKitView
+                    triggerUpdate = true
+                }
+            }
         }
     }
 }
