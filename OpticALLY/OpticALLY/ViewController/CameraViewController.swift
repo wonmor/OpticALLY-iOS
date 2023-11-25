@@ -1124,10 +1124,20 @@ struct SwiftUIView: View {
         ZStack {
             // Display a loading spinner when isLoading is true
             if exportViewModel.isLoading {
-                ProgressView()
-                    .scaleEffect(1.5, anchor: .center) // Adjust size as needed
-                    .progressViewStyle(CircularProgressViewStyle(tint: .white)) // Customize color if needed
-                    .zIndex(1) // Ensure the spinner is above other content
+                VStack(spacing: 10) { // Adjust spacing as needed
+                    ProgressView()
+                        .scaleEffect(1.5, anchor: .center) // Adjust size as needed
+                        .progressViewStyle(CircularProgressViewStyle(tint: .white)) // Spinner color
+                    
+                    Text("LOADING")
+                        .fontWeight(.medium)
+                        .foregroundColor(.white)
+                }
+                .padding(.horizontal, 30) // Adjust horizontal padding for wider background
+                .padding(.vertical, 15) // Adjust vertical padding for background height
+                .background(Color.black.opacity(0.75)) // Adjust background color and opacity
+                .cornerRadius(25) // Gives the pill shape
+                .zIndex(1) // Ensure the spinner and text are above other content
             }
             
             switch currentState {
