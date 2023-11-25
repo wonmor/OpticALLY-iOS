@@ -175,9 +175,15 @@ extension Data {
     
     func toFloatArray() -> [Float] {
         var array = [Float](repeating: 0.0, count: self.count / MemoryLayout<Float>.size)
-        _ = self.withUnsafeBytes {
+        self.withUnsafeBytes {
             array = UnsafeBufferPointer<Float>(start: $0.bindMemory(to: Float.self).baseAddress, count: array.count).map { $0 }
         }
         return array
+    }
+    
+    mutating func append(_ string: String) {
+        if let data = string.data(using: .utf8) {
+            append(data)
+        }
     }
 }
