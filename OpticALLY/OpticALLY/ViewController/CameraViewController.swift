@@ -1036,7 +1036,7 @@ class ExportViewModel: ObservableObject {
         
         // Update the state to indicate that there's a file to share
         DispatchQueue.main.async {
-            guard let plyFileURL = self.fileURL else {
+            guard let plyFileURL: URL? = fileURL else {
                 print("Failed to get PLY file URL")
                 return
             }
@@ -1059,7 +1059,7 @@ class ExportViewModel: ObservableObject {
             data.append("--\(boundary)\r\n".data(using: .utf8)!)
             data.append("Content-Disposition: form-data; name=\"file\"; filename=\"model.ply\"\r\n".data(using: .utf8)!)
             data.append("Content-Type: application/octet-stream\r\n\r\n".data(using: .utf8)!)
-            data.append(try! Data(contentsOf: plyFileURL))
+            data.append(try! Data(contentsOf: plyFileURL!))
             data.append("\r\n".data(using: .utf8)!)
             data.append("--\(boundary)--\r\n".data(using: .utf8)!)
             
