@@ -129,9 +129,11 @@ struct PostScanView: View {
                     .background(Capsule().fill(Color(.darkGray)))
                 }
                 .padding()
-            } else {
+                
+            } else if !exportViewModel.isLoading {
                 Text(".OBJ Conversion Complete!")
                     .monospaced()
+                    .padding()
             }
             
             // Display a loading spinner when isLoading is true
