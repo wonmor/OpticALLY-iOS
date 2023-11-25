@@ -1133,7 +1133,9 @@ struct SwiftUIView: View {
                         .bold()
                         .monospaced()
                         .foregroundColor(.white)
+                        .padding()
                 }
+                .multilineTextAlignment(.center)
                 .padding(.horizontal, 30) // Adjust horizontal padding for wider background
                 .padding(.vertical, 15) // Adjust vertical padding for background height
                 .background(Color.black.opacity(0.75)) // Adjust background color and opacity
