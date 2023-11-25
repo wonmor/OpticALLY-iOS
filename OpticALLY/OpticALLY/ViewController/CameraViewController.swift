@@ -9,6 +9,7 @@ import UIKit
 import SceneKit
 import ARKit
 import Combine
+import Firebase
 
 extension LogManager {
     func clearLogs() {
@@ -59,38 +60,69 @@ struct ExternalData {
     }
     
     // Function to convert depth and color data into a point cloud geometry
-    static func createPointCloudGeometry(depthData: AVDepthData, colorData: UnsafePointer<UInt8>, width: Int, height: Int, bytesPerRow: Int, calibrationData: AVCameraCalibrationData) -> SCNGeometry {
+    static func createPointCloudGeometry(depthData: AVDepthData, colorData: UnsafePointer<UInt8>, width: Int, height: Int, bytesPerRow: Int, calibrationData: AVCameraCalibrationData, percentile: Float = 35.0) -> SCNGeometry {
         var vertices: [SCNVector3] = []
         var colors: [UIColor] = []
-        
-        var cameraIntrinsics = calibrationData.intrinsicMatrix
-        
+        var depthValues: [Float] = []
+
+        let cameraIntrinsics = calibrationData.intrinsicMatrix
+
         let convertedDepthData = depthData.converting(toDepthDataType: kCVPixelFormatType_DepthFloat16)
         let depthDataMap = convertedDepthData.depthDataMap
         CVPixelBufferLockBaseAddress(depthDataMap, .readOnly)
         defer { CVPixelBufferUnlockBaseAddress(depthDataMap, .readOnly) }
-        
+
+        // Collect all depth values
         for y in 0..<height {
             for x in 0..<width {
                 let depthOffset = y * CVPixelBufferGetBytesPerRow(depthDataMap) + x * MemoryLayout<UInt16>.size
                 let depthPointer = CVPixelBufferGetBaseAddress(depthDataMap)!.advanced(by: depthOffset).assumingMemoryBound(to: UInt16.self)
-                let depthValue = Float(depthPointer.pointee) // Convert UInt16 to Float
-                
-                let scaleFactor = Float(2.0) // Custom value for depth exaggeration
+                let depthValue = Float(depthPointer.pointee)
+                depthValues.append(depthValue)
+            }
+        }
+        
+        let unsortedDepthValues = depthValues
+
+        // Sort the depth values
+        depthValues.sort()
+
+        // Determine the depth threshold for the 30th percentile
+        let index = Int(Float(depthValues.count) * percentile / 100.0)
+        let depthThreshold = depthValues[max(0, min(index, depthValues.count - 1))]
+
+        var counter = 1
+        
+        // Process points with depth values lower than the threshold
+        for y in 0..<height {
+            for x in 0..<width {
+                let depthOffset = y * CVPixelBufferGetBytesPerRow(depthDataMap) + x * MemoryLayout<UInt16>.size
+                let depthPointer = CVPixelBufferGetBaseAddress(depthDataMap)!.advanced(by: depthOffset).assumingMemoryBound(to: UInt16.self)
+                let depthValue = Float(depthPointer.pointee)
+
+                if depthValue > depthThreshold {
+                    continue // Skip this point
+                }
+
+                let scaleFactor = Float(1.5) // Custom value for depth exaggeration
                 let xrw = (Float(x) - cameraIntrinsics.columns.2.x) * depthValue / cameraIntrinsics.columns.0.x
                 let yrw = (Float(y) - cameraIntrinsics.columns.2.y) * depthValue / cameraIntrinsics.columns.1.y
                 let vertex = SCNVector3(x: xrw, y: yrw, z: depthValue * scaleFactor)
-                
+
                 vertices.append(vertex)
-                
+
                 let colorOffset = y * bytesPerRow + x * 4 // Assuming BGRA format
                 let bComponent = Double(colorData[colorOffset]) / 255.0
                 let gComponent = Double(colorData[colorOffset + 1]) / 255.0
                 let rComponent = Double(colorData[colorOffset + 2]) / 255.0
                 let aComponent = Double(colorData[colorOffset + 3]) / 255.0
-                
+
                 let color = UIColor(red: CGFloat(rComponent), green: CGFloat(gComponent), blue: CGFloat(bComponent), alpha: CGFloat(aComponent))
                 colors.append(color)
+                
+                LogManager.shared.log("Converting \(counter)th point: \([rComponent, gComponent, bComponent, aComponent])")
+                
+                counter += 1
             }
         }
         
@@ -100,36 +132,31 @@ struct ExternalData {
         // Assuming the UIColor's data is not properly formatted for the SCNGeometrySource
         // Instead, create an array of normalized float values representing the color data
         
+        // Convert UIColors to Float Components
         var colorComponents: [CGFloat] = []
-        
-        var counter = 0
-        
-        for y in 0..<height {
-            for x in 0..<width {
-                let colorOffset = y * bytesPerRow + x * 4 // Assuming BGRA format
-                let bComponent = CGFloat(colorData[colorOffset]) / 255.0
-                let gComponent = CGFloat(colorData[colorOffset + 1]) / 255.0
-                let rComponent = CGFloat(colorData[colorOffset + 2]) / 255.0
-                let aComponent = CGFloat(colorData[colorOffset + 3]) / 255.0
-                
-                LogManager.shared.log("Converting \(counter)th point: \([rComponent, gComponent, bComponent, aComponent])")
-                
-                // Append color components in RGBA order, which is typically used in SceneKit
-                colorComponents += [rComponent, gComponent, bComponent, aComponent]
-                
-                counter += 1
-            }
+        for color in colors {
+            var red: CGFloat = 0
+            var green: CGFloat = 0
+            var blue: CGFloat = 0
+            var alpha: CGFloat = 0
+            color.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+            
+            colorComponents += [red, green, blue, alpha]
         }
-        
-        let colorData = Data(buffer: UnsafeBufferPointer(start: &colorComponents, count: colorComponents.count))
-        let colorSource = SCNGeometrySource(data: colorData,
+
+        // Create the geometry source for colors
+        let colorData = NSData(bytes: colorComponents, length: colorComponents.count * MemoryLayout<CGFloat>.size)
+        let colorSource = SCNGeometrySource(data: colorData as Data,
                                             semantic: .color,
-                                            vectorCount: vertices.count,
+                                            vectorCount: colors.count,
                                             usesFloatComponents: true,
                                             componentsPerVector: 4,
                                             bytesPerComponent: MemoryLayout<CGFloat>.size,
                                             dataOffset: 0,
-                                            dataStride: MemoryLayout<CGFloat>.stride * 4)
+                                            dataStride: MemoryLayout<CGFloat>.size * 4)
+
+        // Combine Vertex and Color Sources
+        let geometrySources = [vertexSource, colorSource]
         
         // Create the geometry element
         let indices: [Int32] = Array(0..<Int32(vertices.count))
@@ -994,6 +1021,50 @@ class ExportViewModel: ObservableObject {
     @Published var fileURL: URL?
     @Published var showShareSheet = false
     @Published var isLoading = false
+    @Published var estimatedExportTime: Int = 0
+    
+    private var exportStartTime: Date?
+    
+    func fetchExportDurations() {
+        let db = Firestore.firestore()
+        db.collection("misc").document("render_time").getDocument { (document, error) in
+            if let document = document, document.exists {
+                if let durations = document.data()?["obj_duration"] as? [Int] {
+                    self.estimatedExportTime = self.calculateAverage(durations: durations)
+                } else {
+                    // Handle the case where array doesn't exist
+                }
+            } else {
+                // Handle the case where document doesn't exist
+            }
+        }
+    }
+    
+    private func calculateAverage(durations: [Int]) -> Int {
+        return durations.reduce(0, +) / durations.count
+    }
+    
+    func startExportTimer() {
+        exportStartTime = Date()
+    }
+    
+    func stopExportTimer() -> Int {
+        guard let startTime = exportStartTime else { return 0 }
+        let duration = Date().timeIntervalSince(startTime)
+        return Int(duration)
+    }
+    
+    func updateExportDurationInFirestore(newDuration: Int) {
+        let db = Firestore.firestore()
+        db.collection("misc").document("render_time").getDocument { (document, error) in
+            var durations = (document?.data()?["obj_duration"] as? [Int]) ?? []
+            if durations.count >= 20 {
+                durations.removeFirst() // Remove the oldest entry
+            }
+            durations.append(newDuration) // Add the new duration
+            db.collection("misc").document("render_time").updateData(["obj_duration": durations])
+        }
+    }
     
     func exportPLY(showShareSheet: Bool) {
         // Determine a temporary file URL to save the PLY file
@@ -1237,14 +1308,14 @@ struct SwiftUIView: View {
                                                     }
                                                 }
                                                 
-//                                                Button(action: {
-//                                                    exportViewModel.exportUSDZ()
-//                                                }) {
-//                                                    Text(".USDZ")
-//                                                        .padding()
-//                                                        .foregroundColor(.white)
-//                                                        .background(Capsule().fill(Color(.darkGray)))
-//                                                }
+                                                //                                                Button(action: {
+                                                //                                                    exportViewModel.exportUSDZ()
+                                                //                                                }) {
+                                                //                                                    Text(".USDZ")
+                                                //                                                        .padding()
+                                                //                                                        .foregroundColor(.white)
+                                                //                                                        .background(Capsule().fill(Color(.darkGray)))
+                                                //                                                }
                                             }
                                             .padding(.top, 5)
                                             .sheet(isPresented: $exportViewModel.showShareSheet, onDismiss: {
