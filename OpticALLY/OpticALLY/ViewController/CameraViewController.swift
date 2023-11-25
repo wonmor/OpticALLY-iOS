@@ -1222,7 +1222,7 @@ struct SwiftUIView: View {
                         .monospaced()
                         .foregroundColor(.black)
                     
-                    if let estimatedTime = exportViewModel.estimatedExportTime {
+                    if exportViewModel.estimatedExportTime != nil {
                         Text("Estimated:\n\(exportViewModel.estimatedExportTime!) sec.")
                             .monospaced()
                             .foregroundColor(.black)
