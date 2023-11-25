@@ -1225,9 +1225,11 @@ struct SwiftUIView: View {
                     if let estimatedTime = exportViewModel.estimatedExportTime {
                         Text("Estimated:\n\(exportViewModel.estimatedExportTime!) sec.")
                             .monospaced()
+                            .foregroundColor(.black)
                     } else {
                         Text("Estimated:\nN/A")
                             .monospaced()
+                            .foregroundColor(.black)
                     }
                 }
                 .multilineTextAlignment(.center)
