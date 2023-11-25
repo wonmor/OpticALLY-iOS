@@ -995,7 +995,7 @@ class ExportViewModel: ObservableObject {
     @Published var showShareSheet = false
     @Published var isLoading = false
     
-    func exportPLY() {
+    func exportPLY(showShareSheet: Bool) {
         // Determine a temporary file URL to save the PLY file
         let tempDirectory = FileManager.default.temporaryDirectory
         let fileURL = tempDirectory.appendingPathComponent("model.ply")
@@ -1006,7 +1006,7 @@ class ExportViewModel: ObservableObject {
         // Update the state to indicate that there's a file to share
         DispatchQueue.main.async {
             self.fileURL = fileURL
-            self.showShareSheet = true
+            self.showShareSheet = showShareSheet
         }
     }
     
@@ -1027,7 +1027,7 @@ class ExportViewModel: ObservableObject {
     
     func exportOBJ() {
             // Convert to PLY and get the file URL
-            exportPLY() // Assuming this sets self.fileURL
+            exportPLY(showShareSheet: false) // Assuming this sets self.fileURL
 
             guard let plyFileURL = self.fileURL else {
                 print("Failed to get PLY file URL")
@@ -1188,7 +1188,7 @@ struct SwiftUIView: View {
                                             VStack {
                                                 HStack {
                                                     Button(action: {
-                                                        exportViewModel.exportPLY()
+                                                        exportViewModel.exportPLY(showShareSheet: true)
                                                     }) {
                                                         Text(".PLY")
                                                             .padding()
