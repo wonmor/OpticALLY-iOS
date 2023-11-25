@@ -1122,6 +1122,14 @@ struct SwiftUIView: View {
     
     var body: some View {
         ZStack {
+            // Display a loading spinner when isLoading is true
+            if exportViewModel.isLoading {
+                ProgressView()
+                    .scaleEffect(1.5, anchor: .center) // Adjust size as needed
+                    .progressViewStyle(CircularProgressViewStyle(tint: .white)) // Customize color if needed
+                    .zIndex(1) // Ensure the spinner is above other content
+            }
+            
             switch currentState {
             case .begin:
                 VStack {
