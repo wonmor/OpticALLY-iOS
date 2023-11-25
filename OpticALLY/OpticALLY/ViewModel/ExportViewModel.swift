@@ -103,6 +103,8 @@ class ExportViewModel: ObservableObject {
     }
     
     func exportOBJ() {
+        fetchExportDurations()
+        
         // Start the export timer
         startExportTimer()
         
