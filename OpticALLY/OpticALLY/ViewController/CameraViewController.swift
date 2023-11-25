@@ -1235,14 +1235,14 @@ struct SwiftUIView: View {
                                                     }
                                                 }
                                                 
-                                                Button(action: {
-                                                    exportViewModel.exportUSDZ()
-                                                }) {
-                                                    Text(".USDZ")
-                                                        .padding()
-                                                        .foregroundColor(.white)
-                                                        .background(Capsule().fill(Color(.darkGray)))
-                                                }
+//                                                Button(action: {
+//                                                    exportViewModel.exportUSDZ()
+//                                                }) {
+//                                                    Text(".USDZ")
+//                                                        .padding()
+//                                                        .foregroundColor(.white)
+//                                                        .background(Capsule().fill(Color(.darkGray)))
+//                                                }
                                             }
                                             .padding(.top, 5)
                                             .sheet(isPresented: $exportViewModel.showShareSheet, onDismiss: {
