@@ -10,6 +10,7 @@
 		9614F0AF2ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */; };
 		9614F0B02ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */; };
 		9614F0B12ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */; };
+		961D67E32B12BDFC00DBB883 /* SceneKitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 961D67E22B12BDFC00DBB883 /* SceneKitView.swift */; };
 		963DF9B32AFEDAF700E6E589 /* PostScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 963DF9B22AFEDAF600E6E589 /* PostScanView.swift */; };
 		9646DC6C2B1064F500092549 /* glasses.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 9646DC6B2B1064F500092549 /* glasses.mp4 */; };
 		96491C5F2AFD746300FD3666 /* ConsoleOutputCatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96491C5E2AFD746300FD3666 /* ConsoleOutputCatcher.swift */; };
@@ -77,6 +78,7 @@
 
 /* Begin PBXFileReference section */
 		9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = RobotoSlab.ttf; sourceTree = "<group>"; };
+		961D67E22B12BDFC00DBB883 /* SceneKitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneKitView.swift; sourceTree = "<group>"; };
 		963DF9B22AFEDAF600E6E589 /* PostScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostScanView.swift; sourceTree = "<group>"; };
 		9646DC6B2B1064F500092549 /* glasses.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = glasses.mp4; sourceTree = "<group>"; };
 		96491C5E2AFD746300FD3666 /* ConsoleOutputCatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsoleOutputCatcher.swift; sourceTree = "<group>"; };
@@ -278,6 +280,7 @@
 				96F0CF1B2B12A3D500417716 /* ExportView.swift */,
 				96F0CF1D2B12A40200417716 /* FaceIDScanView.swift */,
 				967EE0662AAE06FB000C4D5F /* ContentView.swift */,
+				961D67E22B12BDFC00DBB883 /* SceneKitView.swift */,
 				963DF9B22AFEDAF600E6E589 /* PostScanView.swift */,
 				9679F8CC2AD0907A00686F13 /* CameraView.swift */,
 				969AC27F2AB7550C0096892E /* IntroductionView.swift */,
@@ -462,6 +465,7 @@
 			files = (
 				96F0CF222B12A51700417716 /* LogManager.swift in Sources */,
 				96F0CF1C2B12A3D500417716 /* ExportView.swift in Sources */,
+				961D67E32B12BDFC00DBB883 /* SceneKitView.swift in Sources */,
 				9679F8DC2AD0907A00686F13 /* PassThrough.metal in Sources */,
 				967EE08F2AAEDA82000C4D5F /* EyesTrackingView.swift in Sources */,
 				96491C5F2AFD746300FD3666 /* ConsoleOutputCatcher.swift in Sources */,
