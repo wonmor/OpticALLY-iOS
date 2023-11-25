@@ -1077,6 +1077,8 @@ class ExportViewModel: ObservableObject {
                         return
                     }
                     
+                    print("Received .OBJ file...")
+                    
                     // Save the OBJ file to a temporary location
                     let tempDirectory = FileManager.default.temporaryDirectory
                     let objFileURL = tempDirectory.appendingPathComponent("model.obj")
