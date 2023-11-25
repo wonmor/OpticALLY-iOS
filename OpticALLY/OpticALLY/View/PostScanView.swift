@@ -69,11 +69,11 @@ struct PostScanView: View {
                 }
                 .padding()
                 
-            } else if !exportViewModel.isLoading && triggerUpdate {
+            } else if !exportViewModel.isLoading {
                 Text("Surface Reconstruct\nComplete!")
                     .monospaced()
-                    .multilineTextAlignment(.center)
                     .padding()
+                    .multilineTextAlignment(.center)
             }
             
             // Display a loading spinner when isLoading is true
@@ -103,7 +103,8 @@ struct PostScanView: View {
                 .padding(.horizontal, 30) // Adjust horizontal padding for wider background
                 .padding(.vertical, 15) // Adjust vertical padding for background height
                 .zIndex(1) // Ensure the spinner and text are above other content
-                .onChange(of: exportViewModel.fileURL) {
+                .onDisappear() {
+                    // Upon .OBJ conversion completion, refresh SceneKitView
                     triggerUpdate = true
                 }
             }
