@@ -1111,6 +1111,9 @@ class ExportViewModel: ObservableObject {
     }
     
     func exportOBJ() {
+        // Start the export timer
+        startExportTimer()
+        
         // Convert to PLY and get the file URL
         // Determine a temporary file URL to save the PLY file
         let tempDirectory = FileManager.default.temporaryDirectory
@@ -1171,6 +1174,10 @@ class ExportViewModel: ObservableObject {
                         try data.write(to: objFileURL)
                         self.fileURL = objFileURL
                         self.showShareSheet = true
+                        
+                        // Stop the export timer and update the duration in Firestore
+                        let exportDuration = self.stopExportTimer()
+                        self.updateExportDurationInFirestore(newDuration: exportDuration)
                     } catch {
                         print("Error saving OBJ file: \(error)")
                     }
