@@ -1128,12 +1128,12 @@ struct SwiftUIView: View {
                     ProgressView()
                         .scaleEffect(1.5, anchor: .center) // Adjust size as needed
                         .progressViewStyle(CircularProgressViewStyle(tint: .white)) // Spinner color
+                        .padding()
                     
                     Text("EXPORT IN PROGRESS")
                         .bold()
                         .monospaced()
                         .foregroundColor(.white)
-                        .padding()
                 }
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 30) // Adjust horizontal padding for wider background
