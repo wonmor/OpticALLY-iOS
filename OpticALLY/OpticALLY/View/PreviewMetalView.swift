@@ -10,7 +10,6 @@ import Metal
 import MetalKit
 
 class PreviewMetalView: MTKView {
-    
     enum Rotation: Int {
         case rotate0Degrees
         case rotate90Degrees

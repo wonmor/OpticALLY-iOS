@@ -22,7 +22,6 @@
 		9679F8D72AD0907A00686F13 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9679F8BF2AD0907900686F13 /* LaunchScreen.storyboard */; };
 		9679F8D82AD0907A00686F13 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9679F8C02AD0907900686F13 /* Main.storyboard */; };
 		9679F8D92AD0907A00686F13 /* PointCloud.metal in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8C12AD0907900686F13 /* PointCloud.metal */; };
-		9679F8DB2AD0907A00686F13 /* ResourceLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8C32AD0907900686F13 /* ResourceLoader.swift */; };
 		9679F8DC2AD0907A00686F13 /* PassThrough.metal in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8C42AD0907900686F13 /* PassThrough.metal */; };
 		9679F8DD2AD0907A00686F13 /* CameraViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8C52AD0907A00686F13 /* CameraViewController.swift */; };
 		9679F8DE2AD0907A00686F13 /* FilterRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8C82AD0907A00686F13 /* FilterRenderer.swift */; };
@@ -92,7 +91,6 @@
 		9679F8BF2AD0907900686F13 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		9679F8C02AD0907900686F13 /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
 		9679F8C12AD0907900686F13 /* PointCloud.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = PointCloud.metal; sourceTree = "<group>"; };
-		9679F8C32AD0907900686F13 /* ResourceLoader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ResourceLoader.swift; sourceTree = "<group>"; };
 		9679F8C42AD0907900686F13 /* PassThrough.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = PassThrough.metal; sourceTree = "<group>"; };
 		9679F8C52AD0907A00686F13 /* CameraViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraViewController.swift; sourceTree = "<group>"; };
 		9679F8C72AD0907A00686F13 /* PointCloudMetalView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PointCloudMetalView.h; sourceTree = "<group>"; };
@@ -169,7 +167,6 @@
 			isa = PBXGroup;
 			children = (
 				9679F8B42AD0907900686F13 /* HistogramCalculator.h */,
-				9679F8C32AD0907900686F13 /* ResourceLoader.swift */,
 				9679F8BC2AD0907900686F13 /* HistogramCalculator.m */,
 				9679F8CA2AD0907A00686F13 /* AAPLTransforms.h */,
 				9679F8C82AD0907A00686F13 /* FilterRenderer.swift */,
@@ -471,7 +468,6 @@
 				96F0CF1C2B12A3D500417716 /* ExportView.swift in Sources */,
 				9679F8DC2AD0907A00686F13 /* PassThrough.metal in Sources */,
 				967EE08F2AAEDA82000C4D5F /* EyesTrackingView.swift in Sources */,
-				9679F8DB2AD0907A00686F13 /* ResourceLoader.swift in Sources */,
 				96491C5F2AFD746300FD3666 /* ConsoleOutputCatcher.swift in Sources */,
 				9679F8DF2AD0907A00686F13 /* PointCloudMetalView.mm in Sources */,
 				969AC2822AB7554C0096892E /* Extensions+Modifiers.swift in Sources */,
