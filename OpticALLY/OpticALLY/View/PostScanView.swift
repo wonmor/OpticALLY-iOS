@@ -69,8 +69,8 @@ struct PostScanView: View {
                 }
                 .padding()
                 
-            } else if !exportViewModel.isLoading {
-                Text(".OBJ Conversion Complete!")
+            } else if !exportViewModel.isLoading && triggerUpdate {
+                Text("Surface Reconstruct\nComplete!")
                     .monospaced()
                     .padding()
             }
