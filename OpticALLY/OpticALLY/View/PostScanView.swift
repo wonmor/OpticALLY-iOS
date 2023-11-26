@@ -19,11 +19,12 @@ struct PostScanView: View {
     @State private var triggerUpdate: Bool = false
     @State private var showCompletionCheckmark = false
     @State private var showAlert = false
+    @State private var isInteractionDisabled = false
     
     var body: some View {
         ZStack {
             if showCompletionCheckmark {
-                CheckmarkView(isVisible: $showCompletionCheckmark)
+                CheckmarkView(isVisible: $showCompletionCheckmark, isInteractionDisabled: $isInteractionDisabled)
                     .zIndex(20.0)
                     .onAppear {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
@@ -132,6 +133,7 @@ struct PostScanView: View {
                     }
                 }
             }
+            .allowsHitTesting(!(exportViewModel.isLoading || isInteractionDisabled)) // Disabling hit testing when loading or interaction is disabled
             .alert(isPresented: $showAlert) {
                 Alert(
                     title: Text("No Internet Connection"),
@@ -145,6 +147,7 @@ struct PostScanView: View {
 
 struct CheckmarkView: View {
     @Binding var isVisible: Bool
+    @Binding var isInteractionDisabled: Bool
     
     var body: some View {
         VStack(spacing: 10) { // Adjust the spacing as needed
@@ -161,6 +164,12 @@ struct CheckmarkView: View {
         .padding() // Adjust the padding to change the size of the background
         .background(Color.black) // Black background
         .cornerRadius(20) // Rounded corners, adjust radius as needed
+        .onAppear {
+            isInteractionDisabled = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                isInteractionDisabled = false
+            }
+        }
     }
 }
 
