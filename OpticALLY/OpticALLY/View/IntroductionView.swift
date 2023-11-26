@@ -31,7 +31,7 @@ struct TextOverlayView: View {
             }) {
                 HStack {
                     Image(systemName: "eyeglasses")
-                    Text("EXPLORE")
+                    Text("Explore")
                         .font(.body)
                         .bold()
                 }
@@ -46,6 +46,7 @@ struct TextOverlayView: View {
            }) {
                Text("CREDITS")
                    .font(.footnote)
+                   .monospaced()
                    .bold()
            }
            .padding(.bottom)
@@ -100,21 +101,6 @@ struct IntroductionView: View {
                 .edgesIgnoringSafeArea(.all)
         }
         .animation(.easeInOut, value: playSecondVideo)
-    }
-}
-
-struct TitleView: View {
-    var body: some View {
-        VStack {
-            Text("HAROLDEN")
-                .font(.system(size: 48, weight: .bold))
-                .monospaced()
-                .cornerRadius(10)
-            
-            Text("LOS ANGELES")
-                .font(.title)
-        }
-        .foregroundStyle(.black)
     }
 }
 

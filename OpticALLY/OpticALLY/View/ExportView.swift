@@ -139,7 +139,7 @@ struct ExportView: View {
                                         }) {
                                             HStack {
                                                 Image(systemName: "square.and.arrow.down")
-                                                Text("EXPORT")
+                                                Text("Export")
                                                     .font(.body)
                                                     .bold()
                                             }
@@ -208,7 +208,7 @@ struct ExportView: View {
                                             }) {
                                                 HStack {
                                                     Image(systemName: "checkmark.circle.fill")
-                                                    Text("CONTINUE")
+                                                    Text("Continue")
                                                         .font(.body)
                                                         .bold()
                                                 }
@@ -223,7 +223,7 @@ struct ExportView: View {
                                 } else {
                                     HStack {
                                         Image(systemName: "circle.dotted") // Different SF Symbols for start and pause
-                                        Text("READING")
+                                        Text("Reading")
                                             .font(.title3)
                                             .bold()
                                     }
@@ -233,17 +233,22 @@ struct ExportView: View {
                                 }
                             }
                         } else {
-                            HStack {
-                                Image(systemName: "play.circle") // Different SF Symbols for start and pause
-                                Text("SCAN")
-                                    .font(.title3)
-                                    .bold()
-                            }
-                            .foregroundColor(.white)
-                            .padding()
-                            .background(Capsule().fill(Color.black).overlay(Capsule().stroke(Color.white, lineWidth: 2)))
-                        }
+                            VStack {
+                                       Image(systemName: "sunglasses.fill")
+                                           .font(.largeTitle) // Adjust the size of the icon
+
+                                       Text("Scan")
+                                           .font(.title3)
+                                           .bold()
+                                   }
+                                   .padding() // Even padding around VStack contents
+                                   .foregroundColor(.white) // Text and icon color
+                                   .background(Circle().fill(Color.black)) // Circle shape filled with black color
+                                   .overlay(
+                                       Circle().stroke(Color.white, lineWidth: 2) // White border around the circle
+                                   )
                     }
+                    .padding(.bottom)
                 }
                 
             case .start:

@@ -10,7 +10,7 @@ struct CreditsView: View {
             Color.white
             
             BackgroundVideoPlayer(videoName: "promo")
-                .opacity(0.75)
+                .opacity(0.35)
                 .overlay(CreditNestedView(showingCredits: $showingCredits),
                          alignment: .center
                 )
@@ -41,6 +41,19 @@ struct CreditNestedView: View {
                 .background(backgroundColor)
                 .cornerRadius(20)
             
+            VStack {
+                Text("HAROLDEN")
+                    .font(.system(size: 48, weight: .bold))
+                    .monospaced()
+                    .cornerRadius(10)
+                
+                Text("LOS ANGELES")
+                    .font(.title)
+            }
+            .foregroundStyle(.black)
+            .padding(.horizontal)
+            .padding(.bottom)
+            
             // Credit Lines
             VStack(alignment: .center, spacing: 20) {
                 CreditLine(title: "Product Manager", name: "Drew Shepard")
@@ -68,9 +81,9 @@ struct CreditNestedView: View {
             
             Spacer()
         }
-            .padding()
-            .foregroundStyle(.white)
-            .multilineTextAlignment(.center)
+        .padding()
+        .foregroundStyle(.white)
+        .multilineTextAlignment(.center)
     }
 }
 
