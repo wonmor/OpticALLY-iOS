@@ -54,7 +54,7 @@ struct ExportView: View {
     @State private var progressValue: CGFloat = 0.25 // start with 1/4 progress
     @State private var isLeftHalf = true
        private let timer = Timer.publish(every: 4, on: .main, in: .common).autoconnect()
-    @State private var headTurnMessage = "Turn your head left"
+    @State private var headTurnMessage = "Turn your head right"
     
     @ObservedObject var logManager = LogManager.shared
     @EnvironmentObject var globalState: GlobalState
@@ -135,7 +135,7 @@ struct ExportView: View {
                                   Text(headTurnMessage)
                                       .font(.title2)
                                       .bold()
-                                      .foregroundColor(.white) // Adjust the font color as needed
+                                      .foregroundColor(isFlashOn ? .black : .white) // Adjust the font color as needed
                                       .padding() // Add padding around the text
                                   
                                   Circle()
@@ -155,7 +155,7 @@ struct ExportView: View {
                                          isLeftHalf.toggle() // Switch from left to right and vice versa
 
                                          // Update the head turn message
-                                         headTurnMessage = isLeftHalf ? "Turn your head left" : "Turn your head right"
+                                         headTurnMessage = isLeftHalf ? "Turn your head right" : "Turn your head left"
                                      }
                                  }
 
