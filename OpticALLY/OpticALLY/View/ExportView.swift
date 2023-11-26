@@ -53,7 +53,7 @@ struct ExportView: View {
     @State private var progressDirection = true // true for increasing, false for decreasing
     @State private var progressValue: CGFloat = 0.25 // start with 1/4 progress
     @State private var isLeftHalf = true
-       private let timer = Timer.publish(every: 2, on: .main, in: .common).autoconnect()
+       private let timer = Timer.publish(every: 4, on: .main, in: .common).autoconnect()
     
     @ObservedObject var logManager = LogManager.shared
     @EnvironmentObject var globalState: GlobalState
