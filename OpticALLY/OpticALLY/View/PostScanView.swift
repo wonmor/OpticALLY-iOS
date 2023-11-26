@@ -49,7 +49,6 @@ struct PostScanView: View {
                     
                     Text("Your Scan")
                         .font(.system(.title)) // Using monospaced font
-                        .monospaced()
                     Spacer()
                 }
                 .padding(.top)
