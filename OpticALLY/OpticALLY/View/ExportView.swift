@@ -123,6 +123,13 @@ struct ExportView: View {
                         }
                     }
                     
+                    Spacer()
+                    
+                    FaceIDScanView(isScanComplete: $isScanComplete, showDropdown: $showDropdown)
+                        .background(Color.black.opacity(0.8).blur(radius: 40.0))
+                    
+                    Spacer()
+                    
                     // Button to start/pause scanning
                     Button(action: {
                         showConsoleOutput = true
@@ -291,8 +298,11 @@ struct ExportView: View {
                         .foregroundStyle(.gray)
                         .padding(.bottom)
                     
-                    FaceIDScanView(isScanComplete: $isScanComplete, showDropdown: $showDropdown)
-                        .background(Color.black.opacity(0.8).blur(radius: 40.0))
+//                    Spacer()
+//                    
+//                    FaceIDScanView(isScanComplete: $isScanComplete, showDropdown: $showDropdown)
+//                    
+//                    Spacer()
                     
                     if isScanComplete {
                         VStack {

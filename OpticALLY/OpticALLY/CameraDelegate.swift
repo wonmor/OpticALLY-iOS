@@ -217,7 +217,7 @@ class CameraDelegate: NSObject, AVCaptureMetadataOutputObjectsDelegate, Observab
         if faceShape == nil {
             captureStillImage { image in
                 if let ciImage = image {
-                    self.detectFaceShape(from: ciImage)
+                   // self.detectFaceShape(from: ciImage)
                 }
             }
         }

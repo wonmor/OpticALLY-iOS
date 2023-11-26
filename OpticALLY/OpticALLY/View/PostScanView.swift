@@ -155,7 +155,7 @@ struct CheckmarkView: View {
                 .frame(width: 60, height: 60) // Adjust the size as needed
                 .foregroundColor(.green)
             
-            Text("COMPLETE")
+            Text("Done")
                 .font(.headline) // Adjust the font style as needed
                 .bold()
                 .foregroundColor(.white)
