@@ -54,6 +54,7 @@ struct ExportView: View {
     @State private var progressValue: CGFloat = 0.25 // start with 1/4 progress
     @State private var isLeftHalf = true
        private let timer = Timer.publish(every: 4, on: .main, in: .common).autoconnect()
+    @State private var headTurnMessage = "Turn your head left"
     
     @ObservedObject var logManager = LogManager.shared
     @EnvironmentObject var globalState: GlobalState
@@ -130,23 +131,33 @@ struct ExportView: View {
                     Spacer()
                     // Progress indicator
                               ZStack {
+                                  // Display the head turn message
+                                  Text(headTurnMessage)
+                                      .font(.title2)
+                                      .bold()
+                                      .foregroundColor(.white) // Adjust the font color as needed
+                                      .padding() // Add padding around the text
+                                  
                                   Circle()
                                       .stroke(Color(.gray), lineWidth: 5)
                                       .frame(width: 200, height: 200)
 
                                   Circle()
-                                      .trim(from: 0, to: 0.5)
-                                      .stroke(.green, lineWidth: 5)
-                                      .frame(width: 200, height: 200)
-                                      .rotationEffect(Angle(degrees: -90)) // Start from the left
-                                      .rotation3DEffect(Angle(degrees: isLeftHalf ? 0 : 180), axis: (x: 0, y: 1, z: 0)) // Rotate around the y-axis
-                              }
-                              .padding()
-                              .onReceive(timer) { _ in
-                                  withAnimation {
-                                      isLeftHalf.toggle() // Switch from left to right and vice versa
-                                  }
-                              }
+                                         .trim(from: 0, to: 0.5)
+                                         .stroke(.green, lineWidth: 5)
+                                         .frame(width: 200, height: 200)
+                                         .rotationEffect(Angle(degrees: -90)) // Start from the left
+                                         .rotation3DEffect(Angle(degrees: isLeftHalf ? 0 : 180), axis: (x: 0, y: 1, z: 0)) // Rotate around the y-axis
+                                 }
+                                 .padding()
+                                 .onReceive(timer) { _ in
+                                     withAnimation {
+                                         isLeftHalf.toggle() // Switch from left to right and vice versa
+
+                                         // Update the head turn message
+                                         headTurnMessage = isLeftHalf ? "Turn your head left" : "Turn your head right"
+                                     }
+                                 }
 
                     Spacer()
                     
