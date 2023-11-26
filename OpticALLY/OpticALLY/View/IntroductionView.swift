@@ -4,6 +4,8 @@ import AVKit
 struct TextOverlayView: View {
     @EnvironmentObject var globalState: GlobalState
     
+    @State private var showingCredits = false
+    
     var body: some View {
         VStack {
             Image("1024")
@@ -38,6 +40,19 @@ struct TextOverlayView: View {
                 .background(Capsule().fill(Color.black).overlay(Capsule().stroke(Color.white, lineWidth: 2)))
             }
             .padding(.bottom)
+            
+            Button(action: {
+               showingCredits.toggle()
+           }) {
+               Text("CREDITS")
+                   .font(.footnote)
+                   .bold()
+           }
+           .padding(.bottom)
+           .sheet(isPresented: $showingCredits) {
+               CreditsView(showingCredits: $showingCredits)
+            }
+           .padding(.bottom)
         }
         .background(Color(.black))
         .clipShape(RoundedRectangle(cornerSize: CGSize(width: 20, height: 10)))

@@ -18,6 +18,7 @@ struct PostScanView: View {
     @State private var isMesh: Bool = false
     @State private var triggerUpdate: Bool = false
     @State private var showCompletionCheckmark = false
+    @State private var showAlert = false
     
     var body: some View {
         ZStack {
@@ -67,8 +68,13 @@ struct PostScanView: View {
                 
                 if !isMesh {
                     Button(action: {
-                        exportViewModel.exportOBJ()
-                        isMesh = true
+                        if OpticALLYApp.isConnectedToNetwork() {
+                            exportViewModel.exportOBJ()
+                            isMesh = true
+                            
+                        } else {
+                            showAlert = true
+                        }
                     }) {
                         HStack(spacing: 10) {
                             Image(systemName: "square.stack.3d.forward.dottedline.fill")
@@ -125,6 +131,13 @@ struct PostScanView: View {
                         generator.notificationOccurred(.success)
                     }
                 }
+            }
+            .alert(isPresented: $showAlert) {
+                Alert(
+                    title: Text("No Internet Connection"),
+                    message: Text("Please check your internet connection and try again."),
+                    dismissButton: .default(Text("OK"))
+                )
             }
         }
     }

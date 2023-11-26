@@ -30,6 +30,7 @@ struct ExportView: View {
     @State private var isScanComplete: Bool = false
     @State private var showDropdown: Bool = false
     @State private var showConsoleOutput: Bool = false
+    @State private var showAlert = false
     
     @ObservedObject var logManager = LogManager.shared
     @EnvironmentObject var globalState: GlobalState
@@ -152,13 +153,25 @@ struct ExportView: View {
                                                             .background(Capsule().fill(Color(.darkGray)))
                                                     }
                                                     
+                                                    // .OBJ Button
                                                     Button(action: {
-                                                        exportViewModel.exportOBJ()
+                                                        if OpticALLYApp.isConnectedToNetwork() {
+                                                            exportViewModel.exportOBJ()
+                                                        } else {
+                                                            showAlert = true
+                                                        }
                                                     }) {
                                                         Text(".OBJ")
                                                             .padding()
                                                             .foregroundColor(.white)
                                                             .background(Capsule().fill(Color(.darkGray)))
+                                                    }
+                                                    .alert(isPresented: $showAlert) {
+                                                        Alert(
+                                                            title: Text("No Internet Connection"),
+                                                            message: Text("Please check your internet connection and try again."),
+                                                            dismissButton: .default(Text("OK"))
+                                                        )
                                                     }
                                                 }
                                                 
