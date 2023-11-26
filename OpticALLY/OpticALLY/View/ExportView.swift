@@ -234,19 +234,19 @@ struct ExportView: View {
                             }
                         } else {
                             VStack {
-                                Image(systemName: "sunglasses.fill")
-                                    .font(.largeTitle) // Adjust the size of the icon
-                                
-                                Text("Scan")
+                                Text("Start")
                                     .font(.title3)
                                     .bold()
+                                
+                                Image(systemName: "faceid")
+                                    .font(.largeTitle) // Adjust the size of the icon
                             }
-                            .padding() // Even padding around VStack contents
                             .foregroundColor(.white) // Text and icon color
-                            .background(Circle().fill(Color.black)) // Circle shape filled with black color
-                            .overlay(
-                                Circle().stroke(Color.white, lineWidth: 2) // White border around the circle
-                            )
+                               .padding() // Padding around VStack
+                               .background(Capsule().fill(Color.black)) // Capsule shape filled with black color
+                               .overlay(
+                                   Capsule().stroke(Color.white, lineWidth: 2) // White border around the capsule
+                               )
                         }
                     }
                     .padding(.bottom)
