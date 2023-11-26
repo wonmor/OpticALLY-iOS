@@ -691,6 +691,7 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
                 
                 // Print the (x, y) coordinates and color value in BGRA
                 print("Color at (\(x), \(y)): B:\(blue) G:\(green) R:\(red) A:\(alpha)")
+                LogManager.shared.log("Color at (\(x), \(y)): B:\(blue) G:\(green) R:\(red) A:\(alpha)")
                 
                 // Calculate the depth data's corresponding pixel offset
                 let depthPixelOffset = y * depthBytesPerRow + x * depthBytesPerPixel
@@ -699,6 +700,7 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
                 
                 // Print the (x, y) coordinates and depth value
                 print("Depth at (\(x), \(y)): \(depthValue)")
+                LogManager.shared.log("Depth at (\(x), \(y)): \(depthValue)")
             }
         }
         

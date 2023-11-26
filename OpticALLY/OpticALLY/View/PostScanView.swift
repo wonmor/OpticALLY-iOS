@@ -22,11 +22,15 @@ struct PostScanView: View {
     var body: some View {
         ZStack {
             if showCompletionCheckmark {
-                CheckmarkView()
-                    .opacity(1) // Make visible
-                    .scaleEffect(1) // Scale to normal size
-                    .transition(.scale) // Add a transition effect
-                    .zIndex(2.0)
+                CheckmarkView(isVisible: $showCompletionCheckmark)
+                    .zIndex(20.0)
+                    .onAppear {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                            withAnimation {
+                                showCompletionCheckmark = false
+                            }
+                        }
+                    }
             }
             
             VStack {
@@ -115,10 +119,7 @@ struct PostScanView: View {
                     .zIndex(1) // Ensure the spinner and text are above other content
                     .onDisappear {
                         triggerUpdate = true
-                        
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.6, blendDuration: 1)) {
-                            showCompletionCheckmark = true
-                        }
+                        showCompletionCheckmark = true
                         
                         let generator = UINotificationFeedbackGenerator()
                         generator.notificationOccurred(.success)
@@ -130,13 +131,23 @@ struct PostScanView: View {
 }
 
 struct CheckmarkView: View {
+    @Binding var isVisible: Bool
+    
     var body: some View {
-        Image(systemName: "checkmark.circle.fill")
-            .resizable()
-            .frame(width: 60, height: 60)
-            .foregroundColor(.green)
-            .opacity(0) // Initially invisible
-            .scaleEffect(0) // Initially scaled down
+        VStack(spacing: 10) { // Adjust the spacing as needed
+            Image(systemName: "checkmark.circle.fill")
+                .resizable()
+                .frame(width: 60, height: 60) // Adjust the size as needed
+                .foregroundColor(.green)
+            
+            Text("COMPLETE")
+                .font(.headline) // Adjust the font style as needed
+                .bold()
+                .foregroundColor(.white)
+        }
+        .padding() // Adjust the padding to change the size of the background
+        .background(Color.black) // Black background
+        .cornerRadius(20) // Rounded corners, adjust radius as needed
     }
 }
 
