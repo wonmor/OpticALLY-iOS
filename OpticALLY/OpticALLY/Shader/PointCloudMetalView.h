@@ -33,11 +33,6 @@ A view implementing point cloud rendering
 // Moves the camera towards the center point (or backwards)
 - (void)moveTowardCenter:(float)scale;
 
-// Resets translation, rotation and zoom
-- (void)resetView;
-
-- (void)exportPointCloudPLY:(void (^)(void))completion;
-
 @end
 
 

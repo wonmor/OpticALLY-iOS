@@ -56,7 +56,6 @@
 		96F0CF182B12A34400417716 /* ExternalData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF172B12A34400417716 /* ExternalData.swift */; };
 		96F0CF1A2B12A39100417716 /* ExportViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF192B12A39100417716 /* ExportViewModel.swift */; };
 		96F0CF1C2B12A3D500417716 /* ExportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF1B2B12A3D500417716 /* ExportView.swift */; };
-		96F0CF1E2B12A40200417716 /* FaceIDScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF1D2B12A40200417716 /* FaceIDScanView.swift */; };
 		96F0CF222B12A51700417716 /* LogManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF212B12A51700417716 /* LogManager.swift */; };
 /* End PBXBuildFile section */
 
@@ -124,7 +123,6 @@
 		96F0CF172B12A34400417716 /* ExternalData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalData.swift; sourceTree = "<group>"; };
 		96F0CF192B12A39100417716 /* ExportViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportViewModel.swift; sourceTree = "<group>"; };
 		96F0CF1B2B12A3D500417716 /* ExportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportView.swift; sourceTree = "<group>"; };
-		96F0CF1D2B12A40200417716 /* FaceIDScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceIDScanView.swift; sourceTree = "<group>"; };
 		96F0CF212B12A51700417716 /* LogManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -186,6 +184,8 @@
 				9679F8B42AD0907900686F13 /* HistogramCalculator.h */,
 				9679F8BC2AD0907900686F13 /* HistogramCalculator.m */,
 				9679F8CA2AD0907A00686F13 /* AAPLTransforms.h */,
+				9679F8C72AD0907A00686F13 /* PointCloudMetalView.h */,
+				9679F8C92AD0907A00686F13 /* PointCloudMetalView.mm */,
 				9679F8C82AD0907A00686F13 /* FilterRenderer.swift */,
 				9679F8B82AD0907900686F13 /* AAPLTransforms.mm */,
 				9679F8C12AD0907900686F13 /* PointCloud.metal */,
@@ -276,11 +276,8 @@
 		967EE0902AAEDBBE000C4D5F /* View */ = {
 			isa = PBXGroup;
 			children = (
-				9679F8C72AD0907A00686F13 /* PointCloudMetalView.h */,
-				9679F8C92AD0907A00686F13 /* PointCloudMetalView.mm */,
 				9679F8BB2AD0907900686F13 /* PreviewMetalView.swift */,
 				96F0CF1B2B12A3D500417716 /* ExportView.swift */,
-				96F0CF1D2B12A40200417716 /* FaceIDScanView.swift */,
 				967EE0662AAE06FB000C4D5F /* ContentView.swift */,
 				961D67E22B12BDFC00DBB883 /* SceneKitView.swift */,
 				963DF9B22AFEDAF600E6E589 /* PostScanView.swift */,
@@ -477,7 +474,6 @@
 				9679F8DF2AD0907A00686F13 /* PointCloudMetalView.mm in Sources */,
 				969AC2822AB7554C0096892E /* Extensions+Modifiers.swift in Sources */,
 				9679F8D12AD0907A00686F13 /* AAPLTransforms.mm in Sources */,
-				96F0CF1E2B12A40200417716 /* FaceIDScanView.swift in Sources */,
 				96F0CF1A2B12A39100417716 /* ExportViewModel.swift in Sources */,
 				967EE0672AAE06FB000C4D5F /* ContentView.swift in Sources */,
 				9679F8D42AD0907A00686F13 /* PreviewMetalView.swift in Sources */,

@@ -50,6 +50,10 @@ struct ExportView: View {
     @State private var showConsoleOutput: Bool = false
     @State private var showAlert = false
     @State private var isFlashOn = false
+    @State private var progressDirection = true // true for increasing, false for decreasing
+    @State private var progressValue: CGFloat = 0.25 // start with 1/4 progress
+    @State private var isLeftHalf = true
+       private let timer = Timer.publish(every: 2, on: .main, in: .common).autoconnect()
     
     @ObservedObject var logManager = LogManager.shared
     @EnvironmentObject var globalState: GlobalState
@@ -123,11 +127,27 @@ struct ExportView: View {
                         }
                     }
                     
-//                    Spacer()
-//
-//                    FaceIDScanView()
-//
-//                    Spacer()
+                    Spacer()
+                    // Progress indicator
+                              ZStack {
+                                  Circle()
+                                      .stroke(Color(.gray), lineWidth: 5)
+                                      .frame(width: 200, height: 200)
+
+                                  Circle()
+                                      .trim(from: 0, to: 0.5)
+                                      .stroke(.green, lineWidth: 5)
+                                      .frame(width: 200, height: 200)
+                                      .rotationEffect(Angle(degrees: isLeftHalf ? 180 : 0)) // Rotate to position on left or right
+                              }
+                              .padding()
+                              .onReceive(timer) { _ in
+                                  withAnimation {
+                                      isLeftHalf.toggle() // Switch from left to right and vice versa
+                                  }
+                              }
+
+                    Spacer()
                     
                     // Button to start/pause scanning
                     Button(action: {
@@ -260,12 +280,6 @@ struct ExportView: View {
             }
         }
         .padding()
-        .onAppear {
-            // Make it pause due to thermal concerns...
-            DispatchQueue.main.asyncAfter(deadline: .now() + 15) {
-                ExternalData.renderingEnabled = false
-            }
-        }
         .foregroundColor(isFlashOn ? .black : .white)
     }
 }

@@ -151,10 +151,6 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         let initialThermalState = ProcessInfo.processInfo.thermalState
         
         if initialThermalState == .serious || initialThermalState == .critical {
-            // If iPhone is too hot at startup, make it so that it pauses stream after waiting 5 seconds...
-            DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
-                ExternalData.renderingEnabled = false
-            }
             showThermalState(state: initialThermalState)
         }
         
@@ -244,9 +240,6 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     @objc
     func thermalStateChanged(notification: NSNotification) {
         if let processInfo = notification.object as? ProcessInfo {
-            if (processInfo.thermalState == .serious || processInfo.thermalState == .critical) {
-                ExternalData.renderingEnabled = false
-            }
             showThermalState(state: processInfo.thermalState)
         }
     }
@@ -605,7 +598,6 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         DispatchQueue.main.async {
             self.autoPanningIndex = -1
         }
-        cloudView.resetView()
     }
     
     @IBAction private func handleRotate(gesture: UIRotationGestureRecognizer) {
@@ -721,7 +713,7 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         
         // Synchronize access to the shared resource
         DispatchQueue.main.async {
-            ExternalData.renderingEnabled.toggle()
+            ExternalData.renderingEnabled = true
         }
     }
     
