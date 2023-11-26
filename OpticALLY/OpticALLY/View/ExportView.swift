@@ -8,7 +8,7 @@
 import SwiftUI
 
 enum CurrentState {
-    case begin, start
+    case begin
 }
 
 struct ShareSheet: UIViewControllerRepresentable {
@@ -123,12 +123,11 @@ struct ExportView: View {
                         }
                     }
                     
-                    Spacer()
-                    
-                    FaceIDScanView(isScanComplete: $isScanComplete, showDropdown: $showDropdown)
-                        .background(Color.black.opacity(0.8).blur(radius: 40.0))
-                    
-                    Spacer()
+                    //                    Spacer()
+                    //
+                    //                    FaceIDScanView(isScanComplete: $isScanComplete, showDropdown: $showDropdown)
+                    //
+                    //                    Spacer()
                     
                     // Button to start/pause scanning
                     Button(action: {
@@ -249,121 +248,15 @@ struct ExportView: View {
                                     .font(.largeTitle) // Adjust the size of the icon
                             }
                             .foregroundColor(.white) // Text and icon color
-                               .padding() // Padding around VStack
-                               .background(Capsule().fill(Color.black)) // Capsule shape filled with black color
-                               .overlay(
-                                   Capsule().stroke(Color.white, lineWidth: 2) // White border around the capsule
-                               )
+                            .padding() // Padding around VStack
+                            .background(Capsule().fill(Color.black)) // Capsule shape filled with black color
+                            .overlay(
+                                Capsule().stroke(Color.white, lineWidth: 2) // White border around the capsule
+                            )
                         }
                     }
                     .padding(.bottom)
                 }
-                
-            case .start:
-                VStack {
-                    Button(action: {
-                        ExternalData.renderingEnabled.toggle()
-                        currentState = .begin
-                        isScanComplete = false
-                    }) {
-                        HStack {
-                            Image(systemName: "arrow.left") // Using system arrow left image for back
-                            Text("Back")
-                        }
-                        .padding()
-                        .foregroundColor(.primary) // Adjust color as needed
-                    }
-                    .navigationBarItems(leading:
-                                            Button(action: {
-                        // Handle your back action here
-                    }) {
-                        Image(systemName: "arrow.left")
-                    }
-                    )
-                    
-                    Image("1024")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 80, alignment: .center)
-                        .clipShape(RoundedRectangle(cornerRadius: 20)) // Clips the image as a rounded rectangle
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 20) // Applies a border on top of the rounded rectangle image
-                                .stroke(Color.primary, lineWidth: 2) // Adjust the color and line width as needed
-                        )
-                        .accessibility(hidden: true)
-                    
-                    Text("HAROLDEN")
-                        .bold()
-                        .font(.caption)
-                        .foregroundStyle(.gray)
-                        .padding(.bottom)
-                    
-//                    Spacer()
-//                    
-//                    FaceIDScanView(isScanComplete: $isScanComplete, showDropdown: $showDropdown)
-//                 
-//                    Spacer()
-                    
-                    if isScanComplete {
-                        VStack {
-                            Button(action: {
-                                // Toggle the dropdown
-                                showDropdown.toggle()
-                            }) {
-                                HStack {
-                                    Image(systemName: "arrow.down.circle")
-                                    Text("DOWNLOAD")
-                                        .font(.body)
-                                        .bold()
-                                }
-                                .foregroundColor(.black)
-                                .padding()
-                                .background(Capsule().fill(Color.white))
-                            }
-                            
-                            // Dropdown list view
-                            if showDropdown {
-                                VStack {
-                                    Button(action: {
-                                        
-                                    }) {
-                                        Text(".PLY")
-                                            .padding()
-                                            .foregroundColor(.white)
-                                            .background(Capsule().fill(Color.gray.opacity(0.4)))
-                                    }
-                                }
-                                .padding(.top, 5)
-                                
-                            } else {
-                                Button(action: {
-                                    ExternalData.renderingEnabled.toggle()
-                                    currentState = .begin
-                                    isScanComplete = false
-                                }) {
-                                    Text("RESCAN")
-                                        .font(.body)
-                                        .bold()
-                                        .foregroundColor(.white)
-                                        .padding()
-                                }
-                                .background(Color.black.opacity(0.8).blur(radius: 40.0))
-                            }
-                            
-                        }
-                        .padding()
-                        
-                    } else {
-                        Text("For an accurate scan, ensure you pan around the sides, top, and bottom of your face.")
-                            .font(.caption)
-                            .bold()
-                            .multilineTextAlignment(.center)
-                            .padding(.top, 10)
-                            .foregroundColor(.white)
-                    }
-                    
-                }
-                .background(isScanComplete ? Color.clear.blur(radius: 40.0) : Color.black.opacity(0.8).blur(radius: 40.0))
             }
         }
         .padding()
