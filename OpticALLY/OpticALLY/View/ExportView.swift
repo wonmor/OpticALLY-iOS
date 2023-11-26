@@ -138,7 +138,8 @@ struct ExportView: View {
                                       .trim(from: 0, to: 0.5)
                                       .stroke(.green, lineWidth: 5)
                                       .frame(width: 200, height: 200)
-                                      .rotationEffect(Angle(degrees: isLeftHalf ? 180 : 0)) // Rotate to position on left or right
+                                      .rotationEffect(Angle(degrees: -90)) // Start from the left
+                                      .rotation3DEffect(Angle(degrees: isLeftHalf ? 0 : 180), axis: (x: 0, y: 1, z: 0)) // Rotate around the y-axis
                               }
                               .padding()
                               .onReceive(timer) { _ in
