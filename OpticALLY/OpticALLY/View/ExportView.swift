@@ -123,11 +123,11 @@ struct ExportView: View {
                         }
                     }
                     
-                    Spacer()
-
-                    FaceIDScanView()
-
-                    Spacer()
+//                    Spacer()
+//
+//                    FaceIDScanView()
+//
+//                    Spacer()
                     
                     // Button to start/pause scanning
                     Button(action: {
