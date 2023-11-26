@@ -123,11 +123,11 @@ struct ExportView: View {
                         }
                     }
                     
-                    //                    Spacer()
-                    //
-                    //                    FaceIDScanView(isScanComplete: $isScanComplete, showDropdown: $showDropdown)
-                    //
-                    //                    Spacer()
+                    Spacer()
+
+                    FaceIDScanView()
+
+                    Spacer()
                     
                     // Button to start/pause scanning
                     Button(action: {
@@ -239,7 +239,7 @@ struct ExportView: View {
                                 }
                             }
                         } else {
-                            VStack {
+                            VStack(spacing: 5) {
                                 Text("Start")
                                     .font(.title3)
                                     .bold()
