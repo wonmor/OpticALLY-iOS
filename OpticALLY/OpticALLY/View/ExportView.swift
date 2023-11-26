@@ -22,6 +22,24 @@ struct ShareSheet: UIViewControllerRepresentable {
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
+struct FlashButtonView: View {
+    @Binding var isFlashOn: Bool
+
+    var body: some View {
+        Button(action: toggleFlash) {
+            Image(systemName: isFlashOn ? "bolt.fill" : "bolt.slash.fill")
+                .foregroundColor(isFlashOn ? .black : .gray)
+                .font(.title)
+        }
+        .padding(.top)
+    }
+
+    private func toggleFlash() {
+        isFlashOn.toggle()
+        // Update camera flash setting here
+    }
+}
+
 struct ExportView: View {
     @State private var isViewLoaded: Bool = false
     @State private var fingerOffset: CGFloat = -30.0
@@ -31,6 +49,7 @@ struct ExportView: View {
     @State private var showDropdown: Bool = false
     @State private var showConsoleOutput: Bool = false
     @State private var showAlert = false
+    @State private var isFlashOn = false
     
     @ObservedObject var logManager = LogManager.shared
     @EnvironmentObject var globalState: GlobalState
@@ -40,6 +59,10 @@ struct ExportView: View {
     
     var body: some View {
         ZStack {
+            Color(isFlashOn ? .white : .clear)
+                          .edgesIgnoringSafeArea(.all)
+                          .clipShape(RoundedRectangle(cornerRadius: 20)) // Clips the image as a rounded rectangle
+            
             // Display a loading spinner when isLoading is true
             if exportViewModel.isLoading {
                 VStack(spacing: 10) { // Adjust spacing as needed
@@ -74,22 +97,7 @@ struct ExportView: View {
             switch currentState {
             case .begin:
                 VStack {
-                    // Animated finger image
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 10)
-                            .frame(width: 150, height: 50)
-                            .foregroundColor(Color.black)
-                        
-                        Image(systemName: "hand.point.up.left")
-                            .font(.largeTitle)
-                            .foregroundColor(.white)
-                            .offset(x: fingerOffset)
-                            .onAppear() {
-                                withAnimation(Animation.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) {
-                                    fingerOffset = maxOffset
-                                }
-                            }
-                    }
+                    FlashButtonView(isFlashOn: $isFlashOn)
                     
                     if showConsoleOutput {
                         ScrollView {
@@ -349,5 +357,6 @@ struct ExportView: View {
                 ExternalData.renderingEnabled = false
             }
         }
+        .foregroundColor(isFlashOn ? .black : .white)
     }
 }
