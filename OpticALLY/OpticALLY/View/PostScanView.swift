@@ -26,7 +26,9 @@ struct PostScanView: View {
                     .opacity(1) // Make visible
                     .scaleEffect(1) // Scale to normal size
                     .transition(.scale) // Add a transition effect
+                    .zIndex(2.0)
             }
+            
             VStack {
                 HStack {
                     Button(action: {
