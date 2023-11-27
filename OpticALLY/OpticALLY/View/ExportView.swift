@@ -170,6 +170,19 @@ struct ExportView: View {
                     Spacer()
                     // Progress indicator and head turn message
                     ZStack {
+                        switch headTurnState {
+                        case .left:
+                            Image(systemName: "arrow.left.circle.fill")
+                                .font(.largeTitle)
+                                .foregroundColor(.blue)
+                        case .center:
+                            EmptyView()
+                        case .right:
+                            Image(systemName: "arrow.right.circle.fill")
+                                .font(.largeTitle)
+                                .foregroundColor(.green)
+                        }
+                        
                         Circle()
                             .fill(.clear)  // Fill the circle with black color at 75% opacity
                             .frame(width: 200, height: 200)
