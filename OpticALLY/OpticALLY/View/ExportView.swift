@@ -188,6 +188,8 @@ struct ExportView: View {
                     }
                     .padding()
                     .onReceive(timer) { _ in
+                        guard isRingAnimationStarted else { return }
+                        
                         if isRingAnimationStarted && stateChangeCount <= 3 {
                             if countdownTime > 1 {
                                 countdownTime -= 1
@@ -203,8 +205,13 @@ struct ExportView: View {
                                     headTurnState = .center
                                     headTurnMessage = "Turn your head center"
                                 case .center:
-                                    headTurnState = .right
-                                    headTurnMessage = "Turn your head right"
+                                    // If it's the last iteration...
+                                    if stateChangeCount == 3 {
+                                        isRingAnimationStarted = false
+                                    } else {
+                                        headTurnState = .right
+                                        headTurnMessage = "Turn your head right"
+                                    }
                                 case .right:
                                     headTurnState = .left
                                     headTurnMessage = "Turn your head left"
