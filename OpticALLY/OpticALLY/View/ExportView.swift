@@ -167,9 +167,11 @@ struct ExportView: View {
                             .padding()
                         
                         Circle()
-                            .stroke(Color(.gray), lineWidth: 5)
-                            .background(.black.opacity(0.75))
+                            .fill(Color.black.opacity(0.75))  // Fill the circle with black color at 75% opacity
                             .frame(width: 200, height: 200)
+                            .overlay(
+                                Circle().stroke(Color(.gray), lineWidth: 5) // Gray stroke
+                            )
                         
                         progressView(for: headTurnState)
                     }
