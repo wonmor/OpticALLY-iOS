@@ -176,7 +176,9 @@ struct ExportView: View {
                                 .font(.largeTitle)
                                 .foregroundColor(.blue)
                         case .center:
-                            EmptyView()
+                            Image(systemName: "faceid")
+                                .font(.largeTitle)
+                                .foregroundColor(.yellow)
                         case .right:
                             Image(systemName: "arrow.right.circle.fill")
                                 .font(.largeTitle)
@@ -349,7 +351,7 @@ struct ExportView: View {
                                         .font(.title3)
                                         .bold()
                                     
-                                    Image(systemName: "faceid")
+                                    Image(systemName: "arrow.up")
                                         .font(.largeTitle) // Adjust the size of the icon
                                 }
                                 .foregroundColor(.white) // Text and icon color
