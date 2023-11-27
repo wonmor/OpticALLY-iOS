@@ -56,6 +56,7 @@
 		96F0CF1A2B12A39100417716 /* ExportViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF192B12A39100417716 /* ExportViewModel.swift */; };
 		96F0CF1C2B12A3D500417716 /* ExportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF1B2B12A3D500417716 /* ExportView.swift */; };
 		96F0CF222B12A51700417716 /* LogManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF212B12A51700417716 /* LogManager.swift */; };
+		96FC61592B146D3A00ACC840 /* HapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96FC61582B146D3A00ACC840 /* HapticManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -122,6 +123,7 @@
 		96F0CF192B12A39100417716 /* ExportViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportViewModel.swift; sourceTree = "<group>"; };
 		96F0CF1B2B12A3D500417716 /* ExportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportView.swift; sourceTree = "<group>"; };
 		96F0CF212B12A51700417716 /* LogManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogManager.swift; sourceTree = "<group>"; };
+		96FC61582B146D3A00ACC840 /* HapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -236,6 +238,7 @@
 				966E79472B132B150091F35E /* CameraManager.swift */,
 				96F0CF172B12A34400417716 /* ExternalData.swift */,
 				96F0CF212B12A51700417716 /* LogManager.swift */,
+				96FC61582B146D3A00ACC840 /* HapticManager.swift */,
 				9679F8BA2AD0907900686F13 /* Info.plist */,
 				967EE0682AAE06FE000C4D5F /* Assets.xcassets */,
 				9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */,
@@ -462,6 +465,7 @@
 			files = (
 				96F0CF222B12A51700417716 /* LogManager.swift in Sources */,
 				961D67E52B12C64A00DBB883 /* CreditsView.swift in Sources */,
+				96FC61592B146D3A00ACC840 /* HapticManager.swift in Sources */,
 				96F0CF1C2B12A3D500417716 /* ExportView.swift in Sources */,
 				961D67E32B12BDFC00DBB883 /* SceneKitView.swift in Sources */,
 				9679F8DC2AD0907A00686F13 /* PassThrough.metal in Sources */,
