@@ -175,7 +175,7 @@ struct ExportView: View {
                     }
                     .padding()
                     .onReceive(timer) { _ in
-                        if isRingAnimationStarted && stateChangeCount < 4 { // Check if the animation is started and the count is less than 4
+                        if isRingAnimationStarted && stateChangeCount < 3 { // Check if the animation is started and the count is less than 4
                             withAnimation {
                                 // Update head turn state and increment the count
                                 switch headTurnState {
