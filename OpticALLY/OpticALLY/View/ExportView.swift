@@ -69,27 +69,27 @@ struct ExportView: View {
     let maxOffset: CGFloat = 30.0 // change this to control how much the finger moves
     
     private func progressView(for state: HeadTurnState) -> some View {
-         Group {
-             switch state {
-             case .left:
-                 Circle()
-                     .trim(from: 0.66, to: 1)
-                     .stroke(.red, lineWidth: 5)
-                     .rotationEffect(Angle(degrees: -90))
-             case .center:
-                 Circle()
-                     .trim(from: 0.33, to: 0.66)
-                     .stroke(.yellow, lineWidth: 5)
-                     .rotationEffect(Angle(degrees: -90))
-             case .right:
-                 Circle()
-                     .trim(from: 0, to: 0.33)
-                     .stroke(.green, lineWidth: 5)
-                     .rotationEffect(Angle(degrees: -90))
-             }
-         }
-         .frame(width: 200, height: 200)
-     }
+        Group {
+            switch state {
+            case .left:
+                Circle()
+                    .trim(from: 0.66, to: 1)
+                    .stroke(.red, lineWidth: 5)
+                    .rotationEffect(Angle(degrees: -90))
+            case .center:
+                Circle()
+                    .trim(from: 0.33, to: 0.66)
+                    .stroke(.yellow, lineWidth: 5)
+                    .rotationEffect(Angle(degrees: -90))
+            case .right:
+                Circle()
+                    .trim(from: 0, to: 0.33)
+                    .stroke(.green, lineWidth: 5)
+                    .rotationEffect(Angle(degrees: -90))
+            }
+        }
+        .frame(width: 200, height: 200)
+    }
     
     var body: some View {
         ZStack {
@@ -159,38 +159,38 @@ struct ExportView: View {
                     
                     Spacer()
                     // Progress indicator and head turn message
-                                       ZStack {
-                                           Text(headTurnMessage)
-                                               .font(.title2)
-                                               .bold()
-                                               .multilineTextAlignment(.center)
-                                               .monospaced()
-                                               .foregroundColor(isFlashOn ? .black : .white)
-                                               .padding()
-                                           
-                                           Circle()
-                                               .stroke(Color(.gray), lineWidth: 5)
-                                               .frame(width: 200, height: 200)
-
-                                           progressView(for: headTurnState)
-                                       }
-                                       .padding()
-                                       .onReceive(timer) { _ in
-                                           withAnimation {
-                                               // Update head turn state and message
-                                               switch headTurnState {
-                                               case .left:
-                                                   headTurnState = .center
-                                                   headTurnMessage = "Turn your head center"
-                                               case .center:
-                                                   headTurnState = .right
-                                                   headTurnMessage = "Turn your head right"
-                                               case .right:
-                                                   headTurnState = .left
-                                                   headTurnMessage = "Turn your head left"
-                                               }
-                                           }
-                                       }
+                    ZStack {
+                        Text(headTurnMessage)
+                            .font(.title2)
+                            .bold()
+                            .multilineTextAlignment(.center)
+                            .monospaced()
+                            .foregroundColor(isFlashOn ? .black : .white)
+                            .padding()
+                        
+                        Circle()
+                            .stroke(Color(.gray), lineWidth: 5)
+                            .frame(width: 200, height: 200)
+                        
+                        progressView(for: headTurnState)
+                    }
+                    .padding()
+                    .onReceive(timer) { _ in
+                        withAnimation {
+                            // Update head turn state and message
+                            switch headTurnState {
+                            case .left:
+                                headTurnState = .center
+                                headTurnMessage = "Turn your head center"
+                            case .center:
+                                headTurnState = .right
+                                headTurnMessage = "Turn your head right"
+                            case .right:
+                                headTurnState = .left
+                                headTurnMessage = "Turn your head left"
+                            }
+                        }
+                    }
                     
                     Spacer()
                     
