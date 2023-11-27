@@ -241,6 +241,7 @@ struct ExportView: View {
                     // Button to start/pause scanning
                     if !isRingAnimationStarted {
                         Button(action: {
+                            HapticManager.playHapticFeedback(type: .success)
                             isRingAnimationStarted = true  // Start the ring animation
                         }) {
                             if showConsoleOutput {
