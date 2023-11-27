@@ -22,10 +22,11 @@ struct ExternalData {
     static var renderingEnabled = true
     static var isSavingFileAsPLY = false
     static var exportPLYData: Data?
-    static var pointCloudGeometry: SCNGeometry?
+    static var pointCloudGeometries: [SCNGeometry] = []  // Now an array
     
     static func reset() {
         // Function to reset all variables
+        pointCloudGeometries.removeAll()
     }
     
     // Function to convert depth and color data into a point cloud geometry
@@ -134,24 +135,23 @@ struct ExternalData {
                                          bytesPerIndex: MemoryLayout<Int32>.size)
         
         // Create the point cloud geometry
-        pointCloudGeometry = SCNGeometry(sources: [vertexSource, colorSource], elements: [element])
-        
-        // Set the lighting model to constant to ensure the points are fully lit
-        pointCloudGeometry!.firstMaterial?.lightingModel = .constant
-        
-        // Set additional material properties as needed, for example, to make the points more visible
-        pointCloudGeometry!.firstMaterial?.isDoubleSided = true
-        
-        print("Done constructing the 3D object!")
-        LogManager.shared.log("Done constructing the 3D object!")
-        
-        return pointCloudGeometry!
-    }
+       let newPointCloudGeometry = SCNGeometry(sources: [vertexSource, colorSource], elements: [element])
+       newPointCloudGeometry.firstMaterial?.lightingModel = .constant
+       newPointCloudGeometry.firstMaterial?.isDoubleSided = true
+       
+       // Append the new geometry to the array
+       pointCloudGeometries.append(newPointCloudGeometry)
+       
+       print("Done constructing the 3D object!")
+       LogManager.shared.log("Done constructing the 3D object!")
+       
+       return newPointCloudGeometry
+   }
     
     static func exportGeometryAsPLY(to url: URL) {
-        guard let geometry = pointCloudGeometry,
-              let vertexSource = geometry.sources.first(where: { $0.semantic == .vertex }),
-              let colorSource = geometry.sources.first(where: { $0.semantic == .color }) else {
+        guard let geometry: SCNGeometry? = pointCloudGeometries[0],
+              let vertexSource = geometry!.sources.first(where: { $0.semantic == .vertex }),
+              let colorSource = geometry!.sources.first(where: { $0.semantic == .color }) else {
             print("Unable to access vertex or color source from geometry")
             return
         }
@@ -189,24 +189,6 @@ struct ExternalData {
             print("PLY file successfully saved to: \(url.path)")
         } catch {
             print("Failed to write PLY file: \(error)")
-        }
-    }
-    
-    static func exportGeometryAsUSDZ(to url: URL) {
-        guard let geometry = pointCloudGeometry else {
-            print("Point cloud geometry is not available")
-            return
-        }
-        
-        let scene = SCNScene()
-        let node = SCNNode(geometry: geometry)
-        scene.rootNode.addChildNode(node)
-        
-        do {
-            try scene.write(to: url, options: nil, delegate: nil, progressHandler: nil)
-            print("USDZ file successfully saved to: \(url.path)")
-        } catch {
-            print("Failed to write USDZ file: \(error)")
         }
     }
 }
