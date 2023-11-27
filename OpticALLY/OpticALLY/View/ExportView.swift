@@ -168,7 +168,7 @@ struct ExportView: View {
                             .zIndex(3.0)
                         
                         Circle()
-                            .fill(Color.black.opacity(0.75))  // Fill the circle with black color at 75% opacity
+                            .fill(isFlashOn ? Color.white.opacity(0.75) : Color.black.opacity(0.75))  // Fill the circle with black color at 75% opacity
                             .frame(width: 200, height: 200)
                             .overlay(
                                 Circle().stroke(Color(.gray), lineWidth: 5) // Gray stroke
