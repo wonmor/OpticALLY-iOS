@@ -169,9 +169,9 @@ struct ExportView: View {
                     
                     Spacer()
                     // Progress indicator and head turn message
-                    ZStack {                        
+                    ZStack {
                         Circle()
-                            .fill(isFlashOn ? Color.white.opacity(0.75) : Color.black.opacity(0.75))  // Fill the circle with black color at 75% opacity
+                            .fill(.clear)  // Fill the circle with black color at 75% opacity
                             .frame(width: 200, height: 200)
                             .overlay(
                                 Circle().stroke(Color(.gray), lineWidth: 5) // Gray stroke
