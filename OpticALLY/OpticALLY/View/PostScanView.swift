@@ -71,7 +71,6 @@ struct PostScanView: View {
                         if OpticALLYApp.isConnectedToNetwork() {
                             exportViewModel.exportOBJ()
                             isMesh = true
-                            
                         } else {
                             showAlert = true
                         }
@@ -85,7 +84,10 @@ struct PostScanView: View {
                         }
                         .padding()
                         .foregroundColor(.white)
-                        .background(Capsule().fill(Color(.darkGray)))
+                        .background(Capsule().fill(Color.clear)) // Transparent background
+                        .overlay(
+                            Capsule().stroke(Color.white, lineWidth: 2) // White border
+                        )
                     }
                     .padding()
                     

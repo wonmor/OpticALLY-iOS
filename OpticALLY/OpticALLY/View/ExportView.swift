@@ -165,6 +165,7 @@ struct ExportView: View {
                             .multilineTextAlignment(.center)
                             .foregroundColor(isFlashOn ? .black : .white)
                             .padding()
+                            .zIndex(3.0)
                         
                         Circle()
                             .fill(Color.black.opacity(0.75))  // Fill the circle with black color at 75% opacity
