@@ -57,6 +57,8 @@ struct ExportView: View {
     @State private var isLeftHalf = true
     @State private var headTurnState = HeadTurnState.center
     @State private var headTurnMessage = "Turn your head center"
+    @State private var isRingAnimationStarted = false
+    @State private var stateChangeCount = 0
     
     @ObservedObject var logManager = LogManager.shared
     @EnvironmentObject var globalState: GlobalState
@@ -173,18 +175,21 @@ struct ExportView: View {
                     }
                     .padding()
                     .onReceive(timer) { _ in
-                        withAnimation {
-                            // Update head turn state and message
-                            switch headTurnState {
-                            case .left:
-                                headTurnState = .center
-                                headTurnMessage = "Turn your head center"
-                            case .center:
-                                headTurnState = .right
-                                headTurnMessage = "Turn your head right"
-                            case .right:
-                                headTurnState = .left
-                                headTurnMessage = "Turn your head left"
+                        if isRingAnimationStarted && stateChangeCount < 4 { // Check if the animation is started and the count is less than 4
+                            withAnimation {
+                                // Update head turn state and increment the count
+                                switch headTurnState {
+                                case .left:
+                                    headTurnState = .center
+                                    headTurnMessage = "Turn your head center"
+                                case .center:
+                                    headTurnState = .right
+                                    headTurnMessage = "Turn your head right"
+                                case .right:
+                                    headTurnState = .left
+                                    headTurnMessage = "Turn your head left"
+                                }
+                                stateChangeCount += 1 // Increment the state change counter
                             }
                         }
                     }
@@ -193,10 +198,10 @@ struct ExportView: View {
                     
                     // Button to start/pause scanning
                     Button(action: {
-                        showConsoleOutput = true
-                        
-                        ExternalData.isSavingFileAsPLY = true
-                    }) {
+                       isRingAnimationStarted = true  // Start the ring animation
+                       showConsoleOutput = true
+                       ExternalData.isSavingFileAsPLY = true
+                   }) {
                         if showConsoleOutput {
                             if let lastLog = logManager.latestLog {
                                 if lastLog.lowercased().contains("done") {
