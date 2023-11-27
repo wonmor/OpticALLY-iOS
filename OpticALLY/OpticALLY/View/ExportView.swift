@@ -54,11 +54,9 @@ struct ExportView: View {
     @State private var showConsoleOutput: Bool = false
     @State private var showAlert = false
     @State private var isFlashOn = false
-    @State private var progressDirection = true // true for increasing, false for decreasing
-    @State private var progressValue: CGFloat = 0.25 // start with 1/4 progress
     @State private var isLeftHalf = true
-    @State private var headTurnState = HeadTurnState.left
-    @State private var headTurnMessage = "Turn your head left"
+    @State private var headTurnState = HeadTurnState.center
+    @State private var headTurnMessage = "Turn your head center"
     
     @ObservedObject var logManager = LogManager.shared
     @EnvironmentObject var globalState: GlobalState
@@ -74,7 +72,7 @@ struct ExportView: View {
             case .left:
                 Circle()
                     .trim(from: 0.66, to: 1)
-                    .stroke(.red, lineWidth: 5)
+                    .stroke(.blue, lineWidth: 5)
                     .rotationEffect(Angle(degrees: -90))
             case .center:
                 Circle()
@@ -164,7 +162,6 @@ struct ExportView: View {
                             .font(.title2)
                             .bold()
                             .multilineTextAlignment(.center)
-                            .monospaced()
                             .foregroundColor(isFlashOn ? .black : .white)
                             .padding()
                         
