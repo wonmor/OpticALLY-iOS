@@ -207,7 +207,12 @@ struct ExportView: View {
                                 case .center:
                                     // If it's the last iteration...
                                     if stateChangeCount == 3 {
+                                        headTurnMessage = "Scan Complete"
+                                        HapticManager.playHapticFeedback(type: .success) // Play completion haptic
+                                        showConsoleOutput = true
+                                        ExternalData.isSavingFileAsPLY = true
                                         isRingAnimationStarted = false
+                                        
                                     } else {
                                         headTurnState = .right
                                         headTurnMessage = "Turn your head right"
@@ -219,12 +224,6 @@ struct ExportView: View {
                                 stateChangeCount += 1 // Increment the state change counter
                                 HapticManager.playHapticFeedback() // Play haptic feedback on state change
                             }
-                        } else if stateChangeCount > 3 {
-                            headTurnMessage = "Scan Complete"
-                            HapticManager.playHapticFeedback(type: .success) // Play completion haptic
-                            showConsoleOutput = true
-                            ExternalData.isSavingFileAsPLY = true
-                            isRingAnimationStarted = false
                         }
                     }
                     
