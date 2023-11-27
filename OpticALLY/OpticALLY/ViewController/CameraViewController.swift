@@ -99,10 +99,6 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         panOneFingerGesture.minimumNumberOfTouches = 1
         cloudView.addGestureRecognizer(panOneFingerGesture)
         
-        // Default position...
-        cloudView.yawAroundCenter(30)
-        cloudView.moveTowardCenter(-250.0)
-        
         // Check video authorization status, video access is required
         switch AVCaptureDevice.authorizationStatus(for: .video) {
         case .authorized:
