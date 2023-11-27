@@ -9,6 +9,7 @@ import SceneKit
 import ARKit
 import Combine
 import Firebase
+import Vision
 
 @available(iOS 11.1, *)
 class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDelegate {
@@ -32,7 +33,8 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     private var setupResult: SessionSetupResult = .success
     
     private let session = AVCaptureSession()
-    
+    private var faceLandmarksRequest = VNDetectFaceLandmarksRequest()
+
     private var isSessionRunning = false
     
     // Communicate with the session and other session objects on this queue.
@@ -489,6 +491,17 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         }
     }
     
+    private func processFaceObservations(_ observations: [VNFaceObservation]) {
+        for observation in observations {
+            // Accessing face's Euler angles
+            if let yaw = observation.yaw, let pitch = observation.pitch, let roll = observation.roll {
+                // Process yaw, pitch, and roll
+                // Yaw (rotation around vertical axis), Pitch (rotation around lateral axis), Roll (rotation around longitudinal axis)
+                print("Yaw: \(yaw), Pitch: \(pitch), Roll: \(roll)")
+            }
+        }
+    }
+    
     @objc
     func sessionInterruptionEnded(notification: NSNotification) {
         if !cameraUnavailableLabel.isHidden {
@@ -745,6 +758,17 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         guard let videoPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer),
               let formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer) else {
             return
+        }
+        
+        // Perform face landmarks detection
+        let imageRequestHandler = VNImageRequestHandler(cvPixelBuffer: videoPixelBuffer, orientation: .up, options: [:])
+        do {
+            try imageRequestHandler.perform([faceLandmarksRequest])
+            if let results = faceLandmarksRequest.results as? [VNFaceObservation], !results.isEmpty {
+                processFaceObservations(results)
+            }
+        } catch {
+            print("Error performing face landmarks detection: \(error)")
         }
         
         print("ExternalData.isSavingFileAsPLY: \(ExternalData.isSavingFileAsPLY)")
