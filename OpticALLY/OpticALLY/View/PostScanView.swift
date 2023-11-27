@@ -60,7 +60,7 @@ struct PostScanView: View {
                         })
                     
                 } else {
-                    SceneKitView(geometry: ExternalData.pointCloudGeometry)
+                    SceneKitView(geometry: ExternalData.pointCloudGeometries[0])
                         .ignoresSafeArea(edges: .bottom)
                 }
                 

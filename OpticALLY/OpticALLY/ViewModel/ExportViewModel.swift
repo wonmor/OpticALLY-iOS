@@ -87,21 +87,6 @@ class ExportViewModel: ObservableObject {
         }
     }
     
-    func exportUSDZ() {
-        // Determine a temporary file URL to save the PLY file
-        let tempDirectory = FileManager.default.temporaryDirectory
-        let fileURL = tempDirectory.appendingPathComponent("model.usdz")
-        
-        // Export the PLY data to the file
-        ExternalData.exportGeometryAsUSDZ(to: fileURL)
-        
-        // Update the state to indicate that there's a file to share
-        DispatchQueue.main.async {
-            self.fileURL = fileURL
-            self.showShareSheet = true
-        }
-    }
-    
     func exportOBJ() {
         fetchExportDurations()
         
