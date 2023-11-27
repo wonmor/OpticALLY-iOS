@@ -24,7 +24,7 @@ struct ShareSheet: UIViewControllerRepresentable {
 
 struct FlashButtonView: View {
     @Binding var isFlashOn: Bool
-
+    
     var body: some View {
         Button(action: toggleFlash) {
             Image(systemName: isFlashOn ? "bolt.fill" : "bolt.slash.fill")
@@ -33,7 +33,7 @@ struct FlashButtonView: View {
         }
         .padding(.top)
     }
-
+    
     private func toggleFlash() {
         isFlashOn.toggle()
         // Update camera flash setting here
@@ -53,7 +53,7 @@ struct ExportView: View {
     @State private var progressDirection = true // true for increasing, false for decreasing
     @State private var progressValue: CGFloat = 0.25 // start with 1/4 progress
     @State private var isLeftHalf = true
-       private let timer = Timer.publish(every: 4, on: .main, in: .common).autoconnect()
+    private let timer = Timer.publish(every: 4, on: .main, in: .common).autoconnect()
     @State private var headTurnMessage = "Turn your head right"
     
     @ObservedObject var logManager = LogManager.shared
@@ -65,8 +65,8 @@ struct ExportView: View {
     var body: some View {
         ZStack {
             Color(isFlashOn ? .white : .clear)
-                          .edgesIgnoringSafeArea(.all)
-                          .clipShape(RoundedRectangle(cornerRadius: 20)) // Clips the image as a rounded rectangle
+                .edgesIgnoringSafeArea(.all)
+                .clipShape(RoundedRectangle(cornerRadius: 20)) // Clips the image as a rounded rectangle
             
             // Display a loading spinner when isLoading is true
             if exportViewModel.isLoading {
@@ -130,35 +130,35 @@ struct ExportView: View {
                     
                     Spacer()
                     // Progress indicator
-                              ZStack {
-                                  // Display the head turn message
-                                  Text(headTurnMessage)
-                                      .font(.title2)
-                                      .bold()
-                                      .foregroundColor(isFlashOn ? .black : .white) // Adjust the font color as needed
-                                      .padding() // Add padding around the text
-                                  
-                                  Circle()
-                                      .stroke(Color(.gray), lineWidth: 5)
-                                      .frame(width: 200, height: 200)
-
-                                  Circle()
-                                         .trim(from: 0, to: 0.5)
-                                         .stroke(.green, lineWidth: 5)
-                                         .frame(width: 200, height: 200)
-                                         .rotationEffect(Angle(degrees: -90)) // Start from the left
-                                         .rotation3DEffect(Angle(degrees: isLeftHalf ? 0 : 180), axis: (x: 0, y: 1, z: 0)) // Rotate around the y-axis
-                                 }
-                                 .padding()
-                                 .onReceive(timer) { _ in
-                                     withAnimation {
-                                         isLeftHalf.toggle() // Switch from left to right and vice versa
-
-                                         // Update the head turn message
-                                         headTurnMessage = isLeftHalf ? "Turn your head right" : "Turn your head left"
-                                     }
-                                 }
-
+                    ZStack {
+                        // Display the head turn message
+                        Text(headTurnMessage)
+                            .font(.title2)
+                            .bold()
+                            .foregroundColor(isFlashOn ? .black : .white) // Adjust the font color as needed
+                            .padding() // Add padding around the text
+                        
+                        Circle()
+                            .stroke(Color(.gray), lineWidth: 5)
+                            .frame(width: 200, height: 200)
+                        
+                        Circle()
+                            .trim(from: 0, to: 0.5)
+                            .stroke(.green, lineWidth: 5)
+                            .frame(width: 200, height: 200)
+                            .rotationEffect(Angle(degrees: -90)) // Start from the left
+                            .rotation3DEffect(Angle(degrees: isLeftHalf ? 0 : 180), axis: (x: 0, y: 1, z: 0)) // Rotate around the y-axis
+                    }
+                    .padding()
+                    .onReceive(timer) { _ in
+                        withAnimation {
+                            isLeftHalf.toggle() // Switch from left to right and vice versa
+                            
+                            // Update the head turn message
+                            headTurnMessage = isLeftHalf ? "Turn your head right" : "Turn your head left"
+                        }
+                    }
+                    
                     Spacer()
                     
                     // Button to start/pause scanning
