@@ -771,8 +771,6 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             print("Error performing face landmarks detection: \(error)")
         }
         
-        print("ExternalData.isSavingFileAsPLY: \(ExternalData.isSavingFileAsPLY)")
-        
         if ExternalData.isSavingFileAsPLY {
             printDepthData(depthData: depthData, imageData: videoPixelBuffer)
             
