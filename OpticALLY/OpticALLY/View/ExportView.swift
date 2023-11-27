@@ -56,7 +56,7 @@ struct ExportView: View {
     @State private var isFlashOn = false
     @State private var isLeftHalf = true
     @State private var headTurnState = HeadTurnState.center
-    @State private var headTurnMessage = "Turn your head center"
+    @State private var headTurnMessage = ""
     @State private var isRingAnimationStarted = false
     @State private var stateChangeCount = 0
     
@@ -162,7 +162,6 @@ struct ExportView: View {
                     ZStack {
                         Text(headTurnMessage)
                             .font(.title2)
-                            .bold()
                             .multilineTextAlignment(.center)
                             .foregroundColor(isFlashOn ? .black : .white)
                             .padding()
@@ -175,7 +174,7 @@ struct ExportView: View {
                     }
                     .padding()
                     .onReceive(timer) { _ in
-                        if isRingAnimationStarted && stateChangeCount < 3 { // Check if the animation is started and the count is less than 4
+                        if isRingAnimationStarted && stateChangeCount < 3 { // Check if the animation is started and the count is less than 3
                             withAnimation {
                                 // Update head turn state and increment the count
                                 switch headTurnState {
@@ -191,6 +190,9 @@ struct ExportView: View {
                                 }
                                 stateChangeCount += 1 // Increment the state change counter
                             }
+                        } else if stateChangeCount >= 3 {
+                            // Once one cycle is complete, update the message to "Scan Complete"
+                            headTurnMessage = "Scan Complete"
                         }
                     }
                     
@@ -328,5 +330,13 @@ struct ExportView: View {
         }
         .padding()
         .foregroundColor(isFlashOn ? .black : .white)
+    }
+}
+
+struct ExportView_Previews: PreviewProvider {
+    static var previews: some View {
+        ExportView()
+            .environmentObject(GlobalState())
+            .preferredColorScheme(.dark)
     }
 }
