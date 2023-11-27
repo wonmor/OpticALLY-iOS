@@ -170,15 +170,22 @@ struct ExportView: View {
                     Spacer()
                     // Progress indicator and head turn message
                     ZStack {
-                        Text(headTurnMessage)
-                            .font(.title2)
-                            .multilineTextAlignment(.center)
-                            .foregroundColor(isFlashOn ? .black : .white)
-                            .padding()
-                            .zIndex(3.0)
-                        
+                        switch headTurnState {
+                        case .left:
+                            Image("face_left") // Replace "leftImage" with the name of your image asset
+                                .resizable()
+                                .scaledToFit()
+                        case .center:
+                            Image("face_center") // Replace "centerImage" with the name of your image asset
+                                .resizable()
+                                .scaledToFit()
+                        case .right:
+                            Image("face_right") // Replace "rightImage" with the name of your image asset
+                                .resizable()
+                                .scaledToFit()
+                        }
+
                         Circle()
-                            .fill(isFlashOn ? Color.white.opacity(0.75) : Color.black.opacity(0.75))  // Fill the circle with black color at 75% opacity
                             .frame(width: 200, height: 200)
                             .overlay(
                                 Circle().stroke(Color(.gray), lineWidth: 5) // Gray stroke
@@ -186,6 +193,7 @@ struct ExportView: View {
                         
                         progressView(for: headTurnState)
                     }
+
                     .padding()
                     .onReceive(timer) { _ in
                         guard isRingAnimationStarted else { return }
