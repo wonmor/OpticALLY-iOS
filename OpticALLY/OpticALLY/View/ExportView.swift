@@ -35,6 +35,7 @@ struct FlashButtonView: View {
     }
     
     private func toggleFlash() {
+        HapticManager.playHapticFeedback(type: .error)
         isFlashOn.toggle()
         // Update camera flash setting here
     }
@@ -49,7 +50,6 @@ struct ExportView: View {
     @State private var fingerOffset: CGFloat = -30.0
     @State private var isAnimationActive: Bool = true
     @State private var currentState: CurrentState = .begin
-    @State private var isScanComplete: Bool = false
     @State private var showDropdown: Bool = false
     @State private var showConsoleOutput: Bool = false
     @State private var showAlert = false
@@ -75,17 +75,17 @@ struct ExportView: View {
             case .left:
                 Circle()
                     .trim(from: 0.66, to: 1)
-                    .stroke(.blue, lineWidth: 5)
+                    .stroke(isFlashOn ? .black : .blue, lineWidth: 5)
                     .rotationEffect(Angle(degrees: -90))
             case .center:
                 Circle()
                     .trim(from: 0.33, to: 0.66)
-                    .stroke(.yellow, lineWidth: 5)
+                    .stroke(isFlashOn ? .black : .yellow, lineWidth: 5)
                     .rotationEffect(Angle(degrees: -90))
             case .right:
                 Circle()
                     .trim(from: 0, to: 0.33)
-                    .stroke(.green, lineWidth: 5)
+                    .stroke(isFlashOn ? .black : .green, lineWidth: 5)
                     .rotationEffect(Angle(degrees: -90))
             }
         }
@@ -174,15 +174,15 @@ struct ExportView: View {
                         case .left:
                             Image(systemName: "arrow.left.circle.fill")
                                 .font(.largeTitle)
-                                .foregroundColor(.blue)
+                                .foregroundColor(isFlashOn ? .black : .blue)
                         case .center:
                             Image(systemName: "faceid")
                                 .font(.largeTitle)
-                                .foregroundColor(.yellow)
+                                .foregroundColor(isFlashOn ? .black : .yellow)
                         case .right:
                             Image(systemName: "arrow.right.circle.fill")
                                 .font(.largeTitle)
-                                .foregroundColor(.green)
+                                .foregroundColor(isFlashOn ? .black : .green)
                         }
                         
                         Circle()
@@ -220,6 +220,7 @@ struct ExportView: View {
                                         showConsoleOutput = true
                                         ExternalData.isSavingFileAsPLY = true
                                         isRingAnimationStarted = false
+                                        isFlashOn = true
                                         
                                     } else {
                                         headTurnState = .right
@@ -271,7 +272,7 @@ struct ExportView: View {
                                                             Text(".PLY")
                                                                 .padding()
                                                                 .foregroundColor(.white)
-                                                                .background(Capsule().fill(Color(.darkGray)))
+                                                                .background(Capsule().fill(Color(.black)))
                                                         }
                                                         
                                                         // .OBJ Button
@@ -285,7 +286,7 @@ struct ExportView: View {
                                                             Text(".OBJ")
                                                                 .padding()
                                                                 .foregroundColor(.white)
-                                                                .background(Capsule().fill(Color(.darkGray)))
+                                                                .background(Capsule().fill(Color(.black)))
                                                         }
                                                         .alert(isPresented: $showAlert) {
                                                             Alert(
