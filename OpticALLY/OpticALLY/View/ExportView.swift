@@ -59,6 +59,7 @@ struct ExportView: View {
     @State private var headTurnMessage = ""
     @State private var isRingAnimationStarted = false
     @State private var stateChangeCount = 0
+    @State private var countdownTime = 0
     
     @ObservedObject var logManager = LogManager.shared
     @EnvironmentObject var globalState: GlobalState
@@ -147,6 +148,15 @@ struct ExportView: View {
                             logManager.stopTimer()
                         }
                         
+                    } else if headTurnMessage != "" {
+                        ScrollView {
+                            Text("\(headTurnMessage)\n\(countdownTime)")
+                                .padding()
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .multilineTextAlignment(.center)
+                                .monospaced()
+                        }
+                        
                     } else {
                         ScrollView {
                             Text("HAROLDEN\n3D CAPTURE")
@@ -178,8 +188,15 @@ struct ExportView: View {
                     }
                     .padding()
                     .onReceive(timer) { _ in
-                        if isRingAnimationStarted && stateChangeCount < 3 { // Check if the animation is started and the count is less than 3
-                            withAnimation {
+                        if isRingAnimationStarted && stateChangeCount <= 3 {
+                            if countdownTime > 1 {
+                                countdownTime -= 1
+                                // Play haptic feedback on countdown
+                                HapticManager.playHapticFeedback(type: .warning)
+                            } else {
+                                // Reset countdown for the next state
+                                countdownTime = 3
+
                                 // Update head turn state and increment the count
                                 switch headTurnState {
                                 case .left:
@@ -193,10 +210,11 @@ struct ExportView: View {
                                     headTurnMessage = "Turn your head left"
                                 }
                                 stateChangeCount += 1 // Increment the state change counter
+                                HapticManager.playHapticFeedback() // Play haptic feedback on state change
                             }
-                        } else if stateChangeCount >= 3 {
-                            // Once one cycle is complete, update the message to "Scan Complete"
+                        } else if stateChangeCount > 3 {
                             headTurnMessage = "Scan Complete"
+                            HapticManager.playHapticFeedback(type: .success) // Play completion haptic
                             showConsoleOutput = true
                             ExternalData.isSavingFileAsPLY = true
                             isRingAnimationStarted = false
