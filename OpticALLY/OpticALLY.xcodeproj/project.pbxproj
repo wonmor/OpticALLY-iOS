@@ -15,7 +15,6 @@
 		963DF9B32AFEDAF700E6E589 /* PostScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 963DF9B22AFEDAF600E6E589 /* PostScanView.swift */; };
 		9646DC6C2B1064F500092549 /* glasses.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 9646DC6B2B1064F500092549 /* glasses.mp4 */; };
 		96491C5F2AFD746300FD3666 /* ConsoleOutputCatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96491C5E2AFD746300FD3666 /* ConsoleOutputCatcher.swift */; };
-		966E79462B132A530091F35E /* CameraPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 966E79452B132A530091F35E /* CameraPreview.swift */; };
 		966E79482B132B150091F35E /* CameraManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 966E79472B132B150091F35E /* CameraManager.swift */; };
 		9679F8CE2AD0907A00686F13 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8B32AD0907900686F13 /* AppDelegate.swift */; };
 		9679F8CF2AD0907A00686F13 /* VideoMixer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8B52AD0907900686F13 /* VideoMixer.swift */; };
@@ -83,7 +82,6 @@
 		963DF9B22AFEDAF600E6E589 /* PostScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostScanView.swift; sourceTree = "<group>"; };
 		9646DC6B2B1064F500092549 /* glasses.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = glasses.mp4; sourceTree = "<group>"; };
 		96491C5E2AFD746300FD3666 /* ConsoleOutputCatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsoleOutputCatcher.swift; sourceTree = "<group>"; };
-		966E79452B132A530091F35E /* CameraPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPreview.swift; sourceTree = "<group>"; };
 		966E79472B132B150091F35E /* CameraManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraManager.swift; sourceTree = "<group>"; };
 		9679F8B12AD0907800686F13 /* OpticALLY-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "OpticALLY-Bridging-Header.h"; sourceTree = "<group>"; };
 		9679F8B32AD0907900686F13 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -236,7 +234,6 @@
 				967EE0642AAE06FB000C4D5F /* OpticALLYApp.swift */,
 				9679F8B32AD0907900686F13 /* AppDelegate.swift */,
 				966E79472B132B150091F35E /* CameraManager.swift */,
-				966E79452B132A530091F35E /* CameraPreview.swift */,
 				96F0CF172B12A34400417716 /* ExternalData.swift */,
 				96F0CF212B12A51700417716 /* LogManager.swift */,
 				9679F8BA2AD0907900686F13 /* Info.plist */,
@@ -480,7 +477,6 @@
 				9679F8DD2AD0907A00686F13 /* CameraViewController.swift in Sources */,
 				963DF9B32AFEDAF700E6E589 /* PostScanView.swift in Sources */,
 				9679F8E12AD0907A00686F13 /* CameraView.swift in Sources */,
-				966E79462B132A530091F35E /* CameraPreview.swift in Sources */,
 				9679F8D52AD0907A00686F13 /* HistogramCalculator.m in Sources */,
 				969AC2802AB7550C0096892E /* IntroductionView.swift in Sources */,
 				9679F8CF2AD0907A00686F13 /* VideoMixer.swift in Sources */,
