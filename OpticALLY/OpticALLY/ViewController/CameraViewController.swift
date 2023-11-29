@@ -83,6 +83,9 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        // Initialize the face landmarks request
+        self.faceLandmarksRequest = VNDetectFaceLandmarksRequest(completionHandler: self.handleFaceLandmarks)
+        
         viewFrameSize = self.view.frame.size
         
         let pinchGesture = UIPinchGestureRecognizer(target: self, action: #selector(handlePinch))
@@ -346,6 +349,7 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             return
         }
         
+        
         do {
             videoDeviceInput = try AVCaptureDeviceInput(device: videoDevice)
         } catch {
@@ -487,17 +491,6 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
                 UIView.animate(withDuration: 0.25) {
                     self.cameraUnavailableLabel.alpha = 1.0
                 }
-            }
-        }
-    }
-    
-    private func processFaceObservations(_ observations: [VNFaceObservation]) {
-        for observation in observations {
-            // Accessing face's Euler angles
-            if let yaw = observation.yaw, let pitch = observation.pitch, let roll = observation.roll {
-                // Process yaw, pitch, and roll
-                // Yaw (rotation around vertical axis), Pitch (rotation around lateral axis), Roll (rotation around longitudinal axis)
-                print("Yaw: \(yaw), Pitch: \(pitch), Roll: \(roll)")
             }
         }
     }
@@ -730,6 +723,39 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         }
     }
     
+    func handleFaceLandmarks(request: VNRequest, error: Error?) {
+        guard let observations = request.results as? [VNFaceObservation] else {
+            print("No face observations")
+            return
+        }
+
+        // Process each face observation
+        for observation in observations {
+            print("Face Observation: \(observation)")
+            if let yaw = observation.yaw?.doubleValue {
+                ExternalData.faceYawAngle = yaw
+                print("Yaw: \(yaw) radians")
+            } else {
+                ExternalData.faceYawAngle = 0.0
+                print("Yaw not available")
+            }
+            if let pitch = observation.pitch?.doubleValue {
+                ExternalData.facePitchAngle = pitch
+                print("Pitch: \(pitch) radians")
+            } else {
+                ExternalData.facePitchAngle = 0.0
+                print("Pitch not available")
+            }
+            if let roll = observation.roll?.doubleValue {
+                ExternalData.faceRollAngle = roll
+                print("Roll: \(roll) radians")
+            } else {
+                ExternalData.faceRollAngle = 0.0
+                print("Roll not available")
+            }
+        }
+    }
+    
     // MARK: - Video + Depth Frame Processing
     
     func dataOutputSynchronizer(_ synchronizer: AVCaptureDataOutputSynchronizer,
@@ -760,16 +786,18 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             return
         }
         
-        // Perform face landmarks detection
-        let imageRequestHandler = VNImageRequestHandler(cvPixelBuffer: videoPixelBuffer, orientation: .up, options: [:])
-        do {
-            try imageRequestHandler.perform([faceLandmarksRequest])
-            if let results = faceLandmarksRequest.results as? [VNFaceObservation], !results.isEmpty {
-                processFaceObservations(results)
-            }
-        } catch {
-            print("Error performing face landmarks detection: \(error)")
-        }
+        guard let videoPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
+               return
+           }
+
+       // Perform face landmarks detection
+       let imageRequestHandler = VNImageRequestHandler(cvPixelBuffer: videoPixelBuffer, orientation: .up, options: [:])
+       do {
+           try imageRequestHandler.perform([self.faceLandmarksRequest])
+       } catch {
+           print("Error performing face landmarks detection: \(error)")
+       }
+
         
         if ExternalData.isSavingFileAsPLY {
             printDepthData(depthData: depthData, imageData: videoPixelBuffer)

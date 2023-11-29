@@ -22,7 +22,10 @@ struct ExternalData {
     static var renderingEnabled = true
     static var isSavingFileAsPLY = false
     static var exportPLYData: Data?
-    static var pointCloudGeometries: [SCNGeometry] = []  // Now an array
+    static var pointCloudGeometries: [SCNGeometry] = []
+    static var faceYawAngle: Double = 0.0
+    static var facePitchAngle: Double = 0.0
+    static var faceRollAngle: Double = 0.0
     
     static func reset() {
         // Function to reset all variables

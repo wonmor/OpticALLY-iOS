@@ -134,6 +134,12 @@ struct ExportView: View {
                 VStack {
                     FlashButtonView(isFlashOn: $isFlashOn)
                     
+                    Text("YAW: \(ExternalData.faceYawAngle)\nROLL: \(ExternalData.faceRollAngle)")
+                        .padding()
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .multilineTextAlignment(.center)
+                        .monospaced()
+                    
                     if showConsoleOutput {
                         ScrollView {
                             if let lastLog = logManager.latestLog {
