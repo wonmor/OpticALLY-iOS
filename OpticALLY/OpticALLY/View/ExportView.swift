@@ -103,28 +103,28 @@ struct ExportView: View {
                 VStack(spacing: 10) { // Adjust spacing as needed
                     ProgressView()
                         .scaleEffect(1.5, anchor: .center) // Adjust size as needed
-                        .progressViewStyle(CircularProgressViewStyle(tint: .black)) // Spinner color
+                        .progressViewStyle(CircularProgressViewStyle(tint: isFlashOn ? .white : .black)) // Spinner color
                         .padding()
                     
                     Text("EXPORT IN PROGRESS")
                         .bold()
                         .monospaced()
-                        .foregroundColor(.black)
+                        .foregroundColor(isFlashOn ? .white : .black)
                     
                     if exportViewModel.estimatedExportTime != nil {
                         Text("Estimated:\n\(exportViewModel.estimatedExportTime!) sec.")
                             .monospaced()
-                            .foregroundColor(.black)
+                            .foregroundColor(isFlashOn ? .white :.black)
                     } else {
                         Text("Estimated:\nN/A")
                             .monospaced()
-                            .foregroundColor(.black)
+                            .foregroundColor(isFlashOn ? .white :.black)
                     }
                 }
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 30) // Adjust horizontal padding for wider background
                 .padding(.vertical, 15) // Adjust vertical padding for background height
-                .background(Color.white) // Adjust background color and opacity
+                .background(isFlashOn ? .black : .white) // Adjust background color and opacity
                 .cornerRadius(25) // Gives the pill shape
                 .zIndex(1) // Ensure the spinner and text are above other content
             }
