@@ -733,7 +733,7 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         for observation in observations {
             print("Face Observation: \(observation)")
             if let yaw = observation.yaw?.doubleValue {
-                ExternalData.faceYawAngle = yaw
+                ExternalData.faceYawAngle = -yaw // invert signs
                 print("Yaw: \(yaw) radians")
             } else {
                 ExternalData.faceYawAngle = 0.0
@@ -747,8 +747,8 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
                 print("Pitch not available")
             }
             if let roll = observation.roll?.doubleValue {
-                ExternalData.faceRollAngle = roll
-                print("Roll: \(roll) radians")
+                ExternalData.faceRollAngle = roll - .pi / 2 // -90 degrees
+                print("Roll: \(ExternalData.faceRollAngle) radians")
             } else {
                 ExternalData.faceRollAngle = 0.0
                 print("Roll not available")

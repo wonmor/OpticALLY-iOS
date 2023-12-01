@@ -134,11 +134,13 @@ struct ExportView: View {
                 VStack {
                     FlashButtonView(isFlashOn: $isFlashOn)
                     
-                    Text("YAW: \(ExternalData.faceYawAngle)\nROLL: \(ExternalData.faceRollAngle)")
-                        .padding()
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .multilineTextAlignment(.center)
-                        .monospaced()
+                    Text("\(Int(round(ExternalData.faceYawAngle * 180 / .pi)))°")
+                            .font(.largeTitle)
+                            .bold()
+                           .padding()
+                           .frame(maxWidth: .infinity, alignment: .center)
+                           .multilineTextAlignment(.center)
+                           .monospaced()
                     
                     if showConsoleOutput {
                         ScrollView {
