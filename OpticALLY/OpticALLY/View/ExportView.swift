@@ -167,7 +167,7 @@ struct ExportView: View {
                         
                     } else {
                         ScrollView {
-                            Text("HAROLDEN\n3D CAPTURE")
+                            Text("OPTICALLY\n3D CAPTURE")
                                 .padding()
                                 .frame(maxWidth: .infinity, alignment: .center)
                                 .multilineTextAlignment(.center)
