@@ -42,12 +42,12 @@ struct CreditNestedView: View {
                 .cornerRadius(20)
             
             VStack {
-                Text("HAROLDEN")
+                Text("OPTICALLY")
                     .font(.system(size: 48, weight: .bold))
                     .monospaced()
                     .cornerRadius(10)
                 
-                Text("LOS ANGELES")
+                Text("3D CAPTURE")
                     .font(.title)
             }
             .foregroundStyle(.black)

@@ -659,7 +659,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = OpticALLY/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Harolden;
+				INFOPLIST_KEY_CFBundleDisplayName = OpticALLY;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Your camera is used for the AR Eye Measure feature.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Your microphone is used for the audio-visual experience.";
@@ -702,7 +702,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = OpticALLY/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Harolden;
+				INFOPLIST_KEY_CFBundleDisplayName = OpticALLY;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Your camera is used for the AR Eye Measure feature.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Your microphone is used for the audio-visual experience.";

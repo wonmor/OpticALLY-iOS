@@ -16,7 +16,7 @@ struct TextOverlayView: View {
                 .padding(.top)
             
             VStack {
-                Text("HAROLDEN")
+                Text("OPTICALLY")
                     .bold()
                     .monospaced()
                     .cornerRadius(10)
