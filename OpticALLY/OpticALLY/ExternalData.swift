@@ -27,6 +27,7 @@ struct ExternalData {
     static var faceYawAngle: Double = 0.0
     static var facePitchAngle: Double = 0.0
     static var faceRollAngle: Double = 0.0
+    static var verticesCount: Int = 0
     
     static func reset() {
         // Function to reset all variables
@@ -78,7 +79,9 @@ struct ExternalData {
                     continue // Skip this point
                 }
                 
-                let scaleFactor = Float(1.5) // Custom value for depth exaggeration
+                // MARK - CUSTOM SCALE FACTOR
+                let scaleFactor = Float(2.0) // Custom value for depth exaggeration
+                
                 let xrw = (Float(x) - cameraIntrinsics.columns.2.x) * depthValue / cameraIntrinsics.columns.0.x
                 let yrw = (Float(y) - cameraIntrinsics.columns.2.y) * depthValue / cameraIntrinsics.columns.1.y
                 let vertex = SCNVector3(x: xrw, y: yrw, z: depthValue * scaleFactor)

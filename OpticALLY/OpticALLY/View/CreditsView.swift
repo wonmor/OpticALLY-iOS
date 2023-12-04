@@ -43,16 +43,15 @@ struct CreditNestedView: View {
             
             VStack {
                 Text("OPTICALLY")
-                    .font(.title)
+                    .monospaced()
+                    .cornerRadius(10)
                 
                 Text("3D CAPTURE")
                     .font(.title)
-                    .font(.system(size: 48, weight: .bold))
-                    .monospaced()
             }
             .foregroundStyle(.black)
-            .padding(.horizontal)
-            .padding(.bottom)
+            .padding()
+            .bold()
             
             // Credit Lines
             VStack(alignment: .center, spacing: 20) {

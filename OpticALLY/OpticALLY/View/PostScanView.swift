@@ -91,7 +91,7 @@ struct PostScanView: View {
                     .padding()
                     
                 } else if !exportViewModel.isLoading {
-                    Text("Surface Reconstruct\nComplete!")
+                    Text("**\(ExternalData.verticesCount)** vertices")
                         .monospaced()
                         .padding()
                         .multilineTextAlignment(.center)

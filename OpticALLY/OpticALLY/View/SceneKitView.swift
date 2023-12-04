@@ -32,18 +32,12 @@ struct SceneKitView: UIViewRepresentable {
         
         scnView.autoenablesDefaultLighting = true
         scnView.allowsCameraControl = true
+        scnView.backgroundColor = UIColor.white
         
         return scnView
     }
     
-    func updateUIView(_ uiView: SCNView, context: Context) {
-        if ExternalData.isMeshView {
-            // Set the background color to gray only in mesh view...
-            uiView.backgroundColor = UIColor.darkGray
-        } else {
-            uiView.backgroundColor = UIColor.white
-        }
-    }
+    func updateUIView(_ uiView: SCNView, context: Context) {}
 }
 
 struct SceneKitMDLView: UIViewRepresentable {
@@ -61,6 +55,8 @@ struct SceneKitMDLView: UIViewRepresentable {
             geometry!.materials.forEach { material in
                 material.isDoubleSided = true
             }
+            
+            ExternalData.verticesCount = object.vertexCount
 
             let node = SCNNode(geometry: geometry)
             node.position = SCNVector3(x: 0, y: 0, z: 0)
@@ -71,6 +67,7 @@ struct SceneKitMDLView: UIViewRepresentable {
 
         scnView.autoenablesDefaultLighting = true
         scnView.allowsCameraControl = true
+        scnView.backgroundColor = UIColor.black
 
         return scnView
     }
