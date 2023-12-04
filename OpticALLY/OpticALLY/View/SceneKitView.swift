@@ -36,7 +36,14 @@ struct SceneKitView: UIViewRepresentable {
         return scnView
     }
     
-    func updateUIView(_ uiView: SCNView, context: Context) {}
+    func updateUIView(_ uiView: SCNView, context: Context) {
+        if ExternalData.isMeshView {
+            // Set the background color to gray only in mesh view...
+            uiView.backgroundColor = UIColor.darkGray
+        } else {
+            uiView.backgroundColor = UIColor.white
+        }
+    }
 }
 
 struct SceneKitMDLView: UIViewRepresentable {

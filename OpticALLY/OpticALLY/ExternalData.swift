@@ -21,6 +21,7 @@ import Foundation
 struct ExternalData {
     static var renderingEnabled = true
     static var isSavingFileAsPLY = false
+    static var isMeshView = false
     static var exportPLYData: Data?
     static var pointCloudGeometries: [SCNGeometry] = []
     static var faceYawAngle: Double = 0.0
