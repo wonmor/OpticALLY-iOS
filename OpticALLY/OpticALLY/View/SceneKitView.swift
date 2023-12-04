@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ARKit
 import SceneKit
 import ModelIO
 import SceneKit.ModelIO
@@ -39,6 +40,44 @@ struct SceneKitView: UIViewRepresentable {
     
     func updateUIView(_ uiView: SCNView, context: Context) {}
 }
+
+struct SceneKitUSDZView: UIViewRepresentable {
+    var usdzFileName: String
+    private let faceTrackingConfiguration = ARFaceTrackingConfiguration()
+
+    func makeUIView(context: Context) -> SCNView {
+        let sceneView = ARSCNView()
+        sceneView.delegate = context.coordinator
+
+        // Set up AR face tracking
+        sceneView.session.run(faceTrackingConfiguration, options: [.resetTracking, .removeExistingAnchors])
+
+        if let scene = SCNScene(named: usdzFileName) {
+            sceneView.scene = scene
+        }
+
+        return sceneView
+    }
+
+    func updateUIView(_ uiView: SCNView, context: Context) {
+        // Update the view if needed
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
+
+    class Coordinator: NSObject, ARSCNViewDelegate {
+        func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
+            guard let faceAnchor = anchor as? ARFaceAnchor else { return }
+            DispatchQueue.main.async {
+                // Apply the face anchor's transform to the node
+                node.transform = SCNMatrix4(faceAnchor.transform)
+            }
+        }
+    }
+}
+
 
 struct SceneKitMDLView: UIViewRepresentable {
     var mdlAsset: MDLAsset

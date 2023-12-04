@@ -135,12 +135,12 @@ struct ExportView: View {
                     FlashButtonView(isFlashOn: $isFlashOn)
                     
                     Text("\(Int(round(ExternalData.faceYawAngle * 180 / .pi)))°")
-                            .font(.largeTitle)
-                            .bold()
-                           .padding()
-                           .frame(maxWidth: .infinity, alignment: .center)
-                           .multilineTextAlignment(.center)
-                           .monospaced()
+                        .font(.largeTitle)
+                        .bold()
+                        .padding()
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .multilineTextAlignment(.center)
+                        .monospaced()
                     
                     if showConsoleOutput {
                         ScrollView {
@@ -178,29 +178,33 @@ struct ExportView: View {
                     Spacer()
                     // Progress indicator and head turn message
                     ZStack {
-                        switch headTurnState {
-                        case .left:
-                            Image(systemName: "arrow.left.circle.fill")
-                                .font(.largeTitle)
-                                .foregroundColor(isFlashOn ? .black : .blue)
-                        case .center:
-                            Image(systemName: "faceid")
-                                .font(.largeTitle)
-                                .foregroundColor(isFlashOn ? .black : .yellow)
-                        case .right:
-                            Image(systemName: "arrow.right.circle.fill")
-                                .font(.largeTitle)
-                                .foregroundColor(isFlashOn ? .black : .green)
-                        }
-                        
-                        Circle()
-                            .fill(.clear)  // Fill the circle with black color at 75% opacity
+                        SceneKitUSDZView(usdzFileName: "Male_Base_Head.usdz")
                             .frame(width: 200, height: 200)
-                            .overlay(
-                                Circle().stroke(Color(.gray), lineWidth: 5) // Gray stroke
-                            )
+                            .cornerRadius(100) // Make it circular
+                            .padding(.top)
+                        //                        switch headTurnState {
+                        //                        case .left:
+                        //                            Image(systemName: "arrow.left.circle.fill")
+                        //                                .font(.largeTitle)
+                        //                                .foregroundColor(isFlashOn ? .black : .blue)
+                        //                        case .center:
+                        //                            Image(systemName: "faceid")
+                        //                                .font(.largeTitle)
+                        //                                .foregroundColor(isFlashOn ? .black : .yellow)
+                        //                        case .right:
+                        //                            Image(systemName: "arrow.right.circle.fill")
+                        //                                .font(.largeTitle)
+                        //                                .foregroundColor(isFlashOn ? .black : .green)
+                        //                        }
                         
-                        progressView(for: headTurnState)
+//                        Circle()
+//                            .fill(.clear)  // Fill the circle with black color at 75% opacity
+//                            .frame(width: 200, height: 200)
+//                            .overlay(
+//                                Circle().stroke(Color(.gray), lineWidth: 5) // Gray stroke
+//                            )
+//
+//                        progressView(for: headTurnState)
                     }
                     .padding()
                     .onReceive(timer) { _ in
@@ -214,7 +218,7 @@ struct ExportView: View {
                             } else {
                                 // Reset countdown for the next state
                                 countdownTime = 3
-
+                                
                                 // Update head turn state and increment the count
                                 switch headTurnState {
                                 case .left:
