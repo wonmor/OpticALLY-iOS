@@ -91,7 +91,7 @@ struct PostScanView: View {
                     .padding()
                     
                 } else if !exportViewModel.isLoading {
-                    Text("**\(ExternalData.verticesCount)** vertices")
+                    Text("**\(ExternalData.verticesCount)** VERTICES")
                         .monospaced()
                         .padding()
                         .multilineTextAlignment(.center)
@@ -170,12 +170,5 @@ struct CheckmarkView: View {
                 isInteractionDisabled = false
             }
         }
-    }
-}
-
-struct PostScanView_Previews: PreviewProvider {
-    static var previews: some View {
-        PostScanView()
-            .preferredColorScheme(.dark)
     }
 }
