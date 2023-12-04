@@ -15,7 +15,6 @@ struct PostScanView: View {
     
     @ObservedObject private var exportViewModel = ExportViewModel()
     
-    @State private var isMesh: Bool = false
     @State private var triggerUpdate: Bool = false
     @State private var showCompletionCheckmark = false
     @State private var showAlert = false
@@ -66,11 +65,11 @@ struct PostScanView: View {
                 
                 Spacer()
                 
-                if !isMesh {
+                if !ExternalData.isMeshView {
                     Button(action: {
                         if OpticALLYApp.isConnectedToNetwork() {
                             exportViewModel.exportOBJ()
-                            isMesh = true
+                            ExternalData.isMeshView = true
                         } else {
                             showAlert = true
                         }
