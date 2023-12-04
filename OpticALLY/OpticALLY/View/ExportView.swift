@@ -179,74 +179,37 @@ struct ExportView: View {
                     // Progress indicator and head turn message
                     ZStack {
                         SceneKitUSDZView(usdzFileName: "Male_Base_Head.usdz")
-                            .frame(width: 200, height: 200)
-                            .cornerRadius(100) // Make it circular
-                            .padding(.top)
-                        //                        switch headTurnState {
-                        //                        case .left:
-                        //                            Image(systemName: "arrow.left.circle.fill")
-                        //                                .font(.largeTitle)
-                        //                                .foregroundColor(isFlashOn ? .black : .blue)
-                        //                        case .center:
-                        //                            Image(systemName: "faceid")
-                        //                                .font(.largeTitle)
-                        //                                .foregroundColor(isFlashOn ? .black : .yellow)
-                        //                        case .right:
-                        //                            Image(systemName: "arrow.right.circle.fill")
-                        //                                .font(.largeTitle)
-                        //                                .foregroundColor(isFlashOn ? .black : .green)
-                        //                        }
-                        
-//                        Circle()
-//                            .fill(.clear)  // Fill the circle with black color at 75% opacity
-//                            .frame(width: 200, height: 200)
-//                            .overlay(
-//                                Circle().stroke(Color(.gray), lineWidth: 5) // Gray stroke
-//                            )
-//
-//                        progressView(for: headTurnState)
                     }
                     .padding()
-                    .onReceive(timer) { _ in
-                        guard isRingAnimationStarted else { return }
-                        
-                        if isRingAnimationStarted && stateChangeCount <= 3 {
-                            if countdownTime > 1 {
-                                countdownTime -= 1
-                                // Play haptic feedback on countdown
-                                HapticManager.playHapticFeedback(type: .warning)
-                            } else {
-                                // Reset countdown for the next state
-                                countdownTime = 3
-                                
-                                // Update head turn state and increment the count
-                                switch headTurnState {
-                                case .left:
-                                    headTurnState = .center
-                                    headTurnMessage = "Turn your head center"
-                                case .center:
-                                    // If it's the last iteration...
-                                    if stateChangeCount == 3 {
-                                        headTurnMessage = "Scan Complete"
-                                        HapticManager.playHapticFeedback(type: .success) // Play completion haptic
-                                        showConsoleOutput = true
-                                        ExternalData.isSavingFileAsPLY = true
-                                        isRingAnimationStarted = false
-                                        isFlashOn = true
-                                        
-                                    } else {
-                                        headTurnState = .right
-                                        headTurnMessage = "Turn your head right"
-                                    }
-                                case .right:
-                                    headTurnState = .left
-                                    headTurnMessage = "Turn your head left"
-                                }
-                                stateChangeCount += 1 // Increment the state change counter
-                                HapticManager.playHapticFeedback() // Play haptic feedback on state change
-                            }
-                        }
+                    .onChange(of: ExternalData.faceYawAngle) { newValue in
+                        let yawAngleDegrees = Int(round(ExternalData.faceYawAngle * 180 / .pi))
+
+                           // Rotate the USDZ model
+                           if yawAngleDegrees >= 45 {
+                               // Rotate model to face right and trigger haptic feedback
+                               HapticManager.playHapticFeedback(type: .success)
+                               exportViewModel.hasTurnedRight = true
+                               
+                               headTurnMessage = "TURN YOUR HEAD LEFT"
+                           } else if yawAngleDegrees <= -45 {
+                               // Rotate model to face left and trigger haptic feedback
+                               HapticManager.playHapticFeedback(type: .success)
+                               exportViewModel.hasTurnedLeft = true
+                               
+                               headTurnMessage = "TURN YOUR HEAD RIGHT"
+                           }
+
+                           if exportViewModel.hasTurnedRight && exportViewModel.hasTurnedLeft {
+                               headTurnMessage = "SCAN COMPLETE"
+                               HapticManager.playHapticFeedback(type: .success) // Play completion haptic
+                               showConsoleOutput = true
+                               ExternalData.isSavingFileAsPLY = true
+                               isRingAnimationStarted = false
+                               isFlashOn = true
+                               // Additional actions for scan completion
+                           }
                     }
+
                     
                     Spacer()
                     
@@ -254,6 +217,7 @@ struct ExportView: View {
                     if !isRingAnimationStarted {
                         Button(action: {
                             HapticManager.playHapticFeedback(type: .success)
+                            headTurnMessage = "TURN YOUR HEAD"
                             isRingAnimationStarted = true  // Start the ring animation
                         }) {
                             if showConsoleOutput {
@@ -309,15 +273,6 @@ struct ExportView: View {
                                                             )
                                                         }
                                                     }
-                                                    
-                                                    //                                                Button(action: {
-                                                    //                                                    exportViewModel.exportUSDZ()
-                                                    //                                                }) {
-                                                    //                                                    Text(".USDZ")
-                                                    //                                                        .padding()
-                                                    //                                                        .foregroundColor(.white)
-                                                    //                                                        .background(Capsule().fill(Color(.darkGray)))
-                                                    //                                                }
                                                 }
                                                 .padding(.top, 5)
                                                 .sheet(isPresented: $exportViewModel.showShareSheet, onDismiss: {

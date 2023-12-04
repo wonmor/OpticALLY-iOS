@@ -6,10 +6,10 @@
 //
 
 import SwiftUI
-import ARKit
 import SceneKit
 import ModelIO
 import SceneKit.ModelIO
+import ARKit
 
 struct SceneKitView: UIViewRepresentable {
     var geometry: SCNGeometry?
@@ -43,16 +43,28 @@ struct SceneKitView: UIViewRepresentable {
 
 struct SceneKitUSDZView: UIViewRepresentable {
     var usdzFileName: String
-    private let faceTrackingConfiguration = ARFaceTrackingConfiguration()
+    var faceAnchor: ARFaceAnchor?
 
     func makeUIView(context: Context) -> SCNView {
-        let sceneView = ARSCNView()
-        sceneView.delegate = context.coordinator
-
-        // Set up AR face tracking
-        sceneView.session.run(faceTrackingConfiguration, options: [.resetTracking, .removeExistingAnchors])
+        let sceneView = SCNView()
+        sceneView.autoenablesDefaultLighting = true
+        sceneView.backgroundColor = .clear
+        
+        if let faceAnchor = faceAnchor {
+            let transform = SCNMatrix4(faceAnchor.transform)
+            sceneView.scene?.rootNode.childNodes.first?.transform = transform
+        }
+        
 
         if let scene = SCNScene(named: usdzFileName) {
+            // Enumerate through all nodes in the scene
+                    scene.rootNode.enumerateChildNodes { (node, _) in
+                        node.geometry?.materials.forEach { material in
+                            // Set the diffuse color of each material to white
+                            material.diffuse.contents = UIColor.white
+                        }
+                    }
+            
             sceneView.scene = scene
         }
 
@@ -62,22 +74,7 @@ struct SceneKitUSDZView: UIViewRepresentable {
     func updateUIView(_ uiView: SCNView, context: Context) {
         // Update the view if needed
     }
-
-    func makeCoordinator() -> Coordinator {
-        Coordinator()
-    }
-
-    class Coordinator: NSObject, ARSCNViewDelegate {
-        func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
-            guard let faceAnchor = anchor as? ARFaceAnchor else { return }
-            DispatchQueue.main.async {
-                // Apply the face anchor's transform to the node
-                node.transform = SCNMatrix4(faceAnchor.transform)
-            }
-        }
-    }
 }
-
 
 struct SceneKitMDLView: UIViewRepresentable {
     var mdlAsset: MDLAsset
