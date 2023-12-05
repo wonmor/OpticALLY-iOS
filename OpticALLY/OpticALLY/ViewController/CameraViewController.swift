@@ -85,11 +85,11 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         super.viewDidLoad()
         
         session.delegate = self
-
-       // Bring other views to the front if they are already added in the storyboard
-       view.bringSubviewToFront(cameraUnavailableLabel)
-       view.bringSubviewToFront(cloudView)
-
+        
+        // Bring other views to the front if they are already added in the storyboard
+        view.bringSubviewToFront(cameraUnavailableLabel)
+        view.bringSubviewToFront(cloudView)
+        
         // Initialize the face landmarks request
         self.faceLandmarksRequest = VNDetectFaceLandmarksRequest(completionHandler: self.handleFaceLandmarks)
         
