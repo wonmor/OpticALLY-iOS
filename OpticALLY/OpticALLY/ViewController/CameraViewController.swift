@@ -193,7 +193,6 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     
     // MARK: - ARSessionDelegate Methods
     func session(_ session: ARSession, didUpdate frame: ARFrame) {
-        print("Running...")
         // Store frame data for processing
         DispatchQueue.main.async {
             self.synchronizedDepthData = frame.capturedDepthData
@@ -202,7 +201,6 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             // Perform processing if both depth and video data are available
             if let depthData = self.synchronizedDepthData,
                let videoPixelBuffer = self.synchronizedVideoPixelBuffer {
-                print("Processing the frame...")
                 self.processFrame(depthData: depthData, videoPixelBuffer: videoPixelBuffer)
             }
         }
