@@ -22,7 +22,6 @@ let devicePPI: Double = {
 
 enum ViewState {
     case introduction
-    case tracking
     case scanning
     case postScanning
 }

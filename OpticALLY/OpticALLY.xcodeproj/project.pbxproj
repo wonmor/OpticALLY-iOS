@@ -37,8 +37,6 @@
 		967EE0762AAE06FE000C4D5F /* OpticALLYTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967EE0752AAE06FE000C4D5F /* OpticALLYTests.swift */; };
 		967EE0802AAE06FE000C4D5F /* OpticALLYUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967EE07F2AAE06FE000C4D5F /* OpticALLYUITests.swift */; };
 		967EE0822AAE06FE000C4D5F /* OpticALLYUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967EE0812AAE06FE000C4D5F /* OpticALLYUITestsLaunchTests.swift */; };
-		967EE08F2AAEDA82000C4D5F /* EyesTrackingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967EE08E2AAEDA82000C4D5F /* EyesTrackingView.swift */; };
-		967EE0932AAEDBF3000C4D5F /* EyesTrackingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967EE0922AAEDBF3000C4D5F /* EyesTrackingViewModel.swift */; };
 		967EE0982AAEE2C7000C4D5F /* snippet-extract in Frameworks */ = {isa = PBXBuildFile; productRef = 967EE0972AAEE2C7000C4D5F /* snippet-extract */; };
 		969AC2802AB7550C0096892E /* IntroductionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 969AC27F2AB7550C0096892E /* IntroductionView.swift */; };
 		969AC2822AB7554C0096892E /* Extensions+Modifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 969AC2812AB7554C0096892E /* Extensions+Modifiers.swift */; };
@@ -112,8 +110,6 @@
 		967EE07B2AAE06FE000C4D5F /* OpticALLYUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OpticALLYUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		967EE07F2AAE06FE000C4D5F /* OpticALLYUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpticALLYUITests.swift; sourceTree = "<group>"; };
 		967EE0812AAE06FE000C4D5F /* OpticALLYUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpticALLYUITestsLaunchTests.swift; sourceTree = "<group>"; };
-		967EE08E2AAEDA82000C4D5F /* EyesTrackingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EyesTrackingView.swift; sourceTree = "<group>"; };
-		967EE0922AAEDBF3000C4D5F /* EyesTrackingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EyesTrackingViewModel.swift; sourceTree = "<group>"; };
 		969AC27F2AB7550C0096892E /* IntroductionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroductionView.swift; sourceTree = "<group>"; };
 		969AC2812AB7554C0096892E /* Extensions+Modifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Extensions+Modifiers.swift"; sourceTree = "<group>"; };
 		969DF1C62B12916900FA9ABE /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
@@ -283,7 +279,6 @@
 				9679F8CC2AD0907A00686F13 /* CameraView.swift */,
 				961D67E42B12C64A00DBB883 /* CreditsView.swift */,
 				969AC27F2AB7550C0096892E /* IntroductionView.swift */,
-				967EE08E2AAEDA82000C4D5F /* EyesTrackingView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -291,7 +286,6 @@
 		967EE0912AAEDBD2000C4D5F /* ViewModel */ = {
 			isa = PBXGroup;
 			children = (
-				967EE0922AAEDBF3000C4D5F /* EyesTrackingViewModel.swift */,
 				96F0CF192B12A39100417716 /* ExportViewModel.swift */,
 			);
 			path = ViewModel;
@@ -470,7 +464,6 @@
 				96F0CF1C2B12A3D500417716 /* ExportView.swift in Sources */,
 				961D67E32B12BDFC00DBB883 /* SceneKitView.swift in Sources */,
 				9679F8DC2AD0907A00686F13 /* PassThrough.metal in Sources */,
-				967EE08F2AAEDA82000C4D5F /* EyesTrackingView.swift in Sources */,
 				96491C5F2AFD746300FD3666 /* ConsoleOutputCatcher.swift in Sources */,
 				9679F8DF2AD0907A00686F13 /* PointCloudMetalView.mm in Sources */,
 				969AC2822AB7554C0096892E /* Extensions+Modifiers.swift in Sources */,
@@ -487,7 +480,6 @@
 				9679F8D22AD0907A00686F13 /* Mixer.metal in Sources */,
 				967EE0652AAE06FB000C4D5F /* OpticALLYApp.swift in Sources */,
 				9679F8D92AD0907A00686F13 /* PointCloud.metal in Sources */,
-				967EE0932AAEDBF3000C4D5F /* EyesTrackingViewModel.swift in Sources */,
 				9679F8CE2AD0907A00686F13 /* AppDelegate.swift in Sources */,
 				96F0CF182B12A34400417716 /* ExternalData.swift in Sources */,
 				9679F8DE2AD0907A00686F13 /* FilterRenderer.swift in Sources */,

@@ -24,11 +24,6 @@ struct ContentView: View {
                     .id(uniqueID)  // Using a unique ID to recreate the view
                     .transition(.opacity)
                 
-            case .tracking:
-                EyesTrackingView()
-                    .id(uniqueID)  // Using a unique ID to recreate the view
-                    .transition(.opacity)
-                
             case .scanning:
                 CameraView()
                     .id(uniqueID)  // Using a unique ID to recreate the view

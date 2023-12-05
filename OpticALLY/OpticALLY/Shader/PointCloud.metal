@@ -14,23 +14,14 @@ vertex RasterizerDataColor vertexShaderPoints(uint vertexID [[ vertex_id ]],
                                               texture2d<float, access::read> depthTexture [[ texture(0) ]],
                                               constant float4x4& viewMatrix [[ buffer(0) ]],
                                               constant float3x3& cameraIntrinsics [[ buffer(1) ]]) {
-    // Adjusted downsampling factor
-    const uint downsamplingFactor = 2; // Reduced for more points
-    // Adjusted interval for processing points
-    const uint pointInterval = 5; // Reduced for more points
     // Depth thresholds
     const float minDepthThreshold = 200.0f;
     const float maxDepthThreshold = 800.0f;
 
-    // Process only every Nth point
-    if (vertexID % pointInterval != 0) {
-        return RasterizerDataColor();
-    }
-
-    // Calculate downsampled position
+    // Calculate position without downsampling
     uint2 pos;
-    pos.y = (vertexID / depthTexture.get_width()) * downsamplingFactor;
-    pos.x = (vertexID % depthTexture.get_width()) * downsamplingFactor;
+    pos.y = vertexID / depthTexture.get_width();
+    pos.x = vertexID % depthTexture.get_width();
 
     // Ensure pos does not exceed texture bounds
     pos.x = min(pos.x, depthTexture.get_width() - 1);
@@ -57,6 +48,7 @@ vertex RasterizerDataColor vertexShaderPoints(uint vertexID [[ vertex_id ]],
 
     return out;
 }
+
 
 fragment float4 fragmentShaderPoints(RasterizerDataColor in [[stage_in]],
                                      texture2d<float> colorTexture [[ texture(0) ]]) {

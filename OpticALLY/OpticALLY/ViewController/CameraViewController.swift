@@ -1,8 +1,43 @@
+//
+//  CameraViewController.swift
+//  OpticALLY
+//
+//  Created by John Seong on 11/26/23.
+//
+
 import SwiftUI
 import UIKit
 import ARKit
 import Vision
 import AVFoundation
+
+/// CameraViewController manages and handles the ARKit-based camera session for depth and facial landmark detection, as well as the visualization of point clouds. This class utilizes ARKit, Vision, and AVFoundation frameworks to process and display 3D depth data and facial landmarks in real-time.
+
+/// Utilize CameraViewController for applications involving augmented reality, 3D modeling, or advanced image processing. The class provides functionality to start and pause AR sessions, process frame data, and manage gesture interactions with the point cloud view.
+
+/// Example Usage:
+/// /// let cameraViewController = CameraViewController() /// cameraViewController.startARSession() // Begins AR session with face tracking /// cameraViewController.pauseARSession() // Pauses the ongoing AR session ///
+
+/// > Warning: Ensure the device supports ARKit's face tracking capabilities before initiating the session.
+
+/// - Properties:
+/// - cameraUnavailableLabel: UILabel to indicate when the camera is unavailable.
+/// - depthSmoothingSwitch: UISwitch to toggle depth smoothing.
+/// - mixFactorSlider: UISlider to adjust the mix factor for depth and color data.
+/// - touchDepth: UILabel to display the depth value at the touch point.
+/// - cloudView: A custom view for rendering the point cloud.
+
+/// - Methods:
+/// - startARSession(): Initializes and begins the AR session with face tracking and depth data processing.
+/// - pauseARSession(): Pauses the ongoing AR session.
+/// - processFrame(depthData:videoPixelBuffer:): Processes each frame of depth and video data, updating the point cloud view.
+/// - Gesture handling methods (pinch, pan, double tap, rotate) for interacting with the point cloud view.
+
+/// - Conformances:
+/// - ARSessionDelegate: Allows the class to respond to AR session updates and errors.
+/// - ARSCNViewDelegate: Enables custom rendering and interaction with the AR scene view.
+
+/// This class serves as a comprehensive solution for applications requiring real-time 3D depth processing and visualization, combining ARKit's capabilities with advanced image processing techniques.
 
 class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelegate {
     // MARK: - Properties
