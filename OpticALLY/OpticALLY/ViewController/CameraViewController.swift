@@ -10,6 +10,9 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     @IBOutlet weak private var depthSmoothingSwitch: UISwitch!
     @IBOutlet weak private var mixFactorSlider: UISlider!
     @IBOutlet weak private var touchDepth: UILabel!
+    @IBOutlet weak private var smoothDepthLabel: UILabel!
+    
+    @IBOutlet weak private var cloudView: PointCloudMetalView!
     
     private enum SessionSetupResult {
         case success
@@ -39,9 +42,6 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     
     private var touchDetected = false
     private var touchCoordinates = CGPoint(x: 0, y: 0)
-    
-    @IBOutlet weak private var cloudView: PointCloudMetalView!
-    @IBOutlet weak private var smoothDepthLabel: UILabel!
     
     private var lastScale = Float(1.0)
     private var lastScaleDiff = Float(0.0)
@@ -601,54 +601,6 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             }
         }
     }
-    
-    // MARK: - Video + Depth Frame Processing
-    
-    //    func dataOutputSynchronizer(_ synchronizer: AVCaptureDataOutputSynchronizer,
-    //                                didOutput synchronizedDataCollection: AVCaptureSynchronizedDataCollection) {
-    //        guard ExternalData.renderingEnabled else {
-    //            return
-    //        }
-    //
-    //        if syncedDepthData.depthDataWasDropped || syncedVideoData.sampleBufferWasDropped {
-    //            return
-    //        }
-    //
-    //        let depthData = syncedDepthData.depthData
-    //        let depthPixelBuffer = depthData.depthDataMap
-    //        let sampleBuffer = syncedVideoData.sampleBuffer
-    //        guard let videoPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer),
-    //              let formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer) else {
-    //            return
-    //        }
-    //
-    //        guard let videoPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
-    //            return
-    //        }
-    //
-    //        // Perform face landmarks detection
-    //        let imageRequestHandler = VNImageRequestHandler(cvPixelBuffer: videoPixelBuffer, orientation: .up, options: [:])
-    //        do {
-    //            try imageRequestHandler.perform([self.faceLandmarksRequest])
-    //        } catch {
-    //            print("Error performing face landmarks detection: \(error)")
-    //        }
-    //
-    //
-    //        if ExternalData.isSavingFileAsPLY {
-    //            printDepthData(depthData: depthData, imageData: videoPixelBuffer)
-    //
-    //            // Set cloudView to empty depth data and texture
-    //            // cloudView?.setDepthFrame(nil, withTexture: nil)
-    //
-    //            ExternalData.isSavingFileAsPLY = false
-    //        }
-    //
-    //        globalDepthData = depthData
-    //        globalVideoPixelBuffer = videoPixelBuffer
-    //
-    //        cloudView?.setDepthFrame(depthData, withTexture: videoPixelBuffer)
-    //    }
     
     @IBSegueAction func embedSwiftUIView(_ coder: NSCoder) -> UIViewController? {
         // Upon Scan Completion...
