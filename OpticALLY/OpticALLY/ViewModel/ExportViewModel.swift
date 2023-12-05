@@ -8,7 +8,28 @@
 import Foundation
 import Firebase
 
-// ViewModel to handle the export and share
+/// ExportViewModel handles the export and sharing functionality for 3D models. It is designed as a ViewModel for SwiftUI-based UI components and manages various properties and methods related to exporting models and tracking export durations.
+
+/// - Properties:
+/// - fileURL: The URL of the exported model file.
+/// - showShareSheet: A flag indicating whether to display the share sheet for sharing the exported model.
+/// - isLoading: A flag indicating whether an export operation is currently in progress.
+/// - estimatedExportTime: An estimate of the time it takes to export a model.
+/// - hasTurnedRight: A boolean flag indicating if a right turn has been made.
+/// - hasTurnedLeft: A boolean flag indicating if a left turn has been made.
+/// - exportStartTime: A private property to record the start time of the export timer.
+
+/// - Methods:
+/// - fetchExportDurations(): Fetches export durations from Firestore and calculates an average export time.
+/// - calculateAverage(durations:): Calculates the average of an array of export durations.
+/// - startExportTimer(): Starts the export timer by recording the current time.
+/// - stopExportTimer(): Stops the export timer and returns the elapsed time in seconds.
+/// - updateExportDurationInFirestore(newDuration:): Updates export durations in Firestore.
+/// - exportPLY(showShareSheet:): Exports a model as a PLY file and optionally shows the share sheet.
+/// - exportOBJ(): Exports a model as a PLY file, converts it to OBJ format, and handles the export process.
+
+/// ExportViewModel is a crucial component for managing the export and sharing of 3D models, and it provides functionality to estimate export times, update export durations, and initiate export operations. It can be integrated into SwiftUI-based applications that require 3D model export and sharing capabilities.
+
 class ExportViewModel: ObservableObject {
     @Published var fileURL: URL?
     @Published var showShareSheet = false
