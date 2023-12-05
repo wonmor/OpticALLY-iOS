@@ -59,7 +59,6 @@ struct ExportView: View {
     @State private var headTurnMessage = ""
     @State private var isRingAnimationStarted = false
     @State private var stateChangeCount = 0
-    @State private var countdownTime = 0
     
     @ObservedObject var logManager = LogManager.shared
     @EnvironmentObject var globalState: GlobalState
@@ -158,7 +157,7 @@ struct ExportView: View {
                         
                     } else if headTurnMessage != "" {
                         ScrollView {
-                            Text("\(headTurnMessage)\n\(countdownTime)")
+                            Text(headTurnMessage)
                                 .padding()
                                 .frame(maxWidth: .infinity, alignment: .center)
                                 .multilineTextAlignment(.center)
@@ -217,7 +216,7 @@ struct ExportView: View {
                     if !isRingAnimationStarted {
                         Button(action: {
                             HapticManager.playHapticFeedback(type: .success)
-                            headTurnMessage = "TURN YOUR HEAD"
+                            headTurnMessage = "TURN YOUR HEAD\nLEFT/RIGHT"
                             isRingAnimationStarted = true  // Start the ring animation
                         }) {
                             if showConsoleOutput {
