@@ -58,7 +58,7 @@ struct PostScanView: View {
                             print("File URL: \(exportViewModel.fileURL!)")
                         })
                     
-                } else {
+                } else if !ExternalData.pointCloudGeometries.isEmpty {
                     SceneKitView(geometry: ExternalData.pointCloudGeometries[0])
                         .ignoresSafeArea(edges: .bottom)
                 }
