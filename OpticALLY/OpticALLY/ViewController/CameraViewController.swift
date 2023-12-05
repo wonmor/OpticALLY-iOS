@@ -1,27 +1,14 @@
-import UIKit
-import AVFoundation
-import CoreVideo
-import MobileCoreServices
-import Accelerate
 import SwiftUI
-import Vision
-import SceneKit
+import UIKit
 import ARKit
-import Combine
-import Firebase
 import Vision
+import AVFoundation
 
-@available(iOS 11.1, *)
-class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDelegate {
-    
+class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelegate {
     // MARK: - Properties
-    
     @IBOutlet weak private var cameraUnavailableLabel: UILabel!
-    
     @IBOutlet weak private var depthSmoothingSwitch: UISwitch!
-    
     @IBOutlet weak private var mixFactorSlider: UISlider!
-    
     @IBOutlet weak private var touchDepth: UILabel!
     
     private enum SessionSetupResult {
@@ -32,26 +19,18 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     
     private var setupResult: SessionSetupResult = .success
     
-    private let session = AVCaptureSession()
+    private var session = ARSession()
     private var faceLandmarksRequest = VNDetectFaceLandmarksRequest()
-
+    
+    private var synchronizedDepthData: AVDepthData?
+    private var synchronizedVideoPixelBuffer: CVPixelBuffer?
+    
     private var isSessionRunning = false
-    
-    // Communicate with the session and other session objects on this queue.
-    private let sessionQueue = DispatchQueue(label: "session queue", attributes: [], autoreleaseFrequency: .workItem)
-    private var videoDeviceInput: AVCaptureDeviceInput!
-    
-    private let dataOutputQueue = DispatchQueue(label: "video data queue", qos: .userInitiated, attributes: [], autoreleaseFrequency: .workItem)
-    
-    private var videoDataOutput = AVCaptureVideoDataOutput()
-    private var depthDataOutput = AVCaptureDepthDataOutput()
-    private var outputSynchronizer: AVCaptureDataOutputSynchronizer?
     
     private var globalDepthData: AVDepthData!
     private var globalVideoPixelBuffer: CVImageBuffer!
     
     private let videoDepthMixer = VideoMixer()
-    
     private let videoDeviceDiscoverySession = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInTrueDepthCamera],
                                                                                mediaType: .video,
                                                                                position: .front)
@@ -59,30 +38,58 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     private var statusBarOrientation: UIInterfaceOrientation = .portrait
     
     private var touchDetected = false
-    
     private var touchCoordinates = CGPoint(x: 0, y: 0)
     
     @IBOutlet weak private var cloudView: PointCloudMetalView!
-    
     @IBOutlet weak private var smoothDepthLabel: UILabel!
     
     private var lastScale = Float(1.0)
-    
     private var lastScaleDiff = Float(0.0)
-    
     private var lastZoom = Float(0.0)
-    
     private var lastXY = CGPoint(x: 0, y: 0)
     
     private var viewFrameSize = CGSize()
-    
     private var autoPanningIndex = Int(-1) // start with auto-panning off
     
-    // MARK: - View Controller Life Cycle
+    private func processFrame(depthData: AVDepthData, videoPixelBuffer: CVPixelBuffer) {
+        guard ExternalData.renderingEnabled else {
+            return
+        }
+        
+        // Check if depth data or video data was dropped (this logic might need adjusting)
+        // if depthDataWasDropped || videoDataWasDropped {
+        //    return
+        // }
+        
+        // Perform face landmarks detection
+        let imageRequestHandler = VNImageRequestHandler(cvPixelBuffer: videoPixelBuffer, orientation: .up, options: [:])
+        do {
+            try imageRequestHandler.perform([self.faceLandmarksRequest])
+        } catch {
+            print("Error performing face landmarks detection: \(error)")
+        }
+        
+        if ExternalData.isSavingFileAsPLY {
+            printDepthData(depthData: depthData, imageData: videoPixelBuffer)
+            ExternalData.isSavingFileAsPLY = false
+        }
+        
+        globalDepthData = depthData
+        globalVideoPixelBuffer = videoPixelBuffer
+        
+        cloudView?.setDepthFrame(depthData, withTexture: videoPixelBuffer)
+    }
     
+    // MARK: - View Controller Life Cycle
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        session.delegate = self
+
+       // Bring other views to the front if they are already added in the storyboard
+       view.bringSubviewToFront(cameraUnavailableLabel)
+       view.bringSubviewToFront(cloudView)
+
         // Initialize the face landmarks request
         self.faceLandmarksRequest = VNDetectFaceLandmarksRequest(completionHandler: self.handleFaceLandmarks)
         
@@ -119,12 +126,15 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
              The user has not yet been presented with the option to grant video access
              We suspend the session queue to delay session setup until the access request has completed
              */
-            sessionQueue.suspend()
+            session.pause()
             AVCaptureDevice.requestAccess(for: .video, completionHandler: { granted in
                 if !granted {
                     self.setupResult = .notAuthorized
                 }
-                self.sessionQueue.resume()
+                
+                let configuration = ARFaceTrackingConfiguration()
+                configuration.isLightEstimationEnabled = true
+                self.session.run(configuration)
             })
             
         default:
@@ -142,13 +152,49 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
          take a long time. We dispatch session setup to the sessionQueue so
          that the main queue isn't blocked, which keeps the UI responsive.
          */
-        sessionQueue.async {
-            self.configureSession()
+        
+        self.configureSession()
+    }
+    
+    // MARK: - ARSessionDelegate Methods
+    func session(_ session: ARSession, didUpdate frame: ARFrame) {
+        print("Running...")
+        // Store frame data for processing
+        DispatchQueue.main.async {
+            self.synchronizedDepthData = frame.capturedDepthData
+            self.synchronizedVideoPixelBuffer = frame.capturedImage
+            
+            // Perform processing if both depth and video data are available
+            if let depthData = self.synchronizedDepthData,
+               let videoPixelBuffer = self.synchronizedVideoPixelBuffer {
+                print("Processing the frame...")
+                self.processFrame(depthData: depthData, videoPixelBuffer: videoPixelBuffer)
+            }
         }
+    }
+    
+    func session(_ session: ARSession, didFailWithError error: Error) {
+        // Handle session errors
+        print("ARSession failed: \(error.localizedDescription)")
+    }
+    
+    func sessionWasInterrupted(_ session: ARSession) {
+        // Handle session interruption
+        print("ARSession was interrupted")
+    }
+    
+    func sessionInterruptionEnded(_ session: ARSession) {
+        // Handle session interruption end
+        print("ARSession interruption ended")
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        
+        // Create and run a session
+        let configuration = ARFaceTrackingConfiguration()
+        configuration.isLightEstimationEnabled = true
+        session.run(configuration)
         
         let interfaceOrientation = UIApplication.shared.statusBarOrientation
         statusBarOrientation = interfaceOrientation
@@ -158,87 +204,30 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         if initialThermalState == .serious || initialThermalState == .critical {
             showThermalState(state: initialThermalState)
         }
-        
-        sessionQueue.async {
-            switch self.setupResult {
-            case .success:
-                // Only setup observers and start the session running if setup succeeded
-                self.addObservers()
-                let videoOrientation = self.videoDataOutput.connection(with: .video)!.videoOrientation
-                let videoDevicePosition = self.videoDeviceInput.device.position
-                let rotation = PreviewMetalView.Rotation(with: interfaceOrientation,
-                                                         videoOrientation: videoOrientation,
-                                                         cameraPosition: videoDevicePosition)
-                
-                self.dataOutputQueue.async {
-                    ExternalData.renderingEnabled = true
-                }
-                
-                self.session.startRunning()
-                self.isSessionRunning = self.session.isRunning
-                
-            case .notAuthorized:
-                DispatchQueue.main.async {
-                    let message = NSLocalizedString("TrueDepthStreamer doesn't have permission to use the camera, please change privacy settings",
-                                                    comment: "Alert message when the user has denied access to the camera")
-                    let alertController = UIAlertController(title: "Harolden 3D Capture", message: message, preferredStyle: .alert)
-                    alertController.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Alert OK button"),
-                                                            style: .cancel,
-                                                            handler: nil))
-                    alertController.addAction(UIAlertAction(title: NSLocalizedString("Settings", comment: "Alert button to open Settings"),
-                                                            style: .`default`,
-                                                            handler: { _ in
-                        UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!,
-                                                  options: [:],
-                                                  completionHandler: nil)
-                    }))
-                    
-                    self.present(alertController, animated: true, completion: nil)
-                }
-                
-            case .configurationFailed:
-                DispatchQueue.main.async {
-                    self.cameraUnavailableLabel.isHidden = false
-                    self.cameraUnavailableLabel.alpha = 0.0
-                    UIView.animate(withDuration: 0.25) {
-                        self.cameraUnavailableLabel.alpha = 1.0
-                    }
-                }
-            }
-        }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
-        dataOutputQueue.async {
-            ExternalData.renderingEnabled = false
-        }
-        sessionQueue.async {
-            if self.setupResult == .success {
-                self.session.stopRunning()
-                self.isSessionRunning = self.session.isRunning
-            }
-        }
+        ExternalData.renderingEnabled = false
         
         super.viewWillDisappear(animated)
+        
+        // Pause the AR session
+        session.pause()
     }
     
     @objc
     func didEnterBackground(notification: NSNotification) {
         // Free up resources
-        dataOutputQueue.async {
-            ExternalData.renderingEnabled = false
-            //            if let videoFilter = self.videoFilter {
-            //                videoFilter.reset()
-            //            }
-            self.videoDepthMixer.reset()
-        }
+        ExternalData.renderingEnabled = false
+        //            if let videoFilter = self.videoFilter {
+        //                videoFilter.reset()
+        //            }
+        self.videoDepthMixer.reset()
     }
     
     @objc
     func willEnterForground(notification: NSNotification) {
-        dataOutputQueue.async {
-            ExternalData.renderingEnabled = true
-        }
+        ExternalData.renderingEnabled = true
     }
     
     // You can use this opportunity to take corrective action to help cool the system down.
@@ -278,13 +267,6 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         coordinator.animate(alongsideTransition: { _ in
             let interfaceOrientation = UIApplication.shared.statusBarOrientation
             self.statusBarOrientation = interfaceOrientation
-            self.sessionQueue.async {
-                /*
-                 The photo orientation is based on the interface orientation. You could also set the orientation of the photo connection based
-                 on the device orientation by observing UIDeviceOrientationDidChangeNotification.
-                 */
-                let videoOrientation = self.videoDataOutput.connection(with: .video)!.videoOrientation
-            }
         }, completion: nil)
     }
     
@@ -304,22 +286,7 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         
         session.addObserver(self, forKeyPath: "running", options: NSKeyValueObservingOptions.new, context: &sessionRunningContext)
         
-        /*
-         A session can only run when the app is full screen. It will be interrupted
-         in a multi-app layout, introduced in iOS 9, see also the documentation of
-         AVCaptureSessionInterruptionReason. Add observers to handle these session
-         interruptions and show a preview is paused message. See the documentation
-         of AVCaptureSessionWasInterruptedNotification for other interruption reasons.
-         */
-        NotificationCenter.default.addObserver(self, selector: #selector(sessionWasInterrupted),
-                                               name: NSNotification.Name.AVCaptureSessionWasInterrupted,
-                                               object: session)
-        NotificationCenter.default.addObserver(self, selector: #selector(sessionInterruptionEnded),
-                                               name: NSNotification.Name.AVCaptureSessionInterruptionEnded,
-                                               object: session)
-        NotificationCenter.default.addObserver(self, selector: #selector(subjectAreaDidChange),
-                                               name: NSNotification.Name.AVCaptureDeviceSubjectAreaDidChange,
-                                               object: videoDeviceInput.device)
+        
     }
     
     deinit {
@@ -349,55 +316,6 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             return
         }
         
-        
-        do {
-            videoDeviceInput = try AVCaptureDeviceInput(device: videoDevice)
-        } catch {
-            print("Could not create video device input: \(error)")
-            setupResult = .configurationFailed
-            return
-        }
-        
-        session.beginConfiguration()
-        
-        session.sessionPreset = AVCaptureSession.Preset.vga640x480
-        
-        // Add a video input
-        guard session.canAddInput(videoDeviceInput) else {
-            print("Could not add video device input to the session")
-            setupResult = .configurationFailed
-            session.commitConfiguration()
-            return
-        }
-        session.addInput(videoDeviceInput)
-        
-        // Add a video data output
-        if session.canAddOutput(videoDataOutput) {
-            session.addOutput(videoDataOutput)
-            videoDataOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: Int(kCVPixelFormatType_32BGRA)]
-        } else {
-            print("Could not add video data output to the session")
-            setupResult = .configurationFailed
-            session.commitConfiguration()
-            return
-        }
-        
-        // Add a depth data output
-        if session.canAddOutput(depthDataOutput) {
-            session.addOutput(depthDataOutput)
-            depthDataOutput.isFilteringEnabled = true
-            if let connection = depthDataOutput.connection(with: .depthData) {
-                connection.isEnabled = true
-            } else {
-                print("No AVCaptureConnection")
-            }
-        } else {
-            print("Could not add depth data output to the session")
-            setupResult = .configurationFailed
-            session.commitConfiguration()
-            return
-        }
-        
         // Search for highest resolution with half-point depth values
         let depthFormats = videoDevice.activeFormat.supportedDepthDataFormats
         let filtered = depthFormats.filter({
@@ -414,58 +332,15 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         } catch {
             print("Could not lock device for configuration: \(error)")
             setupResult = .configurationFailed
-            session.commitConfiguration()
             return
         }
-        
-        // Use an AVCaptureDataOutputSynchronizer to synchronize the video data and depth data outputs.
-        // The first output in the dataOutputs array, in this case the AVCaptureVideoDataOutput, is the "master" output.
-        outputSynchronizer = AVCaptureDataOutputSynchronizer(dataOutputs: [videoDataOutput, depthDataOutput])
-        outputSynchronizer!.setDelegate(self, queue: dataOutputQueue)
-        session.commitConfiguration()
     }
     
     private func focus(with focusMode: AVCaptureDevice.FocusMode,
                        exposureMode: AVCaptureDevice.ExposureMode,
                        at devicePoint: CGPoint,
                        monitorSubjectAreaChange: Bool) {
-        sessionQueue.async {
-            let videoDevice = self.videoDeviceInput.device
-            
-            do {
-                try videoDevice.lockForConfiguration()
-                if videoDevice.isFocusPointOfInterestSupported && videoDevice.isFocusModeSupported(focusMode) {
-                    videoDevice.focusPointOfInterest = devicePoint
-                    videoDevice.focusMode = focusMode
-                }
-                
-                if videoDevice.isExposurePointOfInterestSupported && videoDevice.isExposureModeSupported(exposureMode) {
-                    videoDevice.exposurePointOfInterest = devicePoint
-                    videoDevice.exposureMode = exposureMode
-                }
-                
-                videoDevice.isSubjectAreaChangeMonitoringEnabled = monitorSubjectAreaChange
-                videoDevice.unlockForConfiguration()
-            } catch {
-                print("Could not lock device for configuration: \(error)")
-            }
-        }
-    }
-    
-    @IBAction private func changeMixFactor(_ sender: UISlider) {
-        let mixFactor = sender.value
         
-        dataOutputQueue.async {
-            self.videoDepthMixer.mixFactor = mixFactor
-        }
-    }
-    
-    @IBAction private func changeDepthSmoothing(_ sender: UISwitch) {
-        let smoothingEnabled = sender.isOn
-        
-        sessionQueue.async {
-            self.depthDataOutput.isFilteringEnabled = smoothingEnabled
-        }
     }
     
     @objc
@@ -522,37 +397,8 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
          reset and the last start running succeeded. Otherwise, enable the user
          to try to resume the session running.
          */
-        if error.code == .mediaServicesWereReset {
-            sessionQueue.async {
-                if self.isSessionRunning {
-                    self.session.startRunning()
-                    self.isSessionRunning = self.session.isRunning
-                }
-            }
-        }
     }
     
-    @IBAction private func resumeInterruptedSession(_ sender: UIButton) {
-        sessionQueue.async {
-            /*
-             The session might fail to start running. A failure to start the session running will be communicated via
-             a session runtime error notification. To avoid repeatedly failing to start the session
-             running, we only try to restart the session running in the session runtime error handler
-             if we aren't trying to resume the session running.
-             */
-            self.session.startRunning()
-            self.isSessionRunning = self.session.isRunning
-            if !self.session.isRunning {
-                DispatchQueue.main.async {
-                    let message = NSLocalizedString("Unable to resume", comment: "Alert message when unable to resume the session running")
-                    let alertController = UIAlertController(title: "TrueDepthStreamer", message: message, preferredStyle: .alert)
-                    let cancelAction = UIAlertAction(title: NSLocalizedString("OK", comment: "Alert OK button"), style: .cancel, handler: nil)
-                    alertController.addAction(cancelAction)
-                    self.present(alertController, animated: true, completion: nil)
-                }
-            }
-        }
-    }
     
     // MARK: - Point cloud view gestures
     
@@ -728,7 +574,7 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             print("No face observations")
             return
         }
-
+        
         // Process each face observation
         for observation in observations {
             print("Face Observation: \(observation)")
@@ -758,61 +604,51 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     
     // MARK: - Video + Depth Frame Processing
     
-    func dataOutputSynchronizer(_ synchronizer: AVCaptureDataOutputSynchronizer,
-                                didOutput synchronizedDataCollection: AVCaptureSynchronizedDataCollection) {
-        if !ExternalData.renderingEnabled {
-            return
-        }
-        
-        // Read all outputs
-        guard ExternalData.renderingEnabled,
-              let syncedDepthData: AVCaptureSynchronizedDepthData =
-                synchronizedDataCollection.synchronizedData(for: depthDataOutput) as? AVCaptureSynchronizedDepthData,
-              let syncedVideoData: AVCaptureSynchronizedSampleBufferData =
-                synchronizedDataCollection.synchronizedData(for: videoDataOutput) as? AVCaptureSynchronizedSampleBufferData else {
-            // only work on synced pairs
-            return
-        }
-        
-        if syncedDepthData.depthDataWasDropped || syncedVideoData.sampleBufferWasDropped {
-            return
-        }
-        
-        let depthData = syncedDepthData.depthData
-        let depthPixelBuffer = depthData.depthDataMap
-        let sampleBuffer = syncedVideoData.sampleBuffer
-        guard let videoPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer),
-              let formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer) else {
-            return
-        }
-        
-        guard let videoPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
-               return
-           }
-
-       // Perform face landmarks detection
-       let imageRequestHandler = VNImageRequestHandler(cvPixelBuffer: videoPixelBuffer, orientation: .up, options: [:])
-       do {
-           try imageRequestHandler.perform([self.faceLandmarksRequest])
-       } catch {
-           print("Error performing face landmarks detection: \(error)")
-       }
-
-        
-        if ExternalData.isSavingFileAsPLY {
-            printDepthData(depthData: depthData, imageData: videoPixelBuffer)
-            
-            // Set cloudView to empty depth data and texture
-            // cloudView?.setDepthFrame(nil, withTexture: nil)
-            
-            ExternalData.isSavingFileAsPLY = false
-        }
-        
-        globalDepthData = depthData
-        globalVideoPixelBuffer = videoPixelBuffer
-        
-        cloudView?.setDepthFrame(depthData, withTexture: videoPixelBuffer)
-    }
+    //    func dataOutputSynchronizer(_ synchronizer: AVCaptureDataOutputSynchronizer,
+    //                                didOutput synchronizedDataCollection: AVCaptureSynchronizedDataCollection) {
+    //        guard ExternalData.renderingEnabled else {
+    //            return
+    //        }
+    //
+    //        if syncedDepthData.depthDataWasDropped || syncedVideoData.sampleBufferWasDropped {
+    //            return
+    //        }
+    //
+    //        let depthData = syncedDepthData.depthData
+    //        let depthPixelBuffer = depthData.depthDataMap
+    //        let sampleBuffer = syncedVideoData.sampleBuffer
+    //        guard let videoPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer),
+    //              let formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer) else {
+    //            return
+    //        }
+    //
+    //        guard let videoPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
+    //            return
+    //        }
+    //
+    //        // Perform face landmarks detection
+    //        let imageRequestHandler = VNImageRequestHandler(cvPixelBuffer: videoPixelBuffer, orientation: .up, options: [:])
+    //        do {
+    //            try imageRequestHandler.perform([self.faceLandmarksRequest])
+    //        } catch {
+    //            print("Error performing face landmarks detection: \(error)")
+    //        }
+    //
+    //
+    //        if ExternalData.isSavingFileAsPLY {
+    //            printDepthData(depthData: depthData, imageData: videoPixelBuffer)
+    //
+    //            // Set cloudView to empty depth data and texture
+    //            // cloudView?.setDepthFrame(nil, withTexture: nil)
+    //
+    //            ExternalData.isSavingFileAsPLY = false
+    //        }
+    //
+    //        globalDepthData = depthData
+    //        globalVideoPixelBuffer = videoPixelBuffer
+    //
+    //        cloudView?.setDepthFrame(depthData, withTexture: videoPixelBuffer)
+    //    }
     
     @IBSegueAction func embedSwiftUIView(_ coder: NSCoder) -> UIViewController? {
         // Upon Scan Completion...
