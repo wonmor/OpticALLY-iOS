@@ -587,7 +587,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         let colorBaseAddress = CVPixelBufferGetBaseAddress(colorPixelBuffer)!.assumingMemoryBound(to: UInt8.self)
         
         // Call the point cloud creation function
-        let pointCloudGeometry = ExternalData.createPointCloudGeometry(
+        ExternalData.createPointCloudGeometry(
             depthData: depthData,
             colorData: colorBaseAddress,
             width: commonWidth,

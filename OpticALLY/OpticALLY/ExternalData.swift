@@ -56,7 +56,7 @@ struct ExternalData {
     }
     
     // Function to convert depth and color data into a point cloud geometry
-    static func createPointCloudGeometry(depthData: AVDepthData, colorData: UnsafePointer<UInt8>, width: Int, height: Int, bytesPerRow: Int, calibrationData: AVCameraCalibrationData, percentile: Float = 35.0) -> SCNGeometry {
+    static func createPointCloudGeometry(depthData: AVDepthData, colorData: UnsafePointer<UInt8>, width: Int, height: Int, bytesPerRow: Int, calibrationData: AVCameraCalibrationData, percentile: Float = 35.0) {
         var vertices: [SCNVector3] = []
         var colors: [UIColor] = []
         var depthValues: [Float] = []
@@ -172,8 +172,6 @@ struct ExternalData {
        
        print("Done constructing the 3D object!")
        LogManager.shared.log("Done constructing the 3D object!")
-       
-       return newPointCloudGeometry
    }
     
     static func exportGeometryAsPLY(to url: URL) {
