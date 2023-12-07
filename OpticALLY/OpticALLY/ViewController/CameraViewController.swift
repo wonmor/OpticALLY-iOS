@@ -198,7 +198,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     func session(_ session: ARSession, didUpdate frame: ARFrame) {
         // Store frame data for processing
         do {
-            let imageSampler = try CapturedImageSampler(arSession: session)
+            let imageSampler = try CapturedImageSampler(arSession: session, viewController: self)
             
             DispatchQueue.main.async {
                 self.synchronizedDepthData = frame.capturedDepthData

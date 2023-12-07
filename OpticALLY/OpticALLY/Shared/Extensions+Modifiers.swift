@@ -12,31 +12,17 @@ import ARKit
 import simd
 
 extension ARSession {
-    func resizeTo(_ size:CGSize)->CIImage?{
-        guard let frame = self.currentFrame else { return nil }
-        let imageBuffer = frame.capturedImage
-        let imageSize = CGSize(width: CVPixelBufferGetWidth(imageBuffer), height: CVPixelBufferGetHeight(imageBuffer))
-        let interfaceOrientation = UIApplication.shared.keyWindow?.windowScene!.interfaceOrientation ?? .portrait
-        let image = CIImage(cvImageBuffer: imageBuffer)
-        let normalizeTransform = CGAffineTransform(scaleX: 1.0/imageSize.width, y: 1.0/imageSize.height)
-        let flipTransform = interfaceOrientation.isPortrait ? CGAffineTransform(scaleX: -1, y: -1).translatedBy(x: -1, y: -1) : .identity
-        let viewPort = CGRect.init(origin: CGPoint.zero, size: size)
-        let displayTransform = frame.displayTransform(for: interfaceOrientation, viewportSize: size)
-        let toViewPortTransform = CGAffineTransform(scaleX: size.width, y: size.height)
-        return image.transformed(by: normalizeTransform.concatenating(flipTransform).concatenating(displayTransform).concatenating(toViewPortTransform)).cropped(to: viewPort)
-    }
-    
     // Returns the original capturedImage from the current frame
     func getCapturedImage() -> CVPixelBuffer? {
         return self.currentFrame?.capturedImage
     }
     
     // Returns a resized and transformed version of the capturedImage
-    func getTransformedCapturedImage(resizedTo size: CGSize) -> CVPixelBuffer? {
+    func getTransformedCapturedImage(resizedTo size: CGSize, in viewController: UIViewController) -> CVPixelBuffer? {
         guard let frame = self.currentFrame else { return nil }
         let imageBuffer = frame.capturedImage
         let imageSize = CGSize(width: CVPixelBufferGetWidth(imageBuffer), height: CVPixelBufferGetHeight(imageBuffer))
-        let interfaceOrientation = UIApplication.shared.keyWindow?.windowScene!.interfaceOrientation ?? .portrait
+        let interfaceOrientation = viewController.view.window?.windowScene?.interfaceOrientation ?? .portrait
         let image = CIImage(cvImageBuffer: imageBuffer)
         let normalizeTransform = CGAffineTransform(scaleX: 1.0 / imageSize.width, y: 1.0 / imageSize.height)
         let viewPort = CGRect(origin: CGPoint.zero, size: size)
