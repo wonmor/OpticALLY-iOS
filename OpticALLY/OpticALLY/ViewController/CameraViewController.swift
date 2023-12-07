@@ -10,6 +10,8 @@ import UIKit
 import ARKit
 import Vision
 import AVFoundation
+import CoreImage
+import CoreVideo
 
 /// CameraViewController manages and handles the ARKit-based camera session for depth and facial landmark detection, as well as the visualization of point clouds. This class utilizes ARKit, Vision, and AVFoundation frameworks to process and display 3D depth data and facial landmarks in real-time.
 
@@ -85,6 +87,37 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     
     private var viewFrameSize = CGSize()
     private var autoPanningIndex = Int(-1) // start with auto-panning off
+    
+    static func convertToBGRA(pixelBuffer: CVPixelBuffer) -> CVPixelBuffer? {
+        let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
+
+        let context = CIContext(options: nil)
+        
+        var newPixelBuffer: CVPixelBuffer?
+        let width = CVPixelBufferGetWidth(pixelBuffer)
+        let height = CVPixelBufferGetHeight(pixelBuffer)
+
+        // Create a new pixel buffer in BGRA format
+        let attributes = [
+            kCVPixelBufferCGImageCompatibilityKey: kCFBooleanTrue!,
+            kCVPixelBufferCGBitmapContextCompatibilityKey: kCFBooleanTrue!,
+            kCVPixelBufferWidthKey: width,
+            kCVPixelBufferHeightKey: height,
+            kCVPixelBufferPixelFormatTypeKey: kCVPixelFormatType_32BGRA
+        ] as CFDictionary
+
+        CVPixelBufferCreate(kCFAllocatorDefault, width, height, kCVPixelFormatType_32BGRA, attributes, &newPixelBuffer)
+
+        // Check if new pixel buffer creation was successful
+        guard let renderedPixelBuffer = newPixelBuffer else {
+            return nil
+        }
+
+        // Render the CIImage to the new CVPixelBuffer
+        context.render(ciImage, to: renderedPixelBuffer)
+
+        return renderedPixelBuffer
+    }
     
     private func processFrame(depthData: AVDepthData, videoPixelBuffer: CVPixelBuffer) {
         guard ExternalData.renderingEnabled else {
@@ -198,10 +231,12 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             self.synchronizedDepthData = frame.capturedDepthData
             self.synchronizedVideoPixelBuffer = frame.capturedImage
             
-            // Perform processing if both depth and video data are available
-            if let depthData = self.synchronizedDepthData,
-               let videoPixelBuffer = self.synchronizedVideoPixelBuffer {
-                self.processFrame(depthData: depthData, videoPixelBuffer: videoPixelBuffer)
+            if let convertedPixelBuffer = CameraViewController.convertToBGRA(pixelBuffer: self.synchronizedVideoPixelBuffer!) {
+                // Perform processing if both depth and video data are available
+                if let depthData = self.synchronizedDepthData,
+                   let videoPixelBuffer = self.synchronizedVideoPixelBuffer {
+                    self.processFrame(depthData: depthData, videoPixelBuffer: videoPixelBuffer)
+                }
             }
         }
     }

@@ -115,6 +115,8 @@ struct ExternalData {
                 let rComponent = Double(colorData[colorOffset + 2]) / 255.0
                 let aComponent = Double(colorData[colorOffset + 3]) / 255.0
                 
+                print("Color: \(rComponent), \(gComponent), \(bComponent), \(aComponent)")
+                
                 let color = UIColor(red: CGFloat(rComponent), green: CGFloat(gComponent), blue: CGFloat(bComponent), alpha: CGFloat(aComponent))
                 colors.append(color)
                 
