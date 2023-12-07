@@ -8,6 +8,7 @@
 import SwiftUI
 import UIKit
 import ARKit
+import Accelerate
 import Vision
 import AVFoundation
 import CoreImage
@@ -88,7 +89,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     private var viewFrameSize = CGSize()
     private var autoPanningIndex = Int(-1) // start with auto-panning off
     
-    private func processFrame(depthData: AVDepthData, videoPixelBuffer: CVPixelBuffer) {
+    private func processFrame(depthData: AVDepthData, videoPixelBuffer: CVPixelBuffer, imageSampler: CapturedImageSampler) {
         guard ExternalData.renderingEnabled else {
             return
         }
@@ -107,7 +108,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         }
         
         if ExternalData.isSavingFileAsPLY {
-            printDepthData(depthData: depthData, imageData: videoPixelBuffer)
+            printDepthData(depthData: depthData, imageSampler: imageSampler)
             ExternalData.isSavingFileAsPLY = false
         }
         
@@ -196,17 +197,23 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     // MARK: - ARSessionDelegate Methods
     func session(_ session: ARSession, didUpdate frame: ARFrame) {
         // Store frame data for processing
-        DispatchQueue.main.async {
-            self.synchronizedDepthData = frame.capturedDepthData
-            self.synchronizedVideoPixelBuffer = frame.capturedImage
+        do {
+            let imageSampler = try CapturedImageSampler(arSession: session)
             
-            if let convertedPixelBuffer = self.synchronizedVideoPixelBuffer {
-                // Perform processing if both depth and video data are available
-                if let depthData = self.synchronizedDepthData,
-                   let videoPixelBuffer = self.synchronizedVideoPixelBuffer {
-                    self.processFrame(depthData: depthData, videoPixelBuffer: videoPixelBuffer)
+            DispatchQueue.main.async {
+                self.synchronizedDepthData = frame.capturedDepthData
+                self.synchronizedVideoPixelBuffer = frame.capturedImage
+                
+                if let convertedPixelBuffer = self.synchronizedVideoPixelBuffer {
+                    // Perform processing if both depth and video data are available
+                    if let depthData = self.synchronizedDepthData,
+                       let videoPixelBuffer = self.synchronizedVideoPixelBuffer {
+                        self.processFrame(depthData: depthData, videoPixelBuffer: videoPixelBuffer, imageSampler: imageSampler)
+                    }
                 }
             }
+        } catch {
+            print("Error creating CapturedImageSampler: \(error)")
         }
     }
     
@@ -504,31 +511,18 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         }
     }
     
-    func printDepthData(depthData: AVDepthData, imageData: CVImageBuffer) {
+    func printDepthData(depthData: AVDepthData, imageSampler: CapturedImageSampler) {
         let depthPixelBuffer = depthData.depthDataMap
-        let colorPixelBuffer = imageData
         
         CVPixelBufferLockBaseAddress(depthPixelBuffer, .readOnly)
-        CVPixelBufferLockBaseAddress(colorPixelBuffer, .readOnly)
+        
         defer {
             CVPixelBufferUnlockBaseAddress(depthPixelBuffer, .readOnly)
-            CVPixelBufferUnlockBaseAddress(colorPixelBuffer, .readOnly)
         }
         
-        let colorWidth = CVPixelBufferGetWidth(colorPixelBuffer)
-        let colorHeight = CVPixelBufferGetHeight(colorPixelBuffer)
         let depthWidth = CVPixelBufferGetWidth(depthPixelBuffer)
         let depthHeight = CVPixelBufferGetHeight(depthPixelBuffer)
         
-        print("Image Width: \(colorWidth) | Image Height: \(colorHeight)")
-        print("Depth Data Width: \(depthWidth) | Depth Data Height: \(depthHeight)")
-        
-        guard let colorData = CVPixelBufferGetBaseAddress(colorPixelBuffer) else {
-            print("Unable to get image buffer base address.")
-            return
-        }
-        
-        let colorBytesPerRow = CVPixelBufferGetBytesPerRow(colorPixelBuffer)
         let colorBytesPerPixel = 4 // BGRA format
         
         guard let depthDataAddress = CVPixelBufferGetBaseAddress(depthPixelBuffer) else {
@@ -552,27 +546,24 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             return
         }
         
-        // Ensure that you're iterating within the bounds of both buffers
-        let commonWidth = min(colorWidth, depthWidth)
-        let commonHeight = min(colorHeight, depthHeight)
-        
-        print("Starting iteration with commonWidth: \(commonWidth), commonHeight: \(commonHeight)")
-        
         // Iterate over the image buffer
-        for y in stride(from: 0, to: commonHeight, by: 10) {
-            for x in stride(from: 0, to: commonWidth, by: 10) {
-                let colorPixelOffset = y * colorBytesPerRow + x * colorBytesPerPixel
-                let colorPixel = colorData.advanced(by: colorPixelOffset).assumingMemoryBound(to: UInt8.self)
-                
-                // Extract BGRA components
-                let blue = colorPixel[0]
-                let green = colorPixel[1]
-                let red = colorPixel[2]
-                let alpha = colorPixel[3]
-                
-                // Print the (x, y) coordinates and color value in BGRA
-                print("Color at (\(x), \(y)): B:\(blue) G:\(green) R:\(red) A:\(alpha)")
-                LogManager.shared.log("Color at (\(x), \(y)): B:\(blue) G:\(green) R:\(red) A:\(alpha)")
+        for y in stride(from: 0, to: depthHeight, by: 10) {
+            for x in stride(from: 0, to: depthWidth, by: 10) {
+                // Get color using CapturedImageSampler
+                let normalizedX = CGFloat(x) / CGFloat(depthWidth)
+                let normalizedY = CGFloat(y) / CGFloat(depthHeight)
+                if let color = imageSampler.getColor(atX: normalizedX, y: normalizedY) {
+                    // Extract RGBA components from UIColor
+                    var red: CGFloat = 0
+                    var green: CGFloat = 0
+                    var blue: CGFloat = 0
+                    var alpha: CGFloat = 0
+                    color.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+                    
+                    // Print the (x, y) coordinates and color value in RGBA
+                    print("Color at (\(x), \(y)): R:\(red) G:\(green) B:\(blue) A:\(alpha)")
+                    LogManager.shared.log("Color at (\(x), \(y)): R:\(red) G:\(green) B:\(blue) A:\(alpha)")
+                }
                 
                 // Calculate the depth data's corresponding pixel offset
                 let depthPixelOffset = y * depthBytesPerRow + x * depthBytesPerPixel
@@ -587,16 +578,12 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         
         print("Completed iteration")
         
-        // Assuming colorData is the base address for the BGRA image buffer
-        let colorBaseAddress = CVPixelBufferGetBaseAddress(colorPixelBuffer)!.assumingMemoryBound(to: UInt8.self)
-        
         // Call the point cloud creation function
         ExternalData.createPointCloudGeometry(
             depthData: depthData,
-            colorData: colorBaseAddress,
-            width: commonWidth,
-            height: commonHeight,
-            bytesPerRow: colorBytesPerRow,
+            imageSampler: imageSampler,
+            width: depthWidth,
+            height: depthHeight,
             calibrationData: depthData.cameraCalibrationData!
         )
         

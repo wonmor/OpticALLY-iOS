@@ -56,7 +56,7 @@ struct ExternalData {
     }
     
     // Function to convert depth and color data into a point cloud geometry
-    static func createPointCloudGeometry(depthData: AVDepthData, colorData: UnsafePointer<UInt8>, width: Int, height: Int, bytesPerRow: Int, calibrationData: AVCameraCalibrationData, percentile: Float = 35.0) {
+    static func createPointCloudGeometry(depthData: AVDepthData, imageSampler: CapturedImageSampler, width: Int, height: Int, calibrationData: AVCameraCalibrationData, percentile: Float = 35.0) {
         var vertices: [SCNVector3] = []
         var colors: [UIColor] = []
         var depthValues: [Float] = []
@@ -109,16 +109,20 @@ struct ExternalData {
                 
                 vertices.append(vertex)
                 
-                let colorOffset = y * bytesPerRow + x * 4 // Assuming BGRA format
-                let bComponent = Double(colorData[colorOffset]) / 255.0
-                let gComponent = Double(colorData[colorOffset + 1]) / 255.0
-                let rComponent = Double(colorData[colorOffset + 2]) / 255.0
-                let aComponent = Double(colorData[colorOffset + 3]) / 255.0
-                
-                print("Color: \(rComponent), \(gComponent), \(bComponent), \(aComponent)")
-                
-                let color = UIColor(red: CGFloat(rComponent), green: CGFloat(gComponent), blue: CGFloat(bComponent), alpha: CGFloat(aComponent))
-                colors.append(color)
+                // Get color using CapturedImageSampler
+                let normalizedX = CGFloat(x) / CGFloat(width)
+                let normalizedY = CGFloat(y) / CGFloat(height)
+                if let color = imageSampler.getColor(atX: normalizedX, y: normalizedY) {
+                    // Extract RGBA components from UIColor
+                    var red: CGFloat = 0
+                    var green: CGFloat = 0
+                    var blue: CGFloat = 0
+                    var alpha: CGFloat = 0
+                    color.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+
+                    colors.append(color)
+                    print("Color: \(red), \(green), \(blue), \(alpha)")
+                }
                 
                 counter += 1
             }

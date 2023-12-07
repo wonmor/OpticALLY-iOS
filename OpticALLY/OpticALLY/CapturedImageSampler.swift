@@ -16,7 +16,6 @@ import Accelerate
 ///            If you need multi-threading, make the shared buffer an instance property instead.
 ///            Just remember to release it when you're done with it.
 class CapturedImageSampler {
-    
     /// This is the format of the pixel buffer included with the ARFrame.
     private static let expectedPixelFormat: OSType = kCVPixelFormatType_420YpCbCr8BiPlanarFullRange
     
@@ -54,13 +53,21 @@ class CapturedImageSampler {
     /// Stored buffer dimension information.
     private let rgbSize: BufferDimension
     
+    // Add public accessors for the dimensions
+    var bufferWidth: Int {
+        return rgbSize.width
+    }
+
+    var bufferHeight: Int {
+        return rgbSize.height
+    }
+    
     /// Initialize the CapturedImageSampler with an `ARFrame` to sample RGB colors from the
     /// captured image that it contains.
     /// - Parameter frame: An `ARFrame` instance that you wish to sample for RGB colors.
-    init(frame: ARFrame) throws {
-        
-        // Get the image pixel buffer.
-        let pixelBuffer = frame.capturedImage
+    init(arSession: ARSession) throws {
+        let desiredSize = CGSize(width: 640, height: 480)
+        let pixelBuffer = arSession.getTransformedCapturedImage(resizedTo: desiredSize)!
         
         // Double-check that the format hasn't changed unexpectedly.
         guard CVPixelBufferGetPixelFormatType(pixelBuffer) == CapturedImageSampler.expectedPixelFormat else {
@@ -128,6 +135,7 @@ class CapturedImageSampler {
         // Store the dimensions of the buffer so we can do offset math and check that our static buffer is
         // the correct size for the next instance of this class.
         rgbSize = BufferDimension(width: ySize.width, height: ySize.height, bytesPerRow: ySize.width * 4)
+            
     }
     
     /// Get the RGB color of the pixel at the specified coordinates.

@@ -8,7 +8,60 @@
 import Foundation
 import SwiftUI
 import SceneKit
+import ARKit
 import simd
+
+extension ARSession {
+    func resizeTo(_ size:CGSize)->CIImage?{
+        guard let frame = self.currentFrame else { return nil }
+        let imageBuffer = frame.capturedImage
+        let imageSize = CGSize(width: CVPixelBufferGetWidth(imageBuffer), height: CVPixelBufferGetHeight(imageBuffer))
+        let interfaceOrientation = UIApplication.shared.keyWindow?.windowScene!.interfaceOrientation ?? .portrait
+        let image = CIImage(cvImageBuffer: imageBuffer)
+        let normalizeTransform = CGAffineTransform(scaleX: 1.0/imageSize.width, y: 1.0/imageSize.height)
+        let flipTransform = interfaceOrientation.isPortrait ? CGAffineTransform(scaleX: -1, y: -1).translatedBy(x: -1, y: -1) : .identity
+        let viewPort = CGRect.init(origin: CGPoint.zero, size: size)
+        let displayTransform = frame.displayTransform(for: interfaceOrientation, viewportSize: size)
+        let toViewPortTransform = CGAffineTransform(scaleX: size.width, y: size.height)
+        return image.transformed(by: normalizeTransform.concatenating(flipTransform).concatenating(displayTransform).concatenating(toViewPortTransform)).cropped(to: viewPort)
+    }
+    
+    // Returns the original capturedImage from the current frame
+    func getCapturedImage() -> CVPixelBuffer? {
+        return self.currentFrame?.capturedImage
+    }
+    
+    // Returns a resized and transformed version of the capturedImage
+    func getTransformedCapturedImage(resizedTo size: CGSize) -> CVPixelBuffer? {
+        guard let frame = self.currentFrame else { return nil }
+        let imageBuffer = frame.capturedImage
+        let imageSize = CGSize(width: CVPixelBufferGetWidth(imageBuffer), height: CVPixelBufferGetHeight(imageBuffer))
+        let interfaceOrientation = UIApplication.shared.keyWindow?.windowScene!.interfaceOrientation ?? .portrait
+        let image = CIImage(cvImageBuffer: imageBuffer)
+        let normalizeTransform = CGAffineTransform(scaleX: 1.0 / imageSize.width, y: 1.0 / imageSize.height)
+        let flipTransform = interfaceOrientation.isPortrait ? CGAffineTransform(scaleX: -1, y: -1).translatedBy(x: -1, y: -1) : .identity
+        let viewPort = CGRect(origin: CGPoint.zero, size: size)
+        let displayTransform = frame.displayTransform(for: interfaceOrientation, viewportSize: size)
+        let toViewPortTransform = CGAffineTransform(scaleX: size.width, y: size.height)
+        let transformedImage = image.transformed(by: normalizeTransform.concatenating(flipTransform).concatenating(displayTransform).concatenating(toViewPortTransform)).cropped(to: viewPort)
+        
+        let context = CIContext(options: nil)
+        var newPixelBuffer: CVPixelBuffer?
+        let attributes: [CFString: Any] = [
+            kCVPixelBufferCGImageCompatibilityKey: kCFBooleanTrue!,
+            kCVPixelBufferCGBitmapContextCompatibilityKey: kCFBooleanTrue!,
+            kCVPixelBufferMetalCompatibilityKey: kCFBooleanTrue!
+        ]
+        CVPixelBufferCreate(kCFAllocatorDefault, Int(size.width), Int(size.height), kCVPixelFormatType_32ARGB, attributes as CFDictionary, &newPixelBuffer)
+        
+        guard let pixelBuffer = newPixelBuffer else { return nil }
+        CVPixelBufferLockBaseAddress(pixelBuffer, CVPixelBufferLockFlags(rawValue: 0))
+        defer { CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags(rawValue: 0)) }
+        context.render(transformedImage, to: pixelBuffer)
+        
+        return pixelBuffer
+    }
+}
 
 extension Array where Element == SIMD3<Float> {
     init(unsafeData: Data, count: Int) {
