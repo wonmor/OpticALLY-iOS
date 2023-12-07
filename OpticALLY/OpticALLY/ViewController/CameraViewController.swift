@@ -10,59 +10,8 @@ import UIKit
 import ARKit
 import Vision
 import AVFoundation
+import CoreImage
 import CoreVideo
-import Accelerate
-
-func convertYCbCrToRGB(pixelBuffer: CVPixelBuffer) -> CVPixelBuffer? {
-    let ycbcrToRGBTransform = float4x4(
-        SIMD4<Float>(+1.0000, +1.0000, +1.0000, +0.0000),
-        SIMD4<Float>(+0.0000, -0.3441, +1.7720, +0.0000),
-        SIMD4<Float>(+1.4020, -0.7141, +0.0000, +0.0000),
-        SIMD4<Float>(-0.7010, +0.5291, -0.8860, +1.0000)
-    )
-
-    let width = CVPixelBufferGetWidth(pixelBuffer)
-    let height = CVPixelBufferGetHeight(pixelBuffer)
-
-    // Create a new pixel buffer in RGB format
-    var newPixelBuffer: CVPixelBuffer?
-    let status = CVPixelBufferCreate(nil, width, height, kCVPixelFormatType_32BGRA, nil, &newPixelBuffer)
-
-    guard status == kCVReturnSuccess, let outputBuffer = newPixelBuffer else { return nil }
-
-    CVPixelBufferLockBaseAddress(pixelBuffer, .readOnly)
-    CVPixelBufferLockBaseAddress(outputBuffer, [])
-
-    let baseAddress = CVPixelBufferGetBaseAddress(pixelBuffer)
-    let data = UnsafeMutableRawPointer(CVPixelBufferGetBaseAddress(outputBuffer))
-
-    let bytesPerRow = CVPixelBufferGetBytesPerRow(pixelBuffer)
-    let outputBytesPerRow = CVPixelBufferGetBytesPerRow(outputBuffer)
-
-    for y in 0..<height {
-        for x in 0..<width {
-            let pixel = baseAddress?.advanced(by: y * bytesPerRow + x * 4).assumingMemoryBound(to: UInt8.self)
-            let r = Float(pixel?[0] ?? 0)
-            let g = Float(pixel?[1] ?? 0)
-            let b = Float(pixel?[2] ?? 0)
-            let a = Float(pixel?[3] ?? 0)
-
-            let ycbcr = SIMD4<Float>(r, g, b, a)
-            let rgb = ycbcrToRGBTransform * ycbcr
-
-            let outputPixel = data!.advanced(by: y * outputBytesPerRow + x * 4).assumingMemoryBound(to: UInt8.self)
-            outputPixel[0] = UInt8(max(0.0, min(255.0, rgb.x)))
-            outputPixel[1] = UInt8(max(0.0, min(255.0, rgb.y)))
-            outputPixel[2] = UInt8(max(0.0, min(255.0, rgb.z)))
-            outputPixel[3] = UInt8(max(0.0, min(255.0, rgb.w)))
-        }
-    }
-
-    CVPixelBufferUnlockBaseAddress(pixelBuffer, .readOnly)
-    CVPixelBufferUnlockBaseAddress(outputBuffer, [])
-
-    return outputBuffer
-}
 
 /// CameraViewController manages and handles the ARKit-based camera session for depth and facial landmark detection, as well as the visualization of point clouds. This class utilizes ARKit, Vision, and AVFoundation frameworks to process and display 3D depth data and facial landmarks in real-time.
 
@@ -251,7 +200,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             self.synchronizedDepthData = frame.capturedDepthData
             self.synchronizedVideoPixelBuffer = frame.capturedImage
             
-            if let convertedPixelBuffer = convertYCbCrToRGB(pixelBuffer: self.synchronizedVideoPixelBuffer!) {
+            if let convertedPixelBuffer = self.synchronizedVideoPixelBuffer {
                 // Perform processing if both depth and video data are available
                 if let depthData = self.synchronizedDepthData,
                    let videoPixelBuffer = self.synchronizedVideoPixelBuffer {
