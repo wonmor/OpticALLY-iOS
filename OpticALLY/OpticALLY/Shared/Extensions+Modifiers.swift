@@ -52,7 +52,7 @@ extension ARSession {
             kCVPixelBufferCGBitmapContextCompatibilityKey: kCFBooleanTrue!,
             kCVPixelBufferMetalCompatibilityKey: kCFBooleanTrue!
         ]
-        CVPixelBufferCreate(kCFAllocatorDefault, Int(size.width), Int(size.height), kCVPixelFormatType_32ARGB, attributes as CFDictionary, &newPixelBuffer)
+        CVPixelBufferCreate(kCFAllocatorDefault, Int(size.width), Int(size.height), kCVPixelFormatType_420YpCbCr8BiPlanarFullRange, attributes as CFDictionary, &newPixelBuffer)
         
         guard let pixelBuffer = newPixelBuffer else { return nil }
         CVPixelBufferLockBaseAddress(pixelBuffer, CVPixelBufferLockFlags(rawValue: 0))
