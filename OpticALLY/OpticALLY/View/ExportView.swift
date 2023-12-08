@@ -179,15 +179,33 @@ struct ExportView: View {
                         ARFaceTrackingView()
                     }
                     .padding()
-                    .onAppear {
-                        ExternalData.isSavingFileAsPLY = true
-                       headTurnMessage = "SCAN COMPLETE"
-                       HapticManager.playHapticFeedback(type: .success) // Play completion haptic
-                       showConsoleOutput = true
-                       isRingAnimationStarted = false
-                       isFlashOn = true
-                       // Additional actions for scan completion
-                   }
+                    .onChange(of: ExternalData.faceYawAngle) { newValue in
+                        let yawAngleDegrees = Int(round(ExternalData.faceYawAngle))
+                           // Rotate the USDZ model
+                           if yawAngleDegrees >= -45 {
+                               // Rotate model to face right and trigger haptic feedback
+                               HapticManager.playHapticFeedback(type: .success)
+                               exportViewModel.hasTurnedRight = true
+                               
+                               headTurnMessage = "TURN YOUR HEAD LEFT"
+                           } else if yawAngleDegrees <= 45 {
+                               // Rotate model to face left and trigger haptic feedback
+                               HapticManager.playHapticFeedback(type: .success)
+                               exportViewModel.hasTurnedLeft = true
+                               
+                               headTurnMessage = "TURN YOUR HEAD RIGHT"
+                           }
+
+                           if exportViewModel.hasTurnedRight && exportViewModel.hasTurnedLeft {
+                               headTurnMessage = "SCAN COMPLETE"
+                               HapticManager.playHapticFeedback(type: .success) // Play completion haptic
+                               showConsoleOutput = true
+                               ExternalData.isSavingFileAsPLY = true
+                               isRingAnimationStarted = false
+                               isFlashOn = true
+                               // Additional actions for scan completion
+                           }
+                    }
 
                     
                     Spacer()
