@@ -59,6 +59,7 @@ struct ExportView: View {
     @State private var headTurnMessage = ""
     @State private var isRingAnimationStarted = false
     @State private var stateChangeCount = 0
+    @State private var previousYaw: Double = 0
     
     @ObservedObject var logManager = LogManager.shared
     @EnvironmentObject var globalState: GlobalState
@@ -179,16 +180,26 @@ struct ExportView: View {
                         ARFaceTrackingView()
                     }
                     .padding()
+                    .onAppear {
+                        previousYaw = ExternalData.faceYawAngle
+                    }
                     .onChange(of: ExternalData.faceYawAngle) { newValue in
-                        let yawAngleDegrees = Int(round(ExternalData.faceYawAngle))
+                        let yawAngleDegrees = Int(round(newValue))
+                        let previousYawAngleDegrees = Int(round(previousYaw))
+
+                        // Check if the yaw change is roughly 10 degrees
+                        if abs(yawAngleDegrees - previousYawAngleDegrees) >= 10 {
+                            HapticManager.playHapticFeedback(type: .success) // Trigger haptic feedback
+                            previousYaw = newValue // Update the previous yaw value
+                        }
                            // Rotate the USDZ model
-                           if yawAngleDegrees >= -45 {
+                           if yawAngleDegrees <= -30 {
                                // Rotate model to face right and trigger haptic feedback
                                HapticManager.playHapticFeedback(type: .success)
                                exportViewModel.hasTurnedRight = true
                                
                                headTurnMessage = "TURN YOUR HEAD LEFT"
-                           } else if yawAngleDegrees <= 45 {
+                           } else if yawAngleDegrees >= 30 {
                                // Rotate model to face left and trigger haptic feedback
                                HapticManager.playHapticFeedback(type: .success)
                                exportViewModel.hasTurnedLeft = true
