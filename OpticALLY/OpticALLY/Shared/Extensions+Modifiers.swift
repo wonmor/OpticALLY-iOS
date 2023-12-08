@@ -25,10 +25,9 @@ extension ARSession {
         let interfaceOrientation = viewController.view.window?.windowScene?.interfaceOrientation ?? .portrait
         let image = CIImage(cvImageBuffer: imageBuffer)
         let normalizeTransform = CGAffineTransform(scaleX: 1.0 / imageSize.width, y: 1.0 / imageSize.height)
-        let viewPort = CGRect(origin: CGPoint.zero, size: size)
         let displayTransform = frame.displayTransform(for: interfaceOrientation, viewportSize: size)
         let toViewPortTransform = CGAffineTransform(scaleX: size.width, y: size.height)
-        let transformedImage = image.transformed(by: normalizeTransform.concatenating(displayTransform).concatenating(toViewPortTransform)).cropped(to: viewPort)
+        let transformedImage = image.transformed(by: normalizeTransform.concatenating(displayTransform).concatenating(toViewPortTransform))
         
         let context = CIContext(options: nil)
         var newPixelBuffer: CVPixelBuffer?
