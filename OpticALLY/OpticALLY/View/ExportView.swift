@@ -177,7 +177,7 @@ struct ExportView: View {
                     Spacer()
                     // Progress indicator and head turn message
                     ZStack {
-                        SceneKitUSDZView(usdzFileName: "Male_Base_Head.usdz")
+                        ARFaceTrackingView()
                     }
                     .padding()
                     .onChange(of: ExternalData.faceYawAngle) { newValue in

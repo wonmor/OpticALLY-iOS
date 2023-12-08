@@ -89,6 +89,8 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     private var viewFrameSize = CGSize()
     private var autoPanningIndex = Int(-1) // start with auto-panning off
     
+    var viewModel: FaceTrackingViewModel?
+    
     private func processFrame(depthData: AVDepthData, videoPixelBuffer: CVPixelBuffer, imageSampler: CapturedImageSampler) {
         guard ExternalData.renderingEnabled else {
             return
@@ -225,7 +227,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     func session(_ session: ARSession, didUpdate anchors: [ARAnchor]) {
         guard let faceAnchor = anchors.compactMap({ $0 as? ARFaceAnchor }).first else { return }
         DispatchQueue.main.async {
-            ExternalData.faceAnchor = faceAnchor
+            self.viewModel!.faceAnchor = faceAnchor
         }
     }
     

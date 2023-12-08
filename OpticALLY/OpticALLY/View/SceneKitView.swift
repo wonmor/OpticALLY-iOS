@@ -43,6 +43,8 @@ struct SceneKitView: UIViewRepresentable {
 
 struct SceneKitUSDZView: UIViewRepresentable {
     var usdzFileName: String
+    
+    @ObservedObject var viewModel: FaceTrackingViewModel
 
     func makeUIView(context: Context) -> SCNView {
         let sceneView = SCNView()
@@ -70,12 +72,12 @@ struct SceneKitUSDZView: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: SCNView, context: Context) {
-        guard let faceAnchor = ExternalData.faceAnchor else { return }
-
-            let faceTransform = SCNMatrix4(faceAnchor.transform)
-            uiView.scene?.rootNode.childNodes.first?.transform = faceTransform
-        }
+        guard let faceAnchor = viewModel.faceAnchor else { return }
+        let faceTransform = SCNMatrix4(faceAnchor.transform)
+        uiView.scene?.rootNode.childNodes.first?.transform = faceTransform
+    }
 }
+
 
 struct SceneKitMDLView: UIViewRepresentable {
     var mdlAsset: MDLAsset

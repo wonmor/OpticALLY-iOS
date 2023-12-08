@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+let faceTrackingViewModel = FaceTrackingViewModel()
+
 struct ContentView: View {
     @Environment(\.scenePhase) var scenePhase
     @EnvironmentObject var globalState: GlobalState

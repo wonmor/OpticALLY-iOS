@@ -9,11 +9,9 @@ import SwiftUI
 import ARKit
 
 struct ARFaceTrackingView: View {
-    @Binding var arSession: ARSession
-    
     var body: some View {
         ZStack {
-            SceneKitUSDZView(usdzFileName: "Male_Base_Head.usdz")
+            SceneKitUSDZView(usdzFileName: "Male_Base_Head.usdz", viewModel: faceTrackingViewModel)
         }
     }
 }
