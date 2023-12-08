@@ -547,40 +547,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             ExternalData.renderingEnabled = true
         }
     }
-    
-    func handleFaceLandmarks(request: VNRequest, error: Error?) {
-        guard let observations = request.results as? [VNFaceObservation] else {
-            print("No face observations")
-            return
-        }
-        
-        // Process each face observation
-        for observation in observations {
-            print("Face Observation: \(observation)")
-            if let yaw = observation.yaw?.doubleValue {
-                ExternalData.faceYawAngle = -yaw // invert signs
-                print("Yaw: \(yaw) radians")
-            } else {
-                ExternalData.faceYawAngle = 0.0
-                print("Yaw not available")
-            }
-            if let pitch = observation.pitch?.doubleValue {
-                ExternalData.facePitchAngle = pitch
-                print("Pitch: \(pitch) radians")
-            } else {
-                ExternalData.facePitchAngle = 0.0
-                print("Pitch not available")
-            }
-            if let roll = observation.roll?.doubleValue {
-                ExternalData.faceRollAngle = roll - .pi / 2 // -90 degrees
-                print("Roll: \(ExternalData.faceRollAngle) radians")
-            } else {
-                ExternalData.faceRollAngle = 0.0
-                print("Roll not available")
-            }
-        }
-    }
-    
+
     @IBSegueAction func embedSwiftUIView(_ coder: NSCoder) -> UIViewController? {
         // Upon Scan Completion...
         let hostingController = UIHostingController(coder: coder, rootView: ExportView())!
