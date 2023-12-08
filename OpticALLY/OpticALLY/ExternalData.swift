@@ -49,6 +49,7 @@ struct ExternalData {
     static var faceYawAngle: Double = 0.0
     static var facePitchAngle: Double = 0.0
     static var faceRollAngle: Double = 0.0
+    static var pupilDistance: Double = 0.0
     static var verticesCount: Int = 0
     static var faceAnchor: ARFaceAnchor?
     

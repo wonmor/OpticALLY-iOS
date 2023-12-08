@@ -134,7 +134,7 @@ struct ExportView: View {
                 VStack {
                     FlashButtonView(isFlashOn: $isFlashOn)
                     
-                    Text("YAW \(Int(round(ExternalData.faceYawAngle)))°\nPITCH \(Int(round(ExternalData.facePitchAngle)))°\nROLL \(Int(round(ExternalData.faceRollAngle)))°")
+                    Text("YAW \(Int(round(ExternalData.faceYawAngle)))°\nPITCH \(Int(round(ExternalData.facePitchAngle)))°\nROLL \(Int(round(ExternalData.faceRollAngle)))°\n\nPUPIL DISTANCE\n\(ExternalData.pupilDistance) mm")
                         .bold()
                         .padding()
                         .frame(maxWidth: .infinity, alignment: .center)
@@ -193,13 +193,13 @@ struct ExportView: View {
                             previousYaw = newValue // Update the previous yaw value
                         }
                            // Rotate the USDZ model
-                           if yawAngleDegrees <= -30 {
+                           if yawAngleDegrees <= -20 {
                                // Rotate model to face right and trigger haptic feedback
                                HapticManager.playHapticFeedback(type: .success)
                                exportViewModel.hasTurnedRight = true
                                
                                headTurnMessage = "TURN YOUR HEAD LEFT"
-                           } else if yawAngleDegrees >= 30 {
+                           } else if yawAngleDegrees >= 20 {
                                // Rotate model to face left and trigger haptic feedback
                                HapticManager.playHapticFeedback(type: .success)
                                exportViewModel.hasTurnedLeft = true

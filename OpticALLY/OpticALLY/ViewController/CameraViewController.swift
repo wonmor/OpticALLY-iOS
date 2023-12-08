@@ -206,6 +206,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                 ExternalData.faceYawAngle = Double(yawDegrees)
                 ExternalData.facePitchAngle = Double(pitchDegrees)
                 ExternalData.faceRollAngle = Double(rollDegrees)
+                ExternalData.pupilDistance = Double(self.calculatePupillaryDistance(faceAnchor: faceAnchor))
                 
                 if self.synchronizedVideoPixelBuffer != nil {
                     // Perform processing if both depth and video data are available
@@ -223,6 +224,22 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     func session(_ session: ARSession, didFailWithError error: Error) {
         // Handle session errors
         print("ARSession failed: \(error.localizedDescription)")
+    }
+    
+    func calculatePupillaryDistance(faceAnchor: ARFaceAnchor) -> Float {
+        let leftEyePosition = faceAnchor.leftEyeTransform.columns.3
+        let rightEyePosition = faceAnchor.rightEyeTransform.columns.3
+
+        let distance = sqrt(
+            pow(leftEyePosition.x - rightEyePosition.x, 2) +
+            pow(leftEyePosition.y - rightEyePosition.y, 2) +
+            pow(leftEyePosition.z - rightEyePosition.z, 2)
+        )
+
+        // Convert to millimeters or another unit if required
+        // ARKit's default unit is meters
+        let distanceInMillimeters = distance * 1000
+        return distanceInMillimeters
     }
     
     func session(_ session: ARSession, didUpdate anchors: [ARAnchor]) {
