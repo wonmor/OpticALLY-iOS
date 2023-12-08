@@ -39,6 +39,7 @@
 		967EE0822AAE06FE000C4D5F /* OpticALLYUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967EE0812AAE06FE000C4D5F /* OpticALLYUITestsLaunchTests.swift */; };
 		967EE0982AAEE2C7000C4D5F /* snippet-extract in Frameworks */ = {isa = PBXBuildFile; productRef = 967EE0972AAEE2C7000C4D5F /* snippet-extract */; };
 		9680F7DB2B2283B200F38A6F /* CapturedImageSampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9680F7DA2B2283B200F38A6F /* CapturedImageSampler.swift */; };
+		9680F7DD2B22D6FD00F38A6F /* ARFaceTrackingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9680F7DC2B22D6FD00F38A6F /* ARFaceTrackingView.swift */; };
 		969AC2802AB7550C0096892E /* IntroductionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 969AC27F2AB7550C0096892E /* IntroductionView.swift */; };
 		969AC2822AB7554C0096892E /* Extensions+Modifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 969AC2812AB7554C0096892E /* Extensions+Modifiers.swift */; };
 		969DF1C72B12916900FA9ABE /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 969DF1C62B12916900FA9ABE /* GoogleService-Info.plist */; };
@@ -112,6 +113,7 @@
 		967EE07F2AAE06FE000C4D5F /* OpticALLYUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpticALLYUITests.swift; sourceTree = "<group>"; };
 		967EE0812AAE06FE000C4D5F /* OpticALLYUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpticALLYUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		9680F7DA2B2283B200F38A6F /* CapturedImageSampler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapturedImageSampler.swift; sourceTree = "<group>"; };
+		9680F7DC2B22D6FD00F38A6F /* ARFaceTrackingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARFaceTrackingView.swift; sourceTree = "<group>"; };
 		969AC27F2AB7550C0096892E /* IntroductionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroductionView.swift; sourceTree = "<group>"; };
 		969AC2812AB7554C0096892E /* Extensions+Modifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Extensions+Modifiers.swift"; sourceTree = "<group>"; };
 		969DF1C62B12916900FA9ABE /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
@@ -276,6 +278,7 @@
 			children = (
 				9679F8BB2AD0907900686F13 /* PreviewMetalView.swift */,
 				96F0CF1B2B12A3D500417716 /* ExportView.swift */,
+				9680F7DC2B22D6FD00F38A6F /* ARFaceTrackingView.swift */,
 				967EE0662AAE06FB000C4D5F /* ContentView.swift */,
 				961D67E22B12BDFC00DBB883 /* SceneKitView.swift */,
 				963DF9B22AFEDAF600E6E589 /* PostScanView.swift */,
@@ -477,6 +480,7 @@
 				9679F8DD2AD0907A00686F13 /* CameraViewController.swift in Sources */,
 				963DF9B32AFEDAF700E6E589 /* PostScanView.swift in Sources */,
 				9679F8E12AD0907A00686F13 /* CameraView.swift in Sources */,
+				9680F7DD2B22D6FD00F38A6F /* ARFaceTrackingView.swift in Sources */,
 				9679F8D52AD0907A00686F13 /* HistogramCalculator.m in Sources */,
 				969AC2802AB7550C0096892E /* IntroductionView.swift in Sources */,
 				9679F8CF2AD0907A00686F13 /* VideoMixer.swift in Sources */,

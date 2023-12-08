@@ -9,6 +9,7 @@ import UIKit
 import AVFoundation
 import CoreVideo
 import SceneKit
+import ARKit
 import Foundation
 
 /// ExternalData is a central repository for managing and processing 3D depth and color data, primarily focusing on creating point cloud geometries and exporting them in PLY format. It enables the integration of various sensory data inputs and computational geometry processing.
@@ -49,6 +50,7 @@ struct ExternalData {
     static var facePitchAngle: Double = 0.0
     static var faceRollAngle: Double = 0.0
     static var verticesCount: Int = 0
+    static var faceAnchor: ARFaceAnchor?
     
     static func reset() {
         // Function to reset all variables

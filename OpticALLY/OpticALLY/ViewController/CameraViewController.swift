@@ -172,7 +172,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                 
                 let configuration = ARFaceTrackingConfiguration()
                 configuration.isLightEstimationEnabled = true
-                self.session.run(configuration)
+                self.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
             })
             
         default:
@@ -220,6 +220,13 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     func session(_ session: ARSession, didFailWithError error: Error) {
         // Handle session errors
         print("ARSession failed: \(error.localizedDescription)")
+    }
+    
+    func session(_ session: ARSession, didUpdate anchors: [ARAnchor]) {
+        guard let faceAnchor = anchors.compactMap({ $0 as? ARFaceAnchor }).first else { return }
+        DispatchQueue.main.async {
+            ExternalData.faceAnchor = faceAnchor
+        }
     }
     
     func sessionWasInterrupted(_ session: ARSession) {

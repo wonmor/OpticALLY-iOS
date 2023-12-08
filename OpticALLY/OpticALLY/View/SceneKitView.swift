@@ -43,18 +43,16 @@ struct SceneKitView: UIViewRepresentable {
 
 struct SceneKitUSDZView: UIViewRepresentable {
     var usdzFileName: String
-    var faceAnchor: ARFaceAnchor?
 
     func makeUIView(context: Context) -> SCNView {
         let sceneView = SCNView()
         sceneView.autoenablesDefaultLighting = true
         sceneView.backgroundColor = .clear
         
-        if let faceAnchor = faceAnchor {
+        if let faceAnchor = ExternalData.faceAnchor {
             let transform = SCNMatrix4(faceAnchor.transform)
             sceneView.scene?.rootNode.childNodes.first?.transform = transform
         }
-        
 
         if let scene = SCNScene(named: usdzFileName) {
             // Enumerate through all nodes in the scene
@@ -72,8 +70,11 @@ struct SceneKitUSDZView: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: SCNView, context: Context) {
-        // Update the view if needed
-    }
+        guard let faceAnchor = ExternalData.faceAnchor else { return }
+
+            let faceTransform = SCNMatrix4(faceAnchor.transform)
+            uiView.scene?.rootNode.childNodes.first?.transform = faceTransform
+        }
 }
 
 struct SceneKitMDLView: UIViewRepresentable {
