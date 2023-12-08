@@ -96,11 +96,6 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             return
         }
         
-        // Check if depth data or video data was dropped (this logic might need adjusting)
-        // if depthDataWasDropped || videoDataWasDropped {
-        //    return
-        // }
-        
         // Perform face landmarks detection
         let imageRequestHandler = VNImageRequestHandler(cvPixelBuffer: videoPixelBuffer, orientation: .up, options: [:])
         do {

@@ -181,7 +181,6 @@ class CapturedImageSampler {
     /// This helper method prints out a bunch of information about a `CVPixelBuffer`. Call this
     /// to see what is going on if you're having an incorrect pixel format error.
     static func inspect(pixelBuffer: CVPixelBuffer) {
-        
         print("Beginning pixel buffer inspection.")
         let pixelFormat = CVPixelBufferGetPixelFormatType(pixelBuffer)
         print("Raw pixel format: \(pixelFormat)")

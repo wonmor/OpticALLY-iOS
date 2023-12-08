@@ -123,7 +123,6 @@ struct ExternalData {
                     color.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
 
                     colors.append(color)
-                    print("Color: \(red), \(green), \(blue), \(alpha)")
                 }
                 
                 counter += 1
