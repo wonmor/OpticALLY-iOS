@@ -110,7 +110,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         }
         
         if ExternalData.isSavingFileAsPLY {
-            printDepthData(depthData: depthData, imageSampler: imageSampler)
+            extractDepthData(depthData: depthData, imageSampler: imageSampler)
             ExternalData.isSavingFileAsPLY = false
         }
         
@@ -520,7 +520,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         }
     }
     
-    func printDepthData(depthData: AVDepthData, imageSampler: CapturedImageSampler) {
+    func extractDepthData(depthData: AVDepthData, imageSampler: CapturedImageSampler) {
         let depthPixelBuffer = depthData.depthDataMap
         
         CVPixelBufferLockBaseAddress(depthPixelBuffer, .readOnly)
@@ -531,61 +531,6 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         
         let depthWidth = CVPixelBufferGetWidth(depthPixelBuffer)
         let depthHeight = CVPixelBufferGetHeight(depthPixelBuffer)
-        
-        let colorBytesPerPixel = 4 // BGRA format
-        
-        guard let depthDataAddress = CVPixelBufferGetBaseAddress(depthPixelBuffer) else {
-            print("Unable to get depth buffer base address.")
-            return
-        }
-        
-        let depthBytesPerRow = CVPixelBufferGetBytesPerRow(depthPixelBuffer)
-        // Determine the bytes per pixel based on the depth format type
-        let depthPixelFormatType = CVPixelBufferGetPixelFormatType(depthPixelBuffer)
-        var depthBytesPerPixel: Int = 0 // Initialize with zero
-        
-        switch depthPixelFormatType {
-        case kCVPixelFormatType_DepthFloat32:
-            depthBytesPerPixel = 4
-        case kCVPixelFormatType_DepthFloat16:
-            depthBytesPerPixel = 2
-            // Add more cases as necessary for different formats
-        default:
-            print("Unsupported depth pixel format type")
-            return
-        }
-        
-        // Iterate over the image buffer
-        for y in stride(from: 0, to: depthHeight, by: 10) {
-            for x in stride(from: 0, to: depthWidth, by: 10) {
-                // Get color using CapturedImageSampler
-                let normalizedX = CGFloat(x) / CGFloat(depthWidth)
-                let normalizedY = CGFloat(y) / CGFloat(depthHeight)
-                if let color = imageSampler.getColor(atX: normalizedX, y: normalizedY) {
-                    // Extract RGBA components from UIColor
-                    var red: CGFloat = 0
-                    var green: CGFloat = 0
-                    var blue: CGFloat = 0
-                    var alpha: CGFloat = 0
-                    color.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-                    
-                    // Print the (x, y) coordinates and color value in RGBA
-                    print("Color at (\(x), \(y)): R:\(red) G:\(green) B:\(blue) A:\(alpha)")
-                    LogManager.shared.log("Color at (\(x), \(y)): R:\(red) G:\(green) B:\(blue) A:\(alpha)")
-                }
-                
-                // Calculate the depth data's corresponding pixel offset
-                let depthPixelOffset = y * depthBytesPerRow + x * depthBytesPerPixel
-                let depthPixel = depthDataAddress.advanced(by: depthPixelOffset).assumingMemoryBound(to: Float.self)
-                let depthValue = depthPixel.pointee
-                
-                // Print the (x, y) coordinates and depth value
-                print("Depth at (\(x), \(y)): \(depthValue)")
-                LogManager.shared.log("Depth at (\(x), \(y)): \(depthValue)")
-            }
-        }
-        
-        print("Completed iteration")
         
         // Call the point cloud creation function
         ExternalData.createPointCloudGeometry(
