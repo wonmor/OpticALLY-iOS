@@ -201,7 +201,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                 self.synchronizedDepthData = frame.capturedDepthData
                 self.synchronizedVideoPixelBuffer = frame.capturedImage
                 
-                if let convertedPixelBuffer = self.synchronizedVideoPixelBuffer {
+                if self.synchronizedVideoPixelBuffer != nil {
                     // Perform processing if both depth and video data are available
                     if let depthData = self.synchronizedDepthData,
                        let videoPixelBuffer = self.synchronizedVideoPixelBuffer {
