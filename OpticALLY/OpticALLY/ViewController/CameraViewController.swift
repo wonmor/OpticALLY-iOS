@@ -9,7 +9,6 @@ import SwiftUI
 import UIKit
 import ARKit
 import Accelerate
-import Vision
 import AVFoundation
 import CoreImage
 import CoreVideo
@@ -61,7 +60,6 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     private var setupResult: SessionSetupResult = .success
     
     private var session = ARSession()
-    private var faceLandmarksRequest = VNDetectFaceLandmarksRequest()
     
     private var synchronizedDepthData: AVDepthData?
     private var synchronizedVideoPixelBuffer: CVPixelBuffer?
@@ -96,14 +94,6 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             return
         }
         
-        // Perform face landmarks detection
-        let imageRequestHandler = VNImageRequestHandler(cvPixelBuffer: videoPixelBuffer, orientation: .up, options: [:])
-        do {
-            try imageRequestHandler.perform([self.faceLandmarksRequest])
-        } catch {
-            print("Error performing face landmarks detection: \(error)")
-        }
-        
         if ExternalData.isSavingFileAsPLY {
             extractDepthData(depthData: depthData, imageSampler: imageSampler)
             ExternalData.isSavingFileAsPLY = false
@@ -124,9 +114,6 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         // Bring other views to the front if they are already added in the storyboard
         view.bringSubviewToFront(cameraUnavailableLabel)
         view.bringSubviewToFront(cloudView)
-        
-        // Initialize the face landmarks request
-        self.faceLandmarksRequest = VNDetectFaceLandmarksRequest(completionHandler: self.handleFaceLandmarks)
         
         viewFrameSize = self.view.frame.size
         
