@@ -370,23 +370,18 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             return
         }
         
-        // Search for highest resolution with half-point depth values
         let depthFormats = videoDevice.activeFormat.supportedDepthDataFormats
-        let filtered = depthFormats.filter({
-            CMFormatDescriptionGetMediaSubType($0.formatDescription) == kCVPixelFormatType_DepthFloat16
-        })
-        let selectedFormat = filtered.max(by: {
-            first, second in CMVideoFormatDescriptionGetDimensions(first.formatDescription).width < CMVideoFormatDescriptionGetDimensions(second.formatDescription).width
-        })
-        
-        do {
-            try videoDevice.lockForConfiguration()
-            videoDevice.activeDepthDataFormat = selectedFormat
-            videoDevice.unlockForConfiguration()
-        } catch {
-            print("Could not lock device for configuration: \(error)")
-            setupResult = .configurationFailed
-            return
+        let highestResolutionFormat = depthFormats.filter { CMFormatDescriptionGetMediaSubType($0.formatDescription) == kCVPixelFormatType_DepthFloat32 }
+                                                 .max { CMVideoFormatDescriptionGetDimensions($0.formatDescription).width < CMVideoFormatDescriptionGetDimensions($1.formatDescription).width }
+
+        if let selectedFormat = highestResolutionFormat {
+            do {
+                try videoDevice.lockForConfiguration()
+                videoDevice.activeDepthDataFormat = selectedFormat
+                videoDevice.unlockForConfiguration()
+            } catch {
+                print("Could not lock device for configuration: \(error)")
+            }
         }
     }
     

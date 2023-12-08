@@ -137,7 +137,7 @@ class ExportViewModel: ObservableObject {
             }
             
             // Prepare the request
-            let url = URL(string: "https://harolden-server.apps.johnseong.com/convert-to-obj/")! // Replace with your actual API URL
+            let url = URL(string: "https://harolden-server.apps.johnseong.com/reconstruct-mesh/")! 
             var request = URLRequest(url: url)
             request.httpMethod = "POST"
             
