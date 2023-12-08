@@ -1,14 +1,6 @@
-/*
-See LICENSE folder for this sample’s licensing information.
-
-Abstract:
-Filter renderer protocol.
-*/
-
 import CoreMedia
 
 protocol FilterRenderer: AnyObject {
-    
     var description: String { get }
     
     var isPrepared: Bool { get }

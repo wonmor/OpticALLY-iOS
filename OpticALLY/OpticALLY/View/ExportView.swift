@@ -133,8 +133,7 @@ struct ExportView: View {
                 VStack {
                     FlashButtonView(isFlashOn: $isFlashOn)
                     
-                    Text("\(Int(round(ExternalData.faceYawAngle * 180 / .pi)))°")
-                        .font(.largeTitle)
+                    Text("YAW \(Int(round(ExternalData.faceYawAngle)))°\nPITCH \(Int(round(ExternalData.facePitchAngle)))°\nROLL \(Int(round(ExternalData.faceRollAngle)))°")
                         .bold()
                         .padding()
                         .frame(maxWidth: .infinity, alignment: .center)

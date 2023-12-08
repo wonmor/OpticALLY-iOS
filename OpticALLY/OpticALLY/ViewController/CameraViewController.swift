@@ -184,9 +184,28 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         do {
             let imageSampler = try CapturedImageSampler(arSession: session, viewController: self)
             
+            guard let faceAnchor = frame.anchors.compactMap({ $0 as? ARFaceAnchor }).first else { return }
+            
             DispatchQueue.main.async {
                 self.synchronizedDepthData = frame.capturedDepthData
                 self.synchronizedVideoPixelBuffer = frame.capturedImage
+                
+                self.viewModel!.faceAnchor = faceAnchor
+                
+                // Extract the Euler angles from the faceAnchor's transform
+                let transform = faceAnchor.transform
+                let pitchRadians = atan2(transform.columns.1.z, transform.columns.1.y)
+                let yawRadians = atan2(transform.columns.0.z, sqrt(pow(transform.columns.1.z, 2) + pow(transform.columns.1.y, 2)))
+                let rollRadians = atan2(-transform.columns.2.x, transform.columns.2.z)
+
+                // Convert radians to degrees
+                let pitchDegrees = pitchRadians * 180 / .pi
+                let yawDegrees = yawRadians * 180 / .pi
+                let rollDegrees = rollRadians * 180 / .pi
+                
+                ExternalData.faceYawAngle = Double(yawDegrees)
+                ExternalData.facePitchAngle = Double(pitchDegrees)
+                ExternalData.faceRollAngle = Double(rollDegrees)
                 
                 if self.synchronizedVideoPixelBuffer != nil {
                     // Perform processing if both depth and video data are available
@@ -254,9 +273,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     func didEnterBackground(notification: NSNotification) {
         // Free up resources
         ExternalData.renderingEnabled = false
-        //            if let videoFilter = self.videoFilter {
-        //                videoFilter.reset()
-        //            }
+
         self.videoDepthMixer.reset()
     }
     
