@@ -530,15 +530,15 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             CVPixelBufferUnlockBaseAddress(depthPixelBuffer, .readOnly)
         }
         
-        let depthWidth = CVPixelBufferGetWidth(depthPixelBuffer)
-        let depthHeight = CVPixelBufferGetHeight(depthPixelBuffer)
+        ExternalData.depthWidth = CVPixelBufferGetWidth(depthPixelBuffer)
+        ExternalData.depthHeight = CVPixelBufferGetHeight(depthPixelBuffer)
         
         // Call the point cloud creation function
         ExternalData.createPointCloudGeometry(
             depthData: depthData,
             imageSampler: imageSampler,
-            width: depthWidth,
-            height: depthHeight,
+            width: ExternalData.depthWidth,
+            height: ExternalData.depthHeight,
             calibrationData: depthData.cameraCalibrationData!
         )
         

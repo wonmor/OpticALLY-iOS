@@ -52,6 +52,8 @@ struct ExternalData {
     static var pupilDistance: Double = 0.0
     static var verticesCount: Int = 0
     static var faceAnchor: ARFaceAnchor?
+    static var depthWidth: Int = 640
+    static var depthHeight: Int = 480
     
     static func reset() {
         // Function to reset all variables

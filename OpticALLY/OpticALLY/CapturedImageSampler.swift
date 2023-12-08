@@ -66,7 +66,8 @@ class CapturedImageSampler {
     /// captured image that it contains.
     /// - Parameter frame: An `ARFrame` instance that you wish to sample for RGB colors.
     init(arSession: ARSession, viewController: UIViewController) throws {
-        let desiredSize = CGSize(width: 480, height: 640)
+        // Flipped parameters as it is a vertical image, not horizontal
+        let desiredSize = CGSize(width: ExternalData.depthHeight, height: ExternalData.depthWidth)
         let pixelBuffer = arSession.getTransformedCapturedImage(resizedTo: desiredSize, in: viewController)!
         
         // Double-check that the format hasn't changed unexpectedly.
