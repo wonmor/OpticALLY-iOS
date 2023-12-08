@@ -322,10 +322,6 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         }, completion: nil)
     }
     
-    // MARK: - KVO and Notifications
-    
-    private var sessionRunningContext = 0
-    
     private func addObservers() {
         NotificationCenter.default.addObserver(self, selector: #selector(didEnterBackground),
                                                name: UIApplication.didEnterBackgroundNotification, object: nil)
@@ -335,21 +331,10 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                                                name: ProcessInfo.thermalStateDidChangeNotification,    object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(sessionRuntimeError),
                                                name: NSNotification.Name.AVCaptureSessionRuntimeError, object: session)
-        
-        session.addObserver(self, forKeyPath: "running", options: NSKeyValueObservingOptions.new, context: &sessionRunningContext)
-        
-        
     }
     
     deinit {
         NotificationCenter.default.removeObserver(self)
-        session.removeObserver(self, forKeyPath: "running", context: &sessionRunningContext)
-    }
-    
-    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey: Any]?, context: UnsafeMutableRawPointer?) {
-        if context != &sessionRunningContext {
-            super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
-        }
     }
     
     // MARK: - Session Management
