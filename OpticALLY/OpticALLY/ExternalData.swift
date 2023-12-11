@@ -52,7 +52,7 @@ struct ExternalData {
     static var isMeshView = false
     static var exportPLYData: Data?
     static var pointCloudGeometries: [SCNGeometry] = []
-    static var pointCloudDataArray: [PointCloudData] = []
+    static var pointCloudDataArray: [PointCloudMetadata] = []
     static var faceYawAngle: Double = 0.0
     static var facePitchAngle: Double = 0.0
     static var faceRollAngle: Double = 0.0
