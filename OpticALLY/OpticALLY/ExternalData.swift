@@ -85,20 +85,56 @@ struct ExternalData {
         return SCNVector3(sum.x / count, sum.y / count, sum.z / count)
     }
     
+    static func rotateVertexAroundX(_ vertex: SCNVector3, around center: SCNVector3, yawAngle: Float) -> SCNVector3 {
+        // Translate the vertex to the origin (relative to the center)
+        var translatedVertex = vertex
+        translatedVertex.y -= center.y
+        translatedVertex.z -= center.z
+
+        // Apply rotation around the X-axis
+        let cosAngle = cos(yawAngle)
+        let sinAngle = sin(yawAngle)
+
+        let rotatedY = translatedVertex.y * cosAngle - translatedVertex.z * sinAngle
+        let rotatedZ = translatedVertex.y * sinAngle + translatedVertex.z * cosAngle
+
+        // Translate the vertex back (relative to the center)
+        return SCNVector3(vertex.x, rotatedY + center.y, rotatedZ + center.z)
+    }
+    
+    static func rotateVertexAroundY(_ vertex: SCNVector3, around center: SCNVector3, yawAngle: Float) -> SCNVector3 {
+        // Translate the vertex to the origin (relative to the center)
+        var translatedVertex = vertex
+        translatedVertex.x -= center.x
+        translatedVertex.z -= center.z
+
+        // Apply rotation around the Y-axis
+        let cosYaw = cos(yawAngle)
+        let sinYaw = sin(yawAngle)
+
+        let rotatedX = translatedVertex.x * cosYaw + translatedVertex.z * sinYaw
+        let rotatedZ = -translatedVertex.x * sinYaw + translatedVertex.z * cosYaw
+
+        // Translate the vertex back (relative to the center)
+        return SCNVector3(rotatedX + center.x, vertex.y, rotatedZ + center.z)
+    }
+    
     // Function to rotate a vertex around a given center
-    static func rotateVertex(_ vertex: SCNVector3, around center: SCNVector3, with transform: SCNMatrix4) -> SCNVector3 {
+    static func rotateVertexAroundZ(_ vertex: SCNVector3, around center: SCNVector3, yawAngle: Float) -> SCNVector3 {
+        // Translate the vertex to origin by subtracting the center
         var translatedVertex = vertex
         translatedVertex.x -= center.x
         translatedVertex.y -= center.y
-        translatedVertex.z -= center.z
-        
-        var rotatedVertex = applyMatrixToVector3(translatedVertex, with: transform)
-        
-        rotatedVertex.x += center.x
-        rotatedVertex.y += center.y
-        rotatedVertex.z += center.z
-        
-        return rotatedVertex
+
+        // Apply rotation around the Z-axis
+        let cosAngle = cos(yawAngle)
+        let sinAngle = sin(yawAngle)
+
+        let rotatedX = translatedVertex.x * cosAngle - translatedVertex.y * sinAngle
+        let rotatedY = translatedVertex.x * sinAngle + translatedVertex.y * cosAngle
+
+        // Translate the vertex back by adding the center
+        return SCNVector3(rotatedX + center.x, rotatedY + center.y, vertex.z)
     }
     
     // Function to apply a matrix transformation to a SCNVector3
@@ -112,21 +148,6 @@ struct ExternalData {
     // Function to extract yaw angle from the transform matrix
     static func getYawAngle(from transform: SCNMatrix4) -> Float {
         return atan2(transform.m21, transform.m11)
-    }
-
-    // Function to rotate a vertex around the Y-axis
-    static func rotateVertexAroundY(_ vertex: SCNVector3, around center: SCNVector3, yawAngle: Float) -> SCNVector3 {
-        var translatedVertex = vertex
-        translatedVertex.x -= center.x
-        translatedVertex.z -= center.z
-
-        let cosYaw = cos(yawAngle)
-        let sinYaw = sin(yawAngle)
-
-        let rotatedX = translatedVertex.x * cosYaw - translatedVertex.z * sinYaw
-        let rotatedZ = translatedVertex.x * sinYaw + translatedVertex.z * cosYaw
-
-        return SCNVector3(rotatedX + center.x, translatedVertex.y, rotatedZ + center.z)
     }
     
     static func createPointCloudGeometry(depthData: AVDepthData, imageSampler: CapturedImageSampler, width: Int, height: Int, calibrationData: AVCameraCalibrationData, transform: SCNMatrix4, percentile: Float = 35.0) {
@@ -184,18 +205,20 @@ struct ExternalData {
             }
         }
         
-        // Calculate the center
-        let center = calculateCenter(of: vertices)
+        if let index: Int? = ExternalData.pointCloudGeometries.count,
+           index! < ExternalData.pointCloudDataArray.count {
+               let metadata = ExternalData.pointCloudDataArray[index!]
+               let yawAngle = Float(metadata.yaw)
 
-        // Print the yaw angle
-        let yawAngle = getYawAngle(from: transform)
-        print("Yaw Angle: \(yawAngle)")
+               // Calculate the center
+               let center = calculateCenter(of: vertices)
 
-        // Apply the rotation around the center using the yaw angle
-//        for i in 0..<vertices.count {
-//            // Don't forget the negative (-) sign in front of yaw angle
-//            vertices[i] = rotateVertexAroundY(vertices[i], around: center, yawAngle: -yawAngle)
-//        }
+               // Rotate vertices around the Z-axis using the yaw angle
+               for i in 0..<vertices.count {
+                   vertices[i] = rotateVertexAroundX(vertices[i], around: center, yawAngle: -yawAngle)
+               }
+           }
+        
         // Create the geometry source for vertices
         let vertexSource = SCNGeometrySource(vertices: vertices)
         
@@ -224,9 +247,6 @@ struct ExternalData {
                                             bytesPerComponent: MemoryLayout<CGFloat>.size,
                                             dataOffset: 0,
                                             dataStride: MemoryLayout<CGFloat>.size * 4)
-        
-        // Combine Vertex and Color Sources
-        let geometrySources = [vertexSource, colorSource]
         
         // Create the geometry element
         let indices: [Int32] = Array(0..<Int32(vertices.count))

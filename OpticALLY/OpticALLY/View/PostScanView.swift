@@ -19,6 +19,7 @@ struct PostScanView: View {
     @State private var showCompletionCheckmark = false
     @State private var showAlert = false
     @State private var isInteractionDisabled = false
+    @State private var showTimeoutAlert = false
     
     var body: some View {
         ZStack {
@@ -53,10 +54,25 @@ struct PostScanView: View {
                 .padding(.top)
                 
                 if triggerUpdate {
-                    SceneKitMDLView(mdlAsset: MDLAsset(url: exportViewModel.fileURL!))
-                        .onAppear(perform: {
-                            print("File URL: \(exportViewModel.fileURL!)")
-                        })
+                    if exportViewModel.fileURL != nil {
+                        SceneKitMDLView(mdlAsset: MDLAsset(url: exportViewModel.fileURL!))
+                            .onAppear(perform: {
+                                print("File URL: \(exportViewModel.fileURL!)")
+                            })
+                    } else {
+                        EmptyView()
+                            .onAppear() {
+                                self.showTimeoutAlert = true
+                                
+                            }
+                            .alert(isPresented: $showTimeoutAlert) {
+                                Alert(
+                                    title: Text("Network Timeout"),
+                                    message: Text("Unable to connect to the server. Please check your internet connection and try again."),
+                                    dismissButton: .default(Text("OK"))
+                                )
+                            }
+                    }
                     
                 } else if !ExternalData.pointCloudGeometries.isEmpty {
                     SceneKitView(geometries: ExternalData.pointCloudGeometries)
