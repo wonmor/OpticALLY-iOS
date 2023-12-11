@@ -124,7 +124,7 @@ struct ExternalData {
                     var blue: CGFloat = 0
                     var alpha: CGFloat = 0
                     color.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-
+                    
                     colors.append(color)
                 }
                 
@@ -173,51 +173,47 @@ struct ExternalData {
                                          bytesPerIndex: MemoryLayout<Int32>.size)
         
         // Create the point cloud geometry
-       let newPointCloudGeometry = SCNGeometry(sources: [vertexSource, colorSource], elements: [element])
-       newPointCloudGeometry.firstMaterial?.lightingModel = .constant
-       newPointCloudGeometry.firstMaterial?.isDoubleSided = true
-       
-       // Append the new geometry to the array
-       pointCloudGeometries.append(newPointCloudGeometry)
-       
-       print("Done constructing the 3D object!")
-       LogManager.shared.log("Done constructing the 3D object!")
-   }
+        let newPointCloudGeometry = SCNGeometry(sources: [vertexSource, colorSource], elements: [element])
+        newPointCloudGeometry.firstMaterial?.lightingModel = .constant
+        newPointCloudGeometry.firstMaterial?.isDoubleSided = true
+        
+        // Append the new geometry to the array
+        pointCloudGeometries.append(newPointCloudGeometry)
+        
+        print("Done constructing the 3D object!")
+        LogManager.shared.log("Done constructing the 3D object!")
+    }
     
     static func exportGeometryAsPLY(to url: URL) {
-        guard let geometry: SCNGeometry? = pointCloudGeometries[0],
-              let vertexSource = geometry!.sources.first(where: { $0.semantic == .vertex }),
-              let colorSource = geometry!.sources.first(where: { $0.semantic == .color }) else {
-            print("Unable to access vertex or color source from geometry")
-            return
+        var allVertices = [SCNVector3]()
+        var allColors = [SCNVector4]() // Assuming color data is stored as SCNVector4
+        
+        for geometry in pointCloudGeometries {
+            guard let vertexSource = geometry.sources.first(where: { $0.semantic == .vertex }),
+                  let colorSource = geometry.sources.first(where: { $0.semantic == .color }) else {
+                print("Unable to access vertex or color source from geometry")
+                continue
+            }
+            
+            let vertexCount = vertexSource.vectorCount
+            let vertices = vertexSource.data.toArray(type: SCNVector3.self, count: vertexCount)
+            let colors = colorSource.data.toArray(type: SCNVector4.self, count: vertexCount) // Assuming SCNVector4 for colors
+            
+            allVertices += vertices
+            allColors += colors
         }
         
-        // Access vertex data
-        guard let vertexData: Data? = vertexSource.data else {
-            print("Unable to access vertex data")
-            return
-        }
-        
-        // Access color data
-        guard let colorData: Data? = colorSource.data else {
-            print("Unable to access color data")
-            return
-        }
-        
-        let vertexCount = vertexSource.vectorCount
-        let vertices = vertexSource.data.toArray(type: SCNVector3.self, count: vertexCount)
-        let colors = colorSource.data.toArray(type: Float.self, count: vertexCount * 4)
-        
-        var plyString = "ply\nformat ascii 1.0\nelement vertex \(vertexCount)\n"
+        let totalVertexCount = allVertices.count
+        var plyString = "ply\nformat ascii 1.0\nelement vertex \(totalVertexCount)\n"
         plyString += "property float x\nproperty float y\nproperty float z\n"
         plyString += "property uchar red\nproperty uchar green\nproperty uchar blue\nproperty uchar alpha\n"
         plyString += "end_header\n"
         
-        for i in 0..<vertexCount {
-            let vertex = vertices[i]
-            let colorIndex = i * 4
-            let color = colors[colorIndex..<colorIndex + 4].map { UInt8($0 * 255) }
-            plyString += "\(vertex.x) \(vertex.y) \(vertex.z) \(color[0]) \(color[1]) \(color[2]) \(color[3])\n"
+        for i in 0..<totalVertexCount {
+            let vertex = allVertices[i]
+            let color = allColors[i]
+            let colorComponents = [color.x, color.y, color.z, color.w].map { UInt8($0 * 255) }
+            plyString += "\(vertex.x) \(vertex.y) \(vertex.z) \(colorComponents[0]) \(colorComponents[1]) \(colorComponents[2]) \(colorComponents[3])\n"
         }
         
         do {
