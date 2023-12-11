@@ -535,14 +535,35 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         let transform = makeTransformationMatrix(yaw: yaw, pitch: pitch, roll: roll)
         
         if ExternalData.isSavingFileAsPLY {
-          let pointCloudData = PointCloudMetadata(
-              yaw: ExternalData.faceYawAngle,
-              pitch: ExternalData.facePitchAngle,
-              roll: ExternalData.faceRollAngle
-          )
-          ExternalData.pointCloudDataArray.append(pointCloudData)
-          ExternalData.isSavingFileAsPLY = false
-      }
+            guard let faceAnchor = self.viewModel?.faceAnchor else { return }
+
+            let leftEyePosition = SCNVector3(
+                x: faceAnchor.leftEyeTransform.columns.3.x,
+                y: faceAnchor.leftEyeTransform.columns.3.y,
+                z: faceAnchor.leftEyeTransform.columns.3.z
+            )
+            let rightEyePosition = SCNVector3(
+                x: faceAnchor.rightEyeTransform.columns.3.x,
+                y: faceAnchor.rightEyeTransform.columns.3.y,
+                z: faceAnchor.rightEyeTransform.columns.3.z
+            )
+            let noseTipPosition = SCNVector3(
+                x: faceAnchor.transform.columns.3.x,
+                y: faceAnchor.transform.columns.3.y,
+                z: faceAnchor.transform.columns.3.z
+            )
+
+            let pointCloudMetadata = PointCloudMetadata(
+                yaw: ExternalData.faceYawAngle,
+                pitch: ExternalData.facePitchAngle,
+                roll: ExternalData.faceRollAngle,
+                leftEyePosition: leftEyePosition,
+                rightEyePosition: rightEyePosition,
+                noseTipPosition: noseTipPosition
+            )
+            ExternalData.pointCloudDataArray.append(pointCloudMetadata)
+            ExternalData.isSavingFileAsPLY = false
+        }
         
         // Existing point cloud creation function, modified to include transformation
         ExternalData.createPointCloudGeometry(

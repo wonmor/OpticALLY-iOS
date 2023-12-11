@@ -16,6 +16,9 @@ struct PointCloudMetadata {
     var yaw: Double
     var pitch: Double
     var roll: Double
+    var leftEyePosition: SCNVector3
+    var rightEyePosition: SCNVector3
+    var noseTipPosition: SCNVector3
 }
 
 /// ExternalData is a central repository for managing and processing 3D depth and color data, primarily focusing on creating point cloud geometries and exporting them in PLY format. It enables the integration of various sensory data inputs and computational geometry processing.
@@ -189,9 +192,6 @@ struct ExternalData {
         
         // Create the geometry source for vertices
         let vertexSource = SCNGeometrySource(vertices: vertices)
-        
-        // Assuming the UIColor's data is not properly formatted for the SCNGeometrySource
-        // Instead, create an array of normalized float values representing the color data
         
         // Convert UIColors to Float Components
         var colorComponents: [CGFloat] = []
