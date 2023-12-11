@@ -92,7 +92,7 @@ struct ExportView: View {
             if exportViewModel.isLoading {
                 VStack(spacing: 10) { // Adjust spacing as needed
                     ProgressView()
-                        .scaleEffect(1.5, anchor: .center) // Adjust size as needed
+                        .scaleEffect(2.5, anchor: .center) // Adjust size as needed
                         .progressViewStyle(CircularProgressViewStyle(tint: isFlashOn ? .white : .black)) // Spinner color
                         .padding()
                     
