@@ -528,19 +528,36 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         ExternalData.depthWidth = CVPixelBufferGetWidth(depthPixelBuffer)
         ExternalData.depthHeight = CVPixelBufferGetHeight(depthPixelBuffer)
         
-        // Call the point cloud creation function
+        // Prepare transformation based on yaw, pitch, and roll
+        let yaw = ExternalData.faceYawAngle
+        let pitch = ExternalData.facePitchAngle
+        let roll = ExternalData.faceRollAngle
+        let transform = makeTransformationMatrix(yaw: yaw, pitch: pitch, roll: roll)
+        
+        // Existing point cloud creation function, modified to include transformation
         ExternalData.createPointCloudGeometry(
             depthData: depthData,
             imageSampler: imageSampler,
             width: ExternalData.depthWidth,
             height: ExternalData.depthHeight,
-            calibrationData: depthData.cameraCalibrationData!
+            calibrationData: depthData.cameraCalibrationData!,
+            transform: transform // pass the transform here
         )
         
         // Synchronize access to the shared resource
         DispatchQueue.main.async {
             ExternalData.renderingEnabled = true
         }
+    }
+
+    // Function to create a transformation matrix from Euler angles
+    func makeTransformationMatrix(yaw: Double, pitch: Double, roll: Double) -> SCNMatrix4 {
+        let yawMatrix = SCNMatrix4MakeRotation(Float(yaw), 0, 1, 0)
+        let pitchMatrix = SCNMatrix4MakeRotation(Float(pitch), 1, 0, 0)
+        let rollMatrix = SCNMatrix4MakeRotation(Float(roll), 0, 0, 1)
+
+        let combinedMatrix = SCNMatrix4Mult(SCNMatrix4Mult(yawMatrix, pitchMatrix), rollMatrix)
+        return combinedMatrix
     }
 
     @IBSegueAction func embedSwiftUIView(_ coder: NSCoder) -> UIViewController? {
