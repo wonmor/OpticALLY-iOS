@@ -55,9 +55,20 @@ struct ExternalData {
     static var depthWidth: Int = 640
     static var depthHeight: Int = 480
     
+    var vertices: [SCNVector3] = []
+    var colors: [UIColor] = []
+    
     static func reset() {
         // Function to reset all variables
         pointCloudGeometries.removeAll()
+    }
+    
+    // Function to apply a matrix transformation to a SCNVector3
+    static func applyMatrixToVector3(_ vector: SCNVector3, with matrix: SCNMatrix4) -> SCNVector3 {
+        let x = vector.x * matrix.m11 + vector.y * matrix.m21 + vector.z * matrix.m31 + matrix.m41
+        let y = vector.x * matrix.m12 + vector.y * matrix.m22 + vector.z * matrix.m32 + matrix.m42
+        let z = vector.x * matrix.m13 + vector.y * matrix.m23 + vector.z * matrix.m33 + matrix.m43
+        return SCNVector3(x, y, z)
     }
     
     // Function to convert depth and color data into a point cloud geometry
@@ -65,14 +76,14 @@ struct ExternalData {
         var vertices: [SCNVector3] = []
         var colors: [UIColor] = []
         var depthValues: [Float] = []
-        
+
         let cameraIntrinsics = calibrationData.intrinsicMatrix
-        
+
         let convertedDepthData = depthData.converting(toDepthDataType: kCVPixelFormatType_DepthFloat16)
         let depthDataMap = convertedDepthData.depthDataMap
         CVPixelBufferLockBaseAddress(depthDataMap, .readOnly)
         defer { CVPixelBufferUnlockBaseAddress(depthDataMap, .readOnly) }
-        
+
         // Collect all depth values
         for y in 0..<height {
             for x in 0..<width {
@@ -82,53 +93,42 @@ struct ExternalData {
                 depthValues.append(depthValue)
             }
         }
-        
-        let unsortedDepthValues = depthValues
-        
+
         // Sort the depth values
         depthValues.sort()
-        
+
         // Determine the depth threshold for the 30th percentile
         let index = Int(Float(depthValues.count) * percentile / 100.0)
         let depthThreshold = depthValues[max(0, min(index, depthValues.count - 1))]
-        
-        var counter = 1
-        
+
         // Process points with depth values lower than the threshold
         for y in 0..<height {
             for x in 0..<width {
                 let depthOffset = y * CVPixelBufferGetBytesPerRow(depthDataMap) + x * MemoryLayout<UInt16>.size
                 let depthPointer = CVPixelBufferGetBaseAddress(depthDataMap)!.advanced(by: depthOffset).assumingMemoryBound(to: UInt16.self)
                 let depthValue = Float(depthPointer.pointee)
-                
+
                 if depthValue > depthThreshold {
                     continue // Skip this point
                 }
-                
-                // MARK - CUSTOM SCALE FACTOR
-                let scaleFactor = Float(2.0) // Custom value for depth exaggeration
-                
+
+                // Custom scale factor for depth exaggeration
+                let scaleFactor = Float(2.0)
+
                 let xrw = (Float(x) - cameraIntrinsics.columns.2.x) * depthValue / cameraIntrinsics.columns.0.x
                 let yrw = (Float(y) - cameraIntrinsics.columns.2.y) * depthValue / cameraIntrinsics.columns.1.y
-                let vertex = SCNVector3(x: xrw, y: yrw, z: depthValue * scaleFactor)
-                
-                vertices.append(vertex)
-                
+                var vertex = SCNVector3(x: xrw, y: yrw, z: depthValue * scaleFactor)
+
+                // Apply the transformation to the vertex
+                let transformedVertex = applyMatrixToVector3(vertex, with: transform)
+                vertices.append(transformedVertex)
+
                 // Get color using CapturedImageSampler
                 let normalizedX = CGFloat(x) / CGFloat(width)
                 let normalizedY = CGFloat(y) / CGFloat(height)
                 if let color = imageSampler.getColor(atX: normalizedX, y: normalizedY) {
-                    // Extract RGBA components from UIColor
-                    var red: CGFloat = 0
-                    var green: CGFloat = 0
-                    var blue: CGFloat = 0
-                    var alpha: CGFloat = 0
-                    color.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-                    
                     colors.append(color)
                 }
-                
-                counter += 1
             }
         }
         
