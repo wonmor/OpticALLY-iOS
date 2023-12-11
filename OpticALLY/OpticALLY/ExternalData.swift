@@ -12,6 +12,12 @@ import SceneKit
 import ARKit
 import Foundation
 
+struct PointCloudMetadata {
+    var yaw: Double
+    var pitch: Double
+    var roll: Double
+}
+
 /// ExternalData is a central repository for managing and processing 3D depth and color data, primarily focusing on creating point cloud geometries and exporting them in PLY format. It enables the integration of various sensory data inputs and computational geometry processing.
 
 /// This struct is essential for applications dealing with 3D reconstruction, AR experiences, or any scenario where real-world spatial data needs to be captured and manipulated. Use ExternalData to generate and manage 3D point cloud geometries from depth and color data.
@@ -46,6 +52,7 @@ struct ExternalData {
     static var isMeshView = false
     static var exportPLYData: Data?
     static var pointCloudGeometries: [SCNGeometry] = []
+    static var pointCloudDataArray: [PointCloudData] = []
     static var faceYawAngle: Double = 0.0
     static var facePitchAngle: Double = 0.0
     static var faceRollAngle: Double = 0.0
@@ -63,6 +70,37 @@ struct ExternalData {
         pointCloudGeometries.removeAll()
     }
     
+    // Function to calculate the center of a set of vertices
+    static func calculateCenter(of vertices: [SCNVector3]) -> SCNVector3 {
+        var sum = SCNVector3(0, 0, 0)
+        guard !vertices.isEmpty else { return sum }
+        
+        for vertex in vertices {
+            sum.x += vertex.x
+            sum.y += vertex.y
+            sum.z += vertex.z
+        }
+        
+        let count = Float(vertices.count)
+        return SCNVector3(sum.x / count, sum.y / count, sum.z / count)
+    }
+    
+    // Function to rotate a vertex around a given center
+    static func rotateVertex(_ vertex: SCNVector3, around center: SCNVector3, with transform: SCNMatrix4) -> SCNVector3 {
+        var translatedVertex = vertex
+        translatedVertex.x -= center.x
+        translatedVertex.y -= center.y
+        translatedVertex.z -= center.z
+        
+        var rotatedVertex = applyMatrixToVector3(translatedVertex, with: transform)
+        
+        rotatedVertex.x += center.x
+        rotatedVertex.y += center.y
+        rotatedVertex.z += center.z
+        
+        return rotatedVertex
+    }
+    
     // Function to apply a matrix transformation to a SCNVector3
     static func applyMatrixToVector3(_ vector: SCNVector3, with matrix: SCNMatrix4) -> SCNVector3 {
         let x = vector.x * matrix.m11 + vector.y * matrix.m21 + vector.z * matrix.m31 + matrix.m41
@@ -71,7 +109,26 @@ struct ExternalData {
         return SCNVector3(x, y, z)
     }
     
-    // Function to convert depth and color data into a point cloud geometry
+    // Function to extract yaw angle from the transform matrix
+    static func getYawAngle(from transform: SCNMatrix4) -> Float {
+        return atan2(transform.m21, transform.m11)
+    }
+
+    // Function to rotate a vertex around the Y-axis
+    static func rotateVertexAroundY(_ vertex: SCNVector3, around center: SCNVector3, yawAngle: Float) -> SCNVector3 {
+        var translatedVertex = vertex
+        translatedVertex.x -= center.x
+        translatedVertex.z -= center.z
+
+        let cosYaw = cos(yawAngle)
+        let sinYaw = sin(yawAngle)
+
+        let rotatedX = translatedVertex.x * cosYaw - translatedVertex.z * sinYaw
+        let rotatedZ = translatedVertex.x * sinYaw + translatedVertex.z * cosYaw
+
+        return SCNVector3(rotatedX + center.x, translatedVertex.y, rotatedZ + center.z)
+    }
+    
     static func createPointCloudGeometry(depthData: AVDepthData, imageSampler: CapturedImageSampler, width: Int, height: Int, calibrationData: AVCameraCalibrationData, transform: SCNMatrix4, percentile: Float = 35.0) {
         var vertices: [SCNVector3] = []
         var colors: [UIColor] = []
@@ -112,16 +169,11 @@ struct ExternalData {
                     continue // Skip this point
                 }
 
-                // Custom scale factor for depth exaggeration
-                let scaleFactor = Float(2.0)
-
+                let scaleFactor = Float(2.0) // Custom scale factor for depth exaggeration
                 let xrw = (Float(x) - cameraIntrinsics.columns.2.x) * depthValue / cameraIntrinsics.columns.0.x
                 let yrw = (Float(y) - cameraIntrinsics.columns.2.y) * depthValue / cameraIntrinsics.columns.1.y
-                var vertex = SCNVector3(x: xrw, y: yrw, z: depthValue * scaleFactor)
-
-                // Apply the transformation to the vertex
-                let transformedVertex = applyMatrixToVector3(vertex, with: transform)
-                vertices.append(transformedVertex)
+                let vertex = SCNVector3(x: xrw, y: yrw, z: depthValue * scaleFactor)
+                vertices.append(vertex)
 
                 // Get color using CapturedImageSampler
                 let normalizedX = CGFloat(x) / CGFloat(width)
@@ -132,6 +184,18 @@ struct ExternalData {
             }
         }
         
+        // Calculate the center
+        let center = calculateCenter(of: vertices)
+
+        // Print the yaw angle
+        let yawAngle = getYawAngle(from: transform)
+        print("Yaw Angle: \(yawAngle)")
+
+        // Apply the rotation around the center using the yaw angle
+//        for i in 0..<vertices.count {
+//            // Don't forget the negative (-) sign in front of yaw angle
+//            vertices[i] = rotateVertexAroundY(vertices[i], around: center, yawAngle: -yawAngle)
+//        }
         // Create the geometry source for vertices
         let vertexSource = SCNGeometrySource(vertices: vertices)
         

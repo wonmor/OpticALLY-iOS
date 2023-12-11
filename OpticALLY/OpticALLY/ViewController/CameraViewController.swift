@@ -534,6 +534,16 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         let roll = ExternalData.faceRollAngle
         let transform = makeTransformationMatrix(yaw: yaw, pitch: pitch, roll: roll)
         
+        if ExternalData.isSavingFileAsPLY {
+          let pointCloudData = PointCloudMetadata(
+              yaw: ExternalData.faceYawAngle,
+              pitch: ExternalData.facePitchAngle,
+              roll: ExternalData.faceRollAngle
+          )
+          ExternalData.pointCloudDataArray.append(pointCloudData)
+          ExternalData.isSavingFileAsPLY = false
+      }
+        
         // Existing point cloud creation function, modified to include transformation
         ExternalData.createPointCloudGeometry(
             depthData: depthData,
