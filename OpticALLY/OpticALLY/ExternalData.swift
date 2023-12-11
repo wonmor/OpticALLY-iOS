@@ -85,15 +85,18 @@ struct ExternalData {
         return SCNVector3(sum.x / count, sum.y / count, sum.z / count)
     }
     
-    static func rotateVertexAroundX(_ vertex: SCNVector3, around center: SCNVector3, yawAngle: Float) -> SCNVector3 {
+    static func rotateVertexAroundX(_ vertex: SCNVector3, around center: SCNVector3, angleDegrees: Float) -> SCNVector3 {
+        // Convert angle from degrees to radians
+        let angleRadians = angleDegrees * .pi / 180
+
         // Translate the vertex to the origin (relative to the center)
         var translatedVertex = vertex
         translatedVertex.y -= center.y
         translatedVertex.z -= center.z
 
         // Apply rotation around the X-axis
-        let cosAngle = cos(yawAngle)
-        let sinAngle = sin(yawAngle)
+        let cosAngle = cos(angleRadians)
+        let sinAngle = sin(angleRadians)
 
         let rotatedY = translatedVertex.y * cosAngle - translatedVertex.z * sinAngle
         let rotatedZ = translatedVertex.y * sinAngle + translatedVertex.z * cosAngle
@@ -101,42 +104,7 @@ struct ExternalData {
         // Translate the vertex back (relative to the center)
         return SCNVector3(vertex.x, rotatedY + center.y, rotatedZ + center.z)
     }
-    
-    static func rotateVertexAroundY(_ vertex: SCNVector3, around center: SCNVector3, yawAngle: Float) -> SCNVector3 {
-        // Translate the vertex to the origin (relative to the center)
-        var translatedVertex = vertex
-        translatedVertex.x -= center.x
-        translatedVertex.z -= center.z
 
-        // Apply rotation around the Y-axis
-        let cosYaw = cos(yawAngle)
-        let sinYaw = sin(yawAngle)
-
-        let rotatedX = translatedVertex.x * cosYaw + translatedVertex.z * sinYaw
-        let rotatedZ = -translatedVertex.x * sinYaw + translatedVertex.z * cosYaw
-
-        // Translate the vertex back (relative to the center)
-        return SCNVector3(rotatedX + center.x, vertex.y, rotatedZ + center.z)
-    }
-    
-    // Function to rotate a vertex around a given center
-    static func rotateVertexAroundZ(_ vertex: SCNVector3, around center: SCNVector3, yawAngle: Float) -> SCNVector3 {
-        // Translate the vertex to origin by subtracting the center
-        var translatedVertex = vertex
-        translatedVertex.x -= center.x
-        translatedVertex.y -= center.y
-
-        // Apply rotation around the Z-axis
-        let cosAngle = cos(yawAngle)
-        let sinAngle = sin(yawAngle)
-
-        let rotatedX = translatedVertex.x * cosAngle - translatedVertex.y * sinAngle
-        let rotatedY = translatedVertex.x * sinAngle + translatedVertex.y * cosAngle
-
-        // Translate the vertex back by adding the center
-        return SCNVector3(rotatedX + center.x, rotatedY + center.y, vertex.z)
-    }
-    
     // Function to apply a matrix transformation to a SCNVector3
     static func applyMatrixToVector3(_ vector: SCNVector3, with matrix: SCNMatrix4) -> SCNVector3 {
         let x = vector.x * matrix.m11 + vector.y * matrix.m21 + vector.z * matrix.m31 + matrix.m41
@@ -215,7 +183,7 @@ struct ExternalData {
 
                // Rotate vertices around the Z-axis using the yaw angle
                for i in 0..<vertices.count {
-                   vertices[i] = rotateVertexAroundX(vertices[i], around: center, yawAngle: -yawAngle)
+                   vertices[i] = rotateVertexAroundX(vertices[i], around: center, angleDegrees: -yawAngle)
                }
            }
         
