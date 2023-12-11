@@ -12,34 +12,34 @@ import SceneKit.ModelIO
 import ARKit
 
 struct SceneKitView: UIViewRepresentable {
-    var geometry: SCNGeometry?
-    
+    var geometries: [SCNGeometry] // Changed to an array
+
     func makeUIView(context: Context) -> SCNView {
         let scnView = SCNView()
-        
+
         // Configure the scene
         let scene = SCNScene()
         scnView.scene = scene
-        
-        // Check if geometry is provided
-        if let geometry = geometry {
+
+        // Iterate through geometries and add each to the scene
+        for geometry in geometries {
             let node = SCNNode(geometry: geometry)
             node.position = SCNVector3(x: 0, y: 0, z: 0)
-            
             node.eulerAngles.z = .pi / -2
-            
+
             scene.rootNode.addChildNode(node)
         }
-        
+
         scnView.autoenablesDefaultLighting = true
         scnView.allowsCameraControl = true
         scnView.backgroundColor = UIColor.white
-        
+
         return scnView
     }
-    
+
     func updateUIView(_ uiView: SCNView, context: Context) {}
 }
+
 
 struct SceneKitUSDZView: UIViewRepresentable {
     var usdzFileName: String

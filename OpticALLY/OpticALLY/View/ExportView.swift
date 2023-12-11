@@ -53,6 +53,7 @@ struct ExportView: View {
     @State private var showDropdown: Bool = false
     @State private var showConsoleOutput: Bool = false
     @State private var showAlert = false
+    @State private var showArrow = true
     @State private var isFlashOn = false
     @State private var isLeftHalf = true
     @State private var headTurnState = HeadTurnState.center
@@ -60,6 +61,14 @@ struct ExportView: View {
     @State private var isRingAnimationStarted = false
     @State private var stateChangeCount = 0
     @State private var previousYaw: Double = 0
+    
+    // Target states for scanning
+   @State private var targetYaw: Double = 0
+   @State private var targetPitch: Double = 0
+   @State private var targetRoll: Double = 0
+
+   // Counter to keep track of the number of scans
+   @State private var scanCount = 0
     
     @ObservedObject var logManager = LogManager.shared
     @EnvironmentObject var globalState: GlobalState
@@ -69,29 +78,10 @@ struct ExportView: View {
     
     let maxOffset: CGFloat = 30.0 // change this to control how much the finger moves
     
-    private func progressView(for state: HeadTurnState) -> some View {
-        Group {
-            switch state {
-            case .left:
-                Circle()
-                    .trim(from: 0.66, to: 1)
-                    .stroke(isFlashOn ? .black : .blue, lineWidth: 5)
-                    .rotationEffect(Angle(degrees: -90))
-            case .center:
-                Circle()
-                    .trim(from: 0.33, to: 0.66)
-                    .stroke(isFlashOn ? .black : .yellow, lineWidth: 5)
-                    .rotationEffect(Angle(degrees: -90))
-            case .right:
-                Circle()
-                    .trim(from: 0, to: 0.33)
-                    .stroke(isFlashOn ? .black : .green, lineWidth: 5)
-                    .rotationEffect(Angle(degrees: -90))
-            }
-        }
-        .frame(width: 200, height: 200)
+    private func captureFrame() {
+        ExternalData.isSavingFileAsPLY = true
     }
-    
+
     var body: some View {
         ZStack {
             Color(isFlashOn ? .white : .clear)
@@ -174,6 +164,15 @@ struct ExportView: View {
                         }
                     }
                     
+                    if showArrow {
+                        // Display a large arrow pointing to the direction the user should turn their head
+                        Image(systemName: "arrow.left")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 100, height: 100)
+                            .foregroundColor(isFlashOn ? .black : .white)
+                    }
+                    
                     Spacer()
                     // Progress indicator and head turn message
                     ZStack {
@@ -183,35 +182,45 @@ struct ExportView: View {
                     .onAppear {
                         previousYaw = ExternalData.faceYawAngle
                     }
-                    .onChange(of: ExternalData.faceYawAngle) { newValue in
-                        let yawAngleDegrees = Int(round(newValue))
-                        let previousYawAngleDegrees = Int(round(previousYaw))
+                    .onChange(of: ExternalData.faceYawAngle) { yaw in
+                        let pitch = ExternalData.facePitchAngle
+                        let roll = ExternalData.faceRollAngle
+                        
+//                        if abs(yaw - targetYaw) > yawThreshold {
+//                            if yaw < targetYaw {
+//                                // Show arrow to turn right
+//                                headTurnMesseage = "Please turn your head to the right."
+//                            } else if yaw > targetYaw {
+//                                // Show arrow to turn left
+//                                headTurnMessage = "Please turn your head to the left."
+//                            }
+//                        }
 
-                        // Check if the yaw change is roughly 10 degrees
-                        if abs(yawAngleDegrees - previousYawAngleDegrees) >= 10 {
-                            HapticManager.playHapticFeedback(type: .success) // Trigger haptic feedback
-                            previousYaw = newValue // Update the previous yaw value
-                        }
                            // Rotate the USDZ model
-                           if yawAngleDegrees <= -20 {
+                           if yaw <= -20 {
                                // Rotate model to face right and trigger haptic feedback
+                               captureFrame()
+                               
                                HapticManager.playHapticFeedback(type: .success)
                                exportViewModel.hasTurnedRight = true
                                
                                headTurnMessage = "TURN YOUR HEAD LEFT"
-                           } else if yawAngleDegrees >= 20 {
+                               headTurnState = .left
+                           } else if yaw >= 20 {
                                // Rotate model to face left and trigger haptic feedback
+                               captureFrame()
+                               
                                HapticManager.playHapticFeedback(type: .success)
                                exportViewModel.hasTurnedLeft = true
                                
                                headTurnMessage = "TURN YOUR HEAD RIGHT"
+                               headTurnState = .right
                            }
 
                            if exportViewModel.hasTurnedRight && exportViewModel.hasTurnedLeft {
                                headTurnMessage = "SCAN COMPLETE"
                                HapticManager.playHapticFeedback(type: .success) // Play completion haptic
                                showConsoleOutput = true
-                               ExternalData.isSavingFileAsPLY = true
                                isRingAnimationStarted = false
                                isFlashOn = true
                                // Additional actions for scan completion
@@ -227,6 +236,7 @@ struct ExportView: View {
                             HapticManager.playHapticFeedback(type: .success)
                             headTurnMessage = "TURN YOUR HEAD\nLEFT/RIGHT"
                             isRingAnimationStarted = true  // Start the ring animation
+                            captureFrame()
                         }) {
                             if showConsoleOutput {
                                 if let lastLog = logManager.latestLog {
