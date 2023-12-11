@@ -83,32 +83,66 @@ struct ExternalData {
 
     // Function to calculate the rotation matrix
     static func rotationMatrix(from source: SCNVector3, to destination: SCNVector3) -> SCNMatrix4 {
-        let crossProduct = source.cross(destination)
-        let dotProduct = source.dot(destination)
-        let magnitude = crossProduct.length()
-        let s = magnitude
+        let sourceNormalized = source.normalized()
+        let destinationNormalized = destination.normalized()
+        let crossProduct = sourceNormalized.cross(destinationNormalized)
+        let dotProduct = sourceNormalized.dot(destinationNormalized)
+        let s = crossProduct.length()
         let c = dotProduct
         
-        let matrix = GLKMatrix4Make(
-            c + pow(crossProduct.x, 2) * (1 - c),
-            crossProduct.x * crossProduct.y * (1 - c) - crossProduct.z * s,
-            crossProduct.x * crossProduct.z * (1 - c) + crossProduct.y * s,
-            0.0,
-            
-            crossProduct.y * crossProduct.x * (1 - c) + crossProduct.z * s,
-            c + pow(crossProduct.y, 2) * (1 - c),
-            crossProduct.y * crossProduct.z * (1 - c) - crossProduct.x * s,
-            0.0,
-            
-            crossProduct.z * crossProduct.x * (1 - c) - crossProduct.y * s,
-            crossProduct.z * crossProduct.y * (1 - c) + crossProduct.x * s,
-            c + pow(crossProduct.z, 2) * (1 - c),
-            0.0,
-            
-            0.0, 0.0, 0.0, 1.0
-        )
+        // Rodrigues' rotation formula components
+        let kx = crossProduct.x
+        let ky = crossProduct.y
+        let kz = crossProduct.z
         
-        return SCNMatrix4FromGLKMatrix4(matrix)
+        return SCNMatrix4(
+            m11: c + kx * kx * (1 - c),    m12: kx * ky * (1 - c) - kz * s, m13: kx * kz * (1 - c) + ky * s, m14: 0.0,
+            m21: ky * kx * (1 - c) + kz * s, m22: c + ky * ky * (1 - c),    m23: ky * kz * (1 - c) - kx * s, m24: 0.0,
+            m31: kz * kx * (1 - c) - ky * s, m32: kz * ky * (1 - c) + kx * s, m33: c + kz * kz * (1 - c),    m34: 0.0,
+            m41: 0.0,                    m42: 0.0,                    m43: 0.0,                    m44: 1.0
+        )
+    }
+    
+    static func alignPointClouds() {
+        guard !pointCloudGeometries.isEmpty,
+              !pointCloudDataArray.isEmpty,
+              pointCloudGeometries.count == pointCloudDataArray.count else {
+            print("Data arrays are not properly initialized or don't match in count.")
+            return
+        }
+
+        // Using the first point cloud as the reference model
+        let referenceMetadata = pointCloudDataArray[0]
+
+        for i in 1..<pointCloudGeometries.count {
+            let currentMetadata = pointCloudDataArray[i]
+            let geometry = pointCloudGeometries[i]
+
+            // Calculate translation and rotation
+            let translationVector = SCNVector3(
+                x: referenceMetadata.leftEyePosition.x - currentMetadata.leftEyePosition.x,
+                y: referenceMetadata.leftEyePosition.y - currentMetadata.leftEyePosition.y,
+                z: referenceMetadata.leftEyePosition.z - currentMetadata.leftEyePosition.z
+            )
+            let rotationMatrix = rotationMatrix(from: currentMetadata.noseTipPosition, to: referenceMetadata.noseTipPosition)
+
+            // Apply translation and rotation
+            if let vertexSource = geometry.sources.first(where: { $0.semantic == .vertex }),
+               let colorSource = geometry.sources.first(where: { $0.semantic == .color }) {
+                var vertices = vertexSource.data.toArray(type: SCNVector3.self, count: vertexSource.vectorCount)
+                for j in 0..<vertices.count {
+                    vertices[j] = applyMatrixToVector3(vertices[j], with: rotationMatrix)
+                    vertices[j].x += translationVector.x
+                    vertices[j].y += translationVector.y
+                    vertices[j].z += translationVector.z
+                }
+                
+                // Update the geometry with transformed vertices
+                let newVertexSource = SCNGeometrySource(vertices: vertices)
+                let newGeometry = SCNGeometry(sources: [newVertexSource, colorSource], elements: geometry.elements)
+                pointCloudGeometries[i] = newGeometry
+            }
+        }
     }
     
     // Function to calculate the center of a set of vertices
@@ -144,14 +178,6 @@ struct ExternalData {
 
         // Translate the vertex back (relative to the center)
         return SCNVector3(vertex.x, rotatedY + center.y, rotatedZ + center.z)
-    }
-
-    // Function to apply a matrix transformation to a SCNVector3
-    static func applyMatrixToVector3(_ vector: SCNVector3, with matrix: SCNMatrix4) -> SCNVector3 {
-        let x = vector.x * matrix.m11 + vector.y * matrix.m21 + vector.z * matrix.m31 + matrix.m41
-        let y = vector.x * matrix.m12 + vector.y * matrix.m22 + vector.z * matrix.m32 + matrix.m42
-        let z = vector.x * matrix.m13 + vector.y * matrix.m23 + vector.z * matrix.m33 + matrix.m43
-        return SCNVector3(x, y, z)
     }
     
     // Function to extract yaw angle from the transform matrix

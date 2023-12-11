@@ -60,6 +60,35 @@ extension Array where Element == SIMD3<Float> {
     }
 }
 
+// Extension to add cross and dot product functionality to SCNVector3
+extension SCNVector3 {
+    func cross(_ v: SCNVector3) -> SCNVector3 {
+        return SCNVector3(
+            x: self.y * v.z - self.z * v.y,
+            y: self.z * v.x - self.x * v.z,
+            z: self.x * v.y - self.y * v.x
+        )
+    }
+    
+    func dot(_ v: SCNVector3) -> Float {
+        return self.x * v.x + self.y * v.y + self.z * v.z
+    }
+    
+    func length() -> Float {
+        return sqrt(self.dot(self))
+    }
+    
+    func normalized() -> SCNVector3 {
+        let len = self.length()
+        return len > 0 ? self / len : SCNVector3(0, 0, 0)
+    }
+}
+
+// Implement division of SCNVector3 by a scalar
+func / (vector: SCNVector3, scalar: Float) -> SCNVector3 {
+    return SCNVector3(vector.x / scalar, vector.y / scalar, vector.z / scalar)
+}
+
 extension SCNVector3 {
     func magnitude() -> Float {
         return sqrt(x*x + y*y + z*z)
