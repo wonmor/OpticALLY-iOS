@@ -165,12 +165,22 @@ struct ExportView: View {
                     }
                     
                     if showArrow {
-                        // Display a large arrow pointing to the direction the user should turn their head
-                        Image(systemName: "arrow.left")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 100, height: 100)
-                            .foregroundColor(isFlashOn ? .black : .white)
+                        if headTurnState == .left {
+                            // Display a large arrow pointing to the direction the user should turn their head
+                            Image(systemName: "arrow.left")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 100, height: 100)
+                                .foregroundColor(isFlashOn ? .black : .white)
+                            
+                        } else if headTurnState == .right {
+                            // Display a large arrow pointing to the direction the user should turn their head
+                            Image(systemName: "arrow.right")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 100, height: 100)
+                                .foregroundColor(isFlashOn ? .black : .white)
+                        }
                     }
                     
                     Spacer()
@@ -185,16 +195,6 @@ struct ExportView: View {
                     .onChange(of: ExternalData.faceYawAngle) { yaw in
                         let pitch = ExternalData.facePitchAngle
                         let roll = ExternalData.faceRollAngle
-                        
-//                        if abs(yaw - targetYaw) > yawThreshold {
-//                            if yaw < targetYaw {
-//                                // Show arrow to turn right
-//                                headTurnMesseage = "Please turn your head to the right."
-//                            } else if yaw > targetYaw {
-//                                // Show arrow to turn left
-//                                headTurnMessage = "Please turn your head to the left."
-//                            }
-//                        }
 
                            // Rotate the USDZ model
                            if yaw <= -20 {
@@ -204,6 +204,7 @@ struct ExportView: View {
                                HapticManager.playHapticFeedback(type: .success)
                                exportViewModel.hasTurnedRight = true
                                
+                               showArrow = true
                                headTurnMessage = "TURN YOUR HEAD LEFT"
                                headTurnState = .left
                            } else if yaw >= 20 {
@@ -213,6 +214,7 @@ struct ExportView: View {
                                HapticManager.playHapticFeedback(type: .success)
                                exportViewModel.hasTurnedLeft = true
                                
+                               showArrow = true
                                headTurnMessage = "TURN YOUR HEAD RIGHT"
                                headTurnState = .right
                            }
@@ -221,6 +223,7 @@ struct ExportView: View {
                                headTurnMessage = "SCAN COMPLETE"
                                HapticManager.playHapticFeedback(type: .success) // Play completion haptic
                                showConsoleOutput = true
+                               showArrow = false
                                isRingAnimationStarted = false
                                isFlashOn = true
                                // Additional actions for scan completion
