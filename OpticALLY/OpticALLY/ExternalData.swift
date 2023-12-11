@@ -73,6 +73,44 @@ struct ExternalData {
         pointCloudGeometries.removeAll()
     }
     
+    // Function to apply a matrix transformation to a SCNVector3
+    static func applyMatrixToVector3(_ vector: SCNVector3, with matrix: SCNMatrix4) -> SCNVector3 {
+        let glkVector = GLKVector3Make(vector.x, vector.y, vector.z)
+        let glkMatrix = SCNMatrix4ToGLKMatrix4(matrix)
+        let transformed = GLKMatrix4MultiplyVector3(glkMatrix, glkVector)
+        return SCNVector3(transformed.x, transformed.y, transformed.z)
+    }
+
+    // Function to calculate the rotation matrix
+    static func rotationMatrix(from source: SCNVector3, to destination: SCNVector3) -> SCNMatrix4 {
+        let crossProduct = source.cross(destination)
+        let dotProduct = source.dot(destination)
+        let magnitude = crossProduct.length()
+        let s = magnitude
+        let c = dotProduct
+        
+        let matrix = GLKMatrix4Make(
+            c + pow(crossProduct.x, 2) * (1 - c),
+            crossProduct.x * crossProduct.y * (1 - c) - crossProduct.z * s,
+            crossProduct.x * crossProduct.z * (1 - c) + crossProduct.y * s,
+            0.0,
+            
+            crossProduct.y * crossProduct.x * (1 - c) + crossProduct.z * s,
+            c + pow(crossProduct.y, 2) * (1 - c),
+            crossProduct.y * crossProduct.z * (1 - c) - crossProduct.x * s,
+            0.0,
+            
+            crossProduct.z * crossProduct.x * (1 - c) - crossProduct.y * s,
+            crossProduct.z * crossProduct.y * (1 - c) + crossProduct.x * s,
+            c + pow(crossProduct.z, 2) * (1 - c),
+            0.0,
+            
+            0.0, 0.0, 0.0, 1.0
+        )
+        
+        return SCNMatrix4FromGLKMatrix4(matrix)
+    }
+    
     // Function to calculate the center of a set of vertices
     static func calculateCenter(of vertices: [SCNVector3]) -> SCNVector3 {
         var sum = SCNVector3(0, 0, 0)
