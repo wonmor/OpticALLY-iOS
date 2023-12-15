@@ -75,17 +75,17 @@ struct ExternalData {
         pointCloudGeometries.removeAll()
     }
     
-    static func convertDepthData(depthMap: CVPixelBuffer) -> [[Float32]] {
+    static func convertDepthData(depthMap: CVPixelBuffer) -> [[Float16]] {
         let width = CVPixelBufferGetWidth(depthMap)
         let height = CVPixelBufferGetHeight(depthMap)
-        var convertedDepthMap: [[Float32]] = Array(
+        var convertedDepthMap: [[Float16]] = Array(
             repeating: Array(repeating: 0, count: width),
             count: height
         )
         CVPixelBufferLockBaseAddress(depthMap, CVPixelBufferLockFlags(rawValue: 2))
         let floatBuffer = unsafeBitCast(
             CVPixelBufferGetBaseAddress(depthMap),
-            to: UnsafeMutablePointer<Float32>.self
+            to: UnsafeMutablePointer<Float16>.self
         )
         for row in 0 ..< height {
             for col in 0 ..< width {
