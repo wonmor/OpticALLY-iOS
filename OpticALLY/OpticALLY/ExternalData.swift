@@ -75,6 +75,68 @@ struct ExternalData {
         pointCloudGeometries.removeAll()
     }
     
+    static func convertDepthData(depthMap: CVPixelBuffer) -> [[Float32]] {
+        let width = CVPixelBufferGetWidth(depthMap)
+        let height = CVPixelBufferGetHeight(depthMap)
+        var convertedDepthMap: [[Float32]] = Array(
+            repeating: Array(repeating: 0, count: width),
+            count: height
+        )
+        CVPixelBufferLockBaseAddress(depthMap, CVPixelBufferLockFlags(rawValue: 2))
+        let floatBuffer = unsafeBitCast(
+            CVPixelBufferGetBaseAddress(depthMap),
+            to: UnsafeMutablePointer<Float32>.self
+        )
+        for row in 0 ..< height {
+            for col in 0 ..< width {
+                convertedDepthMap[row][col] = floatBuffer[width * row + col]
+            }
+        }
+        CVPixelBufferUnlockBaseAddress(depthMap, CVPixelBufferLockFlags(rawValue: 2))
+        return convertedDepthMap
+    }
+    
+    static func convertLensDistortionLookupTable(lookupTable: Data) -> [Float] {
+        let tableLength = lookupTable.count / MemoryLayout<Float>.size
+        var floatArray: [Float] = Array(repeating: 0, count: tableLength)
+        _ = floatArray.withUnsafeMutableBytes{lookupTable.copyBytes(to: $0)}
+        return floatArray
+    }
+    
+    static func wrapEstimateImageData(
+        depthMap: CVPixelBuffer,
+        calibration: AVCameraCalibrationData
+    ) -> Data {
+        let jsonDict: [String : Any] = [
+            "calibration_data" : [
+                "intrinsic_matrix" : (0 ..< 3).map{ x in
+                    (0 ..< 3).map{ y in calibration.intrinsicMatrix[x][y]}
+                },
+                "pixel_size" : calibration.pixelSize,
+                "intrinsic_matrix_reference_dimensions" : [
+                    calibration.intrinsicMatrixReferenceDimensions.width,
+                    calibration.intrinsicMatrixReferenceDimensions.height
+                ],
+                "lens_distortion_center" : [
+                    calibration.lensDistortionCenter.x,
+                    calibration.lensDistortionCenter.y
+                ],
+                "lens_distortion_lookup_table" : convertLensDistortionLookupTable(
+                    lookupTable: calibration.lensDistortionLookupTable!
+                ),
+                "inverse_lens_distortion_lookup_table" : convertLensDistortionLookupTable(
+                    lookupTable: calibration.inverseLensDistortionLookupTable!
+                )
+            ],
+            "depth_data" : convertDepthData(depthMap: depthMap)
+        ]
+        let jsonStringData = try! JSONSerialization.data(
+            withJSONObject: jsonDict,
+            options: .prettyPrinted
+        )
+        return jsonStringData
+    }
+    
     // Function to apply a matrix transformation to a SCNVector3
     static func applyMatrixToVector3(_ vector: SCNVector3, with matrix: SCNMatrix4) -> SCNVector3 {
         let glkVector = GLKVector3Make(vector.x, vector.y, vector.z)
