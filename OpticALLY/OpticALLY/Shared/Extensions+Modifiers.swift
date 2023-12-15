@@ -10,7 +10,6 @@ import SwiftUI
 import SceneKit
 import ARKit
 import simd
-import Zip
 
 extension ARSession {
     // Returns the original capturedImage from the current frame
@@ -229,23 +228,6 @@ extension View {
 extension Color {
     static var mainColor = Color(UIColor.systemGray)
     static var subColor = Color(UIColor.systemYellow)
-}
-
-extension FileManager {
-    func createZipFile(at destination: URL, withContentsOf urls: [URL]) throws {
-        try Zip.zipFiles(paths: urls, zipFilePath: destination, password: nil, progress: { progress in
-            // Optionally handle progress here
-        })
-    }
-}
-
-// Data extension to convert to array of specified type (if not already implemented)
-extension Data {
-    func toArray<T>(type: T.Type, count: Int) -> [T] {
-        var array = [T](repeating: T.self as! T, count: count)
-        _ = array.withUnsafeMutableBytes { copyBytes(to: $0) }
-        return array
-    }
 }
 
 extension Data {

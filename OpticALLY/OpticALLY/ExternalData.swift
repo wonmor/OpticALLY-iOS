@@ -12,6 +12,7 @@ import SceneKit
 import ARKit
 import Foundation
 import Compression
+import ZipArchive
 
 struct PointCloudMetadata {
     var yaw: Double
@@ -320,18 +321,11 @@ struct ExternalData {
             }
         }
         
-        // Create a ZIP file
-        let zipFileURL = url
-        do {
-            try fileManager.createZipFile(at: zipFileURL, withContentsOf: fileURLs)
-        } catch {
-            print("Failed to create ZIP file: \(error)")
-        }
+        // Create a ZIP file using SSZipArchive
+        SSZipArchive.createZipFile(atPath: url.path, withFilesAtPaths: fileURLs.map { $0.path })
         
-        // Cleanup
-        for fileURL in fileURLs {
-            try? fileManager.removeItem(at: fileURL)
-        }
+        // Cleanup temporary PLY files
+        fileURLs.forEach { try? FileManager.default.removeItem(at: $0) }
     }
     
     private static func createPLYString(for geometry: SCNGeometry) -> String {
