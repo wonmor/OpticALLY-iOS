@@ -11,6 +11,7 @@ import CoreVideo
 import SceneKit
 import ARKit
 import Foundation
+import Compression
 
 struct PointCloudMetadata {
     var yaw: Double
@@ -301,42 +302,63 @@ struct ExternalData {
     }
     
     static func exportGeometryAsPLY(to url: URL) {
-        var allVertices = [SCNVector3]()
-        var allColors = [SCNVector4]() // Assuming color data is stored as SCNVector4
+        let fileManager = FileManager.default
+        let tempDirectoryURL = fileManager.temporaryDirectory
         
-        for geometry in pointCloudGeometries {
-            guard let vertexSource = geometry.sources.first(where: { $0.semantic == .vertex }),
-                  let colorSource = geometry.sources.first(where: { $0.semantic == .color }) else {
-                print("Unable to access vertex or color source from geometry")
-                continue
+        var fileURLs = [URL]()
+        
+        for (index, geometry) in pointCloudGeometries.enumerated() {
+            let plyString = createPLYString(for: geometry)
+            let plyFileName = "geometry_\(index).ply"
+            let plyFileURL = tempDirectoryURL.appendingPathComponent(plyFileName)
+            
+            do {
+                try plyString.write(to: plyFileURL, atomically: true, encoding: .ascii)
+                fileURLs.append(plyFileURL)
+            } catch {
+                print("Failed to write PLY file: \(error)")
             }
-            
-            let vertexCount = vertexSource.vectorCount
-            let vertices = vertexSource.data.toArray(type: SCNVector3.self, count: vertexCount)
-            let colors = colorSource.data.toArray(type: SCNVector4.self, count: vertexCount) // Assuming SCNVector4 for colors
-            
-            allVertices += vertices
-            allColors += colors
         }
         
-        let totalVertexCount = allVertices.count
-        var plyString = "ply\nformat ascii 1.0\nelement vertex \(totalVertexCount)\n"
+        // Create a ZIP file
+        let zipFileURL = url
+        do {
+            try fileManager.createZipFile(at: zipFileURL, withContentsOf: fileURLs)
+        } catch {
+            print("Failed to create ZIP file: \(error)")
+        }
+        
+        // Cleanup
+        for fileURL in fileURLs {
+            try? fileManager.removeItem(at: fileURL)
+        }
+    }
+    
+    private static func createPLYString(for geometry: SCNGeometry) -> String {
+        var plyString = "ply\nformat ascii 1.0\n"
+
+        guard let vertexSource = geometry.sources.first(where: { $0.semantic == .vertex }),
+              let colorSource = geometry.sources.first(where: { $0.semantic == .color }) else {
+            print("Unable to access vertex or color source from geometry")
+            return ""
+        }
+        
+        let vertexCount = vertexSource.vectorCount
+        let vertices = vertexSource.data.toArray(type: SCNVector3.self, count: vertexCount)
+        let colors = colorSource.data.toArray(type: SCNVector4.self, count: vertexCount) // Assuming SCNVector4 for colors
+
+        plyString += "element vertex \(vertexCount)\n"
         plyString += "property float x\nproperty float y\nproperty float z\n"
         plyString += "property uchar red\nproperty uchar green\nproperty uchar blue\nproperty uchar alpha\n"
         plyString += "end_header\n"
-        
-        for i in 0..<totalVertexCount {
-            let vertex = allVertices[i]
-            let color = allColors[i]
+
+        for i in 0..<vertexCount {
+            let vertex = vertices[i]
+            let color = colors[i]
             let colorComponents = [color.x, color.y, color.z, color.w].map { UInt8($0 * 255) }
             plyString += "\(vertex.x) \(vertex.y) \(vertex.z) \(colorComponents[0]) \(colorComponents[1]) \(colorComponents[2]) \(colorComponents[3])\n"
         }
         
-        do {
-            try plyString.write(to: url, atomically: true, encoding: .ascii)
-            print("PLY file successfully saved to: \(url.path)")
-        } catch {
-            print("Failed to write PLY file: \(error)")
-        }
+        return plyString
     }
 }

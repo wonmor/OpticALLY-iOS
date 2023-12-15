@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9613ADFA2B2BE7B50072E47E /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 9613ADF92B2BE7B50072E47E /* ZIPFoundation */; };
 		9614F0AF2ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */; };
 		9614F0B02ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */; };
 		9614F0B12ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */; };
@@ -140,6 +141,7 @@
 				969DF1D02B1291D400FA9ABE /* FirebaseStorage in Frameworks */,
 				969DF1CA2B1291D400FA9ABE /* FirebaseAuth in Frameworks */,
 				969DF1CE2B1291D400FA9ABE /* FirebaseFirestoreSwift in Frameworks */,
+				9613ADFA2B2BE7B50072E47E /* ZIPFoundation in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -334,6 +336,7 @@
 				969DF1CB2B1291D400FA9ABE /* FirebaseFirestore */,
 				969DF1CD2B1291D400FA9ABE /* FirebaseFirestoreSwift */,
 				969DF1CF2B1291D400FA9ABE /* FirebaseStorage */,
+				9613ADF92B2BE7B50072E47E /* ZIPFoundation */,
 			);
 			productName = OpticALLY;
 			productReference = 967EE0612AAE06FB000C4D5F /* OpticALLY.app */;
@@ -413,6 +416,7 @@
 				96BC2ABC2AC5E9D60081550B /* XCRemoteSwiftPackageReference "DevicePpi" */,
 				9679F8E22AD0912200686F13 /* XCRemoteSwiftPackageReference "ZipArchive" */,
 				969DF1C82B1291D400FA9ABE /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				9613ADF82B2BE7B50072E47E /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
 			);
 			productRefGroup = 967EE0622AAE06FB000C4D5F /* Products */;
 			projectDirPath = "";
@@ -857,6 +861,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		9613ADF82B2BE7B50072E47E /* XCRemoteSwiftPackageReference "ZIPFoundation" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/weichsel/ZIPFoundation.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.9.17;
+			};
+		};
 		9679F8E22AD0912200686F13 /* XCRemoteSwiftPackageReference "ZipArchive" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/ZipArchive/ZipArchive.git";
@@ -892,6 +904,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		9613ADF92B2BE7B50072E47E /* ZIPFoundation */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9613ADF82B2BE7B50072E47E /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
+			productName = ZIPFoundation;
+		};
 		9679F8E32AD0912200686F13 /* ZipArchive */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 9679F8E22AD0912200686F13 /* XCRemoteSwiftPackageReference "ZipArchive" */;
