@@ -291,8 +291,8 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                     // Perform processing if both depth and video data are available
                     if let depthData = self.synchronizedDepthData,
                        let videoPixelBuffer = self.synchronizedVideoPixelBuffer {
-                        self.processFrame(depthData: depthData, videoPixelBuffer: videoPixelBuffer, imageSampler: imageSampler)
                         self.detectFaceLandmarks(in: videoPixelBuffer, frame: frame)
+                        self.processFrame(depthData: depthData, videoPixelBuffer: videoPixelBuffer, imageSampler: imageSampler)
                     }
                 }
             }
