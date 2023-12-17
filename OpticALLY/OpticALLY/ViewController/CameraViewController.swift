@@ -8,6 +8,7 @@
 import SwiftUI
 import UIKit
 import ARKit
+import Vision
 import Accelerate
 import AVFoundation
 import CoreImage
@@ -84,8 +85,15 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     private var lastZoom = Float(0.0)
     private var lastXY = CGPoint(x: 0, y: 0)
     
+    private var leftEyePosition: SCNVector3?
+    private var rightEyePosition: SCNVector3?
+    private var chin: SCNVector3?
+    
     private var viewFrameSize = CGSize()
     private var autoPanningIndex = Int(-1) // start with auto-panning off
+    
+    private let faceDetectionRequest = VNDetectFaceLandmarksRequest()
+    private let faceDetectionHandler = VNSequenceRequestHandler()
     
     var viewModel: FaceTrackingViewModel?
     
@@ -104,6 +112,77 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         
         cloudView?.setDepthFrame(depthData, withTexture: videoPixelBuffer)
     }
+    
+    private func detectFaceLandmarks(in pixelBuffer: CVPixelBuffer, frame: ARFrame) {
+        try? faceDetectionHandler.perform([faceDetectionRequest], on: pixelBuffer, orientation: .right)
+        guard let observations = faceDetectionRequest.results as? [VNFaceObservation] else {
+            return
+        }
+        
+        for observation in observations {
+            if let leftEye = observation.landmarks?.leftEye, let rightEye = observation.landmarks?.rightEye {
+                let leftEyePosition = averagePoint(from: leftEye.normalizedPoints, in: observation.boundingBox, pixelBuffer: pixelBuffer)
+                let rightEyePosition = averagePoint(from: rightEye.normalizedPoints, in: observation.boundingBox, pixelBuffer: pixelBuffer)
+                
+                // Perform raycasting for each eye position
+                if let leftEyeRaycastQuery: ARRaycastQuery? = frame.raycastQuery(from: leftEyePosition, allowing: .estimatedPlane, alignment: .any),
+                   let rightEyeRaycastQuery: ARRaycastQuery? = frame.raycastQuery(from: rightEyePosition, allowing: .estimatedPlane, alignment: .any) {
+                    let leftEyeResults = session.raycast(leftEyeRaycastQuery!)
+                    let rightEyeResults = session.raycast(rightEyeRaycastQuery!)
+                    
+                    // Process the results
+                    if let leftEyeHit = leftEyeResults.first, let rightEyeHit = rightEyeResults.first {
+                        DispatchQueue.main.async {
+                            self.leftEyePosition = SCNVector3(leftEyeHit.worldTransform.columns.3.x,
+                                                      leftEyeHit.worldTransform.columns.3.y,
+                                                      leftEyeHit.worldTransform.columns.3.z)
+                            
+                            self.rightEyePosition = SCNVector3(rightEyeHit.worldTransform.columns.3.x,
+                                                      rightEyeHit.worldTransform.columns.3.y,
+                                                      rightEyeHit.worldTransform.columns.3.z)
+                        }
+                    }
+                }
+            }
+            
+            if let faceContour = observation.landmarks?.faceContour {
+                let points = faceContour.normalizedPoints
+                if let lowestPoint = points.min(by: { $0.y < $1.y }) {
+                    let chinPosition = averagePoint(from: [lowestPoint], in: observation.boundingBox, pixelBuffer: pixelBuffer)
+                    
+                    // Perform raycasting for the chin position
+                    if let chinRaycastQuery: ARRaycastQuery? = frame.raycastQuery(from: chinPosition, allowing: .estimatedPlane, alignment: .any) {
+                        let chinResults = session.raycast(chinRaycastQuery!)
+                        
+                        // Process the results
+                        if let chinHit = chinResults.first {
+                            DispatchQueue.main.async {
+                                self.chin = SCNVector3(chinHit.worldTransform.columns.3.x,
+                                                       chinHit.worldTransform.columns.3.y,
+                                                       chinHit.worldTransform.columns.3.z)
+                                // Update any UI elements or AR nodes here for the chin
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    private func averagePoint(from normalizedPoints: [CGPoint], in boundingBox: CGRect, pixelBuffer: CVPixelBuffer) -> CGPoint {
+        let sum = normalizedPoints.reduce(CGPoint.zero, { CGPoint(x: $0.x + $1.x, y: $0.y + $1.y) })
+        let count = CGFloat(normalizedPoints.count)
+        let average = CGPoint(x: sum.x / count, y: sum.y / count)
+        
+        let width = CGFloat(CVPixelBufferGetWidth(pixelBuffer))
+        let height = CGFloat(CVPixelBufferGetHeight(pixelBuffer))
+        let originX = boundingBox.origin.x * width
+        let originY = boundingBox.origin.y * height
+        
+        return CGPoint(x: average.x * boundingBox.width * width + originX,
+                       y: average.y * boundingBox.height * height + originY)
+    }
+    
     
     // MARK: - View Controller Life Cycle
     override func viewDidLoad() {
@@ -197,7 +276,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                 let pitchRadians = atan2(transform.columns.1.z, transform.columns.1.y)
                 let yawRadians = atan2(transform.columns.0.z, sqrt(pow(transform.columns.1.z, 2) + pow(transform.columns.1.y, 2)))
                 let rollRadians = atan2(-transform.columns.2.x, transform.columns.2.z)
-
+                
                 // Convert radians to degrees
                 let pitchDegrees = pitchRadians * 180 / .pi
                 let yawDegrees = yawRadians * 180 / .pi
@@ -213,6 +292,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                     if let depthData = self.synchronizedDepthData,
                        let videoPixelBuffer = self.synchronizedVideoPixelBuffer {
                         self.processFrame(depthData: depthData, videoPixelBuffer: videoPixelBuffer, imageSampler: imageSampler)
+                        self.detectFaceLandmarks(in: videoPixelBuffer, frame: frame)
                     }
                 }
             }
@@ -227,15 +307,12 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     }
     
     func calculatePupillaryDistance(faceAnchor: ARFaceAnchor) -> Float {
-        let leftEyePosition = faceAnchor.leftEyeTransform.columns.3
-        let rightEyePosition = faceAnchor.rightEyeTransform.columns.3
-
         let distance = sqrt(
             pow(leftEyePosition.x - rightEyePosition.x, 2) +
             pow(leftEyePosition.y - rightEyePosition.y, 2) +
             pow(leftEyePosition.z - rightEyePosition.z, 2)
         )
-
+        
         // Convert to millimeters or another unit if required
         // ARKit's default unit is meters
         let distanceInMillimeters = distance * 1000
@@ -290,7 +367,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     func didEnterBackground(notification: NSNotification) {
         // Free up resources
         ExternalData.renderingEnabled = false
-
+        
         self.videoDepthMixer.reset()
     }
     
@@ -372,8 +449,8 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         
         let depthFormats = videoDevice.activeFormat.supportedDepthDataFormats
         let highestResolutionFormat = depthFormats.filter { CMFormatDescriptionGetMediaSubType($0.formatDescription) == kCVPixelFormatType_DepthFloat32 }
-                                                 .max { CMVideoFormatDescriptionGetDimensions($0.formatDescription).width < CMVideoFormatDescriptionGetDimensions($1.formatDescription).width }
-
+            .max { CMVideoFormatDescriptionGetDimensions($0.formatDescription).width < CMVideoFormatDescriptionGetDimensions($1.formatDescription).width }
+        
         if let selectedFormat = highestResolutionFormat {
             do {
                 try videoDevice.lockForConfiguration()
@@ -535,24 +612,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         let transform = makeTransformationMatrix(yaw: yaw, pitch: pitch, roll: roll)
         
         if ExternalData.isSavingFileAsPLY {
-            guard let faceAnchor = self.viewModel?.faceAnchor else { return }
-
-            let leftEyePosition = SCNVector3(
-                x: faceAnchor.leftEyeTransform.columns.3.x,
-                y: faceAnchor.leftEyeTransform.columns.3.y,
-                z: faceAnchor.leftEyeTransform.columns.3.z
-            )
-            let rightEyePosition = SCNVector3(
-                x: faceAnchor.rightEyeTransform.columns.3.x,
-                y: faceAnchor.rightEyeTransform.columns.3.y,
-                z: faceAnchor.rightEyeTransform.columns.3.z
-            )
-            let noseTipPosition = SCNVector3(
-                x: faceAnchor.transform.columns.3.x,
-                y: faceAnchor.transform.columns.3.y,
-                z: faceAnchor.transform.columns.3.z
-            )
-
+            
             let pointCloudMetadata = PointCloudMetadata(
                 yaw: ExternalData.faceYawAngle,
                 pitch: ExternalData.facePitchAngle,
@@ -580,17 +640,17 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             ExternalData.renderingEnabled = true
         }
     }
-
+    
     // Function to create a transformation matrix from Euler angles
     func makeTransformationMatrix(yaw: Double, pitch: Double, roll: Double) -> SCNMatrix4 {
         let yawMatrix = SCNMatrix4MakeRotation(Float(yaw), 0, 1, 0)
         let pitchMatrix = SCNMatrix4MakeRotation(Float(pitch), 1, 0, 0)
         let rollMatrix = SCNMatrix4MakeRotation(Float(roll), 0, 0, 1)
-
+        
         let combinedMatrix = SCNMatrix4Mult(SCNMatrix4Mult(yawMatrix, pitchMatrix), rollMatrix)
         return combinedMatrix
     }
-
+    
     @IBSegueAction func embedSwiftUIView(_ coder: NSCoder) -> UIViewController? {
         // Upon Scan Completion...
         let hostingController = UIHostingController(coder: coder, rootView: ExportView())!

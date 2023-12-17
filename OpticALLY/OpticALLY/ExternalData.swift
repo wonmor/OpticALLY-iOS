@@ -20,7 +20,7 @@ struct PointCloudMetadata {
     var roll: Double
     var leftEyePosition: SCNVector3
     var rightEyePosition: SCNVector3
-    var noseTipPosition: SCNVector3
+    var chin: SCNVector3
 }
 
 /// ExternalData is a central repository for managing and processing 3D depth and color data, primarily focusing on creating point cloud geometries and exporting them in PLY format. It enables the integration of various sensory data inputs and computational geometry processing.
@@ -188,7 +188,7 @@ struct ExternalData {
                 y: referenceMetadata.leftEyePosition.y - currentMetadata.leftEyePosition.y,
                 z: referenceMetadata.leftEyePosition.z - currentMetadata.leftEyePosition.z
             )
-            let rotationMatrix = rotationMatrix(from: currentMetadata.noseTipPosition, to: referenceMetadata.noseTipPosition)
+            let rotationMatrix = rotationMatrix(from: currentMetadata.chin, to: referenceMetadata.chin)
 
             // Apply translation and rotation
             if let vertexSource = geometry.sources.first(where: { $0.semantic == .vertex }),
