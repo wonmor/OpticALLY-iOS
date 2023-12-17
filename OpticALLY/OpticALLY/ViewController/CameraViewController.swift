@@ -85,9 +85,9 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     private var lastZoom = Float(0.0)
     private var lastXY = CGPoint(x: 0, y: 0)
     
-    private var leftEyePosition: SCNVector3?
-    private var rightEyePosition: SCNVector3?
-    private var chin: SCNVector3?
+    private var leftEyePosition = SCNVector3(0, 0, 0)
+    private var rightEyePosition = SCNVector3(0, 0, 0)
+    private var chin = SCNVector3(0, 0, 0)
     
     private var viewFrameSize = CGSize()
     private var autoPanningIndex = Int(-1) // start with auto-panning off
@@ -291,8 +291,8 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                     // Perform processing if both depth and video data are available
                     if let depthData = self.synchronizedDepthData,
                        let videoPixelBuffer = self.synchronizedVideoPixelBuffer {
-                        self.detectFaceLandmarks(in: videoPixelBuffer, frame: frame)
                         self.processFrame(depthData: depthData, videoPixelBuffer: videoPixelBuffer, imageSampler: imageSampler)
+                        self.detectFaceLandmarks(in: videoPixelBuffer, frame: frame)
                     }
                 }
             }
@@ -308,9 +308,9 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     
     func calculatePupillaryDistance(faceAnchor: ARFaceAnchor) -> Float {
         let distance = sqrt(
-            pow(leftEyePosition!.x - rightEyePosition!.x, 2) +
-            pow(leftEyePosition!.y - rightEyePosition!.y, 2) +
-            pow(leftEyePosition!.z - rightEyePosition!.z, 2)
+            pow(leftEyePosition.x - rightEyePosition.x, 2) +
+            pow(leftEyePosition.y - rightEyePosition.y, 2) +
+            pow(leftEyePosition.z - rightEyePosition.z, 2)
         )
         
         // Convert to millimeters or another unit if required
@@ -616,9 +616,9 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                 yaw: ExternalData.faceYawAngle,
                 pitch: ExternalData.facePitchAngle,
                 roll: ExternalData.faceRollAngle,
-                leftEyePosition: leftEyePosition!,
-                rightEyePosition: rightEyePosition!,
-                chin: chin!
+                leftEyePosition: leftEyePosition,
+                rightEyePosition: rightEyePosition,
+                chin: chin
             )
             
             ExternalData.pointCloudDataArray.append(pointCloudMetadata)
