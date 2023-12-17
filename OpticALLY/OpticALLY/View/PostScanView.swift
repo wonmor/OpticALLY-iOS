@@ -75,7 +75,7 @@ struct PostScanView: View {
                     }
                     
                 } else if !ExternalData.pointCloudGeometries.isEmpty {
-                    SceneKitView(geometries: ExternalData.pointCloudGeometries)
+                    SceneKitView()
                         .ignoresSafeArea(edges: .bottom)
                 }
                 

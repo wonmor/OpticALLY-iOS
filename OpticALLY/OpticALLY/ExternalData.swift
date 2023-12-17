@@ -365,6 +365,8 @@ struct ExternalData {
     }
     
     static func exportGeometryAsPLY(to url: URL) {
+        alignPointClouds()
+        
         let fileManager = FileManager.default
         let tempDirectoryURL = fileManager.temporaryDirectory
         

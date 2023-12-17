@@ -12,8 +12,10 @@ import SceneKit.ModelIO
 import ARKit
 
 struct SceneKitView: UIViewRepresentable {
-    var geometries: [SCNGeometry] // Changed to an array
-
+    init() {
+        ExternalData.alignPointClouds()
+    }
+    
     func makeUIView(context: Context) -> SCNView {
         let scnView = SCNView()
 
@@ -22,7 +24,7 @@ struct SceneKitView: UIViewRepresentable {
         scnView.scene = scene
 
         // Iterate through geometries and add each to the scene
-        for geometry in geometries {
+        for geometry in ExternalData.pointCloudGeometries {
             let node = SCNNode(geometry: geometry)
             node.position = SCNVector3(x: 0, y: 0, z: 0)
             node.eulerAngles.z = .pi / -2
