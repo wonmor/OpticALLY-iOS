@@ -308,9 +308,9 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     
     func calculatePupillaryDistance(faceAnchor: ARFaceAnchor) -> Float {
         let distance = sqrt(
-            pow(leftEyePosition.x - rightEyePosition.x, 2) +
-            pow(leftEyePosition.y - rightEyePosition.y, 2) +
-            pow(leftEyePosition.z - rightEyePosition.z, 2)
+            pow(leftEyePosition!.x - rightEyePosition!.x, 2) +
+            pow(leftEyePosition!.y - rightEyePosition!.y, 2) +
+            pow(leftEyePosition!.z - rightEyePosition!.z, 2)
         )
         
         // Convert to millimeters or another unit if required
@@ -612,15 +612,15 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         let transform = makeTransformationMatrix(yaw: yaw, pitch: pitch, roll: roll)
         
         if ExternalData.isSavingFileAsPLY {
-            
             let pointCloudMetadata = PointCloudMetadata(
                 yaw: ExternalData.faceYawAngle,
                 pitch: ExternalData.facePitchAngle,
                 roll: ExternalData.faceRollAngle,
-                leftEyePosition: leftEyePosition,
-                rightEyePosition: rightEyePosition,
-                noseTipPosition: noseTipPosition
+                leftEyePosition: leftEyePosition!,
+                rightEyePosition: rightEyePosition!,
+                chin: chin!
             )
+            
             ExternalData.pointCloudDataArray.append(pointCloudMetadata)
             ExternalData.isSavingFileAsPLY = false
         }
