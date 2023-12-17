@@ -137,9 +137,13 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                                                       leftEyeHit.worldTransform.columns.3.y,
                                                       leftEyeHit.worldTransform.columns.3.z)
                             
+                            print("LEFT: \(self.leftEyePosition)")
+                            
                             self.rightEyePosition = SCNVector3(rightEyeHit.worldTransform.columns.3.x,
                                                       rightEyeHit.worldTransform.columns.3.y,
                                                       rightEyeHit.worldTransform.columns.3.z)
+                            
+                            print("RIGHT: \(self.rightEyePosition)")
                         }
                     }
                 }
