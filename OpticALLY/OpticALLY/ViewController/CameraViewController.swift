@@ -349,7 +349,16 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                     self.setupResult = .notAuthorized
                 }
                 
-                self.handleSessionSwitch()
+                if ExternalData.isSavingFileAsPLY {
+                    // Switch to AVCaptureSession
+                    self.sessionQueue.resume()
+                } else {
+                    // Switch to ARKit
+                    let configuration = ARFaceTrackingConfiguration()
+                    configuration.isLightEstimationEnabled = true
+                    
+                    self.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
+                }
             })
             
         default:
