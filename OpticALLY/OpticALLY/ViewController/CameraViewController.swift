@@ -140,22 +140,6 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     
     var viewModel: FaceTrackingViewModel?
     
-    private func processFrame(depthData: AVDepthData, videoPixelBuffer: CVPixelBuffer, imageSampler: CapturedImageSampler) {
-        guard ExternalData.renderingEnabled else {
-            return
-        }
-        
-        if ExternalData.isSavingFileAsPLY {
-            extractDepthData(depthData: depthData, imageSampler: imageSampler)
-            ExternalData.isSavingFileAsPLY = false
-        }
-        
-        globalDepthData = depthData
-        globalVideoPixelBuffer = videoPixelBuffer
-        
-        cloudView?.setDepthFrame(depthData, withTexture: videoPixelBuffer)
-    }
-    
     private func processFrameAV(depthData: AVDepthData, imageData: CVImageBuffer) {
         let depthPixelBuffer = depthData.depthDataMap
         let colorPixelBuffer = imageData
@@ -389,7 +373,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         self.handleSessionSwitch()
     }
     
-    // MARK: - Session Management
+    // MARK: - AVCaptureSession Management
     
     // Call this on the session queue
     private func configureAVCaptureSession() {
@@ -480,7 +464,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         avCaptureSession.commitConfiguration()
     }
     
-    // MARK: - Video + Depth Frame Processing
+    // MARK: - Video + Depth Frame Processing (AVCaptureSession)
        
        func dataOutputSynchronizer(_ synchronizer: AVCaptureDataOutputSynchronizer,
                                    didOutput synchronizedDataCollection: AVCaptureSynchronizedDataCollection) {
@@ -563,7 +547,6 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                     // Perform processing if both depth and video data are available
                     if let depthData = self.synchronizedDepthData,
                        let videoPixelBuffer = self.synchronizedVideoPixelBuffer {
-                        self.processFrame(depthData: depthData, videoPixelBuffer: videoPixelBuffer, imageSampler: imageSampler)
                         self.detectFaceLandmarks(in: videoPixelBuffer, frame: frame)
                     }
                 }
