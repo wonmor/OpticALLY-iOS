@@ -42,7 +42,7 @@ import CoreVideo
 
 /// This class serves as a comprehensive solution for applications requiring real-time 3D depth processing and visualization, combining ARKit's capabilities with advanced image processing techniques.
 
-class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelegate {
+class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelegate, AVCaptureDataOutputSynchronizerDelegate {
     // MARK: - Properties
     @IBOutlet weak private var cameraUnavailableLabel: UILabel!
     @IBOutlet weak private var depthSmoothingSwitch: UISwitch!
@@ -60,17 +60,60 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     
     private var setupResult: SessionSetupResult = .success
     
-    private var session = ARSession()
+    var session: ARSession = ARSession()
+    var avCaptureSession: AVCaptureSession = AVCaptureSession()
+    
+    private var isSessionRunning = false
+        
+    // Communicate with the session and other session objects on this queue.
+    private let sessionQueue = DispatchQueue(label: "session queue", attributes: [], autoreleaseFrequency: .workItem)
+    private let dataOutputQueue = DispatchQueue(label: "video data queue", qos: .userInitiated, attributes: [], autoreleaseFrequency: .workItem)
+    
+    private let videoDataOutput = AVCaptureVideoDataOutput()
+    private let depthDataOutput = AVCaptureDepthDataOutput()
+    private var outputSynchronizer: AVCaptureDataOutputSynchronizer?
+    private var videoDeviceInput: AVCaptureDeviceInput!
+    
+    private let videoDepthMixer = VideoMixer()
+    
+    func handleSessionSwitch() {
+        if ExternalData.isSavingFileAsPLY {
+            // Switch to AVCaptureSession
+            session.pause()
+            self.configureAVCaptureSession()
+            
+            sessionQueue.async {
+                self.depthDataOutput.isFilteringEnabled = true
+            }
+            
+        } else {
+            // Switch back to ARSession
+            avCaptureSession.stopRunning()
+            self.configureSession()
+        }
+    }
+    
+    func handleSessionSwitchInLoop() {
+        if ExternalData.isSavingFileAsPLY {
+            // Switch to AVCaptureSession
+            session.pause()
+            
+            sessionQueue.async {
+                self.depthDataOutput.isFilteringEnabled = true
+            }
+            
+        } else {
+            // Switch back to ARSession
+            avCaptureSession.stopRunning()
+        }
+    }
     
     private var synchronizedDepthData: AVDepthData?
     private var synchronizedVideoPixelBuffer: CVPixelBuffer?
     
-    private var isSessionRunning = false
-    
     private var globalDepthData: AVDepthData!
     private var globalVideoPixelBuffer: CVImageBuffer!
     
-    private let videoDepthMixer = VideoMixer()
     private let videoDeviceDiscoverySession = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInTrueDepthCamera],
                                                                                mediaType: .video,
                                                                                position: .front)
@@ -113,6 +156,72 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         cloudView?.setDepthFrame(depthData, withTexture: videoPixelBuffer)
     }
     
+    private func processFrameAV(depthData: AVDepthData, imageData: CVImageBuffer) {
+        let depthPixelBuffer = depthData.depthDataMap
+        let colorPixelBuffer = imageData
+        
+        CVPixelBufferLockBaseAddress(depthPixelBuffer, .readOnly)
+        CVPixelBufferLockBaseAddress(colorPixelBuffer, .readOnly)
+        defer {
+            CVPixelBufferUnlockBaseAddress(depthPixelBuffer, .readOnly)
+            CVPixelBufferUnlockBaseAddress(colorPixelBuffer, .readOnly)
+        }
+        
+        let colorWidth = CVPixelBufferGetWidth(colorPixelBuffer)
+        let colorHeight = CVPixelBufferGetHeight(colorPixelBuffer)
+        let depthWidth = CVPixelBufferGetWidth(depthPixelBuffer)
+        let depthHeight = CVPixelBufferGetHeight(depthPixelBuffer)
+        
+        print("Image Width: \(colorWidth) | Image Height: \(colorHeight)")
+        print("Depth Data Width: \(depthWidth) | Depth Data Height: \(depthHeight)")
+        
+        guard let colorData = CVPixelBufferGetBaseAddress(colorPixelBuffer) else {
+            print("Unable to get image buffer base address.")
+            return
+        }
+        
+        let colorBytesPerRow = CVPixelBufferGetBytesPerRow(colorPixelBuffer)
+        let colorBytesPerPixel = 4 // BGRA format
+        
+        guard let depthDataAddress = CVPixelBufferGetBaseAddress(depthPixelBuffer) else {
+            print("Unable to get depth buffer base address.")
+            return
+        }
+        
+        let depthBytesPerRow = CVPixelBufferGetBytesPerRow(depthPixelBuffer)
+        // Determine the bytes per pixel based on the depth format type
+        let depthPixelFormatType = CVPixelBufferGetPixelFormatType(depthPixelBuffer)
+        var depthBytesPerPixel: Int = 0 // Initialize with zero
+        
+        switch depthPixelFormatType {
+        case kCVPixelFormatType_DepthFloat32:
+            depthBytesPerPixel = 4
+        case kCVPixelFormatType_DepthFloat16:
+            depthBytesPerPixel = 2
+            // Add more cases as necessary for different formats
+        default:
+            print("Unsupported depth pixel format type")
+            return
+        }
+        
+        // Ensure that you're iterating within the bounds of both buffers
+        let commonWidth = min(colorWidth, depthWidth)
+        let commonHeight = min(colorHeight, depthHeight)
+        
+        // Assuming colorData is the base address for the BGRA image buffer
+        let colorBaseAddress = CVPixelBufferGetBaseAddress(colorPixelBuffer)!.assumingMemoryBound(to: UInt8.self)
+        
+        // Call the point cloud creation function
+        ExternalData.createAVPointCloudGeometry(
+            depthData: depthData,
+            colorData: colorBaseAddress,
+            width: commonWidth,
+            height: commonHeight,
+            bytesPerRow: colorBytesPerRow // Use the correct bytes per row for color data
+        )
+    }
+            
+    
     private func detectFaceLandmarks(in pixelBuffer: CVPixelBuffer, frame: ARFrame) {
         try? faceDetectionHandler.perform([faceDetectionRequest], on: pixelBuffer, orientation: .right)
         guard let observations = faceDetectionRequest.results as? [VNFaceObservation] else {
@@ -130,18 +239,20 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                     let leftEyeResults = session.raycast(leftEyeRaycastQuery!)
                     let rightEyeResults = session.raycast(rightEyeRaycastQuery!)
                     
+                    print("FUCK: \(leftEyeResults)")
+                    
                     // Process the results
                     if let leftEyeHit = leftEyeResults.first, let rightEyeHit = rightEyeResults.first {
                         DispatchQueue.main.async {
                             self.leftEyePosition = SCNVector3(leftEyeHit.worldTransform.columns.3.x,
-                                                      leftEyeHit.worldTransform.columns.3.y,
-                                                      leftEyeHit.worldTransform.columns.3.z)
+                                                              leftEyeHit.worldTransform.columns.3.y,
+                                                              leftEyeHit.worldTransform.columns.3.z)
                             
                             print("LEFT: \(self.leftEyePosition)")
                             
                             self.rightEyePosition = SCNVector3(rightEyeHit.worldTransform.columns.3.x,
-                                                      rightEyeHit.worldTransform.columns.3.y,
-                                                      rightEyeHit.worldTransform.columns.3.z)
+                                                               rightEyeHit.worldTransform.columns.3.y,
+                                                               rightEyeHit.worldTransform.columns.3.z)
                             
                             print("RIGHT: \(self.rightEyePosition)")
                         }
@@ -231,7 +342,16 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
              The user has not yet been presented with the option to grant video access
              We suspend the session queue to delay session setup until the access request has completed
              */
-            session.pause()
+            
+            if ExternalData.isSavingFileAsPLY {
+                // Switch to AVCaptureSession
+                sessionQueue.suspend()
+                
+            } else {
+                // Switch to ARKit
+                session.pause()
+            }
+            
             AVCaptureDevice.requestAccess(for: .video, completionHandler: { granted in
                 if !granted {
                     self.setupResult = .notAuthorized
@@ -239,7 +359,14 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                 
                 let configuration = ARFaceTrackingConfiguration()
                 configuration.isLightEstimationEnabled = true
-                self.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
+                
+                if ExternalData.isSavingFileAsPLY {
+                    // Switch to AVCaptureSession
+                    self.sessionQueue.resume()
+                } else {
+                    // Switch to ARKit
+                    self.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
+                }
             })
             
         default:
@@ -258,11 +385,152 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
          that the main queue isn't blocked, which keeps the UI responsive.
          */
         
-        self.configureSession()
+        // Check if ExternalData.isSavingFileAsPLY is TRUE...
+        self.handleSessionSwitch()
     }
+    
+    // MARK: - Session Management
+    
+    // Call this on the session queue
+    private func configureAVCaptureSession() {
+        if setupResult != .success {
+            return
+        }
+        
+        let defaultVideoDevice: AVCaptureDevice? = videoDeviceDiscoverySession.devices.first
+        
+        guard let videoDevice = defaultVideoDevice else {
+            print("Could not find any video device")
+            setupResult = .configurationFailed
+            return
+        }
+        
+        do {
+            videoDeviceInput = try AVCaptureDeviceInput(device: videoDevice)
+        } catch {
+            print("Could not create video device input: \(error)")
+            setupResult = .configurationFailed
+            return
+        }
+        
+        avCaptureSession.beginConfiguration()
+        
+        avCaptureSession.sessionPreset = AVCaptureSession.Preset.vga640x480
+        
+        // Add a video input
+        guard avCaptureSession.canAddInput(videoDeviceInput) else {
+            print("Could not add video device input to the session")
+            setupResult = .configurationFailed
+            avCaptureSession.commitConfiguration()
+            return
+        }
+        avCaptureSession.addInput(videoDeviceInput)
+        
+        // Add a video data output
+        if avCaptureSession.canAddOutput(videoDataOutput) {
+            avCaptureSession.addOutput(videoDataOutput)
+            videoDataOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: Int(kCVPixelFormatType_32BGRA)]
+        } else {
+            print("Could not add video data output to the session")
+            setupResult = .configurationFailed
+            avCaptureSession.commitConfiguration()
+            return
+        }
+        
+        // Add a depth data output
+        if avCaptureSession.canAddOutput(depthDataOutput) {
+            avCaptureSession.addOutput(depthDataOutput)
+            depthDataOutput.isFilteringEnabled = true
+            if let connection = depthDataOutput.connection(with: .depthData) {
+                connection.isEnabled = true
+            } else {
+                print("No AVCaptureConnection")
+            }
+        } else {
+            print("Could not add depth data output to the session")
+            setupResult = .configurationFailed
+            avCaptureSession.commitConfiguration()
+            return
+        }
+        
+        // Search for highest resolution with half-point depth values
+        let depthFormats = videoDevice.activeFormat.supportedDepthDataFormats
+        let filtered = depthFormats.filter({
+            CMFormatDescriptionGetMediaSubType($0.formatDescription) == kCVPixelFormatType_DepthFloat16
+        })
+        let selectedFormat = filtered.max(by: {
+            first, second in CMVideoFormatDescriptionGetDimensions(first.formatDescription).width < CMVideoFormatDescriptionGetDimensions(second.formatDescription).width
+        })
+        
+        do {
+            try videoDevice.lockForConfiguration()
+            videoDevice.activeDepthDataFormat = selectedFormat
+            videoDevice.unlockForConfiguration()
+        } catch {
+            print("Could not lock device for configuration: \(error)")
+            setupResult = .configurationFailed
+            avCaptureSession.commitConfiguration()
+            return
+        }
+        
+        // Use an AVCaptureDataOutputSynchronizer to synchronize the video data and depth data outputs.
+        // The first output in the dataOutputs array, in this case the AVCaptureVideoDataOutput, is the "master" output.
+        outputSynchronizer = AVCaptureDataOutputSynchronizer(dataOutputs: [videoDataOutput, depthDataOutput])
+        outputSynchronizer!.setDelegate(self, queue: dataOutputQueue)
+        avCaptureSession.commitConfiguration()
+    }
+    
+    // MARK: - Video + Depth Frame Processing
+       
+       func dataOutputSynchronizer(_ synchronizer: AVCaptureDataOutputSynchronizer,
+                                   didOutput synchronizedDataCollection: AVCaptureSynchronizedDataCollection) {
+           // Check if ExternalData.isSavingFileAsPLY is TRUE...
+           self.handleSessionSwitchInLoop()
+           
+           // Read all outputs
+           guard ExternalData.renderingEnabled,
+                 let syncedDepthData: AVCaptureSynchronizedDepthData =
+                   synchronizedDataCollection.synchronizedData(for: depthDataOutput) as? AVCaptureSynchronizedDepthData,
+                 let syncedVideoData: AVCaptureSynchronizedSampleBufferData =
+                   synchronizedDataCollection.synchronizedData(for: videoDataOutput) as? AVCaptureSynchronizedSampleBufferData else {
+               // only work on synced pairs
+               return
+           }
+           
+           if syncedDepthData.depthDataWasDropped || syncedVideoData.sampleBufferWasDropped {
+               return
+           }
+           
+           let depthData = syncedDepthData.depthData
+           let depthPixelBuffer = depthData.depthDataMap
+           let sampleBuffer = syncedVideoData.sampleBuffer
+           guard let videoPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer),
+                 let formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer) else {
+               return
+           }
+           
+           print("ExternalData.isSavingFileAsPLY: \(ExternalData.isSavingFileAsPLY)")
+           
+           if ExternalData.isSavingFileAsPLY {
+               processFrameAV(depthData: depthData, imageData: videoPixelBuffer)
+               
+               // Set cloudView to empty depth data and texture
+               cloudView?.setDepthFrame(nil, withTexture: nil)
+               
+               ExternalData.isSavingFileAsPLY = false
+           }
+           
+           globalDepthData = depthData
+           globalVideoPixelBuffer = videoPixelBuffer
+           
+           cloudView?.setDepthFrame(depthData, withTexture: videoPixelBuffer)
+       }
     
     // MARK: - ARSessionDelegate Methods
     func session(_ session: ARSession, didUpdate frame: ARFrame) {
+        // Check if ExternalData.isSavingFileAsPLY is TRUE...
+        self.handleSessionSwitchInLoop()
+        
         // Store frame data for processing
         do {
             let imageSampler = try CapturedImageSampler(arSession: session, viewController: self)

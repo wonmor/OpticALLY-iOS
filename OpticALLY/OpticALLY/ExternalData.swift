@@ -144,7 +144,7 @@ struct ExternalData {
         let transformed = GLKMatrix4MultiplyVector3(glkMatrix, glkVector)
         return SCNVector3(transformed.x, transformed.y, transformed.z)
     }
-
+    
     // Function to calculate the rotation matrix
     static func rotationMatrix(from source: SCNVector3, to destination: SCNVector3) -> SCNMatrix4 {
         let sourceNormalized = source.normalized()
@@ -174,14 +174,14 @@ struct ExternalData {
             print("Data arrays are not properly initialized or don't match in count.")
             return
         }
-
+        
         // Using the first point cloud as the reference model
         let referenceMetadata = pointCloudDataArray[0]
-
+        
         for i in 1..<pointCloudGeometries.count {
             let currentMetadata = pointCloudDataArray[i]
             let geometry = pointCloudGeometries[i]
-
+            
             // Calculate translation and rotation
             let translationVector = SCNVector3(
                 x: referenceMetadata.leftEyePosition.x - currentMetadata.leftEyePosition.x,
@@ -189,7 +189,7 @@ struct ExternalData {
                 z: referenceMetadata.leftEyePosition.z - currentMetadata.leftEyePosition.z
             )
             let rotationMatrix = rotationMatrix(from: currentMetadata.chin, to: referenceMetadata.chin)
-
+            
             // Apply translation and rotation
             if let vertexSource = geometry.sources.first(where: { $0.semantic == .vertex }),
                let colorSource = geometry.sources.first(where: { $0.semantic == .color }) {
@@ -227,19 +227,19 @@ struct ExternalData {
     static func rotateVertexAroundX(_ vertex: SCNVector3, around center: SCNVector3, angleDegrees: Float) -> SCNVector3 {
         // Convert angle from degrees to radians
         let angleRadians = angleDegrees * .pi / 180
-
+        
         // Translate the vertex to the origin (relative to the center)
         var translatedVertex = vertex
         translatedVertex.y -= center.y
         translatedVertex.z -= center.z
-
+        
         // Apply rotation around the X-axis
         let cosAngle = cos(angleRadians)
         let sinAngle = sin(angleRadians)
-
+        
         let rotatedY = translatedVertex.y * cosAngle - translatedVertex.z * sinAngle
         let rotatedZ = translatedVertex.y * sinAngle + translatedVertex.z * cosAngle
-
+        
         // Translate the vertex back (relative to the center)
         return SCNVector3(vertex.x, rotatedY + center.y, rotatedZ + center.z)
     }
@@ -249,18 +249,119 @@ struct ExternalData {
         return atan2(transform.m21, transform.m11)
     }
     
+    // Function to convert depth and color data into a point cloud geometry
+    static func createAVPointCloudGeometry(depthData: AVDepthData, colorData: UnsafePointer<UInt8>, width: Int, height: Int, bytesPerRow: Int) {
+        var vertices: [SCNVector3] = []
+        var colors: [UIColor] = []
+        
+        let depthDataMap = depthData.depthDataMap
+        CVPixelBufferLockBaseAddress(depthDataMap, .readOnly)
+        defer { CVPixelBufferUnlockBaseAddress(depthDataMap, .readOnly) }
+        
+        for y in 0..<height {
+            for x in 0..<width {
+                let depthOffset = y * CVPixelBufferGetBytesPerRow(depthDataMap) + x * MemoryLayout<Float>.size
+                let depthPointer = CVPixelBufferGetBaseAddress(depthDataMap)!.advanced(by: depthOffset).assumingMemoryBound(to: Float.self)
+                let depth = depthPointer.pointee
+                
+                // Scale and offset the depth as needed to fit your scene
+                let vertex = SCNVector3(x: Float(x), y: Float(y), z: depth)
+                
+                vertices.append(vertex)
+                
+                let colorOffset = y * bytesPerRow + x * 4 // Assuming BGRA format
+                let bComponent = Double(colorData[colorOffset]) / 255.0
+                let gComponent = Double(colorData[colorOffset + 1]) / 255.0
+                let rComponent = Double(colorData[colorOffset + 2]) / 255.0
+                let aComponent = Double(colorData[colorOffset + 3]) / 255.0
+                
+                let color = UIColor(red: CGFloat(rComponent), green: CGFloat(gComponent), blue: CGFloat(bComponent), alpha: CGFloat(aComponent))
+                colors.append(color)
+            }
+        }
+        
+        // Create the geometry source for vertices
+        let vertexSource = SCNGeometrySource(vertices: vertices)
+        
+        // Assuming the UIColor's data is not properly formatted for the SCNGeometrySource
+        // Instead, create an array of normalized float values representing the color data
+        
+        var colorComponents: [CGFloat] = []
+        
+        var counter = 0
+        
+        for y in 0..<height {
+            for x in 0..<width {
+                let colorOffset = y * bytesPerRow + x * 4 // Assuming BGRA format
+                let bComponent = CGFloat(colorData[colorOffset]) / 255.0
+                let gComponent = CGFloat(colorData[colorOffset + 1]) / 255.0
+                let rComponent = CGFloat(colorData[colorOffset + 2]) / 255.0
+                let aComponent = CGFloat(colorData[colorOffset + 3]) / 255.0
+                
+                print("Converting \(counter)th point: \([rComponent, gComponent, bComponent, aComponent])")
+                LogManager.shared.log("Converting \(counter)th point: \([rComponent, gComponent, bComponent, aComponent])")
+                
+                // Append color components in RGBA order, which is typically used in SceneKit
+                colorComponents += [rComponent, gComponent, bComponent, aComponent]
+                
+                counter += 1
+            }
+        }
+        
+        let colorData = Data(buffer: UnsafeBufferPointer(start: &colorComponents, count: colorComponents.count))
+        let colorSource = SCNGeometrySource(data: colorData,
+                                            semantic: .color,
+                                            vectorCount: vertices.count,
+                                            usesFloatComponents: true,
+                                            componentsPerVector: 4,
+                                            bytesPerComponent: MemoryLayout<CGFloat>.size,
+                                            dataOffset: 0,
+                                            dataStride: MemoryLayout<CGFloat>.stride * 4)
+        
+        // Create the geometry element
+        let indices: [Int32] = Array(0..<Int32(vertices.count))
+        let indexData = Data(bytes: indices, count: indices.count * MemoryLayout<Int32>.size)
+        let element = SCNGeometryElement(data: indexData,
+                                         primitiveType: .point,
+                                         primitiveCount: vertices.count,
+                                         bytesPerIndex: MemoryLayout<Int32>.size)
+        
+        // Create the point cloud geometry
+        let pointCloudGeometry = SCNGeometry(sources: [vertexSource, colorSource], elements: [element])
+        
+        // Set the shader modifier to change the point size
+        let pointSize: CGFloat = 5.0 // Adjust the point size as necessary
+        let shaderModifier = """
+               #pragma transparent
+               #pragma body
+               gl_PointSize = \(pointSize);
+           """
+        pointCloudGeometry.shaderModifiers = [.geometry: shaderModifier]
+        
+        // Set the lighting model to constant to ensure the points are fully lit
+        pointCloudGeometry.firstMaterial?.lightingModel = .constant
+        
+        // Set additional material properties as needed, for example, to make the points more visible
+        pointCloudGeometry.firstMaterial?.isDoubleSided = true
+        
+        pointCloudGeometries.append(pointCloudGeometry)
+        
+        print("Done constructing the 3D object!")
+        LogManager.shared.log("Done constructing the 3D object!")
+    }
+    
     static func createPointCloudGeometry(depthData: AVDepthData, imageSampler: CapturedImageSampler, width: Int, height: Int, calibrationData: AVCameraCalibrationData, transform: SCNMatrix4, percentile: Float = 35.0) {
         var vertices: [SCNVector3] = []
         var colors: [UIColor] = []
         var depthValues: [Float] = []
-
+        
         let cameraIntrinsics = calibrationData.intrinsicMatrix
-
+        
         let convertedDepthData = depthData.converting(toDepthDataType: kCVPixelFormatType_DepthFloat16)
         let depthDataMap = convertedDepthData.depthDataMap
         CVPixelBufferLockBaseAddress(depthDataMap, .readOnly)
         defer { CVPixelBufferUnlockBaseAddress(depthDataMap, .readOnly) }
-
+        
         // Collect all depth values
         for y in 0..<height {
             for x in 0..<width {
@@ -270,31 +371,31 @@ struct ExternalData {
                 depthValues.append(depthValue)
             }
         }
-
+        
         // Sort the depth values
         depthValues.sort()
-
+        
         // Determine the depth threshold for the 30th percentile
         let index = Int(Float(depthValues.count) * percentile / 100.0)
         let depthThreshold = depthValues[max(0, min(index, depthValues.count - 1))]
-
+        
         // Process points with depth values lower than the threshold
         for y in 0..<height {
             for x in 0..<width {
                 let depthOffset = y * CVPixelBufferGetBytesPerRow(depthDataMap) + x * MemoryLayout<UInt16>.size
                 let depthPointer = CVPixelBufferGetBaseAddress(depthDataMap)!.advanced(by: depthOffset).assumingMemoryBound(to: UInt16.self)
                 let depthValue = Float(depthPointer.pointee)
-
+                
                 if depthValue > depthThreshold {
                     continue // Skip this point
                 }
-
+                
                 let scaleFactor = Float(2.0) // Custom scale factor for depth exaggeration
                 let xrw = (Float(x) - cameraIntrinsics.columns.2.x) * depthValue / cameraIntrinsics.columns.0.x
                 let yrw = (Float(y) - cameraIntrinsics.columns.2.y) * depthValue / cameraIntrinsics.columns.1.y
                 let vertex = SCNVector3(x: xrw, y: yrw, z: depthValue * scaleFactor)
                 vertices.append(vertex)
-
+                
                 // Get color using CapturedImageSampler
                 let normalizedX = CGFloat(x) / CGFloat(width)
                 let normalizedY = CGFloat(y) / CGFloat(height)
@@ -306,17 +407,17 @@ struct ExternalData {
         
         if let index: Int? = ExternalData.pointCloudGeometries.count,
            index! < ExternalData.pointCloudDataArray.count {
-               let metadata = ExternalData.pointCloudDataArray[index!]
-               let yawAngle = Float(metadata.yaw)
-
-               // Calculate the center
-               let center = calculateCenter(of: vertices)
-
-               // Rotate vertices around the Z-axis using the yaw angle
-               for i in 0..<vertices.count {
-                   vertices[i] = rotateVertexAroundX(vertices[i], around: center, angleDegrees: -yawAngle)
-               }
-           }
+            let metadata = ExternalData.pointCloudDataArray[index!]
+            let yawAngle = Float(metadata.yaw)
+            
+            // Calculate the center
+            let center = calculateCenter(of: vertices)
+            
+            // Rotate vertices around the Z-axis using the yaw angle
+            for i in 0..<vertices.count {
+                vertices[i] = rotateVertexAroundX(vertices[i], around: center, angleDegrees: -yawAngle)
+            }
+        }
         
         // Create the geometry source for vertices
         let vertexSource = SCNGeometrySource(vertices: vertices)
@@ -364,6 +465,78 @@ struct ExternalData {
         LogManager.shared.log("Done constructing the 3D object!")
     }
     
+    static func exportAV_GeometryAsPLY(to url: URL) {
+        guard let geometry = pointCloudGeometries.first,
+              let vertexSource = geometry.sources.first(where: { $0.semantic == .vertex }),
+              let colorSource = geometry.sources.first(where: { $0.semantic == .color }) else {
+            print("Unable to access vertex or color source from geometry")
+            return
+        }
+        
+        // Access vertex data
+        guard let vertexData: Data? = vertexSource.data else {
+            print("Unable to access vertex data")
+            return
+        }
+        
+        // Access color data
+        guard let colorData: Data? = colorSource.data else {
+            print("Unable to access color data")
+            return
+        }
+        
+        let vertexCount = vertexSource.vectorCount
+        let colorStride = colorSource.dataStride / MemoryLayout<CGFloat>.size
+        let vertices = vertexData!.toArray(type: SCNVector3.self, count: vertexCount)
+        let colors = colorData!.toArray(type: CGFloat.self, count: vertexCount * colorStride)
+        
+        var plyString = "ply\n"
+        plyString += "format ascii 1.0\n"
+        plyString += "element vertex \(vertexCount)\n"
+        plyString += "property float x\n"
+        plyString += "property float y\n"
+        plyString += "property float z\n"
+        plyString += "property uchar red\n"
+        plyString += "property uchar green\n"
+        plyString += "property uchar blue\n"
+        plyString += "property uchar alpha\n"
+        plyString += "end_header\n"
+        
+        for i in 0..<vertexCount {
+            let vertex = vertices[i]
+            let colorIndex = i * colorStride
+            
+            // Ensure the index is within the bounds of the colors array
+            guard colorIndex + 3 < colors.count else {
+                print("Color data index out of range for vertex \(i).")
+                continue
+            }
+            
+            let color: [UInt8] = (0..<4).compactMap { i -> UInt8? in
+                let index = colorIndex + i
+                guard index < colors.count else {
+                    return nil
+                }
+                return UInt8(colors[index] * 255)
+            }
+            
+            // Only proceed if we have all four color components
+            guard color.count == 4 else {
+                print("Incomplete color data for vertex \(i).")
+                continue
+            }
+            
+            plyString += "\(vertex.x) \(vertex.y) \(vertex.z) \(color[0]) \(color[1]) \(color[2]) \(color[3])\n"
+        }
+        
+        do {
+            try plyString.write(to: url, atomically: true, encoding: .ascii)
+            print("PLY file was successfully saved to: \(url.path)")
+        } catch {
+            print("Failed to write PLY file: \(error)")
+        }
+    }
+    
     static func exportGeometryAsPLY(to url: URL) {
         alignPointClouds()
         
@@ -394,7 +567,7 @@ struct ExternalData {
     
     private static func createPLYString(for geometry: SCNGeometry) -> String {
         var plyString = "ply\nformat ascii 1.0\n"
-
+        
         guard let vertexSource = geometry.sources.first(where: { $0.semantic == .vertex }),
               let colorSource = geometry.sources.first(where: { $0.semantic == .color }) else {
             print("Unable to access vertex or color source from geometry")
@@ -404,12 +577,12 @@ struct ExternalData {
         let vertexCount = vertexSource.vectorCount
         let vertices = vertexSource.data.toArray(type: SCNVector3.self, count: vertexCount)
         let colors = colorSource.data.toArray(type: SCNVector4.self, count: vertexCount) // Assuming SCNVector4 for colors
-
+        
         plyString += "element vertex \(vertexCount)\n"
         plyString += "property float x\nproperty float y\nproperty float z\n"
         plyString += "property uchar red\nproperty uchar green\nproperty uchar blue\nproperty uchar alpha\n"
         plyString += "end_header\n"
-
+        
         for i in 0..<vertexCount {
             let vertex = vertices[i]
             let color = colors[i]

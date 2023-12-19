@@ -95,6 +95,21 @@ class ExportViewModel: ObservableObject {
         }
     }
     
+    func exportAV_PLY(showShareSheet: Bool) {
+        // Determine a temporary file URL to save the PLY file
+        let tempDirectory = FileManager.default.temporaryDirectory
+        let fileURL = tempDirectory.appendingPathComponent("model.ply")
+        
+        // Export the PLY data to the file
+        ExternalData.exportAV_GeometryAsPLY(to: fileURL)
+        
+        // Update the state to indicate that there's a file to share
+        DispatchQueue.main.async {
+            self.fileURL = fileURL
+            self.showShareSheet = showShareSheet
+        }
+    }
+    
     func exportPLY(showShareSheet: Bool) {
         DispatchQueue.global(qos: .userInitiated).async {
             // Determine a temporary file URL to save the ZIP file

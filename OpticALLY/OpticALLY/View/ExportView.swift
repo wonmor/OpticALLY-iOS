@@ -265,7 +265,8 @@ struct ExportView: View {
                                                 VStack {
                                                     HStack {
                                                         Button(action: {
-                                                            exportViewModel.exportPLY(showShareSheet: true)
+                                                            // exportViewModel.exportPLY(showShareSheet: true)
+                                                            exportViewModel.exportAV_PLY(showShareSheet: true)
                                                         }) {
                                                             Text(".PLY")
                                                                 .padding()
