@@ -64,6 +64,9 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     var avCaptureSession: AVCaptureSession = AVCaptureSession()
     
     private var isSessionRunning = false
+    
+    private var isAVFirstTimeInit = true
+    private var isARFirstTimeInit = true
         
     // Communicate with the session and other session objects on this queue.
     private let sessionQueue = DispatchQueue(label: "session queue", attributes: [], autoreleaseFrequency: .workItem)
@@ -75,6 +78,15 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     private var videoDeviceInput: AVCaptureDeviceInput!
     
     private let videoDepthMixer = VideoMixer()
+    
+    func smartSessionSwitch() {
+        if isAVFirstTimeInit || isARFirstTimeInit {
+            handleSessionSwitch()
+            
+        } else {
+            handleSessionSwitchInLoop()
+        }
+    }
     
     func handleSessionSwitch() {
         self.configureSession()
@@ -90,6 +102,8 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                 self.depthDataOutput.isFilteringEnabled = true
             }
             
+            isAVFirstTimeInit = false
+            
         } else {
             // Switch back to ARSession
             avCaptureSession.stopRunning()
@@ -98,6 +112,56 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             configuration.isLightEstimationEnabled = true
             
             self.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
+            
+            isARFirstTimeInit = false
+            
+            sessionQueue.async {
+                switch self.setupResult {
+                case .success:
+                    // Only setup observers and start the session running if setup succeeded
+                    self.addObservers()
+                    let videoOrientation = self.videoDataOutput.connection(with: .video)!.videoOrientation
+                    let videoDevicePosition = self.videoDeviceInput.device.position
+                    let rotation = PreviewMetalView.Rotation(with: self.interfaceOrientation,
+                                                             videoOrientation: videoOrientation,
+                                                             cameraPosition: videoDevicePosition)
+                    
+                    self.dataOutputQueue.async {
+                        ExternalData.renderingEnabled = true
+                    }
+                    
+                    self.avCaptureSession.startRunning()
+                    self.isSessionRunning = self.avCaptureSession.isRunning
+                    
+                case .notAuthorized:
+                    DispatchQueue.main.async {
+                        let message = NSLocalizedString("TrueDepthStreamer doesn't have permission to use the camera, please change privacy settings",
+                                                        comment: "Alert message when the user has denied access to the camera")
+                        let alertController = UIAlertController(title: "Harolden 3D Capture", message: message, preferredStyle: .alert)
+                        alertController.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Alert OK button"),
+                                                                style: .cancel,
+                                                                handler: nil))
+                        alertController.addAction(UIAlertAction(title: NSLocalizedString("Settings", comment: "Alert button to open Settings"),
+                                                                style: .`default`,
+                                                                handler: { _ in
+                            UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!,
+                                                      options: [:],
+                                                      completionHandler: nil)
+                        }))
+                        
+                        self.present(alertController, animated: true, completion: nil)
+                    }
+                    
+                case .configurationFailed:
+                    DispatchQueue.main.async {
+                        self.cameraUnavailableLabel.isHidden = false
+                        self.cameraUnavailableLabel.alpha = 0.0
+                        UIView.animate(withDuration: 0.25) {
+                            self.cameraUnavailableLabel.alpha = 1.0
+                        }
+                    }
+                }
+            }
         }
     }
     
@@ -378,7 +442,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
          */
         
         // Check if ExternalData.isSavingFileAsPLY is TRUE...
-        self.handleSessionSwitch()
+        self.smartSessionSwitch()
     }
     
     // MARK: - AVCaptureSession Management
@@ -477,7 +541,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
        func dataOutputSynchronizer(_ synchronizer: AVCaptureDataOutputSynchronizer,
                                    didOutput synchronizedDataCollection: AVCaptureSynchronizedDataCollection) {
            // Check if ExternalData.isSavingFileAsPLY is TRUE...
-           self.handleSessionSwitchInLoop()
+           self.smartSessionSwitch()
            
            // Read all outputs
            guard ExternalData.renderingEnabled,
@@ -503,14 +567,12 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
            
            print("ExternalData.isSavingFileAsPLY: \(ExternalData.isSavingFileAsPLY)")
            
-           if ExternalData.isSavingFileAsPLY {
-               processFrameAV(depthData: depthData, imageData: videoPixelBuffer)
-               
-               // Set cloudView to empty depth data and texture
-               cloudView?.setDepthFrame(nil, withTexture: nil)
-               
-               ExternalData.isSavingFileAsPLY = false
-           }
+           processFrameAV(depthData: depthData, imageData: videoPixelBuffer)
+           
+           // Set cloudView to empty depth data and texture
+           cloudView?.setDepthFrame(nil, withTexture: nil)
+           
+           ExternalData.isSavingFileAsPLY = false
            
            globalDepthData = depthData
            globalVideoPixelBuffer = videoPixelBuffer
@@ -521,7 +583,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     // MARK: - ARSessionDelegate Methods
     func session(_ session: ARSession, didUpdate frame: ARFrame) {
         // Check if ExternalData.isSavingFileAsPLY is TRUE...
-        self.handleSessionSwitchInLoop()
+        self.smartSessionSwitch()
         
         // Store frame data for processing
         do {
@@ -615,56 +677,6 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         if initialThermalState == .serious || initialThermalState == .critical {
             showThermalState(state: initialThermalState)
         }
-        
-        if ExternalData.isSavingFileAsPLY {
-            sessionQueue.async {
-                      switch self.setupResult {
-                      case .success:
-                          // Only setup observers and start the session running if setup succeeded
-                          self.addObservers()
-                          let videoOrientation = self.videoDataOutput.connection(with: .video)!.videoOrientation
-                          let videoDevicePosition = self.videoDeviceInput.device.position
-                          let rotation = PreviewMetalView.Rotation(with: interfaceOrientation,
-                                                                   videoOrientation: videoOrientation,
-                                                                   cameraPosition: videoDevicePosition)
-                          
-                          self.dataOutputQueue.async {
-                              ExternalData.renderingEnabled = true
-                          }
-                          
-                          self.avCaptureSession.startRunning()
-                          self.isSessionRunning = self.avCaptureSession.isRunning
-                          
-                      case .notAuthorized:
-                          DispatchQueue.main.async {
-                              let message = NSLocalizedString("TrueDepthStreamer doesn't have permission to use the camera, please change privacy settings",
-                                                              comment: "Alert message when the user has denied access to the camera")
-                              let alertController = UIAlertController(title: "Harolden 3D Capture", message: message, preferredStyle: .alert)
-                              alertController.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Alert OK button"),
-                                                                      style: .cancel,
-                                                                      handler: nil))
-                              alertController.addAction(UIAlertAction(title: NSLocalizedString("Settings", comment: "Alert button to open Settings"),
-                                                                      style: .`default`,
-                                                                      handler: { _ in
-                                  UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!,
-                                                            options: [:],
-                                                            completionHandler: nil)
-                              }))
-                              
-                              self.present(alertController, animated: true, completion: nil)
-                          }
-                          
-                      case .configurationFailed:
-                          DispatchQueue.main.async {
-                              self.cameraUnavailableLabel.isHidden = false
-                              self.cameraUnavailableLabel.alpha = 0.0
-                              UIView.animate(withDuration: 0.25) {
-                                  self.cameraUnavailableLabel.alpha = 1.0
-                              }
-                          }
-                      }
-                  }
-        }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -740,7 +752,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             let interfaceOrientation = UIApplication.shared.statusBarOrientation
             self.statusBarOrientation = interfaceOrientation
             
-            if ExternalData.isSavingFileAsPLY {
+
                 self.sessionQueue.async {
                     /*
                      The photo orientation is based on the interface orientation. You could also set the orientation of the photo connection based
@@ -748,11 +760,11 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                      */
                     let videoOrientation = self.videoDataOutput.connection(with: .video)!.videoOrientation
                 }
-            }
+            
         }, completion: nil)
     }
     
-    private func addObservers() {
+    func addObservers() {
         NotificationCenter.default.addObserver(self, selector: #selector(didEnterBackground),
                                                name: UIApplication.didEnterBackgroundNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(willEnterForground),
