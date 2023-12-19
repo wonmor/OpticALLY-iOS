@@ -77,9 +77,13 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     private let videoDepthMixer = VideoMixer()
     
     func handleSessionSwitch() {
+        self.configureSession()
+        
         if ExternalData.isSavingFileAsPLY {
             // Switch to AVCaptureSession
             session.pause()
+            self.sessionQueue.resume()
+            
             self.configureAVCaptureSession()
             
             sessionQueue.async {
@@ -89,7 +93,11 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         } else {
             // Switch back to ARSession
             avCaptureSession.stopRunning()
-            self.configureSession()
+            
+            let configuration = ARFaceTrackingConfiguration()
+            configuration.isLightEstimationEnabled = true
+            
+            self.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
         }
     }
     
@@ -341,16 +349,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                     self.setupResult = .notAuthorized
                 }
                 
-                let configuration = ARFaceTrackingConfiguration()
-                configuration.isLightEstimationEnabled = true
-                
-                if ExternalData.isSavingFileAsPLY {
-                    // Switch to AVCaptureSession
-                    self.sessionQueue.resume()
-                } else {
-                    // Switch to ARKit
-                    self.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
-                }
+                self.handleSessionSwitch()
             })
             
         default:
@@ -607,10 +606,73 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         if initialThermalState == .serious || initialThermalState == .critical {
             showThermalState(state: initialThermalState)
         }
+        
+        if ExternalData.isSavingFileAsPLY {
+            sessionQueue.async {
+                      switch self.setupResult {
+                      case .success:
+                          // Only setup observers and start the session running if setup succeeded
+                          self.addObservers()
+                          let videoOrientation = self.videoDataOutput.connection(with: .video)!.videoOrientation
+                          let videoDevicePosition = self.videoDeviceInput.device.position
+                          let rotation = PreviewMetalView.Rotation(with: interfaceOrientation,
+                                                                   videoOrientation: videoOrientation,
+                                                                   cameraPosition: videoDevicePosition)
+                          
+                          self.dataOutputQueue.async {
+                              ExternalData.renderingEnabled = true
+                          }
+                          
+                          self.avCaptureSession.startRunning()
+                          self.isSessionRunning = self.avCaptureSession.isRunning
+                          
+                      case .notAuthorized:
+                          DispatchQueue.main.async {
+                              let message = NSLocalizedString("TrueDepthStreamer doesn't have permission to use the camera, please change privacy settings",
+                                                              comment: "Alert message when the user has denied access to the camera")
+                              let alertController = UIAlertController(title: "Harolden 3D Capture", message: message, preferredStyle: .alert)
+                              alertController.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Alert OK button"),
+                                                                      style: .cancel,
+                                                                      handler: nil))
+                              alertController.addAction(UIAlertAction(title: NSLocalizedString("Settings", comment: "Alert button to open Settings"),
+                                                                      style: .`default`,
+                                                                      handler: { _ in
+                                  UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!,
+                                                            options: [:],
+                                                            completionHandler: nil)
+                              }))
+                              
+                              self.present(alertController, animated: true, completion: nil)
+                          }
+                          
+                      case .configurationFailed:
+                          DispatchQueue.main.async {
+                              self.cameraUnavailableLabel.isHidden = false
+                              self.cameraUnavailableLabel.alpha = 0.0
+                              UIView.animate(withDuration: 0.25) {
+                                  self.cameraUnavailableLabel.alpha = 1.0
+                              }
+                          }
+                      }
+                  }
+        }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         ExternalData.renderingEnabled = false
+        
+        dataOutputQueue.async {
+                    ExternalData.renderingEnabled = false
+                }
+        
+        if ExternalData.isSavingFileAsPLY {
+            sessionQueue.async {
+                if self.setupResult == .success {
+                    self.avCaptureSession.stopRunning()
+                    self.isSessionRunning = self.avCaptureSession.isRunning
+                }
+            }
+        }
         
         super.viewWillDisappear(animated)
         
@@ -668,6 +730,16 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         coordinator.animate(alongsideTransition: { _ in
             let interfaceOrientation = UIApplication.shared.statusBarOrientation
             self.statusBarOrientation = interfaceOrientation
+            
+            if ExternalData.isSavingFileAsPLY {
+                self.sessionQueue.async {
+                    /*
+                     The photo orientation is based on the interface orientation. You could also set the orientation of the photo connection based
+                     on the device orientation by observing UIDeviceOrientationDidChangeNotification.
+                     */
+                    let videoOrientation = self.videoDataOutput.connection(with: .video)!.videoOrientation
+                }
+            }
         }, completion: nil)
     }
     
@@ -721,7 +793,29 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                        exposureMode: AVCaptureDevice.ExposureMode,
                        at devicePoint: CGPoint,
                        monitorSubjectAreaChange: Bool) {
-        
+        if ExternalData.isSavingFileAsPLY {
+            sessionQueue.async {
+                 let videoDevice = self.videoDeviceInput.device
+                 
+                 do {
+                     try videoDevice.lockForConfiguration()
+                     if videoDevice.isFocusPointOfInterestSupported && videoDevice.isFocusModeSupported(focusMode) {
+                         videoDevice.focusPointOfInterest = devicePoint
+                         videoDevice.focusMode = focusMode
+                     }
+                     
+                     if videoDevice.isExposurePointOfInterestSupported && videoDevice.isExposureModeSupported(exposureMode) {
+                         videoDevice.exposurePointOfInterest = devicePoint
+                         videoDevice.exposureMode = exposureMode
+                     }
+                     
+                     videoDevice.isSubjectAreaChangeMonitoringEnabled = monitorSubjectAreaChange
+                     videoDevice.unlockForConfiguration()
+                 } catch {
+                     print("Could not lock device for configuration: \(error)")
+                 }
+             }
+        }
     }
     
     @objc
