@@ -79,104 +79,89 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     
     private let videoDepthMixer = VideoMixer()
     
-    func smartSessionSwitch() {
-        if isAVFirstTimeInit || isARFirstTimeInit {
-            handleSessionSwitch()
-            
-        } else {
-            handleSessionSwitchInLoop()
+    func handleSessionSwitchInLoop() {
+        if isARFirstTimeInit {
+            self.configureSession()
         }
-    }
-    
-    func handleSessionSwitch() {
-        self.configureSession()
         
         if ExternalData.isSavingFileAsPLY {
             // Switch to AVCaptureSession
-            session.pause()
-            self.sessionQueue.resume()
-            
-            self.configureAVCaptureSession()
-            
-            sessionQueue.async {
-                self.depthDataOutput.isFilteringEnabled = true
+            if isAVFirstTimeInit {
+                // Switch to AVCaptureSession
+                session.pause()
+
+                self.configureAVCaptureSession()
+                
+                sessionQueue.async {
+                    self.depthDataOutput.isFilteringEnabled = true
+                }
+                
+                isAVFirstTimeInit = false
+                
+            } else {
+                session.pause()
+                
+                sessionQueue.async {
+                    self.depthDataOutput.isFilteringEnabled = true
+                }
             }
             
-            isAVFirstTimeInit = false
-            
         } else {
-            // Switch back to ARSession
-            avCaptureSession.stopRunning()
-            
-            let configuration = ARFaceTrackingConfiguration()
-            configuration.isLightEstimationEnabled = true
-            
-            self.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
-            
-            isARFirstTimeInit = false
-            
-            sessionQueue.async {
-                switch self.setupResult {
-                case .success:
-                    // Only setup observers and start the session running if setup succeeded
-                    self.addObservers()
-                    let videoOrientation = self.videoDataOutput.connection(with: .video)!.videoOrientation
-                    let videoDevicePosition = self.videoDeviceInput.device.position
-                    let rotation = PreviewMetalView.Rotation(with: self.interfaceOrientation,
-                                                             videoOrientation: videoOrientation,
-                                                             cameraPosition: videoDevicePosition)
-                    
-                    self.dataOutputQueue.async {
-                        ExternalData.renderingEnabled = true
-                    }
-                    
-                    self.avCaptureSession.startRunning()
-                    self.isSessionRunning = self.avCaptureSession.isRunning
-                    
-                case .notAuthorized:
-                    DispatchQueue.main.async {
-                        let message = NSLocalizedString("TrueDepthStreamer doesn't have permission to use the camera, please change privacy settings",
-                                                        comment: "Alert message when the user has denied access to the camera")
-                        let alertController = UIAlertController(title: "Harolden 3D Capture", message: message, preferredStyle: .alert)
-                        alertController.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Alert OK button"),
-                                                                style: .cancel,
-                                                                handler: nil))
-                        alertController.addAction(UIAlertAction(title: NSLocalizedString("Settings", comment: "Alert button to open Settings"),
-                                                                style: .`default`,
-                                                                handler: { _ in
-                            UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!,
-                                                      options: [:],
-                                                      completionHandler: nil)
-                        }))
+            if isARFirstTimeInit {
+                avCaptureSession.stopRunning()
+                
+                let configuration = ARFaceTrackingConfiguration()
+                configuration.isLightEstimationEnabled = true
+                
+                self.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
+                
+                sessionQueue.async {
+                    switch self.setupResult {
+                    case .success:
+                        // Only setup observers and start the session running if setup succeeded
+                        self.addObservers()
+                 
+                        self.dataOutputQueue.async {
+                            ExternalData.renderingEnabled = true
+                        }
                         
-                        self.present(alertController, animated: true, completion: nil)
-                    }
-                    
-                case .configurationFailed:
-                    DispatchQueue.main.async {
-                        self.cameraUnavailableLabel.isHidden = false
-                        self.cameraUnavailableLabel.alpha = 0.0
-                        UIView.animate(withDuration: 0.25) {
-                            self.cameraUnavailableLabel.alpha = 1.0
+                        self.avCaptureSession.startRunning()
+                        self.isSessionRunning = self.avCaptureSession.isRunning
+                        
+                    case .notAuthorized:
+                        DispatchQueue.main.async {
+                            let message = NSLocalizedString("TrueDepthStreamer doesn't have permission to use the camera, please change privacy settings",
+                                                            comment: "Alert message when the user has denied access to the camera")
+                            let alertController = UIAlertController(title: "Harolden 3D Capture", message: message, preferredStyle: .alert)
+                            alertController.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Alert OK button"),
+                                                                    style: .cancel,
+                                                                    handler: nil))
+                            alertController.addAction(UIAlertAction(title: NSLocalizedString("Settings", comment: "Alert button to open Settings"),
+                                                                    style: .`default`,
+                                                                    handler: { _ in
+                                UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!,
+                                                          options: [:],
+                                                          completionHandler: nil)
+                            }))
+                            
+                            self.present(alertController, animated: true, completion: nil)
+                        }
+                        
+                    case .configurationFailed:
+                        DispatchQueue.main.async {
+                            self.cameraUnavailableLabel.isHidden = false
+                            self.cameraUnavailableLabel.alpha = 0.0
+                            UIView.animate(withDuration: 0.25) {
+                                self.cameraUnavailableLabel.alpha = 1.0
+                            }
                         }
                     }
                 }
+                isARFirstTimeInit = false
+            } else {
+                // Switch back to ARSession
+                avCaptureSession.stopRunning()
             }
-        }
-    }
-    
-    func handleSessionSwitchInLoop() {
-        if ExternalData.isSavingFileAsPLY {
-            // Switch to AVCaptureSession
-            session.pause()
-            
-            sessionQueue.async {
-                self.depthDataOutput.isFilteringEnabled = true
-            }
-            
-        } else {
-            // Switch back to ARSession
-            avCaptureSession.stopRunning()
         }
     }
     
@@ -442,7 +427,6 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
          */
         
         // Check if ExternalData.isSavingFileAsPLY is TRUE...
-        self.smartSessionSwitch()
     }
     
     // MARK: - AVCaptureSession Management
@@ -541,7 +525,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
        func dataOutputSynchronizer(_ synchronizer: AVCaptureDataOutputSynchronizer,
                                    didOutput synchronizedDataCollection: AVCaptureSynchronizedDataCollection) {
            // Check if ExternalData.isSavingFileAsPLY is TRUE...
-           self.smartSessionSwitch()
+           self.handleSessionSwitchInLoop()
            
            // Read all outputs
            guard ExternalData.renderingEnabled,
@@ -583,7 +567,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     // MARK: - ARSessionDelegate Methods
     func session(_ session: ARSession, didUpdate frame: ARFrame) {
         // Check if ExternalData.isSavingFileAsPLY is TRUE...
-        self.smartSessionSwitch()
+        self.handleSessionSwitchInLoop()
         
         // Store frame data for processing
         do {
