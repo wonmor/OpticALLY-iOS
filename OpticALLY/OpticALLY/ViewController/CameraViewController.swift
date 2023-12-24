@@ -359,7 +359,10 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     }
     
     private func startAVCaptureSession() {
-        avCaptureSession.startRunning()
+        DispatchQueue.global(qos: .userInitiated).async {
+            self.avCaptureSession.startRunning()
+        }
+        
         outputSynchronizer = AVCaptureDataOutputSynchronizer(dataOutputs: [videoDataOutput, depthDataOutput])
         outputSynchronizer?.setDelegate(self, queue: dataOutputQueue)
         updateStatusLabel(withText: "AVCaptureSession Running")

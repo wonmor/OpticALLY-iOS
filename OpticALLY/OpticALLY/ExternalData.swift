@@ -253,19 +253,51 @@ struct ExternalData {
     static func createAVPointCloudGeometry(depthData: AVDepthData, colorData: UnsafePointer<UInt8>, width: Int, height: Int, bytesPerRow: Int) {
         var vertices: [SCNVector3] = []
         var colors: [UIColor] = []
+        var depthValues: [Float] = []
         
-        let depthDataMap = depthData.depthDataMap
+        let cameraIntrinsics = calibrationData.intrinsicMatrix
+        
+        let convertedDepthData = depthData.converting(toDepthDataType: kCVPixelFormatType_DepthFloat16)
+        let depthDataMap = convertedDepthData.depthDataMap
         CVPixelBufferLockBaseAddress(depthDataMap, .readOnly)
         defer { CVPixelBufferUnlockBaseAddress(depthDataMap, .readOnly) }
         
+        // Collect all depth values
         for y in 0..<height {
             for x in 0..<width {
-                let depthOffset = y * CVPixelBufferGetBytesPerRow(depthDataMap) + x * MemoryLayout<Float>.size
-                let depthPointer = CVPixelBufferGetBaseAddress(depthDataMap)!.advanced(by: depthOffset).assumingMemoryBound(to: Float.self)
-                let depth = depthPointer.pointee
+                let depthOffset = y * CVPixelBufferGetBytesPerRow(depthDataMap) + x * MemoryLayout<UInt16>.size
+                let depthPointer = CVPixelBufferGetBaseAddress(depthDataMap)!.advanced(by: depthOffset).assumingMemoryBound(to: UInt16.self)
+                let depthValue = Float(depthPointer.pointee)
+                depthValues.append(depthValue)
+            }
+        }
+        
+        let unsortedDepthValues = depthValues
+        
+        // Sort the depth values
+        depthValues.sort()
+        
+        // Determine the depth threshold for the 30th percentile
+        let index = Int(Float(depthValues.count) * percentile / 100.0)
+        let depthThreshold = depthValues[max(0, min(index, depthValues.count - 1))]
+        
+        var counter = 1
+        
+        // Process points with depth values lower than the threshold
+        for y in 0..<height {
+            for x in 0..<width {
+                let depthOffset = y * CVPixelBufferGetBytesPerRow(depthDataMap) + x * MemoryLayout<UInt16>.size
+                let depthPointer = CVPixelBufferGetBaseAddress(depthDataMap)!.advanced(by: depthOffset).assumingMemoryBound(to: UInt16.self)
+                let depthValue = Float(depthPointer.pointee)
                 
-                // Scale and offset the depth as needed to fit your scene
-                let vertex = SCNVector3(x: Float(x), y: Float(y), z: depth)
+                if depthValue > depthThreshold {
+                    continue // Skip this point
+                }
+                
+                let scaleFactor = Float(1.5) // Custom value for depth exaggeration
+                let xrw = (Float(x) - cameraIntrinsics.columns.2.x) * depthValue / cameraIntrinsics.columns.0.x
+                let yrw = (Float(y) - cameraIntrinsics.columns.2.y) * depthValue / cameraIntrinsics.columns.1.y
+                let vertex = SCNVector3(x: xrw, y: yrw, z: depthValue * scaleFactor)
                 
                 vertices.append(vertex)
                 
@@ -277,6 +309,10 @@ struct ExternalData {
                 
                 let color = UIColor(red: CGFloat(rComponent), green: CGFloat(gComponent), blue: CGFloat(bComponent), alpha: CGFloat(aComponent))
                 colors.append(color)
+                
+                LogManager.shared.log("Converting \(counter)th point: \([rComponent, gComponent, bComponent, aComponent])")
+                
+                counter += 1
             }
         }
         
@@ -286,37 +322,31 @@ struct ExternalData {
         // Assuming the UIColor's data is not properly formatted for the SCNGeometrySource
         // Instead, create an array of normalized float values representing the color data
         
+        // Convert UIColors to Float Components
         var colorComponents: [CGFloat] = []
-        
-        var counter = 0
-        
-        for y in 0..<height {
-            for x in 0..<width {
-                let colorOffset = y * bytesPerRow + x * 4 // Assuming BGRA format
-                let bComponent = CGFloat(colorData[colorOffset]) / 255.0
-                let gComponent = CGFloat(colorData[colorOffset + 1]) / 255.0
-                let rComponent = CGFloat(colorData[colorOffset + 2]) / 255.0
-                let aComponent = CGFloat(colorData[colorOffset + 3]) / 255.0
-                
-                print("Converting \(counter)th point: \([rComponent, gComponent, bComponent, aComponent])")
-                LogManager.shared.log("Converting \(counter)th point: \([rComponent, gComponent, bComponent, aComponent])")
-                
-                // Append color components in RGBA order, which is typically used in SceneKit
-                colorComponents += [rComponent, gComponent, bComponent, aComponent]
-                
-                counter += 1
-            }
+        for color in colors {
+            var red: CGFloat = 0
+            var green: CGFloat = 0
+            var blue: CGFloat = 0
+            var alpha: CGFloat = 0
+            color.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+            
+            colorComponents += [red, green, blue, alpha]
         }
         
-        let colorData = Data(buffer: UnsafeBufferPointer(start: &colorComponents, count: colorComponents.count))
-        let colorSource = SCNGeometrySource(data: colorData,
+        // Create the geometry source for colors
+        let colorData = NSData(bytes: colorComponents, length: colorComponents.count * MemoryLayout<CGFloat>.size)
+        let colorSource = SCNGeometrySource(data: colorData as Data,
                                             semantic: .color,
-                                            vectorCount: vertices.count,
+                                            vectorCount: colors.count,
                                             usesFloatComponents: true,
                                             componentsPerVector: 4,
                                             bytesPerComponent: MemoryLayout<CGFloat>.size,
                                             dataOffset: 0,
-                                            dataStride: MemoryLayout<CGFloat>.stride * 4)
+                                            dataStride: MemoryLayout<CGFloat>.size * 4)
+        
+        // Combine Vertex and Color Sources
+        let geometrySources = [vertexSource, colorSource]
         
         // Create the geometry element
         let indices: [Int32] = Array(0..<Int32(vertices.count))
@@ -328,15 +358,6 @@ struct ExternalData {
         
         // Create the point cloud geometry
         let pointCloudGeometry = SCNGeometry(sources: [vertexSource, colorSource], elements: [element])
-        
-        // Set the shader modifier to change the point size
-        let pointSize: CGFloat = 5.0 // Adjust the point size as necessary
-        let shaderModifier = """
-               #pragma transparent
-               #pragma body
-               gl_PointSize = \(pointSize);
-           """
-        pointCloudGeometry.shaderModifiers = [.geometry: shaderModifier]
         
         // Set the lighting model to constant to ensure the points are fully lit
         pointCloudGeometry.firstMaterial?.lightingModel = .constant
