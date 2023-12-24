@@ -37,7 +37,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     
     @IBOutlet weak private var cloudView: PointCloudMetalView!
     
-    func resizePixelBuffer(_ pixelBuffer: CVPixelBuffer, width: Int, height: Int) -> CVPixelBuffer? {
+    private func resizePixelBuffer(_ pixelBuffer: CVPixelBuffer, width: Int, height: Int) -> CVPixelBuffer? {
         // Use kCVPixelFormatType_32BGRA for BGRA format (equivalent to MTLPixelFormatBGRA8Unorm)
         let pixelFormatType = kCVPixelFormatType_32BGRA
         var newPixelBuffer: CVPixelBuffer?
@@ -98,21 +98,8 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         print("Image Width: \(colorWidth) | Image Height: \(colorHeight)")
         print("Depth Data Width: \(depthWidth) | Depth Data Height: \(depthHeight)")
         
-        guard let colorData = CVPixelBufferGetBaseAddress(colorPixelBuffer!) else {
-            print("Unable to get image buffer base address.")
-            return
-        }
-        
         let colorBytesPerRow = CVPixelBufferGetBytesPerRow(colorPixelBuffer!)
-        let colorBytesPerPixel = 4 // BGRA format
-        
-        guard let depthDataAddress = CVPixelBufferGetBaseAddress(depthPixelBuffer) else {
-            print("Unable to get depth buffer base address.")
-            return
-        }
-        
-        let depthBytesPerRow = CVPixelBufferGetBytesPerRow(depthPixelBuffer)
-        // Determine the bytes per pixel based on the depth format type
+      
         let depthPixelFormatType = CVPixelBufferGetPixelFormatType(depthPixelBuffer)
         var depthBytesPerPixel: Int = 0 // Initialize with zero
         
@@ -442,10 +429,8 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         }
         
         let depthData = syncedDepthData.depthData
-        let depthPixelBuffer = depthData.depthDataMap
         let sampleBuffer = syncedVideoData.sampleBuffer
-        guard let videoPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer),
-              let formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer) else {
+        guard let videoPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
             return
         }
         
