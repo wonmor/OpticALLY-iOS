@@ -132,60 +132,28 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     
     private func detectFaceLandmarks(in pixelBuffer: CVPixelBuffer, frame: ARFrame) {
         try? faceDetectionHandler.perform([faceDetectionRequest], on: pixelBuffer, orientation: .right)
-        guard let observations = faceDetectionRequest.results else {
+        guard let observations = faceDetectionRequest.results as? [VNFaceObservation] else {
             return
         }
-        
+
         for observation in observations {
-            if let leftEye = observation.landmarks?.leftEye, let rightEye = observation.landmarks?.rightEye {
-                let leftEyePosition = averagePoint(from: leftEye.normalizedPoints, in: observation.boundingBox, pixelBuffer: pixelBuffer)
-                let rightEyePosition = averagePoint(from: rightEye.normalizedPoints, in: observation.boundingBox, pixelBuffer: pixelBuffer)
-                
-                // Perform raycasting for each eye position
-                if let leftEyeRaycastQuery: ARRaycastQuery? = frame.raycastQuery(from: leftEyePosition, allowing: .estimatedPlane, alignment: .any),
-                   let rightEyeRaycastQuery: ARRaycastQuery? = frame.raycastQuery(from: rightEyePosition, allowing: .estimatedPlane, alignment: .any) {
-                    let leftEyeResults = session.raycast(leftEyeRaycastQuery!)
-                    let rightEyeResults = session.raycast(rightEyeRaycastQuery!)
-                    
-                    print("FUCK: \(leftEyeResults)")
-                    
-                    // Process the results
-                    if let leftEyeHit = leftEyeResults.first, let rightEyeHit = rightEyeResults.first {
-                        DispatchQueue.main.async {
-                            self.leftEyePosition = SCNVector3(leftEyeHit.worldTransform.columns.3.x,
-                                                              leftEyeHit.worldTransform.columns.3.y,
-                                                              leftEyeHit.worldTransform.columns.3.z)
-                            
-                            print("LEFT: \(self.leftEyePosition)")
-                            
-                            self.rightEyePosition = SCNVector3(rightEyeHit.worldTransform.columns.3.x,
-                                                               rightEyeHit.worldTransform.columns.3.y,
-                                                               rightEyeHit.worldTransform.columns.3.z)
-                            
-                            print("RIGHT: \(self.rightEyePosition)")
-                        }
-                    }
-                }
+            // Ensure that the left eye is detected
+            guard let leftEye = observation.landmarks?.leftEye else {
+                continue
             }
-            
-            if let faceContour = observation.landmarks?.faceContour {
-                let points = faceContour.normalizedPoints
-                if let lowestPoint = points.min(by: { $0.y < $1.y }) {
-                    let chinPosition = averagePoint(from: [lowestPoint], in: observation.boundingBox, pixelBuffer: pixelBuffer)
-                    
-                    // Perform raycasting for the chin position
-                    if let chinRaycastQuery: ARRaycastQuery? = frame.raycastQuery(from: chinPosition, allowing: .estimatedPlane, alignment: .any) {
-                        let chinResults = session.raycast(chinRaycastQuery!)
-                        
-                        // Process the results
-                        if let chinHit = chinResults.first {
-                            DispatchQueue.main.async {
-                                self.chin = SCNVector3(chinHit.worldTransform.columns.3.x,
-                                                       chinHit.worldTransform.columns.3.y,
-                                                       chinHit.worldTransform.columns.3.z)
-                                // Update any UI elements or AR nodes here for the chin
-                            }
-                        }
+
+            let leftEyePosition = averagePoint(from: leftEye.normalizedPoints, in: observation.boundingBox, pixelBuffer: pixelBuffer)
+
+            // Perform raycasting for the left eye position
+            if let leftEyeRaycastQuery: ARRaycastQuery? = frame.raycastQuery(from: CGPoint(x: leftEyePosition.x, y: leftEyePosition.y), allowing: .estimatedPlane, alignment: .any) {
+                let leftEyeResults = session.raycast(leftEyeRaycastQuery!)
+
+                // Process the results
+                if let leftEyeHit = leftEyeResults.first {
+                    DispatchQueue.main.async {
+                        self.leftEyePosition = SCNVector3(leftEyeHit.worldTransform.columns.3.x,
+                                                          leftEyeHit.worldTransform.columns.3.y,
+                                                          leftEyeHit.worldTransform.columns.3.z)
                     }
                 }
             }
