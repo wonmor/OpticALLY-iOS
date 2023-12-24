@@ -1,3 +1,4 @@
+import SwiftUI
 import UIKit
 import ARKit
 import AVFoundation
@@ -267,6 +268,13 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             self.viewModel!.faceAnchor = faceAnchor
         }
     }
+    
+    @IBSegueAction func embedSwiftUIView(_ coder: NSCoder) -> UIViewController? {
+            // Upon Scan Completion...
+            let hostingController = UIHostingController(coder: coder, rootView: ExportView())!
+            hostingController.view.backgroundColor = .clear
+            return hostingController
+        }
     
     private func configureUI() {
         statusLabel = UILabel()
