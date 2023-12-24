@@ -214,10 +214,12 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         configureARSession()
         configureAVCaptureSession()
         switchSession(toARSession: true)
-        configureCloudViewConstraints()
+        configureCloudView()
+        addAndConfigureSwiftUIView()
     }
     
-    private func configureCloudViewConstraints() {
+    private func configureCloudView() {
+        // Assuming cloudView is already added to the view hierarchy
         cloudView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             cloudView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -225,6 +227,26 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             cloudView.topAnchor.constraint(equalTo: view.topAnchor),
             cloudView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
+    }
+    
+    private func addAndConfigureSwiftUIView() {
+        let hostingController = UIHostingController(rootView: ExportView())
+        addChild(hostingController)
+        hostingController.didMove(toParent: self)
+        
+        let swiftUIView = hostingController.view!
+        swiftUIView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(swiftUIView)
+        
+        NSLayoutConstraint.activate([
+            swiftUIView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            swiftUIView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            swiftUIView.topAnchor.constraint(equalTo: view.topAnchor),
+            swiftUIView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+        
+        // Bring the SwiftUI view to the front
+        view.bringSubviewToFront(swiftUIView)
     }
     
     // MARK: - ARSessionDelegate Methods
@@ -278,30 +300,6 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         DispatchQueue.main.async {
             self.viewModel!.faceAnchor = faceAnchor
         }
-    }
-    
-    @IBSegueAction func embedSwiftUIView(_ coder: NSCoder) -> UIViewController? {
-        let hostingController = UIHostingController(coder: coder, rootView: ExportView())!
-        
-        // Add hostingController as a child of the current view controller
-        let parentViewController = self // Reference to the parent view controller
-        parentViewController.addChild(hostingController)
-        parentViewController.view.addSubview(hostingController.view)
-        hostingController.didMove(toParent: parentViewController)
-        
-        // Set up constraints for centering
-        hostingController.view.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            hostingController.view.centerXAnchor.constraint(equalTo: parentViewController.view.centerXAnchor),
-            hostingController.view.centerYAnchor.constraint(equalTo: parentViewController.view.centerYAnchor)
-            // Add constraints for width or height if needed
-        ])
-        
-        // Bring the hosting controller's view to the front
-        parentViewController.view.bringSubviewToFront(hostingController.view)
-        
-        hostingController.view.backgroundColor = .clear
-        return hostingController
     }
     
     private func configureGestureRecognizers() {
