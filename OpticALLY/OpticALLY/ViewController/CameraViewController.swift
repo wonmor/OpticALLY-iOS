@@ -37,31 +37,71 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     
     @IBOutlet weak private var cloudView: PointCloudMetalView!
     
+    func resizePixelBuffer(_ pixelBuffer: CVPixelBuffer, width: Int, height: Int) -> CVPixelBuffer? {
+        let pixelFormatType = CVPixelBufferGetPixelFormatType(pixelBuffer)
+        var newPixelBuffer: CVPixelBuffer?
+
+        let status = CVPixelBufferCreate(kCFAllocatorDefault,
+                                         width,
+                                         height,
+                                         pixelFormatType,
+                                         nil,
+                                         &newPixelBuffer)
+
+        guard status == kCVReturnSuccess, let resizedPixelBuffer = newPixelBuffer else {
+            return nil
+        }
+
+        CVPixelBufferLockBaseAddress(pixelBuffer, .readOnly)
+        CVPixelBufferLockBaseAddress(resizedPixelBuffer, [])
+
+        defer {
+            CVPixelBufferUnlockBaseAddress(pixelBuffer, .readOnly)
+            CVPixelBufferUnlockBaseAddress(resizedPixelBuffer, [])
+        }
+
+        if let context = CGContext(data: CVPixelBufferGetBaseAddress(resizedPixelBuffer),
+                                   width: width,
+                                   height: height,
+                                   bitsPerComponent: 8,
+                                   bytesPerRow: CVPixelBufferGetBytesPerRow(resizedPixelBuffer),
+                                   space: CGColorSpaceCreateDeviceRGB(),
+                                   bitmapInfo: CGImageAlphaInfo.noneSkipFirst.rawValue),
+           let quartzImage = CIContext().createCGImage(CIImage(cvPixelBuffer: pixelBuffer), from: CIImage(cvPixelBuffer: pixelBuffer).extent) {
+            
+            context.draw(quartzImage, in: CGRect(x: 0, y: 0, width: width, height: height))
+        }
+
+        return resizedPixelBuffer
+    }
+    
     private func processFrameAV(depthData: AVDepthData, imageData: CVImageBuffer) {
         let depthPixelBuffer = depthData.depthDataMap
-        let colorPixelBuffer = imageData
         
-        CVPixelBufferLockBaseAddress(depthPixelBuffer, .readOnly)
-        CVPixelBufferLockBaseAddress(colorPixelBuffer, .readOnly)
-        defer {
-            CVPixelBufferUnlockBaseAddress(depthPixelBuffer, .readOnly)
-            CVPixelBufferUnlockBaseAddress(colorPixelBuffer, .readOnly)
-        }
-        
-        let colorWidth = CVPixelBufferGetWidth(colorPixelBuffer)
-        let colorHeight = CVPixelBufferGetHeight(colorPixelBuffer)
         let depthWidth = CVPixelBufferGetWidth(depthPixelBuffer)
         let depthHeight = CVPixelBufferGetHeight(depthPixelBuffer)
+        
+        let colorPixelBuffer = resizePixelBuffer(imageData, width: depthWidth, height: depthHeight)
+        
+        CVPixelBufferLockBaseAddress(depthPixelBuffer, .readOnly)
+        CVPixelBufferLockBaseAddress(colorPixelBuffer!, .readOnly)
+        defer {
+            CVPixelBufferUnlockBaseAddress(depthPixelBuffer, .readOnly)
+            CVPixelBufferUnlockBaseAddress(colorPixelBuffer!, .readOnly)
+        }
+        
+        let colorWidth = CVPixelBufferGetWidth(colorPixelBuffer!)
+        let colorHeight = CVPixelBufferGetHeight(colorPixelBuffer!)
         
         print("Image Width: \(colorWidth) | Image Height: \(colorHeight)")
         print("Depth Data Width: \(depthWidth) | Depth Data Height: \(depthHeight)")
         
-        guard let colorData = CVPixelBufferGetBaseAddress(colorPixelBuffer) else {
+        guard let colorData = CVPixelBufferGetBaseAddress(colorPixelBuffer!) else {
             print("Unable to get image buffer base address.")
             return
         }
         
-        let colorBytesPerRow = CVPixelBufferGetBytesPerRow(colorPixelBuffer)
+        let colorBytesPerRow = CVPixelBufferGetBytesPerRow(colorPixelBuffer!)
         let colorBytesPerPixel = 4 // BGRA format
         
         guard let depthDataAddress = CVPixelBufferGetBaseAddress(depthPixelBuffer) else {
@@ -90,7 +130,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         let commonHeight = min(colorHeight, depthHeight)
         
         // Assuming colorData is the base address for the BGRA image buffer
-        let colorBaseAddress = CVPixelBufferGetBaseAddress(colorPixelBuffer)!.assumingMemoryBound(to: UInt8.self)
+        let colorBaseAddress = CVPixelBufferGetBaseAddress(colorPixelBuffer!)!.assumingMemoryBound(to: UInt8.self)
         
         // Call the point cloud creation function
         ExternalData.createAVPointCloudGeometry(
@@ -228,7 +268,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             
             guard let faceAnchor = frame.anchors.compactMap({ $0 as? ARFaceAnchor }).first else { return }
             
-            DispatchQueue.main.async {
+            DispatchQueue.main.async { [self] in
                 self.synchronizedDepthData = frame.capturedDepthData
                 self.synchronizedVideoPixelBuffer = frame.capturedImage
                 
@@ -254,6 +294,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                     if let depthData = self.synchronizedDepthData,
                        let videoPixelBuffer = self.synchronizedVideoPixelBuffer {
                         self.detectFaceLandmarks(in: videoPixelBuffer, frame: frame)
+                        // cloudView.setDepthFrame(depthData, withTexture: videoPixelBuffer)
                     }
                 }
             }
