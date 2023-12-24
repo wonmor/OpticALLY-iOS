@@ -493,55 +493,25 @@ struct ExternalData {
             print("Unable to access vertex or color source from geometry")
             return
         }
-
-        // Access vertex data
-        guard let vertexData: Data? = vertexSource.data else {
-            print("Unable to access vertex data")
-            return
-        }
-
-        // Access color data
-        guard let colorData: Data? = colorSource.data else {
-            print("Unable to access color data")
-            return
-        }
-
+        
+        var plyString = "ply\nformat ascii 1.0\n"
+        
         let vertexCount = vertexSource.vectorCount
-        let colorStride = colorSource.dataStride / MemoryLayout<CGFloat>.size
-        let vertices = vertexData!.toArray(type: SCNVector3.self, count: vertexCount)
-        let colors = colorData!.toArray(type: CGFloat.self, count: vertexCount * colorStride)
-
-        var plyString = "ply\n"
-        plyString += "format ascii 1.0\n"
+        let vertices = vertexSource.data.toArray(type: SCNVector3.self, count: vertexCount)
+        let colors = colorSource.data.toArray(type: SCNVector4.self, count: vertexCount) // Assuming SCNVector4 for colors
+        
         plyString += "element vertex \(vertexCount)\n"
-        plyString += "property float x\n"
-        plyString += "property float y\n"
-        plyString += "property float z\n"
-        plyString += "property uchar red\n"
-        plyString += "property uchar green\n"
-        plyString += "property uchar blue\n"
-        plyString += "property uchar alpha\n"
+        plyString += "property float x\nproperty float y\nproperty float z\n"
+        plyString += "property uchar red\nproperty uchar green\nproperty uchar blue\nproperty uchar alpha\n"
         plyString += "end_header\n"
-
+        
         for i in 0..<vertexCount {
             let vertex = vertices[i]
-            let colorIndex = i * colorStride
-
-            // Ensure the index is within the bounds of the colors array
-            guard colorIndex + 3 < colors.count else {
-                print("Color data index out of range for vertex \(i).")
-                continue
-            }
-
-            // Convert BGRA to RGBA and apply gamma correction
-            let blue = UInt8(colors[colorIndex] * 255)
-            let green = UInt8(colors[colorIndex + 1] * 255)
-            let red = UInt8(colors[colorIndex + 2] * 255)
-            let alpha = UInt8(colors[colorIndex + 3] * 255)
-
-            plyString += "\(vertex.x) \(vertex.y) \(vertex.z) \(red) \(green) \(blue) \(alpha)\n"
+            let color = colors[i]
+            let colorComponents = [color.x, color.y, color.z, color.w].map { UInt8($0 * 255) }
+            plyString += "\(vertex.x) \(vertex.y) \(vertex.z) \(colorComponents[0]) \(colorComponents[1]) \(colorComponents[2]) \(colorComponents[3])\n"
         }
-
+        
         do {
             try plyString.write(to: url, atomically: true, encoding: .ascii)
             print("PLY file was successfully saved to: \(url.path)")
