@@ -219,8 +219,8 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     }
     
     private func configureCloudView() {
-        // Assuming cloudView is already added to the view hierarchy
         cloudView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(cloudView)
         NSLayoutConstraint.activate([
             cloudView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             cloudView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
@@ -238,15 +238,15 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         swiftUIView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(swiftUIView)
         
-        NSLayoutConstraint.activate([
-            swiftUIView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            swiftUIView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            swiftUIView.topAnchor.constraint(equalTo: view.topAnchor),
-            swiftUIView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-        ])
+        let maxWidth = view.bounds.width * 0.8 // 80% of parent view's width
+        let maxHeight = view.bounds.height * 0.8 // 80% of parent view's height
         
-        // Bring the SwiftUI view to the front
-        view.bringSubviewToFront(swiftUIView)
+        NSLayoutConstraint.activate([
+            swiftUIView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            swiftUIView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            swiftUIView.widthAnchor.constraint(lessThanOrEqualToConstant: maxWidth),
+            swiftUIView.heightAnchor.constraint(lessThanOrEqualToConstant: maxHeight)
+        ])
     }
     
     // MARK: - ARSessionDelegate Methods
