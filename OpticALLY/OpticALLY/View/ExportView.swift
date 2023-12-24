@@ -364,6 +364,8 @@ struct ExportView: View {
         }
         .padding()
         .foregroundColor(isFlashOn ? .black : .white)
+        .frame(maxWidth: .infinity, maxHeight: .infinity) // Setting the frame size to infinity
+        .ignoresSafeArea()
     }
 }
 

@@ -14,7 +14,6 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     private var sessionQueue = DispatchQueue(label: "session queue")
     private var dataOutputQueue = DispatchQueue(label: "data output queue")
     private var isUsingARSession: Bool = true
-    private var toggleButton: UIButton!
     
     var viewModel: FaceTrackingViewModel?
     
@@ -41,26 +40,26 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         // Use kCVPixelFormatType_32BGRA for BGRA format (equivalent to MTLPixelFormatBGRA8Unorm)
         let pixelFormatType = kCVPixelFormatType_32BGRA
         var newPixelBuffer: CVPixelBuffer?
-
+        
         let status = CVPixelBufferCreate(kCFAllocatorDefault,
                                          width,
                                          height,
                                          pixelFormatType,
                                          nil,
                                          &newPixelBuffer)
-
+        
         guard status == kCVReturnSuccess, let resizedPixelBuffer = newPixelBuffer else {
             return nil
         }
-
+        
         CVPixelBufferLockBaseAddress(pixelBuffer, .readOnly)
         CVPixelBufferLockBaseAddress(resizedPixelBuffer, [])
-
+        
         defer {
             CVPixelBufferUnlockBaseAddress(pixelBuffer, .readOnly)
             CVPixelBufferUnlockBaseAddress(resizedPixelBuffer, [])
         }
-
+        
         if let context = CGContext(data: CVPixelBufferGetBaseAddress(resizedPixelBuffer),
                                    width: width,
                                    height: height,
@@ -73,10 +72,10 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             
             context.draw(quartzImage, in: CGRect(x: 0, y: 0, width: width, height: height))
         }
-
+        
         return resizedPixelBuffer
     }
-
+    
     private func processFrameAV(depthData: AVDepthData, imageData: CVImageBuffer) {
         let depthPixelBuffer = depthData.depthDataMap
         
@@ -99,7 +98,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         print("Depth Data Width: \(depthWidth) | Depth Data Height: \(depthHeight)")
         
         let colorBytesPerRow = CVPixelBufferGetBytesPerRow(colorPixelBuffer!)
-      
+        
         let depthPixelFormatType = CVPixelBufferGetPixelFormatType(depthPixelBuffer)
         var depthBytesPerPixel: Int = 0 // Initialize with zero
         
@@ -207,44 +206,26 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                        y: average.y * boundingBox.height * height + originY)
     }
     
-    
-    // UI Properties
-    private var statusLabel: UILabel!
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         session.delegate = self
-        configureUI()
         configureGestureRecognizers()
         configureARSession()
         configureAVCaptureSession()
         switchSession(toARSession: true)
-        
-        configureToggleButton()
+        configureCloudViewConstraints()
     }
     
-    private func configureToggleButton() {
-           toggleButton = UIButton(type: .system)
-           toggleButton.translatesAutoresizingMaskIntoConstraints = false
-           toggleButton.setTitle("Toggle Saving", for: .normal)
-           toggleButton.addTarget(self, action: #selector(toggleSavingAction), for: .touchUpInside)
-
-           view.addSubview(toggleButton)
-
-           NSLayoutConstraint.activate([
-               toggleButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-               toggleButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20)
-           ])
-       }
-
-       @objc private func toggleSavingAction() {
-           ExternalData.isSavingFileAsPLY.toggle() // Assuming ExternalData.isSavingFileAsPLY is a static property
-           updateStatusLabel(withText: ExternalData.isSavingFileAsPLY ? "Saving Enabled" : "Saving Disabled")
-
-           // Optionally, manually switch session if needed
-           switchSession(toARSession: !ExternalData.isSavingFileAsPLY)
-       }
+    private func configureCloudViewConstraints() {
+        cloudView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            cloudView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            cloudView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            cloudView.topAnchor.constraint(equalTo: view.topAnchor),
+            cloudView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+    }
     
     // MARK: - ARSessionDelegate Methods
     func session(_ session: ARSession, didUpdate frame: ARFrame) {
@@ -300,27 +281,27 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     }
     
     @IBSegueAction func embedSwiftUIView(_ coder: NSCoder) -> UIViewController? {
-        // Upon Scan Completion...
-        let rootView = ExportView()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity) // Setting the frame size to infinity
-                        .ignoresSafeArea()
-
-        let hostingController = UIHostingController(coder: coder, rootView: rootView)!
+        let hostingController = UIHostingController(coder: coder, rootView: ExportView())!
+        
+        // Add hostingController as a child of the current view controller
+        let parentViewController = self // Reference to the parent view controller
+        parentViewController.addChild(hostingController)
+        parentViewController.view.addSubview(hostingController.view)
+        hostingController.didMove(toParent: parentViewController)
+        
+        // Set up constraints for centering
+        hostingController.view.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            hostingController.view.centerXAnchor.constraint(equalTo: parentViewController.view.centerXAnchor),
+            hostingController.view.centerYAnchor.constraint(equalTo: parentViewController.view.centerYAnchor)
+            // Add constraints for width or height if needed
+        ])
+        
+        // Bring the hosting controller's view to the front
+        parentViewController.view.bringSubviewToFront(hostingController.view)
+        
         hostingController.view.backgroundColor = .clear
         return hostingController
-    }
-    
-    private func configureUI() {
-        statusLabel = UILabel()
-        statusLabel.translatesAutoresizingMaskIntoConstraints = false
-        statusLabel.text = "Initializing..."
-        statusLabel.textAlignment = .center
-        view.addSubview(statusLabel)
-        
-        NSLayoutConstraint.activate([
-            statusLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            statusLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor)
-        ])
     }
     
     private func configureGestureRecognizers() {
@@ -384,12 +365,12 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         let configuration = ARFaceTrackingConfiguration()
         configuration.isLightEstimationEnabled = true
         session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
-        updateStatusLabel(withText: "ARSession Running")
+        print("ARSession Running")
     }
     
     private func pauseARSession() {
         session.pause()
-        updateStatusLabel(withText: "ARSession Paused")
+        print("ARSession Paused")
     }
     
     private func startAVCaptureSession() {
@@ -399,19 +380,13 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         
         outputSynchronizer = AVCaptureDataOutputSynchronizer(dataOutputs: [videoDataOutput, depthDataOutput])
         outputSynchronizer?.setDelegate(self, queue: dataOutputQueue)
-        updateStatusLabel(withText: "AVCaptureSession Running")
+        print("AVCaptureSession Running")
     }
     
     private func pauseAVCaptureSession() {
         avCaptureSession.stopRunning()
         outputSynchronizer?.setDelegate(nil, queue: nil)
-        updateStatusLabel(withText: "AVCaptureSession Paused")
-    }
-    
-    private func updateStatusLabel(withText text: String) {
-        DispatchQueue.main.async {
-            self.statusLabel.text = text
-        }
+        print("AVCaptureSession Paused")
     }
     
     // MARK: - Video + Depth Frame Processing (AVCaptureSession)
