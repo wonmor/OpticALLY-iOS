@@ -300,11 +300,15 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     }
     
     @IBSegueAction func embedSwiftUIView(_ coder: NSCoder) -> UIViewController? {
-            // Upon Scan Completion...
-            let hostingController = UIHostingController(coder: coder, rootView: ExportView())!
-            hostingController.view.backgroundColor = .clear
-            return hostingController
-        }
+        // Upon Scan Completion...
+        let rootView = ExportView()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity) // Setting the frame size to infinity
+                        .ignoresSafeArea()
+
+        let hostingController = UIHostingController(coder: coder, rootView: rootView)!
+        hostingController.view.backgroundColor = .clear
+        return hostingController
+    }
     
     private func configureUI() {
         statusLabel = UILabel()
