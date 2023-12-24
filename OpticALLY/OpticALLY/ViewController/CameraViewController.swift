@@ -38,7 +38,8 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     @IBOutlet weak private var cloudView: PointCloudMetalView!
     
     func resizePixelBuffer(_ pixelBuffer: CVPixelBuffer, width: Int, height: Int) -> CVPixelBuffer? {
-        let pixelFormatType = CVPixelBufferGetPixelFormatType(pixelBuffer)
+        // Use kCVPixelFormatType_32BGRA for BGRA format (equivalent to MTLPixelFormatBGRA8Unorm)
+        let pixelFormatType = kCVPixelFormatType_32BGRA
         var newPixelBuffer: CVPixelBuffer?
 
         let status = CVPixelBufferCreate(kCFAllocatorDefault,
@@ -66,7 +67,8 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                                    bitsPerComponent: 8,
                                    bytesPerRow: CVPixelBufferGetBytesPerRow(resizedPixelBuffer),
                                    space: CGColorSpaceCreateDeviceRGB(),
-                                   bitmapInfo: CGImageAlphaInfo.noneSkipFirst.rawValue),
+                                   // Update bitmapInfo for BGRA format
+                                   bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue | CGBitmapInfo.byteOrder32Little.rawValue),
            let quartzImage = CIContext().createCGImage(CIImage(cvPixelBuffer: pixelBuffer), from: CIImage(cvPixelBuffer: pixelBuffer).extent) {
             
             context.draw(quartzImage, in: CGRect(x: 0, y: 0, width: width, height: height))
@@ -74,7 +76,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
 
         return resizedPixelBuffer
     }
-    
+
     private func processFrameAV(depthData: AVDepthData, imageData: CVImageBuffer) {
         let depthPixelBuffer = depthData.depthDataMap
         
