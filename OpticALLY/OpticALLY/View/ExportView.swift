@@ -64,12 +64,12 @@ struct ExportView: View {
     @State private var previousYaw: Double = 0
     
     // Target states for scanning
-   @State private var targetYaw: Double = 0
-   @State private var targetPitch: Double = 0
-   @State private var targetRoll: Double = 0
+    @State private var targetYaw: Double = 0
+    @State private var targetPitch: Double = 0
+    @State private var targetRoll: Double = 0
 
-   // Counter to keep track of the number of scans
-   @State private var scanCount = 0
+    // Counter to keep track of the number of scans
+    @State private var scanCount = 0
     
     @ObservedObject var logManager = LogManager.shared
     @EnvironmentObject var globalState: GlobalState
@@ -209,6 +209,7 @@ struct ExportView: View {
                                 showArrow = true
                                 headTurnMessage = "TURN YOUR HEAD LEFT"
                                 headTurnState = .left
+                                
                             } else if yaw >= 20 {
                                 // Rotate model to face left and trigger haptic feedback
                                 captureFrame()
