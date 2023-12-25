@@ -40,6 +40,15 @@ class ExportViewModel: ObservableObject {
     
     private var exportStartTime: Date?
     
+    func reset() {
+        fileURL = nil
+        showShareSheet = false
+        isLoading = false
+        estimatedExportTime = nil
+        hasTurnedRight = false
+        hasTurnedLeft = false
+    }
+    
     func fetchExportDurations() {
         let db = Firestore.firestore()
         db.collection("misc").document("render_time").getDocument { [weak self] (document, error) in

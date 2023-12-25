@@ -243,7 +243,7 @@ struct ExportView: View {
                             headTurnMessage = "TURN YOUR HEAD\nLEFT/RIGHT"
                             isRingAnimationStarted = true  // Start the ring animation
                             startButtonPressed = true
-                            // captureFrame()
+                            // captureFrame() -> for center scan...
                         }) {
                             if showConsoleOutput {
                                 if let lastLog = logManager.latestLog {

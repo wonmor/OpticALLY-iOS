@@ -72,7 +72,13 @@ struct ExternalData {
     
     static func reset() {
         // Function to reset all variables
+        renderingEnabled = true
+        isSavingFileAsPLY = false
+        isMeshView = false
+        exportPLYData = nil
         pointCloudGeometries.removeAll()
+        pointCloudDataArray.removeAll()
+        verticesCount = 0
     }
     
     static func convertDepthData(depthMap: CVPixelBuffer) -> [[Float16]] {

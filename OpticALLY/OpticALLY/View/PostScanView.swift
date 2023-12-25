@@ -39,6 +39,7 @@ struct PostScanView: View {
                 HStack {
                     Button(action: {
                         ExternalData.reset()
+                        exportViewModel.reset()
                         globalState.currentView = .scanning
                     }) {
                         Image(systemName: "arrow.left") // You can customize this with your own back button image
