@@ -2,6 +2,8 @@ import SwiftUI
 import UIKit
 
 struct CameraView: UIViewControllerRepresentable {
+    @EnvironmentObject var globalState: GlobalState
+    
     func makeUIViewController(context: Context) -> CameraViewController {
         let sb = UIStoryboard(name: "Main", bundle: nil)
         let viewController = sb.instantiateViewController(identifier: "CameraViewController") as! CameraViewController

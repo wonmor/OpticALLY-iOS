@@ -40,6 +40,7 @@ struct PostScanView: View {
                     Button(action: {
                         ExternalData.reset()
                         exportViewModel.reset()
+                        faceTrackingViewModel.refreshView()
                         globalState.currentView = .scanning
                     }) {
                         Image(systemName: "arrow.left") // You can customize this with your own back button image
