@@ -9,6 +9,9 @@ import SwiftUI
 import SystemConfiguration
 import DevicePpi
 
+let faceTrackingViewModel = FaceTrackingViewModel()
+let sharedViewModel = SharedViewModel()
+
 let devicePPI: Double = {
     switch Ppi.get() {
     case .success(let ppi):

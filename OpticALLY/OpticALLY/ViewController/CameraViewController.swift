@@ -5,6 +5,10 @@ import AVFoundation
 import Vision
 
 class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelegate, AVCaptureDataOutputSynchronizerDelegate {
+    // MARK: - Parameters
+    var viewModel: FaceTrackingViewModel?
+    var sharedViewModel: SharedViewModel?
+    
     // MARK: - Properties
     private var session: ARSession = ARSession()
     private var avCaptureSession: AVCaptureSession = AVCaptureSession()
@@ -14,9 +18,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     private var sessionQueue = DispatchQueue(label: "session queue")
     private var dataOutputQueue = DispatchQueue(label: "data output queue")
     private var isUsingARSession: Bool = true
-    
-    var viewModel: FaceTrackingViewModel?
-    
+
     private var synchronizedDepthData: AVDepthData?
     private var synchronizedVideoPixelBuffer: CVPixelBuffer?
     
@@ -27,7 +29,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     private var rightEyePosition = SCNVector3(0, 0, 0)
     private var chin = SCNVector3(0, 0, 0)
     
-    // MARK: - Properties
+    // MARK: - UI Bindings
     @IBOutlet weak private var cameraUnavailableLabel: UILabel!
     @IBOutlet weak private var depthSmoothingSwitch: UISwitch!
     @IBOutlet weak private var mixFactorSlider: UISlider!
@@ -174,9 +176,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                        y: average.y * boundingBox.height * height + originY)
     }
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
+    func loadInit() {
         session.delegate = self
         configureGestureRecognizers()
         configureARSession()
@@ -185,6 +185,25 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         configureCloudView()
         addAndConfigureSwiftUIView()
     }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        loadInit()
+        setupViewModelObserver()
+    }
+    
+    private func setupViewModelObserver() {
+            sharedViewModel?.$shouldReloadCameraView
+                .receive(on: RunLoop.main)
+                .sink(receiveValue: { [weak self] shouldReload in
+                    if shouldReload {
+                        self?.loadInit()
+                        self?.sharedViewModel?.shouldReloadCameraView = false
+                    }
+                })
+                .store(in: &cancellables) // Assuming you have a Set<AnyCancellable> cancellables
+        }
     
     private func configureCloudView() {
         cloudView.translatesAutoresizingMaskIntoConstraints = false

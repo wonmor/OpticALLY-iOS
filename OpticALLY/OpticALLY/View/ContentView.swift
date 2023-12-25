@@ -7,8 +7,6 @@
 
 import SwiftUI
 
-let faceTrackingViewModel = FaceTrackingViewModel()
-
 struct ContentView: View {
     @Environment(\.scenePhase) var scenePhase
     @EnvironmentObject var globalState: GlobalState
@@ -33,7 +31,7 @@ struct ContentView: View {
                     .ignoresSafeArea(.all)
                 
             case .postScanning:
-                PostScanView()
+                PostScanView(sharedViewModel: sharedViewModel)
                     .id(uniqueID)  // Using a unique ID to recreate the view
                     .transition(.opacity)
             }

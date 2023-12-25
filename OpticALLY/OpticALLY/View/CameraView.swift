@@ -7,7 +7,10 @@ struct CameraView: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> CameraViewController {
         let sb = UIStoryboard(name: "Main", bundle: nil)
         let viewController = sb.instantiateViewController(identifier: "CameraViewController") as! CameraViewController
+        
         viewController.viewModel = faceTrackingViewModel  // Pass the ViewModel to the UIViewController
+        viewController.sharedViewModel = sharedViewModel
+        
         return viewController
     }
 
