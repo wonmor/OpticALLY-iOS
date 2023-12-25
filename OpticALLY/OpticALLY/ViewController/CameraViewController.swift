@@ -12,8 +12,44 @@ import AVFoundation
 import Vision
 import Combine
 
+/// CameraViewController manages the camera and AR functionalities within the OpticALLY app.
+/// It utilizes ARKit for face tracking and AVFoundation for depth data processing.
+/// This controller is responsible for synchronizing and processing depth data
+/// and video frames from the device's camera.
+///
+/// - Properties:
+///   - viewModel: ViewModel for managing face tracking data.
+///   - sharedViewModel: Shared ViewModel for observing and triggering UI changes.
+///   - session: ARSession for AR functionalities.
+///   - avCaptureSession: AVCaptureSession for capturing video and depth data.
+///   - outputSynchronizer: Synchronizes video and depth data outputs.
+///   - videoDataOutput: Output for video data from camera.
+///   - depthDataOutput: Output for depth data from camera.
+///   - cancellables: Set of AnyCancellable for managing Combine subscriptions.
+///   - sessionQueue: DispatchQueue for handling ARSession-related tasks.
+///   - dataOutputQueue: DispatchQueue for handling data output tasks.
+///   - isUsingARSession: Flag to switch between ARSession and AVCaptureSession.
+///   - synchronizedDepthData: Holds synchronized depth data.
+///   - synchronizedVideoPixelBuffer: Holds synchronized video pixel buffer.
+///   - faceDetectionRequest: Vision request for detecting facial landmarks.
+///   - faceDetectionHandler: Handler for processing face detection requests.
+///   - leftEyePosition, rightEyePosition, chin: SCNVector3 positions for facial features.
+///
+/// - Methods:
+///   - loadInit(): Initializes the controller with necessary setups.
+///   - setupViewModelObserver(): Sets up observers for shared view model properties.
+///   - configureCloudView(), configureGestureRecognizers(), configureARSession(),
+///     configureAVCaptureSession(): Configuration methods for UI and sessions.
+///   - switchSession(toARSession:): Switches between ARSession and AVCaptureSession.
+///   - startARSession(), pauseARSession(), startAVCaptureSession(), pauseAVCaptureSession():
+///     Methods to start and pause AR and AV sessions.
+///   - dataOutputSynchronizer(didOutput:): Processes synchronized video and depth data.
+///
+/// This controller is central to the 3D face tracking and point cloud generation capabilities of the app.
+/// It integrates ARKit and AVFoundation frameworks for advanced data processing and rendering.
+
 class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelegate, AVCaptureDataOutputSynchronizerDelegate {
-    // MARK: - Parameters
+    // MARK: - Class Parameters
     var viewModel: FaceTrackingViewModel?
     var sharedViewModel: SharedViewModel?
     
@@ -23,9 +59,12 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     private var outputSynchronizer: AVCaptureDataOutputSynchronizer?
     private var videoDataOutput = AVCaptureVideoDataOutput()
     private var depthDataOutput = AVCaptureDepthDataOutput()
-    private var cancellables = Set<AnyCancellable>() 
+    
+    private var cancellables = Set<AnyCancellable>()
+    
     private var sessionQueue = DispatchQueue(label: "session queue")
     private var dataOutputQueue = DispatchQueue(label: "data output queue")
+    
     private var isUsingARSession: Bool = true
 
     private var synchronizedDepthData: AVDepthData?
