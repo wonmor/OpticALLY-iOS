@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		9606CCB02B39ADCA00666A9F /* CameraViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9606CCAF2B39ADCA00666A9F /* CameraViewModel.swift */; };
+		9606CCB02B39ADCA00666A9F /* SharedViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9606CCAF2B39ADCA00666A9F /* SharedViewModel.swift */; };
 		9613ADFA2B2BE7B50072E47E /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 9613ADF92B2BE7B50072E47E /* ZIPFoundation */; };
 		9614F0AF2ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */; };
 		9614F0B02ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */; };
@@ -80,7 +80,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		9606CCAF2B39ADCA00666A9F /* CameraViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraViewModel.swift; sourceTree = "<group>"; };
+		9606CCAF2B39ADCA00666A9F /* SharedViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedViewModel.swift; sourceTree = "<group>"; };
 		9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = RobotoSlab.ttf; sourceTree = "<group>"; };
 		961D67E22B12BDFC00DBB883 /* SceneKitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneKitView.swift; sourceTree = "<group>"; };
 		961D67E42B12C64A00DBB883 /* CreditsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditsView.swift; sourceTree = "<group>"; };
@@ -299,7 +299,7 @@
 			isa = PBXGroup;
 			children = (
 				96F0CF192B12A39100417716 /* ExportViewModel.swift */,
-				9606CCAF2B39ADCA00666A9F /* CameraViewModel.swift */,
+				9606CCAF2B39ADCA00666A9F /* SharedViewModel.swift */,
 				9680F7DE2B22D93400F38A6F /* FaceTrackingViewModel.swift */,
 			);
 			path = ViewModel;
@@ -498,7 +498,7 @@
 				9679F8D22AD0907A00686F13 /* Mixer.metal in Sources */,
 				967EE0652AAE06FB000C4D5F /* OpticALLYApp.swift in Sources */,
 				9679F8D92AD0907A00686F13 /* PointCloud.metal in Sources */,
-				9606CCB02B39ADCA00666A9F /* CameraViewModel.swift in Sources */,
+				9606CCB02B39ADCA00666A9F /* SharedViewModel.swift in Sources */,
 				9679F8CE2AD0907A00686F13 /* AppDelegate.swift in Sources */,
 				96F0CF182B12A34400417716 /* ExternalData.swift in Sources */,
 				9680F7DB2B2283B200F38A6F /* CapturedImageSampler.swift in Sources */,
