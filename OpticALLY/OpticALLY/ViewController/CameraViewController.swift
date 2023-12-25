@@ -1,8 +1,16 @@
+//
+//  CameraViewController.swift
+//  OpticALLY
+//
+//  Created by John Seong on 9/10/23.
+//
+
 import SwiftUI
 import UIKit
 import ARKit
 import AVFoundation
 import Vision
+import Combine
 
 class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelegate, AVCaptureDataOutputSynchronizerDelegate {
     // MARK: - Parameters
@@ -15,6 +23,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     private var outputSynchronizer: AVCaptureDataOutputSynchronizer?
     private var videoDataOutput = AVCaptureVideoDataOutput()
     private var depthDataOutput = AVCaptureDepthDataOutput()
+    private var cancellables = Set<AnyCancellable>() 
     private var sessionQueue = DispatchQueue(label: "session queue")
     private var dataOutputQueue = DispatchQueue(label: "data output queue")
     private var isUsingARSession: Bool = true
