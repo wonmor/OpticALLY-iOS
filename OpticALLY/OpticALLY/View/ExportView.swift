@@ -366,6 +366,10 @@ struct ExportView: View {
                                     Text("Start")
                                         .font(.title3)
                                         .bold()
+                                        .onAppear() {
+                                            // Activate start commands again...
+                                            logManager.latestLog = nil
+                                        }
                                     
                                     Image(systemName: "arrow.up")
                                         .font(.largeTitle) // Adjust the size of the icon
