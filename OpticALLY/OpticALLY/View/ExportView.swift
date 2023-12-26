@@ -130,6 +130,7 @@ struct ExportView: View {
                     Text("YAW \(Int(round(faceTrackingViewModel.faceYawAngle)))°\nPITCH \(Int(round(faceTrackingViewModel.facePitchAngle)))°\nROLL \(Int(round(faceTrackingViewModel.faceRollAngle)))°\n\nPUPIL DISTANCE\n\(ExternalData.pupilDistance) mm")
                         .bold()
                         .padding()
+                        .font(.caption)
                         .frame(maxWidth: .infinity, alignment: .center)
                         .multilineTextAlignment(.center)
                         .monospaced()
@@ -201,7 +202,7 @@ struct ExportView: View {
                             let roll = faceTrackingViewModel.faceRollAngle
                             
                             // Rotate the USDZ model
-                            if yaw <= -20 {
+                            if yaw <= -30 {
                                 // Rotate model to face right and trigger haptic feedback
                                 captureFrame()
                                 
@@ -212,7 +213,7 @@ struct ExportView: View {
                                 headTurnMessage = "TURN YOUR HEAD LEFT"
                                 headTurnState = .left
                                 
-                            } else if yaw >= 20 {
+                            } else if yaw >= 30 {
                                 // Rotate model to face left and trigger haptic feedback
                                 captureFrame()
                                 
