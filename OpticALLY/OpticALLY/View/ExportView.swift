@@ -92,6 +92,7 @@ struct ExportView: View {
                 ZStack {
                     ARFaceTrackingView()
                         .opacity(0.5)
+                        .scaledToFit()
                 }
                 .padding()
                 .onAppear {
