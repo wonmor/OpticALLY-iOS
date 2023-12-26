@@ -127,7 +127,7 @@ struct ExportView: View {
                 VStack {
                     FlashButtonView(isFlashOn: $isFlashOn)
                     
-                    Text("YAW \(Int(round(faceTrackingViewModel.faceYawAngle)))°\nPITCH \(Int(round(faceTrackingViewModel.facePitchAngle)))°\nROLL \(Int(round(faceTrackingViewModel.faceRollAngle)))°\n\nPUPIL DISTANCE\n\(ExternalData.pupilDistance) mm")
+                    Text("YAW \(Int(round(faceTrackingViewModel.faceYawAngle)))°\nPITCH \(Int(round(faceTrackingViewModel.facePitchAngle)))°\nROLL \(Int(round(faceTrackingViewModel.faceRollAngle)))°\n\nPUPIL DISTANCE\n\(faceTrackingViewModel.pupilDistance) mm")
                         .bold()
                         .padding()
                         .frame(maxWidth: .infinity, alignment: .center)

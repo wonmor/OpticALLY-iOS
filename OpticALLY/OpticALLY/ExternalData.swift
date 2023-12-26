@@ -58,7 +58,6 @@ struct ExternalData {
     static var exportPLYData: Data?
     static var pointCloudGeometries: [SCNGeometry] = []
     static var pointCloudDataArray: [PointCloudMetadata] = []
-    static var pupilDistance: Double = 0.0
     static var verticesCount: Int = 0
     static var faceAnchor: ARFaceAnchor?
     static var depthWidth: Int = 640

@@ -13,4 +13,5 @@ class FaceTrackingViewModel: ObservableObject {
     @Published var faceYawAngle: Double = 0.0
     @Published var facePitchAngle: Double = 0.0
     @Published var faceRollAngle: Double = 0.0
+    @Published var pupilDistance: Double = 0.0
 }
