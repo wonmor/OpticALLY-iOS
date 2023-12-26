@@ -127,7 +127,7 @@ struct ExportView: View {
                 VStack {
                     FlashButtonView(isFlashOn: $isFlashOn)
                     
-                    Text("YAW \(Int(round(faceTrackingViewModel.faceYawAngle)))°\nPITCH \(Int(round(faceTrackingViewModel.facePitchAngle)))°\nROLL \(Int(round(faceTrackingViewModel.faceRollAngle)))°\n\nPUPIL DISTANCE\n\(faceTrackingViewModel.pupilDistance) mm")
+                    Text("YAW \(Int(round(faceTrackingViewModel.faceYawAngle)))°\nPITCH \(Int(round(faceTrackingViewModel.facePitchAngle)))°")
                         .bold()
                         .padding()
                         .frame(maxWidth: .infinity, alignment: .center)
@@ -159,7 +159,7 @@ struct ExportView: View {
                         
                     } else {
                         ScrollView {
-                            Text("OPTICALLY\n3D CAPTURE")
+                            Text("PUPIL DISTANCE\n\(faceTrackingViewModel.pupilDistance) mm")
                                 .padding()
                                 .frame(maxWidth: .infinity, alignment: .center)
                                 .multilineTextAlignment(.center)
@@ -173,7 +173,7 @@ struct ExportView: View {
                             Image(systemName: "arrow.left")
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
-                                .frame(width: 100, height: 100)
+                                .frame(width: 50, height: 50)
                                 .foregroundColor(isFlashOn ? .black : .white)
                             
                         } else if headTurnState == .right {
@@ -181,8 +181,25 @@ struct ExportView: View {
                             Image(systemName: "arrow.right")
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
-                                .frame(width: 100, height: 100)
+                                .frame(width: 50, height: 50)
                                 .foregroundColor(isFlashOn ? .black : .white)
+                            
+                        } else if headTurnState == .center {
+                            HStack {
+                                // Left Arrow
+                                Image(systemName: "arrow.left")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 50, height: 50)
+                                    .foregroundColor(isFlashOn ? .black : .white)
+
+                                // Right Arrow
+                                Image(systemName: "arrow.right")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 50, height: 50)
+                                    .foregroundColor(isFlashOn ? .black : .white)
+                            }
                         }
                     }
                     
