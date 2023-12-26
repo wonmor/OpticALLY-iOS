@@ -128,13 +128,15 @@ struct ExportView: View {
                 VStack {
                     FlashButtonView(isFlashOn: $isFlashOn)
                     
-                    ScrollView {
-                        Text("YAW \(Int(round(faceTrackingViewModel.faceYawAngle)))°\nPITCH \(Int(round(faceTrackingViewModel.facePitchAngle)))°")
-                            .bold()
-                            .padding()
-                            .frame(maxWidth: .infinity, alignment: .center)
-                            .multilineTextAlignment(.center)
-                            .monospaced()
+                    if showFaceTrackingView {
+                        ScrollView {
+                            Text("YAW \(Int(round(faceTrackingViewModel.faceYawAngle)))°\nPITCH \(Int(round(faceTrackingViewModel.facePitchAngle)))°")
+                                .bold()
+                                .padding()
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .multilineTextAlignment(.center)
+                                .monospaced()
+                        }
                     }
                     
                     if showConsoleOutput {
