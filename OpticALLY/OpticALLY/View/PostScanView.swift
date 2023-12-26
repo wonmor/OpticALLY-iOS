@@ -173,15 +173,15 @@ struct CheckmarkView: View {
             Image(systemName: "checkmark.circle.fill")
                 .resizable()
                 .frame(width: 60, height: 60) // Adjust the size as needed
-                .foregroundColor(.green)
+                .foregroundColor(.black)
             
             Text("Done")
                 .font(.headline) // Adjust the font style as needed
                 .bold()
-                .foregroundColor(.white)
+                .foregroundColor(.black)
         }
         .padding() // Adjust the padding to change the size of the background
-        .background(Color.black) // Black background
+        .background(Color.white) // Black background
         .cornerRadius(20) // Rounded corners, adjust radius as needed
         .onAppear {
             isInteractionDisabled = true
