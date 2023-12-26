@@ -88,6 +88,58 @@ struct ExportView: View {
 
     var body: some View {
         ZStack {
+            if showFaceTrackingView {
+                ZStack {
+                    ARFaceTrackingView()
+                        .opacity(0.5)
+                }
+                .padding()
+                .onAppear {
+                    previousYaw = faceTrackingViewModel.faceYawAngle
+                }
+                .onChange(of: faceTrackingViewModel.faceYawAngle) { yaw in
+                    if startButtonPressed {
+                        let pitch = faceTrackingViewModel.facePitchAngle
+                        let roll = faceTrackingViewModel.faceRollAngle
+                        
+                        // Rotate the USDZ model
+                        if yaw <= -45 {
+                            // Rotate model to face right and trigger haptic feedback
+                            captureFrame()
+                            
+                            HapticManager.playHapticFeedback(type: .success)
+                            exportViewModel.hasTurnedRight = true
+                            
+                            showArrow = true
+                            headTurnMessage = "TURN YOUR HEAD LEFT"
+                            headTurnState = .left
+                            
+                        } else if yaw >= 45 {
+                            // Rotate model to face left and trigger haptic feedback
+                            captureFrame()
+                            
+                            HapticManager.playHapticFeedback(type: .success)
+                            exportViewModel.hasTurnedLeft = true
+                            
+                            showArrow = true
+                            headTurnMessage = "TURN YOUR HEAD RIGHT"
+                            headTurnState = .right
+                        }
+                        
+                        if exportViewModel.hasTurnedRight && exportViewModel.hasTurnedLeft {
+                            headTurnMessage = "SCAN COMPLETE"
+                            HapticManager.playHapticFeedback(type: .success) // Play completion haptic
+                            showConsoleOutput = true
+                            showArrow = false
+                            isRingAnimationStarted = false
+                            isFlashOn = true
+                            startButtonPressed = false
+                            showFaceTrackingView = false
+                        }
+                    }
+                }
+            }
+            
             Color(isFlashOn ? .white : .clear)
                 .edgesIgnoringSafeArea(.all)
                 .clipShape(RoundedRectangle(cornerRadius: 20)) // Clips the image as a rounded rectangle
@@ -196,57 +248,6 @@ struct ExportView: View {
                                 .frame(width: 50, height: 50)
                                 .foregroundColor(isFlashOn ? .black : .white)
                             
-                        }
-                    }
-                    
-                    if showFaceTrackingView {
-                        ZStack {
-                            ARFaceTrackingView()
-                        }
-                        .padding()
-                        .onAppear {
-                            previousYaw = faceTrackingViewModel.faceYawAngle
-                        }
-                        .onChange(of: faceTrackingViewModel.faceYawAngle) { yaw in
-                            if startButtonPressed {
-                                let pitch = faceTrackingViewModel.facePitchAngle
-                                let roll = faceTrackingViewModel.faceRollAngle
-                                
-                                // Rotate the USDZ model
-                                if yaw <= -30 {
-                                    // Rotate model to face right and trigger haptic feedback
-                                    captureFrame()
-                                    
-                                    HapticManager.playHapticFeedback(type: .success)
-                                    exportViewModel.hasTurnedRight = true
-                                    
-                                    showArrow = true
-                                    headTurnMessage = "TURN YOUR HEAD LEFT"
-                                    headTurnState = .left
-                                    
-                                } else if yaw >= 30 {
-                                    // Rotate model to face left and trigger haptic feedback
-                                    captureFrame()
-                                    
-                                    HapticManager.playHapticFeedback(type: .success)
-                                    exportViewModel.hasTurnedLeft = true
-                                    
-                                    showArrow = true
-                                    headTurnMessage = "TURN YOUR HEAD RIGHT"
-                                    headTurnState = .right
-                                }
-                                
-                                if exportViewModel.hasTurnedRight && exportViewModel.hasTurnedLeft {
-                                    headTurnMessage = "SCAN COMPLETE"
-                                    HapticManager.playHapticFeedback(type: .success) // Play completion haptic
-                                    showConsoleOutput = true
-                                    showArrow = false
-                                    isRingAnimationStarted = false
-                                    isFlashOn = true
-                                    startButtonPressed = false
-                                    showFaceTrackingView = false
-                                }
-                            }
                         }
                     }
 
