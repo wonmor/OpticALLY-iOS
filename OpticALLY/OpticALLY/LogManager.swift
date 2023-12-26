@@ -17,7 +17,7 @@ extension LogManager {
 class LogManager: ObservableObject {
     static let shared = LogManager()
     private var logs: [String] = []
-    @Published var latestLog: String?
+    @Published var latestLog: String? = nil
     private var timer: Timer?
     
     private init() {

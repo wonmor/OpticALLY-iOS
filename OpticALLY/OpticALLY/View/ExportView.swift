@@ -257,11 +257,14 @@ struct ExportView: View {
                     // Button to start/pause scanning
                     if !isRingAnimationStarted {
                         Button(action: {
-                            HapticManager.playHapticFeedback(type: .success)
-                            headTurnMessage = "TURN YOUR HEAD\nLEFT/RIGHT"
-                            isRingAnimationStarted = true  // Start the ring animation
-                            startButtonPressed = true
-                            // captureFrame() -> for center scan...
+                            // If lastestLog is its initial state...
+                            if logManager.latestLog == nil {
+                                HapticManager.playHapticFeedback(type: .success)
+                                headTurnMessage = "TURN YOUR HEAD\nLEFT/RIGHT"
+                                isRingAnimationStarted = true  // Start the ring animation
+                                startButtonPressed = true
+                                // captureFrame() -> for center scan...
+                            }
                         }) {
                             if showConsoleOutput {
                                 if let lastLog = logManager.latestLog {
