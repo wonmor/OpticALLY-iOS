@@ -126,9 +126,9 @@ struct ExportView: View {
             switch currentState {
             case .begin:
                 VStack {
-                    FlashButtonView(isFlashOn: $isFlashOn)
-                    
                     if showFaceTrackingView {
+                        FlashButtonView(isFlashOn: $isFlashOn)
+                        
                         ScrollView {
                             Text("YAW \(Int(round(faceTrackingViewModel.faceYawAngle)))°\nPITCH \(Int(round(faceTrackingViewModel.facePitchAngle)))°")
                                 .bold()
@@ -147,6 +147,13 @@ struct ExportView: View {
                                     .frame(maxWidth: .infinity, alignment: .center)
                                     .multilineTextAlignment(.center)
                                     .monospaced()
+                                
+                                if lastLog.contains("Done") {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .resizable()
+                                        .frame(width: 60, height: 60) // Adjust the size as needed
+                                        .foregroundColor(isFlashOn ? .black : .white)
+                                }
                             }
                         }
                         .onDisappear {
@@ -191,9 +198,6 @@ struct ExportView: View {
                             
                         }
                     }
-                    
-                    Spacer()
-                    // Progress indicator and head turn message
                     
                     if showFaceTrackingView {
                         ZStack {
