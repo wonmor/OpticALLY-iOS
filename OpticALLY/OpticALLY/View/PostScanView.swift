@@ -14,7 +14,6 @@ struct PostScanView: View {
     @EnvironmentObject var globalState: GlobalState
     
     @ObservedObject private var exportViewModel = ExportViewModel()
-    @ObservedObject var sharedViewModel: SharedViewModel
     
     @State private var triggerUpdate: Bool = false
     @State private var showCompletionCheckmark = false
@@ -41,7 +40,6 @@ struct PostScanView: View {
                     Button(action: {
                         ExternalData.reset()
                         exportViewModel.reset()
-                        sharedViewModel.shouldReloadCameraView = true
                         globalState.currentView = .scanning
                     }) {
                         Image(systemName: "arrow.left") // You can customize this with your own back button image

@@ -31,7 +31,7 @@ struct ContentView: View {
                     .ignoresSafeArea(.all)
                 
             case .postScanning:
-                PostScanView(sharedViewModel: sharedViewModel)
+                PostScanView()
                     .id(uniqueID)  // Using a unique ID to recreate the view
                     .transition(.opacity)
             }

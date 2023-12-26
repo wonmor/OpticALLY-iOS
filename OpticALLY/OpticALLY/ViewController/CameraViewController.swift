@@ -10,7 +10,6 @@ import UIKit
 import ARKit
 import AVFoundation
 import Vision
-import Combine
 
 /// CameraViewController manages the camera and AR functionalities within the OpticALLY app.
 /// It utilizes ARKit for face tracking and AVFoundation for depth data processing.
@@ -51,7 +50,6 @@ import Combine
 class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelegate, AVCaptureDataOutputSynchronizerDelegate {
     // MARK: - Class Parameters
     var viewModel: FaceTrackingViewModel?
-    var sharedViewModel: SharedViewModel?
     
     // MARK: - Properties
     private var session: ARSession = ARSession()
@@ -59,8 +57,6 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     private var outputSynchronizer: AVCaptureDataOutputSynchronizer?
     private var videoDataOutput = AVCaptureVideoDataOutput()
     private var depthDataOutput = AVCaptureDepthDataOutput()
-    
-    private var cancellables = Set<AnyCancellable>()
     
     private var sessionQueue = DispatchQueue(label: "session queue")
     private var dataOutputQueue = DispatchQueue(label: "data output queue")
@@ -238,20 +234,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         super.viewDidLoad()
         
         loadInit()
-        setupViewModelObserver()
     }
-    
-    private func setupViewModelObserver() {
-            sharedViewModel?.$shouldReloadCameraView
-                .receive(on: RunLoop.main)
-                .sink(receiveValue: { [weak self] shouldReload in
-                    if shouldReload {
-                        self?.loadInit()
-                        self?.sharedViewModel?.shouldReloadCameraView = false
-                    }
-                })
-                .store(in: &cancellables) // Assuming you have a Set<AnyCancellable> cancellables
-        }
     
     private func configureCloudView() {
         cloudView.translatesAutoresizingMaskIntoConstraints = false
