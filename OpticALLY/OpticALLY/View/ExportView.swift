@@ -104,7 +104,7 @@ struct ExportView: View {
                         let roll = faceTrackingViewModel.faceRollAngle
                         
                         // Rotate the USDZ model
-                        if yaw <= -45 {
+                        if yaw <= -30 {
                             // Rotate model to face right and trigger haptic feedback
                             captureFrame()
                             
@@ -115,7 +115,7 @@ struct ExportView: View {
                             headTurnMessage = "TURN YOUR HEAD LEFT"
                             headTurnState = .left
                             
-                        } else if yaw >= 45 {
+                        } else if yaw >= 30 {
                             // Rotate model to face left and trigger haptic feedback
                             captureFrame()
                             
