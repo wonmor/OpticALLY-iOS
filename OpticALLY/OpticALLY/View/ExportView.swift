@@ -130,7 +130,6 @@ struct ExportView: View {
                     Text("YAW \(Int(round(faceTrackingViewModel.faceYawAngle)))°\nPITCH \(Int(round(faceTrackingViewModel.facePitchAngle)))°\nROLL \(Int(round(faceTrackingViewModel.faceRollAngle)))°\n\nPUPIL DISTANCE\n\(ExternalData.pupilDistance) mm")
                         .bold()
                         .padding()
-                        .font(.caption)
                         .frame(maxWidth: .infinity, alignment: .center)
                         .multilineTextAlignment(.center)
                         .monospaced()
