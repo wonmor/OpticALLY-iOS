@@ -10,12 +10,7 @@ import ARKit
 
 class FaceTrackingViewModel: ObservableObject {
     @Published var faceAnchor: ARFaceAnchor?
-
-    // Dummy variable to trigger view refresh
-    @Published var refreshTrigger: Bool = false
-
-    // Method to refresh the view
-    func refreshView() {
-        refreshTrigger.toggle() // This will cause the view to refresh
-    }
+    @Published var faceYawAngle: Double = 0.0
+    @Published var facePitchAngle: Double = 0.0
+    @Published var faceRollAngle: Double = 0.0
 }

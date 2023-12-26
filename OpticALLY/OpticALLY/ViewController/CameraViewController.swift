@@ -265,7 +265,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     }
     
     private func addAndConfigureSwiftUIView() {
-        let hostingController = UIHostingController(rootView: ExportView())
+        let hostingController = UIHostingController(rootView: ExportView(faceTrackingViewModel: faceTrackingViewModel))
         addChild(hostingController)
         hostingController.didMove(toParent: self)
         
@@ -312,9 +312,9 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                 let yawDegrees = yawRadians * 180 / .pi
                 let rollDegrees = rollRadians * 180 / .pi
                 
-                ExternalData.faceYawAngle = Double(yawDegrees)
-                ExternalData.facePitchAngle = Double(pitchDegrees)
-                ExternalData.faceRollAngle = Double(rollDegrees)
+                viewModel!.faceYawAngle = Double(yawDegrees)
+                viewModel!.facePitchAngle = Double(pitchDegrees)
+                viewModel!.faceRollAngle = Double(rollDegrees)
                 
                 if self.synchronizedVideoPixelBuffer != nil {
                     // Perform processing if both depth and video data are available

@@ -41,7 +41,6 @@ struct PostScanView: View {
                     Button(action: {
                         ExternalData.reset()
                         exportViewModel.reset()
-                        faceTrackingViewModel.refreshView()
                         sharedViewModel.shouldReloadCameraView = true
                         globalState.currentView = .scanning
                     }) {

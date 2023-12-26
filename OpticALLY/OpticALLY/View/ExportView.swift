@@ -75,6 +75,8 @@ struct ExportView: View {
     @EnvironmentObject var globalState: GlobalState
     @StateObject private var exportViewModel = ExportViewModel()
     
+    @StateObject var faceTrackingViewModel: FaceTrackingViewModel
+    
     private let timer = Timer.publish(every: 4, on: .main, in: .common).autoconnect()
     
     let maxOffset: CGFloat = 30.0 // change this to control how much the finger moves
@@ -125,7 +127,7 @@ struct ExportView: View {
                 VStack {
                     FlashButtonView(isFlashOn: $isFlashOn)
                     
-                    Text("YAW \(Int(round(ExternalData.faceYawAngle)))°\nPITCH \(Int(round(ExternalData.facePitchAngle)))°\nROLL \(Int(round(ExternalData.faceRollAngle)))°\n\nPUPIL DISTANCE\n\(ExternalData.pupilDistance) mm")
+                    Text("YAW \(Int(round(faceTrackingViewModel.faceYawAngle)))°\nPITCH \(Int(round(faceTrackingViewModel.facePitchAngle)))°\nROLL \(Int(round(faceTrackingViewModel.faceRollAngle)))°\n\nPUPIL DISTANCE\n\(ExternalData.pupilDistance) mm")
                         .bold()
                         .padding()
                         .frame(maxWidth: .infinity, alignment: .center)
@@ -191,12 +193,12 @@ struct ExportView: View {
                     }
                     .padding()
                     .onAppear {
-                        previousYaw = ExternalData.faceYawAngle
+                        previousYaw = faceTrackingViewModel.faceYawAngle
                     }
-                    .onChange(of: ExternalData.faceYawAngle) { yaw in
+                    .onChange(of: faceTrackingViewModel.faceYawAngle) { yaw in
                         if startButtonPressed {
-                            let pitch = ExternalData.facePitchAngle
-                            let roll = ExternalData.faceRollAngle
+                            let pitch = faceTrackingViewModel.facePitchAngle
+                            let roll = faceTrackingViewModel.faceRollAngle
                             
                             // Rotate the USDZ model
                             if yaw <= -20 {
@@ -372,7 +374,7 @@ struct ExportView: View {
 
 struct ExportView_Previews: PreviewProvider {
     static var previews: some View {
-        ExportView()
+        ExportView(faceTrackingViewModel: faceTrackingViewModel)
             .environmentObject(GlobalState())
             .preferredColorScheme(.dark)
     }
