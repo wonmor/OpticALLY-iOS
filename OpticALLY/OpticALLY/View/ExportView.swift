@@ -63,6 +63,7 @@ struct ExportView: View {
     @State private var showFaceTrackingView = true
     @State private var stateChangeCount = 0
     @State private var previousYaw: Double = 0
+    @State private var isButtonDisabled: Bool = false
     
     // Target states for scanning
     @State private var targetYaw: Double = 0
@@ -257,11 +258,13 @@ struct ExportView: View {
                     // Button to start/pause scanning
                     if !isRingAnimationStarted {
                         Button(action: {
-                            HapticManager.playHapticFeedback(type: .success)
-                            headTurnMessage = "TURN YOUR HEAD\nLEFT/RIGHT"
-                            isRingAnimationStarted = true  // Start the ring animation
-                            startButtonPressed = true
-                            // captureFrame() -> for center scan...
+                            if !isButtonDisabled {
+                                HapticManager.playHapticFeedback(type: .success)
+                                headTurnMessage = "TURN YOUR HEAD\nLEFT/RIGHT"
+                                isRingAnimationStarted = true  // Start the ring animation
+                                startButtonPressed = true
+                                // captureFrame() -> for center scan...
+                            }
                         }) {
                             if showConsoleOutput {
                                 if let lastLog = logManager.latestLog {
@@ -352,6 +355,9 @@ struct ExportView: View {
                                             Text("Reading")
                                                 .font(.title3)
                                                 .bold()
+                                                .onAppear() {
+                                                    isButtonDisabled = true
+                                                }
                                         }
                                         .foregroundColor(.white)
                                         .padding()
@@ -363,6 +369,9 @@ struct ExportView: View {
                                     Text("Start")
                                         .font(.title3)
                                         .bold()
+                                        .onAppear() {
+                                            isButtonDisabled = false
+                                        }
                                     
                                     Image(systemName: "arrow.up")
                                         .font(.largeTitle) // Adjust the size of the icon

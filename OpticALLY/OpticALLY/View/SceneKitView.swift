@@ -109,6 +109,8 @@ struct SceneKitMDLView: UIViewRepresentable {
         scnView.autoenablesDefaultLighting = true
         scnView.allowsCameraControl = true
         scnView.backgroundColor = UIColor.black
+        
+        ExternalData.performHitTest(scnView: scnView)
 
         return scnView
     }

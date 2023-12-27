@@ -73,6 +73,10 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     private var rightEyePosition = CGPoint(x: 0, y: 0)
     private var chinPosition = CGPoint(x: 0, y: 0)
     
+    private var leftEyePosition3D = SCNVector3(0, 0, 0)
+    private var rightEyePosition3D = SCNVector3(0, 0, 0)
+    private var chinPosition3D = SCNVector3(0, 0, 0)
+    
     private var faceGeometry: ARSCNFaceGeometry?
     
     // MARK: - UI Bindings
@@ -198,7 +202,53 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         ExternalData.pointCloudDataArray.append(metadata)
     }
     
-    private func detectFaceLandmarks(in pixelBuffer: CVPixelBuffer, sceneView: SCNView) {
+    func convertTo3DPoint(from point2D: CGPoint, depthData: AVDepthData) -> SCNVector3? {
+        guard let depthPixelBuffer: CVPixelBuffer? = depthData.depthDataMap else { return nil }
+
+        let depthWidth = CVPixelBufferGetWidth(depthPixelBuffer!)
+        let depthHeight = CVPixelBufferGetHeight(depthPixelBuffer!)
+
+        let xInt = Int(point2D.x)
+        let yInt = Int(point2D.y)
+
+        if xInt < 0 || xInt >= depthWidth || yInt < 0 || yInt >= depthHeight {
+            return nil
+        }
+
+        CVPixelBufferLockBaseAddress(depthPixelBuffer!, .readOnly)
+        defer { CVPixelBufferUnlockBaseAddress(depthPixelBuffer!, .readOnly) }
+
+        let depthPointer = CVPixelBufferGetBaseAddress(depthPixelBuffer!)!.assumingMemoryBound(to: Float32.self)
+        let depthIndex = yInt * depthWidth + xInt
+        let depthValue = depthPointer[depthIndex]
+
+        let cameraIntrinsics = depthData.cameraCalibrationData?.intrinsicMatrix
+
+        return unprojectPoint(point2D, with: depthValue, intrinsics: cameraIntrinsics)
+    }
+
+    func unprojectPoint(_ point2D: CGPoint, with depth: Float32, intrinsics: matrix_float3x3?) -> SCNVector3 {
+        guard let intrinsics = intrinsics else { return SCNVector3() }
+
+        // Construct matrix_float4x4 from matrix_float3x3
+        let intrinsics4x4 = matrix_float4x4(rows: [
+            SIMD4<Float>(intrinsics.columns.0.x, intrinsics.columns.0.y, intrinsics.columns.0.z, 0),
+            SIMD4<Float>(intrinsics.columns.1.x, intrinsics.columns.1.y, intrinsics.columns.1.z, 0),
+            SIMD4<Float>(intrinsics.columns.2.x, intrinsics.columns.2.y, intrinsics.columns.2.z, 0),
+            SIMD4<Float>(0, 0, 0, 1)
+        ])
+
+        let x = (2 * Float(point2D.x)) - 1
+        let y = (2 * Float(point2D.y)) - 1
+        let z = 2 * depth - 1
+
+        let invIntrinsics = simd_inverse(intrinsics4x4)
+        let point3D = simd_mul(invIntrinsics, SIMD4<Float>(x, y, z, 1))
+
+        return SCNVector3(point3D.x, point3D.y, point3D.z)
+    }
+    
+    private func detectFaceLandmarks(in pixelBuffer: CVPixelBuffer, sceneView: SCNView, depthData: AVDepthData) {
         try? faceDetectionHandler.perform([faceDetectionRequest], on: pixelBuffer, orientation: .right)
         guard let observations = faceDetectionRequest.results else {
             return
@@ -208,6 +258,12 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             if let leftEye = observation.landmarks?.leftEye, let rightEye = observation.landmarks?.rightEye {
                 leftEyePosition = averagePoint(from: leftEye.normalizedPoints, in: observation.boundingBox, pixelBuffer: pixelBuffer)
                 rightEyePosition = averagePoint(from: rightEye.normalizedPoints, in: observation.boundingBox, pixelBuffer: pixelBuffer)
+                
+                leftEyePosition3D = convertTo3DPoint(from: leftEyePosition, depthData: depthData)!
+                rightEyePosition3D = convertTo3DPoint(from: rightEyePosition, depthData: depthData)!
+                chinPosition3D = convertTo3DPoint(from: chinPosition, depthData: depthData)!
+                
+                print("leftEyePosition3D: \(leftEyePosition3D)")
                 
                 viewModel?.leftEyePosition = leftEyePosition
                 viewModel?.rightEyePosition = rightEyePosition
@@ -356,7 +412,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                     // Perform processing if both depth and video data are available
                     if let depthData = self.synchronizedDepthData,
                        let videoPixelBuffer = self.synchronizedVideoPixelBuffer {
-                        self.detectFaceLandmarks(in: videoPixelBuffer, sceneView: arSCNView!)
+                        self.detectFaceLandmarks(in: videoPixelBuffer, sceneView: arSCNView!, depthData: depthData)
                         // cloudView.setDepthFrame(depthData, withTexture: videoPixelBuffer)
                     }
                 }

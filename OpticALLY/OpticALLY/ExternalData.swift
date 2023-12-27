@@ -213,18 +213,7 @@ struct ExternalData {
         return atan2(transform.m21, transform.m11)
     }
     
-    static func performHitTest() {
-        let scnView = SCNView()
-        scnView.isHidden = true
-
-        let scene = SCNScene()
-        scnView.scene = scene
-
-        for geometry in ExternalData.pointCloudGeometries {
-            let node = SCNNode(geometry: geometry)
-            scene.rootNode.addChildNode(node)
-        }
-
+    static func performHitTest(scnView: SCNView) {
         for (index, geometry) in pointCloudGeometries.enumerated() {
                guard index < pointCloudDataArray.count else { continue }
                let metadata = pointCloudDataArray[index]
@@ -362,8 +351,6 @@ struct ExternalData {
         
         print("Done constructing the 3D object!")
         LogManager.shared.log("Done constructing the 3D object!")
-        
-        performHitTest()
     }
     
     static func createPointCloudGeometry(depthData: AVDepthData, imageSampler: CapturedImageSampler, width: Int, height: Int, calibrationData: AVCameraCalibrationData, transform: SCNMatrix4, percentile: Float = 35.0) {
@@ -479,8 +466,6 @@ struct ExternalData {
         
         print("Done constructing the 3D object!")
         LogManager.shared.log("Done constructing the 3D object!")
-        
-        performHitTest()
     }
     
     static func exportAV_GeometryAsPLY(to url: URL) {
