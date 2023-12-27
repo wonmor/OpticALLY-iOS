@@ -52,7 +52,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     var viewModel: FaceTrackingViewModel?
     
     // MARK: - Properties
-    private var session: ARSession = ARSession()
+    private var arSCNView: ARSCNView?
     private var avCaptureSession: AVCaptureSession = AVCaptureSession()
     private var outputSynchronizer: AVCaptureDataOutputSynchronizer?
     private var videoDataOutput = AVCaptureVideoDataOutput()
@@ -74,9 +74,9 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     private var chinPosition = CGPoint(x: 0, y: 0)
     
     // MARK: - New Properties for 3D facial feature tracking
-    private var leftEyePosition3D: SCNVector3?
-    private var rightEyePosition3D: SCNVector3?
-    private var chinPosition3D: SCNVector3?
+   private var leftEyePosition3D: SCNVector3?
+   private var rightEyePosition3D: SCNVector3?
+   private var chinPosition3D: SCNVector3?
     
     // MARK: - UI Bindings
     @IBOutlet weak private var cameraUnavailableLabel: UILabel!
@@ -179,95 +179,59 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             height: commonHeight,
             bytesPerRow: colorBytesPerRow // Use the correct bytes per row for color data
         )
+        
+        let metadata = PointCloudMetadata(
+            yaw: viewModel?.faceYawAngle ?? 0.0,
+            pitch: viewModel?.facePitchAngle ?? 0.0,
+            roll: viewModel?.faceRollAngle ?? 0.0,
+            leftEyePosition: SCNVector3(0, 0, 0),
+            rightEyePosition: SCNVector3(0, 0, 0),
+            chin: SCNVector3(0, 0, 0),
+            image: imageData
+        )
+                                          
+        ExternalData.pointCloudDataArray.append(metadata)
     }
     
-    // MARK: - Detect Face Landmarks and Convert to 3D Coordinates
-    private func detectFaceLandmarks(in pixelBuffer: CVPixelBuffer, frame: ARFrame) {
+    private func detectFaceLandmarks(in pixelBuffer: CVPixelBuffer, sceneView: SCNView) {
         try? faceDetectionHandler.perform([faceDetectionRequest], on: pixelBuffer, orientation: .right)
-        guard let observations = faceDetectionRequest.results as? [VNFaceObservation] else {
+        guard let observations = faceDetectionRequest.results else {
             return
         }
-        
+
         for observation in observations {
-            updateFeaturePositions(for: observation, in: frame)
-        }
-    }
-    
-    private func performRaycastTest(in frame: ARFrame) {
-        // Example points - you can choose other points or generate them randomly
-        let testPoints: [CGPoint] = [
-            CGPoint(x: 0.25, y: 0.25), // Top-left quarter
-            CGPoint(x: 0.75, y: 0.25), // Top-right quarter
-            CGPoint(x: 0.50, y: 0.50), // Center
-            CGPoint(x: 0.25, y: 0.75), // Bottom-left quarter
-            CGPoint(x: 0.75, y: 0.75)  // Bottom-right quarter
-        ]
+            if let leftEye = observation.landmarks?.leftEye, let rightEye = observation.landmarks?.rightEye {
+                leftEyePosition = averagePoint(from: leftEye.normalizedPoints, in: observation.boundingBox, pixelBuffer: pixelBuffer)
+                rightEyePosition = averagePoint(from: rightEye.normalizedPoints, in: observation.boundingBox, pixelBuffer: pixelBuffer)
 
-        for testPoint in testPoints {
-            if let raycastQuery: ARRaycastQuery? = frame.raycastQuery(from: testPoint, allowing: .estimatedPlane, alignment: .any),
-               let raycastResult = session.raycast(raycastQuery!).first {
-                let position = SCNVector3(raycastResult.worldTransform.columns.3.x, raycastResult.worldTransform.columns.3.y, raycastResult.worldTransform.columns.3.z)
-                print("Raycast at \(testPoint): \(position)")
-            } else {
-                print("Raycast failed at \(testPoint)")
-            }
-        }
-    }
-    
-    private func randomPointInViewBounds(viewSize: CGSize) -> CGPoint {
-        let randomX = CGFloat.random(in: 0..<viewSize.width)
-        let randomY = CGFloat.random(in: 0..<viewSize.height)
-        return CGPoint(x: randomX, y: randomY)
-    }
+                // Perform hit testing for each eye position using SceneKit
+                let leftEyeHitResults = sceneView.hitTest(leftEyePosition, options: [SCNHitTestOption.searchMode: SCNHitTestSearchMode.all.rawValue])
+                let rightEyeHitResults = sceneView.hitTest(rightEyePosition, options: [SCNHitTestOption.searchMode: SCNHitTestSearchMode.all.rawValue])
 
-    private func performRandomRaycastTest(in frame: ARFrame, viewSize: CGSize, numberOfTests: Int = 10) {
-        for _ in 1...numberOfTests {
-            let randomPoint = randomPointInViewBounds(viewSize: viewSize)
-            if let raycastQuery: ARRaycastQuery? = frame.raycastQuery(from: randomPoint, allowing: .estimatedPlane, alignment: .any),
-               let raycastResult = session.raycast(raycastQuery!).first {
-                let position = SCNVector3(raycastResult.worldTransform.columns.3.x, raycastResult.worldTransform.columns.3.y, raycastResult.worldTransform.columns.3.z)
-                print("Raycast at \(randomPoint): \(position)")
-            } else {
-                print("Raycast failed at \(randomPoint)")
+                if let leftEyeHit = leftEyeHitResults.first, let rightEyeHit = rightEyeHitResults.first {
+                    DispatchQueue.main.async {
+                        self.leftEyePosition3D = leftEyeHit.worldCoordinates
+                        self.rightEyePosition3D = rightEyeHit.worldCoordinates
+                    }
+                }
+            }
+
+            if let faceContour = observation.landmarks?.faceContour {
+                let points = faceContour.normalizedPoints
+                if let lowestPoint = points.min(by: { $0.y < $1.y }) {
+                    chinPosition = averagePoint(from: [lowestPoint], in: observation.boundingBox, pixelBuffer: pixelBuffer)
+
+                    // Perform hit testing for the chin position using SceneKit
+                    let chinHitResults = sceneView.hitTest(chinPosition, options: [SCNHitTestOption.searchMode: SCNHitTestSearchMode.all.rawValue])
+                    
+                    if let chinHit = chinHitResults.first {
+                        DispatchQueue.main.async {
+                            self.chinPosition3D = chinHit.worldCoordinates
+                        }
+                    }
+                }
             }
         }
-    }
-    
-    // New Method: Update feature positions
-    private func updateFeaturePositions(for observation: VNFaceObservation, in frame: ARFrame) {
-        if let leftEye = observation.landmarks?.leftEye {
-            let leftEyePoints = leftEye.normalizedPoints
-            update3DPosition(for: leftEyePoints, in: observation, frame: frame) { position in
-                self.leftEyePosition3D = position
-                print("leftEyePosition3D: \(position)")
-            }
-        }
-        
-        if let rightEye = observation.landmarks?.rightEye {
-            let rightEyePoints = rightEye.normalizedPoints
-            update3DPosition(for: rightEyePoints, in: observation, frame: frame) { position in
-                self.rightEyePosition3D = position
-            }
-        }
-        
-        if let faceContour = observation.landmarks?.faceContour, let lowestPoint = faceContour.normalizedPoints.min(by: { $0.y < $1.y }) {
-            update3DPosition(for: [lowestPoint], in: observation, frame: frame) { position in
-                self.chinPosition3D = position
-            }
-        }
-    }
-    
-    // New Method: Convert 2D points to 3D using ARKit Raycasting
-    private func update3DPosition(for points: [CGPoint], in observation: VNFaceObservation, frame: ARFrame, completion: @escaping (SCNVector3?) -> Void) {
-        let averagePoint = averagePoint(from: points, in: observation.boundingBox, pixelBuffer: frame.capturedImage)
-        guard let raycastQuery: ARRaycastQuery? = frame.raycastQuery(from: averagePoint, allowing: .estimatedPlane, alignment: .any),
-              let raycastResult = session.raycast(raycastQuery!).first else {
-            completion(nil)
-            return
-        }
-        
-        let position = SCNVector3(raycastResult.worldTransform.columns.3.x, raycastResult.worldTransform.columns.3.y, raycastResult.worldTransform.columns.3.z)
-        completion(position)
     }
     
     private func averagePoint(from normalizedPoints: [CGPoint], in boundingBox: CGRect, pixelBuffer: CVPixelBuffer) -> CGPoint {
@@ -279,38 +243,51 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         let sum = normalizedPoints.reduce(CGPoint.zero, { CGPoint(x: $0.x + $1.x, y: $0.y + $1.y) })
         let count = CGFloat(normalizedPoints.count)
         let averageNormalized = CGPoint(x: sum.x / count, y: sum.y / count)
-        
+
         // Convert normalized point to UIKit coordinates
         let width = CGFloat(CVPixelBufferGetWidth(pixelBuffer))
         let height = CGFloat(CVPixelBufferGetHeight(pixelBuffer))
         let originX = boundingBox.origin.x * width
         let originY = boundingBox.origin.y * height
-        
+
         let averageUIKit = CGPoint(x: averageNormalized.x * boundingBox.width * width + originX,
                                    y: averageNormalized.y * boundingBox.height * height + originY)
-        
+
         // Transform to the coordinate system of the view (screen in this case)
         // Vision's Y-coordinate is flipped compared to UIKit's
         let transformedY = height - averageUIKit.y
-        
+
         // Scale the point from the pixel buffer size to the view size
         let scaleX = viewSize.width / width
         let scaleY = viewSize.height / height
         let finalPoint = CGPoint(x: averageUIKit.x * scaleX, y: transformedY * scaleY)
         
         print("finalPoint: \(finalPoint)")
-        
+
         return finalPoint
     }
     
     func loadInit() {
-        session.delegate = self
+        configureARSCNView()
         configureGestureRecognizers()
-        configureARSession()
         configureAVCaptureSession()
         switchSession(toARSession: true)
         configureCloudView()
         addAndConfigureSwiftUIView()
+    }
+
+    private func configureARSCNView() {
+        arSCNView = ARSCNView(frame: UIScreen.main.bounds)
+        arSCNView!.isHidden = true
+        view.addSubview(arSCNView!) // Add to view hierarchy
+        arSCNView!.session.delegate = self
+    }
+
+    private func startARSession() {
+        let configuration = ARFaceTrackingConfiguration()
+        configuration.isLightEstimationEnabled = true
+        arSCNView!.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
+        print("ARSession Running")
     }
     
     override func viewDidLoad() {
@@ -386,10 +363,8 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                     // Perform processing if both depth and video data are available
                     if let depthData = self.synchronizedDepthData,
                        let videoPixelBuffer = self.synchronizedVideoPixelBuffer {
-                        self.detectFaceLandmarks(in: videoPixelBuffer, frame: frame)
+                        self.detectFaceLandmarks(in: videoPixelBuffer, sceneView: arSCNView!)
                         // cloudView.setDepthFrame(depthData, withTexture: videoPixelBuffer)
-                        let viewSize = self.view.bounds.size
-                        performRandomRaycastTest(in: frame, viewSize: viewSize)
                     }
                 }
             }
@@ -462,15 +437,8 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         isUsingARSession = useARSession
     }
     
-    private func startARSession() {
-        let configuration = ARFaceTrackingConfiguration()
-        configuration.isLightEstimationEnabled = true
-        session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
-        print("ARSession Running")
-    }
-    
     private func pauseARSession() {
-        session.pause()
+        arSCNView?.session.pause()
         print("ARSession Paused")
     }
     
