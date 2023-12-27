@@ -186,10 +186,11 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             yaw: viewModel?.faceYawAngle ?? 0.0,
             pitch: viewModel?.facePitchAngle ?? 0.0,
             roll: viewModel?.faceRollAngle ?? 0.0,
-            leftEyePosition: SCNVector3(0, 0, 0),
-            rightEyePosition: SCNVector3(0, 0, 0),
-            chin: SCNVector3(0, 0, 0),
-            image: imageData
+            leftEyePosition: CGPoint(x: 0, y: 0),
+            rightEyePosition: CGPoint(x: 0, y: 0),
+            chin: CGPoint(x: 0, y: 0),
+            image: imageData,
+            depth: depthData
         )
                                           
         ExternalData.pointCloudDataArray.append(metadata)
@@ -210,8 +211,9 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                 let leftEyeHitResults = sceneView.hitTest(leftEyePosition, options: [SCNHitTestOption.searchMode: SCNHitTestSearchMode.all.rawValue])
                 let rightEyeHitResults = sceneView.hitTest(rightEyePosition, options: [SCNHitTestOption.searchMode: SCNHitTestSearchMode.all.rawValue])
 
+                print("leftEyeHitResults: \(leftEyeHitResults)")
+                
                 if let leftEyeHit = leftEyeHitResults.first, let rightEyeHit = rightEyeHitResults.first {
-                    print("leftEyeHit: \(leftEyeHit)")
                     DispatchQueue.main.async {
                         self.leftEyePosition3D = leftEyeHit.worldCoordinates
                         self.rightEyePosition3D = rightEyeHit.worldCoordinates
@@ -280,14 +282,15 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     }
 
     private func configureARSCNView() {
-        arSCNView = ARSCNView(frame: UIScreen.main.bounds)
+        arSCNView = ARSCNView(frame: view.bounds)
         arSCNView!.isHidden = true
         view.addSubview(arSCNView!) // Add to view hierarchy
         arSCNView!.session.delegate = self
         
         // Initialize face geometry
         if let device = arSCNView?.device {
-            faceGeometry = ARSCNFaceGeometry(device: device)
+            faceGeometry = ARSCNFaceGeometry(device: device, fillMesh: true)
+            faceGeometry!.firstMaterial?.fillMode = .fill
         }
     }
 

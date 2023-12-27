@@ -18,10 +18,13 @@ struct PointCloudMetadata {
     var yaw: Double
     var pitch: Double
     var roll: Double
-    var leftEyePosition: SCNVector3
-    var rightEyePosition: SCNVector3
-    var chin: SCNVector3
+    
+    var leftEyePosition: CGPoint
+    var rightEyePosition: CGPoint
+    var chin: CGPoint
+    
     var image: CVPixelBuffer
+    var depth: AVDepthData
 }
 
 /// ExternalData is a central repository for managing and processing 3D depth and color data, primarily focusing on creating point cloud geometries and exporting them in PLY format. It enables the integration of various sensory data inputs and computational geometry processing.
@@ -168,48 +171,6 @@ struct ExternalData {
             m31: kz * kx * (1 - c) - ky * s, m32: kz * ky * (1 - c) + kx * s, m33: c + kz * kz * (1 - c),    m34: 0.0,
             m41: 0.0,                    m42: 0.0,                    m43: 0.0,                    m44: 1.0
         )
-    }
-    
-    static func alignPointClouds() {
-        guard !pointCloudGeometries.isEmpty,
-              !pointCloudDataArray.isEmpty,
-              pointCloudGeometries.count == pointCloudDataArray.count else {
-            print("Data arrays are not properly initialized or don't match in count.")
-            return
-        }
-        
-        // Using the first point cloud as the reference model
-        let referenceMetadata = pointCloudDataArray[0]
-        
-        for i in 1..<pointCloudGeometries.count {
-            let currentMetadata = pointCloudDataArray[i]
-            let geometry = pointCloudGeometries[i]
-            
-            // Calculate translation and rotation
-            let translationVector = SCNVector3(
-                x: referenceMetadata.leftEyePosition.x - currentMetadata.leftEyePosition.x,
-                y: referenceMetadata.leftEyePosition.y - currentMetadata.leftEyePosition.y,
-                z: referenceMetadata.leftEyePosition.z - currentMetadata.leftEyePosition.z
-            )
-            let rotationMatrix = rotationMatrix(from: currentMetadata.chin, to: referenceMetadata.chin)
-            
-            // Apply translation and rotation
-            if let vertexSource = geometry.sources.first(where: { $0.semantic == .vertex }),
-               let colorSource = geometry.sources.first(where: { $0.semantic == .color }) {
-                var vertices = vertexSource.data.toArray(type: SCNVector3.self, count: vertexSource.vectorCount)
-                for j in 0..<vertices.count {
-                    vertices[j] = applyMatrixToVector3(vertices[j], with: rotationMatrix)
-                    vertices[j].x += translationVector.x
-                    vertices[j].y += translationVector.y
-                    vertices[j].z += translationVector.z
-                }
-                
-                // Update the geometry with transformed vertices
-                let newVertexSource = SCNGeometrySource(vertices: vertices)
-                let newGeometry = SCNGeometry(sources: [newVertexSource, colorSource], elements: geometry.elements)
-                pointCloudGeometries[i] = newGeometry
-            }
-        }
     }
     
     // Function to calculate the center of a set of vertices
@@ -524,7 +485,7 @@ struct ExternalData {
     }
     
     static func exportGeometryAsPLY(to url: URL) {
-        alignPointClouds()
+        // alignPointClouds()
         
         let fileManager = FileManager.default
         let tempDirectoryURL = fileManager.temporaryDirectory

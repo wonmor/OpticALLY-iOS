@@ -13,7 +13,7 @@ import ARKit
 
 struct SceneKitView: UIViewRepresentable {
     init() {
-        ExternalData.alignPointClouds()
+        // ExternalData.alignPointClouds()
     }
     
     func makeUIView(context: Context) -> SCNView {
