@@ -78,6 +78,8 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
    private var rightEyePosition3D: SCNVector3?
    private var chinPosition3D: SCNVector3?
     
+    private var faceGeometry: ARSCNFaceGeometry?
+    
     // MARK: - UI Bindings
     @IBOutlet weak private var cameraUnavailableLabel: UILabel!
     @IBOutlet weak private var depthSmoothingSwitch: UISwitch!
@@ -281,6 +283,11 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         arSCNView!.isHidden = true
         view.addSubview(arSCNView!) // Add to view hierarchy
         arSCNView!.session.delegate = self
+        
+        // Initialize face geometry
+        if let device = arSCNView?.device {
+            faceGeometry = ARSCNFaceGeometry(device: device)
+        }
     }
 
     private func startARSession() {
@@ -288,6 +295,11 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         configuration.isLightEstimationEnabled = true
         arSCNView!.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
         print("ARSession Running")
+        
+        // Create a node with face geometry and add it to the scene
+        if let faceNode: SCNNode? = SCNNode(geometry: faceGeometry) {
+            arSCNView?.scene.rootNode.addChildNode(faceNode!)
+        }
     }
     
     override func viewDidLoad() {
@@ -375,9 +387,16 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     
     func session(_ session: ARSession, didUpdate anchors: [ARAnchor]) {
         guard let faceAnchor = anchors.compactMap({ $0 as? ARFaceAnchor }).first else { return }
+        
         DispatchQueue.main.async {
             self.viewModel!.faceAnchor = faceAnchor
         }
+        
+        for anchor in anchors {
+           if let faceAnchor = anchor as? ARFaceAnchor, let faceGeometry = self.faceGeometry {
+               faceGeometry.update(from: faceAnchor.geometry)
+           }
+       }
     }
     
     private func configureGestureRecognizers() {
