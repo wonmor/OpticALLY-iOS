@@ -203,27 +203,46 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     }
     
     func findClosest3DPoint(to point2D: CGPoint, within threshold: CGFloat, in depthData: AVDepthData) -> SCNVector3? {
-        guard let depthPixelBuffer: CVPixelBuffer? = depthData.depthDataMap else { return nil }
-        guard let cameraCalibrationData = depthData.cameraCalibrationData else { return nil }
+        guard let depthPixelBuffer: CVPixelBuffer? = depthData.depthDataMap,
+              let cameraCalibrationData = depthData.cameraCalibrationData else { return nil }
 
         let depthWidth = CVPixelBufferGetWidth(depthPixelBuffer!)
         let depthHeight = CVPixelBufferGetHeight(depthPixelBuffer!)
 
-        let xInt = Int(point2D.x * CGFloat(depthWidth))
-        let yInt = Int(point2D.y * CGFloat(depthHeight))
+        let scaledPointX = point2D.x * CGFloat(depthWidth)
+        let scaledPointY = point2D.y * CGFloat(depthHeight)
 
-        CVPixelBufferLockBaseAddress(depthPixelBuffer!, .readOnly)
-        defer { CVPixelBufferUnlockBaseAddress(depthPixelBuffer!, .readOnly) }
+        let xInt = min(max(Int(scaledPointX), 0), depthWidth - 1)
+        let yInt = min(max(Int(scaledPointY), 0), depthHeight - 1)
 
-        let depthPointer = CVPixelBufferGetBaseAddress(depthPixelBuffer!)!.assumingMemoryBound(to: Float32.self)
-        let cameraIntrinsics = cameraCalibrationData.intrinsicMatrix
+        let result = calculateClosest3DPoint(xInt: xInt, yInt: yInt, threshold: threshold, depthWidth: depthWidth, depthHeight: depthHeight, depthPixelBuffer: depthPixelBuffer!, cameraIntrinsics: cameraCalibrationData.intrinsicMatrix)
+        
+        if let result = result {
+            return result
+        } else {
+            // Fallback: trying with inverted signs
+            let invertedXInt = depthWidth - 1 - xInt
+            let invertedYInt = depthHeight - 1 - yInt
+            return calculateClosest3DPoint(xInt: invertedXInt, yInt: invertedYInt, threshold: threshold, depthWidth: depthWidth, depthHeight: depthHeight, depthPixelBuffer: depthPixelBuffer!, cameraIntrinsics: cameraCalibrationData.intrinsicMatrix)
+        }
+    }
 
-        // Searching for the closest point within the threshold
+    private func calculateClosest3DPoint(xInt: Int, yInt: Int, threshold: CGFloat, depthWidth: Int, depthHeight: Int, depthPixelBuffer: CVPixelBuffer, cameraIntrinsics: matrix_float3x3) -> SCNVector3? {
+        CVPixelBufferLockBaseAddress(depthPixelBuffer, .readOnly)
+        defer { CVPixelBufferUnlockBaseAddress(depthPixelBuffer, .readOnly) }
+
+        let depthPointer = CVPixelBufferGetBaseAddress(depthPixelBuffer)!.assumingMemoryBound(to: Float32.self)
+        
         var closestDepthValue: Float32?
         var closestPoint = CGPoint(x: xInt, y: yInt)
 
-        for y in max(yInt - Int(threshold), 0)..<min(yInt + Int(threshold), depthHeight) {
-            for x in max(xInt - Int(threshold), 0)..<min(xInt + Int(threshold), depthWidth) {
+        let startX = max(xInt - Int(threshold), 0)
+        let endX = min(xInt + Int(threshold), depthWidth - 1)
+        let startY = max(yInt - Int(threshold), 0)
+        let endY = min(yInt + Int(threshold), depthHeight - 1)
+
+        for y in startY...endY {
+            for x in startX...endX {
                 let depthIndex = y * depthWidth + x
                 let depthValue = depthPointer[depthIndex]
 
@@ -236,7 +255,6 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
 
         guard let finalDepthValue = closestDepthValue else { return nil }
 
-        // Converting closest point to 3D coordinates
         let x = (Float(closestPoint.x) - cameraIntrinsics[2][0]) / cameraIntrinsics[0][0]
         let y = (Float(closestPoint.y) - cameraIntrinsics[2][1]) / cameraIntrinsics[1][1]
         let z = finalDepthValue
