@@ -194,7 +194,10 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             roll: viewModel?.faceRollAngle ?? 0.0,
             leftEyePosition: leftEyePosition,
             rightEyePosition: rightEyePosition,
-            chin: chinPosition,
+            chinPosition: chinPosition,
+            leftEyePosition3D: leftEyePosition3D,
+            rightEyePosition3D: rightEyePosition3D,
+            chinPosition3D: chinPosition3D,
             image: imageData,
             depth: depthData
         )

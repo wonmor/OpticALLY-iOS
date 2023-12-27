@@ -21,7 +21,11 @@ struct PointCloudMetadata {
     
     var leftEyePosition: CGPoint
     var rightEyePosition: CGPoint
-    var chin: CGPoint
+    var chinPosition: CGPoint
+    
+    var leftEyePosition3D: SCNVector3
+    var rightEyePosition3D: SCNVector3
+    var chinPosition3D: SCNVector3
     
     var image: CVPixelBuffer
     var depth: AVDepthData
@@ -221,7 +225,7 @@ struct ExternalData {
                // Perform hit tests using 2D points in the SceneKit view's coordinate space
                let leftEyeHitResults = scnView.hitTest(metadata.leftEyePosition, options: [SCNHitTestOption.searchMode : SCNHitTestSearchMode.all.rawValue])
                let rightEyeHitResults = scnView.hitTest(metadata.rightEyePosition, options: [SCNHitTestOption.searchMode : SCNHitTestSearchMode.all.rawValue])
-               let chinHitResults = scnView.hitTest(metadata.chin, options: [SCNHitTestOption.searchMode : SCNHitTestSearchMode.all.rawValue])
+               let chinHitResults = scnView.hitTest(metadata.chinPosition, options: [SCNHitTestOption.searchMode : SCNHitTestSearchMode.all.rawValue])
 
                // Print results or perform further processing
                print("Geometry \(index):")
