@@ -177,6 +177,48 @@ struct ExternalData {
         )
     }
     
+    static func alignPointClouds() {
+        guard !pointCloudGeometries.isEmpty,
+              !pointCloudDataArray.isEmpty,
+              pointCloudGeometries.count == pointCloudDataArray.count else {
+            print("Data arrays are not properly initialized or don't match in count.")
+            return
+        }
+        
+        // Using the first point cloud as the reference model
+        let referenceMetadata = pointCloudDataArray[0]
+        
+        for i in 1..<pointCloudGeometries.count {
+            let currentMetadata = pointCloudDataArray[i]
+            let geometry = pointCloudGeometries[i]
+            
+            // Calculate translation and rotation
+            let translationVector = SCNVector3(
+                x: referenceMetadata.leftEyePosition3D.x - currentMetadata.leftEyePosition3D.x,
+                y: referenceMetadata.leftEyePosition3D.y - currentMetadata.leftEyePosition3D.y,
+                z: referenceMetadata.leftEyePosition3D.z - currentMetadata.leftEyePosition3D.z
+            )
+            let rotationMatrix = rotationMatrix(from: currentMetadata.chinPosition3D, to: referenceMetadata.chinPosition3D)
+            
+            // Apply translation and rotation
+            if let vertexSource = geometry.sources.first(where: { $0.semantic == .vertex }),
+               let colorSource = geometry.sources.first(where: { $0.semantic == .color }) {
+                var vertices = vertexSource.data.toArray(type: SCNVector3.self, count: vertexSource.vectorCount)
+                for j in 0..<vertices.count {
+                    vertices[j] = applyMatrixToVector3(vertices[j], with: rotationMatrix)
+                    vertices[j].x += translationVector.x
+                    vertices[j].y += translationVector.y
+                    vertices[j].z += translationVector.z
+                }
+                
+                // Update the geometry with transformed vertices
+                let newVertexSource = SCNGeometrySource(vertices: vertices)
+                let newGeometry = SCNGeometry(sources: [newVertexSource, colorSource], elements: geometry.elements)
+                pointCloudGeometries[i] = newGeometry
+            }
+        }
+    }
+    
     // Function to calculate the center of a set of vertices
     static func calculateCenter(of vertices: [SCNVector3]) -> SCNVector3 {
         var sum = SCNVector3(0, 0, 0)
@@ -215,24 +257,6 @@ struct ExternalData {
     // Function to extract yaw angle from the transform matrix
     static func getYawAngle(from transform: SCNMatrix4) -> Float {
         return atan2(transform.m21, transform.m11)
-    }
-    
-    static func performHitTest(scnView: SCNView) {
-        for (index, geometry) in pointCloudGeometries.enumerated() {
-               guard index < pointCloudDataArray.count else { continue }
-               let metadata = pointCloudDataArray[index]
-
-               // Perform hit tests using 2D points in the SceneKit view's coordinate space
-               let leftEyeHitResults = scnView.hitTest(metadata.leftEyePosition, options: [SCNHitTestOption.searchMode : SCNHitTestSearchMode.all.rawValue])
-               let rightEyeHitResults = scnView.hitTest(metadata.rightEyePosition, options: [SCNHitTestOption.searchMode : SCNHitTestSearchMode.all.rawValue])
-               let chinHitResults = scnView.hitTest(metadata.chinPosition, options: [SCNHitTestOption.searchMode : SCNHitTestSearchMode.all.rawValue])
-
-               // Print results or perform further processing
-               print("Geometry \(index):")
-               print("Left Eye Hits: \(leftEyeHitResults)")
-               print("Right Eye Hits: \(rightEyeHitResults)")
-               print("Chin Hits: \(chinHitResults)")
-           }
     }
     
     // Function to convert depth and color data into a point cloud geometry
@@ -353,6 +377,8 @@ struct ExternalData {
         
         pointCloudGeometries.append(pointCloudGeometry)
         
+        alignPointClouds()
+        
         print("Done constructing the 3D object!")
         LogManager.shared.log("Done constructing the 3D object!")
     }
@@ -468,6 +494,8 @@ struct ExternalData {
         // Append the new geometry to the array
         pointCloudGeometries.append(newPointCloudGeometry)
         
+        alignPointClouds()
+        
         print("Done constructing the 3D object!")
         LogManager.shared.log("Done constructing the 3D object!")
     }
@@ -507,8 +535,6 @@ struct ExternalData {
     }
     
     static func exportGeometryAsPLY(to url: URL) {
-        // alignPointClouds()
-        
         let fileManager = FileManager.default
         let tempDirectoryURL = fileManager.temporaryDirectory
         
