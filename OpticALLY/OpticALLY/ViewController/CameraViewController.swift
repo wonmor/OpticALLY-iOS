@@ -202,52 +202,48 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         ExternalData.pointCloudDataArray.append(metadata)
     }
     
-    func convertTo3DPoint(from point2D: CGPoint, depthData: AVDepthData) -> SCNVector3? {
+    func findClosest3DPoint(to point2D: CGPoint, within threshold: CGFloat, in depthData: AVDepthData) -> SCNVector3? {
         guard let depthPixelBuffer: CVPixelBuffer? = depthData.depthDataMap else { return nil }
+        guard let cameraCalibrationData = depthData.cameraCalibrationData else { return nil }
 
         let depthWidth = CVPixelBufferGetWidth(depthPixelBuffer!)
         let depthHeight = CVPixelBufferGetHeight(depthPixelBuffer!)
 
-        let xInt = Int(point2D.x)
-        let yInt = Int(point2D.y)
-
-        if xInt < 0 || xInt >= depthWidth || yInt < 0 || yInt >= depthHeight {
-            return nil
-        }
+        let xInt = Int(point2D.x * CGFloat(depthWidth))
+        let yInt = Int(point2D.y * CGFloat(depthHeight))
 
         CVPixelBufferLockBaseAddress(depthPixelBuffer!, .readOnly)
         defer { CVPixelBufferUnlockBaseAddress(depthPixelBuffer!, .readOnly) }
 
         let depthPointer = CVPixelBufferGetBaseAddress(depthPixelBuffer!)!.assumingMemoryBound(to: Float32.self)
-        let depthIndex = yInt * depthWidth + xInt
-        let depthValue = depthPointer[depthIndex]
+        let cameraIntrinsics = cameraCalibrationData.intrinsicMatrix
 
-        let cameraIntrinsics = depthData.cameraCalibrationData?.intrinsicMatrix
+        // Searching for the closest point within the threshold
+        var closestDepthValue: Float32?
+        var closestPoint = CGPoint(x: xInt, y: yInt)
 
-        return unprojectPoint(point2D, with: depthValue, intrinsics: cameraIntrinsics)
+        for y in max(yInt - Int(threshold), 0)..<min(yInt + Int(threshold), depthHeight) {
+            for x in max(xInt - Int(threshold), 0)..<min(xInt + Int(threshold), depthWidth) {
+                let depthIndex = y * depthWidth + x
+                let depthValue = depthPointer[depthIndex]
+
+                if closestDepthValue == nil || abs(depthValue - closestDepthValue!) < Float32(threshold) {
+                    closestDepthValue = depthValue
+                    closestPoint = CGPoint(x: x, y: y)
+                }
+            }
+        }
+
+        guard let finalDepthValue = closestDepthValue else { return nil }
+
+        // Converting closest point to 3D coordinates
+        let x = (Float(closestPoint.x) - cameraIntrinsics[2][0]) / cameraIntrinsics[0][0]
+        let y = (Float(closestPoint.y) - cameraIntrinsics[2][1]) / cameraIntrinsics[1][1]
+        let z = finalDepthValue
+
+        return SCNVector3(x * z, y * z, z)
     }
 
-    func unprojectPoint(_ point2D: CGPoint, with depth: Float32, intrinsics: matrix_float3x3?) -> SCNVector3 {
-        guard let intrinsics = intrinsics else { return SCNVector3() }
-
-        // Construct matrix_float4x4 from matrix_float3x3
-        let intrinsics4x4 = matrix_float4x4(rows: [
-            SIMD4<Float>(intrinsics.columns.0.x, intrinsics.columns.0.y, intrinsics.columns.0.z, 0),
-            SIMD4<Float>(intrinsics.columns.1.x, intrinsics.columns.1.y, intrinsics.columns.1.z, 0),
-            SIMD4<Float>(intrinsics.columns.2.x, intrinsics.columns.2.y, intrinsics.columns.2.z, 0),
-            SIMD4<Float>(0, 0, 0, 1)
-        ])
-
-        let x = (2 * Float(point2D.x)) - 1
-        let y = (2 * Float(point2D.y)) - 1
-        let z = 2 * depth - 1
-
-        let invIntrinsics = simd_inverse(intrinsics4x4)
-        let point3D = simd_mul(invIntrinsics, SIMD4<Float>(x, y, z, 1))
-
-        return SCNVector3(point3D.x, point3D.y, point3D.z)
-    }
-    
     private func detectFaceLandmarks(in pixelBuffer: CVPixelBuffer, sceneView: SCNView, depthData: AVDepthData) {
         try? faceDetectionHandler.perform([faceDetectionRequest], on: pixelBuffer, orientation: .right)
         guard let observations = faceDetectionRequest.results else {
@@ -259,9 +255,9 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                 leftEyePosition = averagePoint(from: leftEye.normalizedPoints, in: observation.boundingBox, pixelBuffer: pixelBuffer)
                 rightEyePosition = averagePoint(from: rightEye.normalizedPoints, in: observation.boundingBox, pixelBuffer: pixelBuffer)
                 
-                leftEyePosition3D = convertTo3DPoint(from: leftEyePosition, depthData: depthData)!
-                rightEyePosition3D = convertTo3DPoint(from: rightEyePosition, depthData: depthData)!
-                chinPosition3D = convertTo3DPoint(from: chinPosition, depthData: depthData)!
+                leftEyePosition3D = findClosest3DPoint(to: leftEyePosition, within: 15.0, in: depthData)!
+                rightEyePosition3D = findClosest3DPoint(to: rightEyePosition, within: 15.0, in: depthData)!
+                chinPosition3D = findClosest3DPoint(to: chinPosition, within: 15.0, in: depthData)!
                 
                 print("leftEyePosition3D: \(leftEyePosition3D)")
                 
