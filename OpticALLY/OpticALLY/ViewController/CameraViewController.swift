@@ -62,16 +62,21 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     private var dataOutputQueue = DispatchQueue(label: "data output queue")
     
     private var isUsingARSession: Bool = true
-
+    
     private var synchronizedDepthData: AVDepthData?
     private var synchronizedVideoPixelBuffer: CVPixelBuffer?
     
     private let faceDetectionRequest = VNDetectFaceLandmarksRequest()
     private let faceDetectionHandler = VNSequenceRequestHandler()
     
-    private var leftEyePosition = SCNVector3(0, 0, 0)
-    private var rightEyePosition = SCNVector3(0, 0, 0)
-    private var chin = SCNVector3(0, 0, 0)
+    private var leftEyePosition = CGPoint(x: 0, y: 0)
+    private var rightEyePosition = CGPoint(x: 0, y: 0)
+    private var chinPosition = CGPoint(x: 0, y: 0)
+    
+    // MARK: - New Properties for 3D facial feature tracking
+    private var leftEyePosition3D: SCNVector3?
+    private var rightEyePosition3D: SCNVector3?
+    private var chinPosition3D: SCNVector3?
     
     // MARK: - UI Bindings
     @IBOutlet weak private var cameraUnavailableLabel: UILabel!
@@ -176,80 +181,126 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         )
     }
     
+    // MARK: - Detect Face Landmarks and Convert to 3D Coordinates
     private func detectFaceLandmarks(in pixelBuffer: CVPixelBuffer, frame: ARFrame) {
-           try? faceDetectionHandler.perform([faceDetectionRequest], on: pixelBuffer, orientation: .right)
-           guard let observations = faceDetectionRequest.results else {
-               return
-           }
-           
-           for observation in observations {
-               if let leftEye = observation.landmarks?.leftEye, let rightEye = observation.landmarks?.rightEye {
-                   let leftEyePosition = averagePoint(from: leftEye.normalizedPoints, in: observation.boundingBox, pixelBuffer: pixelBuffer)
-                   let rightEyePosition = averagePoint(from: rightEye.normalizedPoints, in: observation.boundingBox, pixelBuffer: pixelBuffer)
-                   
-                   print("LEFT: \(leftEyePosition)")
-                   print("RIGHT: \(rightEyePosition)")
-                   
-                   // Perform raycasting for each eye position
-                   if let leftEyeRaycastQuery: ARRaycastQuery? = frame.raycastQuery(from: leftEyePosition, allowing: .estimatedPlane, alignment: .any),
-                      let rightEyeRaycastQuery: ARRaycastQuery? = frame.raycastQuery(from: rightEyePosition, allowing: .estimatedPlane, alignment: .any) {
-                       let leftEyeResults = session.raycast(leftEyeRaycastQuery!)
-                       let rightEyeResults = session.raycast(rightEyeRaycastQuery!)
-                       
-                       // Process the results
-                       if let leftEyeHit = leftEyeResults.first, let rightEyeHit = rightEyeResults.first {
-                           DispatchQueue.main.async {
-                               self.leftEyePosition = SCNVector3(leftEyeHit.worldTransform.columns.3.x,
-                                                                 leftEyeHit.worldTransform.columns.3.y,
-                                                                 leftEyeHit.worldTransform.columns.3.z)
-                               
-                               
-                               self.rightEyePosition = SCNVector3(rightEyeHit.worldTransform.columns.3.x,
-                                                                  rightEyeHit.worldTransform.columns.3.y,
-                                                                  rightEyeHit.worldTransform.columns.3.z)
-                           }
-                       }
-                   }
-               }
-               
-               if let faceContour = observation.landmarks?.faceContour {
-                   let points = faceContour.normalizedPoints
-                   if let lowestPoint = points.min(by: { $0.y < $1.y }) {
-                       let chinPosition = averagePoint(from: [lowestPoint], in: observation.boundingBox, pixelBuffer: pixelBuffer)
-                       
-                       print("CHIN: \(chinPosition)")
-                       
-                       // Perform raycasting for the chin position
-                       if let chinRaycastQuery: ARRaycastQuery? = frame.raycastQuery(from: chinPosition, allowing: .estimatedPlane, alignment: .any) {
-                           let chinResults = session.raycast(chinRaycastQuery!)
-                           
-                           // Process the results
-                           if let chinHit = chinResults.first {
-                               DispatchQueue.main.async {
-                                   self.chin = SCNVector3(chinHit.worldTransform.columns.3.x,
-                                                          chinHit.worldTransform.columns.3.y,
-                                                          chinHit.worldTransform.columns.3.z)
-                                   // Update any UI elements or AR nodes here for the chin
-                               }
-                           }
-                       }
-                   }
-               }
-           }
-       }
+        try? faceDetectionHandler.perform([faceDetectionRequest], on: pixelBuffer, orientation: .right)
+        guard let observations = faceDetectionRequest.results as? [VNFaceObservation] else {
+            return
+        }
+        
+        for observation in observations {
+            updateFeaturePositions(for: observation, in: frame)
+        }
+    }
+    
+    private func performRaycastTest(in frame: ARFrame) {
+        // Example points - you can choose other points or generate them randomly
+        let testPoints: [CGPoint] = [
+            CGPoint(x: 0.25, y: 0.25), // Top-left quarter
+            CGPoint(x: 0.75, y: 0.25), // Top-right quarter
+            CGPoint(x: 0.50, y: 0.50), // Center
+            CGPoint(x: 0.25, y: 0.75), // Bottom-left quarter
+            CGPoint(x: 0.75, y: 0.75)  // Bottom-right quarter
+        ]
+
+        for testPoint in testPoints {
+            if let raycastQuery: ARRaycastQuery? = frame.raycastQuery(from: testPoint, allowing: .estimatedPlane, alignment: .any),
+               let raycastResult = session.raycast(raycastQuery!).first {
+                let position = SCNVector3(raycastResult.worldTransform.columns.3.x, raycastResult.worldTransform.columns.3.y, raycastResult.worldTransform.columns.3.z)
+                print("Raycast at \(testPoint): \(position)")
+            } else {
+                print("Raycast failed at \(testPoint)")
+            }
+        }
+    }
+    
+    private func randomPointInViewBounds(viewSize: CGSize) -> CGPoint {
+        let randomX = CGFloat.random(in: 0..<viewSize.width)
+        let randomY = CGFloat.random(in: 0..<viewSize.height)
+        return CGPoint(x: randomX, y: randomY)
+    }
+
+    private func performRandomRaycastTest(in frame: ARFrame, viewSize: CGSize, numberOfTests: Int = 10) {
+        for _ in 1...numberOfTests {
+            let randomPoint = randomPointInViewBounds(viewSize: viewSize)
+            if let raycastQuery: ARRaycastQuery? = frame.raycastQuery(from: randomPoint, allowing: .estimatedPlane, alignment: .any),
+               let raycastResult = session.raycast(raycastQuery!).first {
+                let position = SCNVector3(raycastResult.worldTransform.columns.3.x, raycastResult.worldTransform.columns.3.y, raycastResult.worldTransform.columns.3.z)
+                print("Raycast at \(randomPoint): \(position)")
+            } else {
+                print("Raycast failed at \(randomPoint)")
+            }
+        }
+    }
+    
+    // New Method: Update feature positions
+    private func updateFeaturePositions(for observation: VNFaceObservation, in frame: ARFrame) {
+        if let leftEye = observation.landmarks?.leftEye {
+            let leftEyePoints = leftEye.normalizedPoints
+            update3DPosition(for: leftEyePoints, in: observation, frame: frame) { position in
+                self.leftEyePosition3D = position
+                print("leftEyePosition3D: \(position)")
+            }
+        }
+        
+        if let rightEye = observation.landmarks?.rightEye {
+            let rightEyePoints = rightEye.normalizedPoints
+            update3DPosition(for: rightEyePoints, in: observation, frame: frame) { position in
+                self.rightEyePosition3D = position
+            }
+        }
+        
+        if let faceContour = observation.landmarks?.faceContour, let lowestPoint = faceContour.normalizedPoints.min(by: { $0.y < $1.y }) {
+            update3DPosition(for: [lowestPoint], in: observation, frame: frame) { position in
+                self.chinPosition3D = position
+            }
+        }
+    }
+    
+    // New Method: Convert 2D points to 3D using ARKit Raycasting
+    private func update3DPosition(for points: [CGPoint], in observation: VNFaceObservation, frame: ARFrame, completion: @escaping (SCNVector3?) -> Void) {
+        let averagePoint = averagePoint(from: points, in: observation.boundingBox, pixelBuffer: frame.capturedImage)
+        guard let raycastQuery: ARRaycastQuery? = frame.raycastQuery(from: averagePoint, allowing: .estimatedPlane, alignment: .any),
+              let raycastResult = session.raycast(raycastQuery!).first else {
+            completion(nil)
+            return
+        }
+        
+        let position = SCNVector3(raycastResult.worldTransform.columns.3.x, raycastResult.worldTransform.columns.3.y, raycastResult.worldTransform.columns.3.z)
+        completion(position)
+    }
     
     private func averagePoint(from normalizedPoints: [CGPoint], in boundingBox: CGRect, pixelBuffer: CVPixelBuffer) -> CGPoint {
+        // Calculate the average point in normalized Vision coordinates
+        let viewSize = UIScreen.main.bounds.size
+        
+        print("viewSize: \(viewSize)")
+        
         let sum = normalizedPoints.reduce(CGPoint.zero, { CGPoint(x: $0.x + $1.x, y: $0.y + $1.y) })
         let count = CGFloat(normalizedPoints.count)
-        let average = CGPoint(x: sum.x / count, y: sum.y / count)
+        let averageNormalized = CGPoint(x: sum.x / count, y: sum.y / count)
         
+        // Convert normalized point to UIKit coordinates
         let width = CGFloat(CVPixelBufferGetWidth(pixelBuffer))
         let height = CGFloat(CVPixelBufferGetHeight(pixelBuffer))
         let originX = boundingBox.origin.x * width
         let originY = boundingBox.origin.y * height
         
-        return CGPoint(x: average.x * boundingBox.width * width + originX,
-                       y: average.y * boundingBox.height * height + originY)
+        let averageUIKit = CGPoint(x: averageNormalized.x * boundingBox.width * width + originX,
+                                   y: averageNormalized.y * boundingBox.height * height + originY)
+        
+        // Transform to the coordinate system of the view (screen in this case)
+        // Vision's Y-coordinate is flipped compared to UIKit's
+        let transformedY = height - averageUIKit.y
+        
+        // Scale the point from the pixel buffer size to the view size
+        let scaleX = viewSize.width / width
+        let scaleY = viewSize.height / height
+        let finalPoint = CGPoint(x: averageUIKit.x * scaleX, y: transformedY * scaleY)
+        
+        print("finalPoint: \(finalPoint)")
+        
+        return finalPoint
     }
     
     func loadInit() {
@@ -337,6 +388,8 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                        let videoPixelBuffer = self.synchronizedVideoPixelBuffer {
                         self.detectFaceLandmarks(in: videoPixelBuffer, frame: frame)
                         // cloudView.setDepthFrame(depthData, withTexture: videoPixelBuffer)
+                        let viewSize = self.view.bounds.size
+                        performRandomRaycastTest(in: frame, viewSize: viewSize)
                     }
                 }
             }
