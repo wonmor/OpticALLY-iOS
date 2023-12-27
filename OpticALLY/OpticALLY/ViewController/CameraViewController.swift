@@ -84,6 +84,13 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     
     @IBOutlet weak private var cloudView: PointCloudMetalView!
     
+    deinit {
+        if let arSCNView = self.arSCNView {
+            arSCNView.session.pause()
+            print("ARSession Paused")
+        }
+    }
+    
     private func resizePixelBuffer(_ pixelBuffer: CVPixelBuffer, width: Int, height: Int) -> CVPixelBuffer? {
         // Use kCVPixelFormatType_32BGRA for BGRA format (equivalent to MTLPixelFormatBGRA8Unorm)
         let pixelFormatType = kCVPixelFormatType_32BGRA
