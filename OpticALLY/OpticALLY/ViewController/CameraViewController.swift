@@ -211,6 +211,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                 let rightEyeHitResults = sceneView.hitTest(rightEyePosition, options: [SCNHitTestOption.searchMode: SCNHitTestSearchMode.all.rawValue])
 
                 if let leftEyeHit = leftEyeHitResults.first, let rightEyeHit = rightEyeHitResults.first {
+                    print("leftEyeHit: \(leftEyeHit)")
                     DispatchQueue.main.async {
                         self.leftEyePosition3D = leftEyeHit.worldCoordinates
                         self.rightEyePosition3D = rightEyeHit.worldCoordinates
