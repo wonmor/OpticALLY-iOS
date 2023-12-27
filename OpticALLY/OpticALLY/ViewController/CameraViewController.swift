@@ -85,8 +85,8 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     @IBOutlet weak private var cloudView: PointCloudMetalView!
     
     deinit {
-        if let arSCNView = self.arSCNView {
-            arSCNView.session.pause()
+        if self.arSCNView != nil {
+            pauseARSession()
             print("ARSession Paused")
         }
     }
