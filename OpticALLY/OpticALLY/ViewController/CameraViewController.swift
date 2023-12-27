@@ -73,11 +73,6 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     private var rightEyePosition = CGPoint(x: 0, y: 0)
     private var chinPosition = CGPoint(x: 0, y: 0)
     
-    // MARK: - New Properties for 3D facial feature tracking
-   private var leftEyePosition3D: SCNVector3?
-   private var rightEyePosition3D: SCNVector3?
-   private var chinPosition3D: SCNVector3?
-    
     private var faceGeometry: ARSCNFaceGeometry?
     
     // MARK: - UI Bindings
@@ -210,35 +205,6 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                 viewModel?.leftEyePosition = leftEyePosition
                 viewModel?.rightEyePosition = rightEyePosition
                 viewModel?.chinPosition = chinPosition
-
-                // Perform hit testing for each eye position using SceneKit
-                let leftEyeHitResults = sceneView.hitTest(leftEyePosition, options: [SCNHitTestOption.searchMode: SCNHitTestSearchMode.all.rawValue])
-                let rightEyeHitResults = sceneView.hitTest(rightEyePosition, options: [SCNHitTestOption.searchMode: SCNHitTestSearchMode.all.rawValue])
-
-                print("leftEyeHitResults: \(leftEyeHitResults)")
-                
-                if let leftEyeHit = leftEyeHitResults.first, let rightEyeHit = rightEyeHitResults.first {
-                    DispatchQueue.main.async {
-                        self.leftEyePosition3D = leftEyeHit.worldCoordinates
-                        self.rightEyePosition3D = rightEyeHit.worldCoordinates
-                    }
-                }
-            }
-
-            if let faceContour = observation.landmarks?.faceContour {
-                let points = faceContour.normalizedPoints
-                if let lowestPoint = points.min(by: { $0.y < $1.y }) {
-                    chinPosition = averagePoint(from: [lowestPoint], in: observation.boundingBox, pixelBuffer: pixelBuffer)
-
-                    // Perform hit testing for the chin position using SceneKit
-                    let chinHitResults = sceneView.hitTest(chinPosition, options: [SCNHitTestOption.searchMode: SCNHitTestSearchMode.all.rawValue])
-                    
-                    if let chinHit = chinHitResults.first {
-                        DispatchQueue.main.async {
-                            self.chinPosition3D = chinHit.worldCoordinates
-                        }
-                    }
-                }
             }
         }
     }
