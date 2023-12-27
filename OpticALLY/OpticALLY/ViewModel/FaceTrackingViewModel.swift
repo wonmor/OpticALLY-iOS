@@ -14,7 +14,7 @@ class FaceTrackingViewModel: ObservableObject {
     @Published var facePitchAngle: Double = 0.0
     @Published var faceRollAngle: Double = 0.0
     @Published var pupilDistance: Double = 0.0
-    @Published var leftEyePosition = SCNVector3(0, 0, 0)
-    @Published var rightEyePosition = SCNVector3(0, 0, 0)
-    @Published var chin = SCNVector3(0, 0, 0)
+    @Published var leftEyePosition = CGPoint(x: 0, y: 0)
+    @Published var rightEyePosition = CGPoint(x: 0, y: 0)
+    @Published var chinPosition = CGPoint(x: 0, y: 0)
 }

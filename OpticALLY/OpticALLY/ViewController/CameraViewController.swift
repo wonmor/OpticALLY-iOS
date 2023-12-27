@@ -186,9 +186,9 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             yaw: viewModel?.faceYawAngle ?? 0.0,
             pitch: viewModel?.facePitchAngle ?? 0.0,
             roll: viewModel?.faceRollAngle ?? 0.0,
-            leftEyePosition: CGPoint(x: 0, y: 0),
-            rightEyePosition: CGPoint(x: 0, y: 0),
-            chin: CGPoint(x: 0, y: 0),
+            leftEyePosition: leftEyePosition,
+            rightEyePosition: rightEyePosition,
+            chin: chinPosition,
             image: imageData,
             depth: depthData
         )
@@ -206,6 +206,10 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             if let leftEye = observation.landmarks?.leftEye, let rightEye = observation.landmarks?.rightEye {
                 leftEyePosition = averagePoint(from: leftEye.normalizedPoints, in: observation.boundingBox, pixelBuffer: pixelBuffer)
                 rightEyePosition = averagePoint(from: rightEye.normalizedPoints, in: observation.boundingBox, pixelBuffer: pixelBuffer)
+                
+                viewModel?.leftEyePosition = leftEyePosition
+                viewModel?.rightEyePosition = rightEyePosition
+                viewModel?.chinPosition = chinPosition
 
                 // Perform hit testing for each eye position using SceneKit
                 let leftEyeHitResults = sceneView.hitTest(leftEyePosition, options: [SCNHitTestOption.searchMode: SCNHitTestSearchMode.all.rawValue])
