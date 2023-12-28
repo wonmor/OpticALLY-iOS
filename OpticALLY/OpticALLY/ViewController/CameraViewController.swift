@@ -79,6 +79,10 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     
     private var faceGeometry: ARSCNFaceGeometry?
     
+    private var scaleX: Float = 1.0
+    private var scaleY: Float = 1.0
+    private var scaleZ: Float = 1.0
+    
     // MARK: - UI Bindings
     @IBOutlet weak private var cameraUnavailableLabel: UILabel!
     @IBOutlet weak private var depthSmoothingSwitch: UISwitch!
@@ -185,7 +189,10 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             colorData: colorBaseAddress,
             width: commonWidth,
             height: commonHeight,
-            bytesPerRow: colorBytesPerRow // Use the correct bytes per row for color data
+            bytesPerRow: colorBytesPerRow, // Use the correct bytes per row for color data,
+            scaleX: scaleX,
+            scaleY: scaleY,
+            scaleZ: scaleZ
         )
         
         let metadata = PointCloudMetadata(
@@ -214,6 +221,9 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
 
         let scaledPointX = point2D.x * CGFloat(depthWidth)
         let scaledPointY = point2D.y * CGFloat(depthHeight)
+        
+        scaleX = Float(depthWidth)
+        scaleY = Float(depthHeight)
 
         let xInt = min(max(Int(scaledPointX), 0), depthWidth - 1)
         let yInt = min(max(Int(scaledPointY), 0), depthHeight - 1)
@@ -285,6 +295,10 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                 viewModel?.leftEyePosition = leftEyePosition
                 viewModel?.rightEyePosition = rightEyePosition
                 viewModel?.chinPosition = chinPosition
+                
+                viewModel?.leftEyePosition3D = leftEyePosition3D
+                viewModel?.rightEyePosition3D = rightEyePosition3D
+                viewModel?.chinPosition3D = chinPosition3D
             }
         }
     }

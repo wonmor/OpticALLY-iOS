@@ -177,7 +177,7 @@ struct ExternalData {
         )
     }
     
-    static func alignPointClouds() {
+    static func alignPointClouds(scaleX: Float, scaleY: Float, scaleZ: Float) {
         guard !pointCloudGeometries.isEmpty,
               !pointCloudDataArray.isEmpty,
               pointCloudGeometries.count == pointCloudDataArray.count else {
@@ -185,12 +185,11 @@ struct ExternalData {
             return
         }
         
-        // Using the first point cloud as the reference model
-        let referenceMetadata = pointCloudDataArray[0]
+        let referenceMetadata = pointCloudDataArray[0].scaled(scaleX: scaleX, scaleY: scaleY, scaleZ: scaleZ)
         
         for i in 1..<pointCloudGeometries.count {
-            let currentMetadata = pointCloudDataArray[i]
-            let geometry = pointCloudGeometries[i]
+            let currentMetadata = pointCloudDataArray[i].scaled(scaleX: scaleX, scaleY: scaleY, scaleZ: scaleZ)
+            var geometry = pointCloudGeometries[i]
             
             // Calculate translation and rotation
             let translationVector = SCNVector3(
@@ -200,25 +199,30 @@ struct ExternalData {
             )
             let rotationMatrix = rotationMatrix(from: currentMetadata.chinPosition3D, to: referenceMetadata.chinPosition3D)
             
-            // Apply translation and rotation
-            if let vertexSource = geometry.sources.first(where: { $0.semantic == .vertex }),
-               let colorSource = geometry.sources.first(where: { $0.semantic == .color }) {
-                var vertices = vertexSource.data.toArray(type: SCNVector3.self, count: vertexSource.vectorCount)
-                for j in 0..<vertices.count {
-                    vertices[j] = applyMatrixToVector3(vertices[j], with: rotationMatrix)
-                    vertices[j].x += translationVector.x
-                    vertices[j].y += translationVector.y
-                    vertices[j].z += translationVector.z
-                }
-                
-                // Update the geometry with transformed vertices
-                let newVertexSource = SCNGeometrySource(vertices: vertices)
-                let newGeometry = SCNGeometry(sources: [newVertexSource, colorSource], elements: geometry.elements)
-                pointCloudGeometries[i] = newGeometry
-            }
+            // Apply translation and rotation to geometry
+            applyTransformation(to: &geometry, translation: translationVector, rotation: rotationMatrix)
         }
     }
     
+    private static func applyTransformation(to geometry: inout SCNGeometry, translation: SCNVector3, rotation: SCNMatrix4) {
+        // Assuming geometry has vertex data
+        guard let vertexSource = geometry.sources.first(where: { $0.semantic == .vertex }) else {
+            print("Geometry does not have vertex data")
+            return
+        }
+
+        var vertices = vertexSource.data.toArray(type: SCNVector3.self, count: vertexSource.vectorCount)
+        for index in 0..<vertices.count {
+            vertices[index] = applyMatrixToVector3(vertices[index], with: rotation)
+            vertices[index] += translation // Adding SCNVector3
+        }
+
+        // Replace old vertex data with transformed vertices
+        let newVertexSource = SCNGeometrySource(vertices: vertices)
+        let newGeometry = SCNGeometry(sources: [newVertexSource], elements: geometry.elements)
+        geometry = newGeometry
+    }
+
     // Function to calculate the center of a set of vertices
     static func calculateCenter(of vertices: [SCNVector3]) -> SCNVector3 {
         var sum = SCNVector3(0, 0, 0)
@@ -260,7 +264,7 @@ struct ExternalData {
     }
     
     // Function to convert depth and color data into a point cloud geometry
-    static func createAVPointCloudGeometry(depthData: AVDepthData, colorData: UnsafePointer<UInt8>, width: Int, height: Int, bytesPerRow: Int, percentile: Float = 35.0) {
+    static func createAVPointCloudGeometry(depthData: AVDepthData, colorData: UnsafePointer<UInt8>, width: Int, height: Int, bytesPerRow: Int, scaleX: Float, scaleY: Float, scaleZ: Float, percentile: Float = 35.0) {
         var vertices: [SCNVector3] = []
         var colors: [UIColor] = []
         var depthValues: [Float] = []
@@ -377,7 +381,7 @@ struct ExternalData {
         
         pointCloudGeometries.append(pointCloudGeometry)
         
-        alignPointClouds()
+        alignPointClouds(scaleX: scaleX, scaleY: scaleY, scaleZ: scaleZ)
         
         print("Done constructing the 3D object!")
         LogManager.shared.log("Done constructing the 3D object!")
@@ -494,7 +498,7 @@ struct ExternalData {
         // Append the new geometry to the array
         pointCloudGeometries.append(newPointCloudGeometry)
         
-        alignPointClouds()
+        alignPointClouds(scaleX: <#Float#>, scaleY: <#Float#>, scaleZ: <#Float#>)
         
         print("Done constructing the 3D object!")
         LogManager.shared.log("Done constructing the 3D object!")
