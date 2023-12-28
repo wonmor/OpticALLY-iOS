@@ -351,9 +351,9 @@ class CameraViewController: UIViewController, ARSessionDelegate, VirtualContentC
                 leftEyePosition = averagePoint(from: leftEye.normalizedPoints, in: observation.boundingBox, pixelBuffer: pixelBuffer)
                 rightEyePosition = averagePoint(from: rightEye.normalizedPoints, in: observation.boundingBox, pixelBuffer: pixelBuffer)
                 
-                leftEyePosition3D = findClosest3DPoint(to: leftEyePosition, within: 15.0, in: depthData)!
-                rightEyePosition3D = findClosest3DPoint(to: rightEyePosition, within: 15.0, in: depthData)!
-                chinPosition3D = findClosest3DPoint(to: chinPosition, within: 15.0, in: depthData)!
+                leftEyePosition3D = findClosest3DPoint(to: leftEyePosition, within: 15.0, in: depthData) ?? SCNVector3(0, 0, 0)
+                rightEyePosition3D = findClosest3DPoint(to: rightEyePosition, within: 15.0, in: depthData) ?? SCNVector3(0, 0, 0)
+                chinPosition3D = findClosest3DPoint(to: chinPosition, within: 15.0, in: depthData) ?? SCNVector3(0, 0, 0)
                 
                 print("leftEyePosition3D: \(leftEyePosition3D)")
                 
