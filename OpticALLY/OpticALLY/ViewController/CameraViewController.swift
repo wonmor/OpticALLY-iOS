@@ -8,6 +8,7 @@
 import SwiftUI
 import UIKit
 import ARKit
+import SceneKit
 import AVFoundation
 import Vision
 
@@ -46,8 +47,26 @@ import Vision
 ///
 /// This controller is central to the 3D face tracking and point cloud generation capabilities of the app.
 /// It integrates ARKit and AVFoundation frameworks for advanced data processing and rendering.
+///
 
-class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelegate, AVCaptureDataOutputSynchronizerDelegate {
+/// Size of the generated face texture
+private let faceTextureSize = 1024 //px
+
+/// Should the face mesh be filled in? (i.e. fill in the eye and mouth holes with geometry)
+private let fillMesh = true
+
+protocol VirtualContentController: ARSCNViewDelegate {
+    /// The root node for the virtual content.
+    var contentNode: SCNNode? { get set }
+    
+    func renderer(_ renderer: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode?
+    
+    func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor)
+}
+
+class CameraViewController: UIViewController, ARSessionDelegate, VirtualContentController, AVCaptureDataOutputSynchronizerDelegate {
+    var contentNode: SCNNode?
+    
     // MARK: - Class Parameters
     var viewModel: FaceTrackingViewModel?
     
@@ -57,6 +76,14 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     private var outputSynchronizer: AVCaptureDataOutputSynchronizer?
     private var videoDataOutput = AVCaptureVideoDataOutput()
     private var depthDataOutput = AVCaptureDepthDataOutput()
+    
+    private var faceUvGenerator: FaceTextureGenerator!
+    private var scnFaceGeometry: ARSCNFaceGeometry!
+    
+    /// Secondary scene view that shows the captured face
+    private var previewSceneView: SCNView!
+    private var previewFaceNode: SCNNode!
+    private var previewFaceGeometry: ARSCNFaceGeometry!
     
     private var sessionQueue = DispatchQueue(label: "session queue")
     private var dataOutputQueue = DispatchQueue(label: "data output queue")
@@ -78,6 +105,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     private var chinPosition3D = SCNVector3(0, 0, 0)
     
     private var faceGeometry: ARSCNFaceGeometry?
+    private var faceNode: SCNNode?
     
     private var scaleX: Float = 1.0
     private var scaleY: Float = 1.0
@@ -97,6 +125,39 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             pauseARSession()
             print("ARSession Paused")
         }
+    }
+    
+    public func renderer(_: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
+        guard anchor is ARFaceAnchor else {
+            return nil
+        }
+                
+        let node = SCNNode(geometry: scnFaceGeometry)
+        scnFaceGeometry.firstMaterial?.diffuse.contents = faceUvGenerator.texture
+        return node
+    }
+     
+    public func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
+        guard let faceAnchor = anchor as? ARFaceAnchor,
+              let frame = arSCNView!.session.currentFrame
+        else {
+            return
+        }
+        
+        self.previewFaceGeometry.update(from: faceAnchor.geometry)
+
+        scnFaceGeometry.update(from: faceAnchor.geometry)
+        faceUvGenerator.update(frame: frame, scene: self.arSCNView!.scene, headNode: node, geometry: scnFaceGeometry)
+    }
+    
+    
+    func convertToMatrix4(_ transform: CGAffineTransform) -> matrix_float4x4 {
+        return matrix_float4x4(
+            SIMD4<Float>(Float(transform.a), Float(transform.b), 0, 0),
+            SIMD4<Float>(Float(transform.c), Float(transform.d), 0, 0),
+            SIMD4<Float>(0, 0, 1, 0),
+            SIMD4<Float>(Float(transform.tx), Float(transform.ty), 0, 1)
+        )
     }
     
     private func resizePixelBuffer(_ pixelBuffer: CVPixelBuffer, width: Int, height: Int) -> CVPixelBuffer? {
@@ -206,7 +267,8 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             rightEyePosition3D: rightEyePosition3D,
             chinPosition3D: chinPosition3D,
             image: imageData,
-            depth: depthData
+            depth: depthData,
+            faceGeometry: previewFaceGeometry!
         )
                                           
         ExternalData.pointCloudDataArray.append(metadata)
@@ -346,18 +408,53 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         switchSession(toARSession: true)
         configureCloudView()
         addAndConfigureSwiftUIView()
+        
+        self.view.bringSubviewToFront(previewSceneView)
     }
 
     private func configureARSCNView() {
         arSCNView = ARSCNView(frame: view.bounds)
-        arSCNView!.isHidden = true
+        arSCNView!.isHidden = false
         view.addSubview(arSCNView!) // Add to view hierarchy
         arSCNView!.session.delegate = self
         
         // Initialize face geometry
         if let device = arSCNView?.device {
-            faceGeometry = ARSCNFaceGeometry(device: device, fillMesh: true)
-            faceGeometry!.firstMaterial?.fillMode = .fill
+            self.scnFaceGeometry = ARSCNFaceGeometry(device: self.arSCNView!.device!, fillMesh: fillMesh)
+            
+            self.faceUvGenerator = FaceTextureGenerator(
+                device: self.arSCNView!.device!,
+                library: self.arSCNView!.device!.makeDefaultLibrary()!,
+                viewportSize: self.view.bounds.size,
+                face: self.scnFaceGeometry,
+                textureSize: faceTextureSize)
+            
+            // Preview
+            previewSceneView = SCNView(frame: CGRect(x: 0, y: 0, width: 200, height: 200), options: nil)
+            previewSceneView.rendersContinuously = true
+            previewSceneView.backgroundColor = UIColor.black
+            previewSceneView.allowsCameraControl = true
+            self.view.addSubview(previewSceneView)
+            previewSceneView.scene = SCNScene()
+            
+            let camera = SCNCamera()
+            camera.zNear = 0.001
+            camera.zFar = 1000
+            
+            let cameraNode = SCNNode()
+            cameraNode.camera = camera
+            cameraNode.position = SCNVector3Make(0, 0, 1)
+            previewSceneView.scene!.rootNode.addChildNode(cameraNode)
+            cameraNode.look(at: SCNVector3Zero)
+            
+            self.previewFaceGeometry = ARSCNFaceGeometry(device: self.arSCNView!.device!, fillMesh: true)
+            self.previewFaceNode = SCNNode(geometry: self.previewFaceGeometry)
+            let faceScale = Float(4.0)
+            self.previewFaceNode.scale = SCNVector3(x: faceScale, y: faceScale, z: faceScale)
+            self.previewFaceGeometry.firstMaterial!.diffuse.contents = faceUvGenerator.texture
+            self.previewFaceGeometry.firstMaterial!.isDoubleSided = true
+
+            previewSceneView.scene!.rootNode.addChildNode(self.previewFaceNode!)
         }
     }
 

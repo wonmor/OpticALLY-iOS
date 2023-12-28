@@ -29,6 +29,8 @@ struct PointCloudMetadata {
     
     var image: CVPixelBuffer
     var depth: AVDepthData
+    
+    var faceGeometry: ARSCNFaceGeometry
 }
 
 /// ExternalData is a central repository for managing and processing 3D depth and color data, primarily focusing on creating point cloud geometries and exporting them in PLY format. It enables the integration of various sensory data inputs and computational geometry processing.
@@ -179,33 +181,6 @@ struct ExternalData {
             m31: kz * kx * (1 - c) - ky * s, m32: kz * ky * (1 - c) + kx * s, m33: c + kz * kz * (1 - c),    m34: 0.0,
             m41: 0.0,                    m42: 0.0,                    m43: 0.0,                    m44: 1.0
         )
-    }
-    
-    static func alignPointClouds(scaleX: Float, scaleY: Float, scaleZ: Float) {
-        guard !pointCloudGeometries.isEmpty,
-              !pointCloudDataArray.isEmpty,
-              pointCloudGeometries.count == pointCloudDataArray.count else {
-            print("Data arrays are not properly initialized or don't match in count.")
-            return
-        }
-        
-        let referenceMetadata = pointCloudDataArray[0].scaled(scaleX: scaleX, scaleY: scaleY, scaleZ: scaleZ)
-        
-        for i in 1..<pointCloudGeometries.count {
-            let currentMetadata = pointCloudDataArray[i].scaled(scaleX: scaleX, scaleY: scaleY, scaleZ: scaleZ)
-            var geometry = pointCloudGeometries[i]
-            
-            // Calculate translation and rotation
-            let translationVector = SCNVector3(
-                x: referenceMetadata.leftEyePosition3D.x - currentMetadata.leftEyePosition3D.x,
-                y: referenceMetadata.leftEyePosition3D.y - currentMetadata.leftEyePosition3D.y,
-                z: referenceMetadata.leftEyePosition3D.z - currentMetadata.leftEyePosition3D.z
-            )
-            let rotationMatrix = rotationMatrix(from: currentMetadata.chinPosition3D, to: referenceMetadata.chinPosition3D)
-            
-            // Apply translation and rotation to geometry
-            applyTransformation(to: &geometry, translation: translationVector, rotation: rotationMatrix)
-        }
     }
     
     private static func applyTransformation(to geometry: inout SCNGeometry, translation: SCNVector3, rotation: SCNMatrix4) {

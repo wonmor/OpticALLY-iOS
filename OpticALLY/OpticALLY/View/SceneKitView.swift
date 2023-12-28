@@ -20,20 +20,24 @@ struct SceneKitView: UIViewRepresentable {
         scnView.scene = scene
 
         // Iterate through geometries and add each to the scene
-        for geometry in ExternalData.pointCloudGeometries {
+        for (index, geometry) in ExternalData.pointCloudGeometries.enumerated() {
             let node = SCNNode(geometry: geometry)
             node.position = SCNVector3(x: 0, y: 0, z: 0)
             node.eulerAngles.z = .pi / -2
+            
+            // scene.rootNode.addChildNode(node)
 
-            scene.rootNode.addChildNode(node)
+            // Check if there's corresponding face geometry data
+            if index < ExternalData.pointCloudDataArray.count {
+                let faceGeometryData = ExternalData.pointCloudDataArray[index].faceGeometry
+                let faceNode = SCNNode(geometry: faceGeometryData)
+                // Position and orient the face geometry
+                faceNode.position = faceGeometryData.boundingSphere.center
+                
+                scene.rootNode.addChildNode(faceNode)
+            }
         }
-
-        // Create and add a giant sphere in the middle
-        let sphereGeometry = SCNSphere(radius: 5.0) // Adjust the radius as needed
-        let sphereNode = SCNNode(geometry: sphereGeometry)
-        sphereNode.position = SCNVector3(x: 0, y: 0, z: 0) // Centered in the scene
-        scene.rootNode.addChildNode(sphereNode)
-
+        
         scnView.autoenablesDefaultLighting = true
         scnView.allowsCameraControl = true
         scnView.backgroundColor = UIColor.white
@@ -43,7 +47,6 @@ struct SceneKitView: UIViewRepresentable {
 
     func updateUIView(_ uiView: SCNView, context: Context) {}
 }
-
 
 struct SceneKitUSDZView: UIViewRepresentable {
     var usdzFileName: String

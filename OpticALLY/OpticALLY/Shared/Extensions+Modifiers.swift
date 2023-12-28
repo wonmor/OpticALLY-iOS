@@ -15,24 +15,6 @@ func += (left: inout SCNVector3, right: SCNVector3) {
     left = SCNVector3(left.x + right.x, left.y + right.y, left.z + right.z)
 }
 
-extension PointCloudMetadata {
-    func scaled(scaleX: Float, scaleY: Float, scaleZ: Float) -> PointCloudMetadata {
-        return PointCloudMetadata(
-            yaw: self.yaw, // Assuming yaw, pitch, roll don't need scaling
-            pitch: self.pitch,
-            roll: self.roll,
-            leftEyePosition: self.leftEyePosition, // Assuming 2D positions don't need scaling
-            rightEyePosition: self.rightEyePosition,
-            chinPosition: self.chinPosition,
-            leftEyePosition3D: SCNVector3(self.leftEyePosition3D.x * scaleX, self.leftEyePosition3D.y * scaleY, self.leftEyePosition3D.z * scaleZ),
-            rightEyePosition3D: SCNVector3(self.rightEyePosition3D.x * scaleX, self.rightEyePosition3D.y * scaleY, self.rightEyePosition3D.z * scaleZ),
-            chinPosition3D: SCNVector3(self.chinPosition3D.x * scaleX, self.chinPosition3D.y * scaleY, self.chinPosition3D.z * scaleZ),
-            image: self.image, // Assuming image and depth are not scaled here
-            depth: self.depth
-        )
-    }
-}
-
 extension ARSession {
     // Returns the original capturedImage from the current frame
     func getCapturedImage() -> CVPixelBuffer? {

@@ -52,6 +52,11 @@
 		969E42EE2ADC9D9E00E77BA7 /* promo.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 969E42ED2ADC9D9E00E77BA7 /* promo.mp4 */; };
 		969E42EF2ADC9D9E00E77BA7 /* promo.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 969E42ED2ADC9D9E00E77BA7 /* promo.mp4 */; };
 		969E42F02ADC9D9E00E77BA7 /* promo.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 969E42ED2ADC9D9E00E77BA7 /* promo.mp4 */; };
+		96B64F6B2B3D8AF70003E06D /* VideoTexturedFace.shader in Resources */ = {isa = PBXBuildFile; fileRef = 96B64F6A2B3D8AF70003E06D /* VideoTexturedFace.shader */; };
+		96B64F6D2B3D8FCA0003E06D /* faceTexture.metal in Sources */ = {isa = PBXBuildFile; fileRef = 96B64F6C2B3D8FCA0003E06D /* faceTexture.metal */; };
+		96B64F702B3D90410003E06D /* TextureToImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96B64F6E2B3D90410003E06D /* TextureToImage.swift */; };
+		96B64F712B3D90410003E06D /* FaceTextureGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96B64F6F2B3D90410003E06D /* FaceTextureGenerator.swift */; };
+		96B64F732B3D90490003E06D /* ScnMatrix.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96B64F722B3D90490003E06D /* ScnMatrix.swift */; };
 		96BC2ABE2AC5E9D60081550B /* DevicePpi in Frameworks */ = {isa = PBXBuildFile; productRef = 96BC2ABD2AC5E9D60081550B /* DevicePpi */; };
 		96F0CF182B12A34400417716 /* ExternalData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF172B12A34400417716 /* ExternalData.swift */; };
 		96F0CF1A2B12A39100417716 /* ExportViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF192B12A39100417716 /* ExportViewModel.swift */; };
@@ -121,6 +126,11 @@
 		969AC2812AB7554C0096892E /* Extensions+Modifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Extensions+Modifiers.swift"; sourceTree = "<group>"; };
 		969DF1C62B12916900FA9ABE /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		969E42ED2ADC9D9E00E77BA7 /* promo.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = promo.mp4; sourceTree = "<group>"; };
+		96B64F6A2B3D8AF70003E06D /* VideoTexturedFace.shader */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = VideoTexturedFace.shader; sourceTree = "<group>"; };
+		96B64F6C2B3D8FCA0003E06D /* faceTexture.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = faceTexture.metal; sourceTree = "<group>"; };
+		96B64F6E2B3D90410003E06D /* TextureToImage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TextureToImage.swift; sourceTree = "<group>"; };
+		96B64F6F2B3D90410003E06D /* FaceTextureGenerator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FaceTextureGenerator.swift; sourceTree = "<group>"; };
+		96B64F722B3D90490003E06D /* ScnMatrix.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScnMatrix.swift; sourceTree = "<group>"; };
 		96F0CF172B12A34400417716 /* ExternalData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalData.swift; sourceTree = "<group>"; };
 		96F0CF192B12A39100417716 /* ExportViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportViewModel.swift; sourceTree = "<group>"; };
 		96F0CF1B2B12A3D500417716 /* ExportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportView.swift; sourceTree = "<group>"; };
@@ -201,6 +211,7 @@
 			isa = PBXGroup;
 			children = (
 				96491C5E2AFD746300FD3666 /* ConsoleOutputCatcher.swift */,
+				96B64F722B3D90490003E06D /* ScnMatrix.swift */,
 				969AC2812AB7554C0096892E /* Extensions+Modifiers.swift */,
 			);
 			path = Shared;
@@ -242,6 +253,8 @@
 				96F0CF172B12A34400417716 /* ExternalData.swift */,
 				9680F7DA2B2283B200F38A6F /* CapturedImageSampler.swift */,
 				96F0CF212B12A51700417716 /* LogManager.swift */,
+				96B64F6F2B3D90410003E06D /* FaceTextureGenerator.swift */,
+				96B64F6E2B3D90410003E06D /* TextureToImage.swift */,
 				96FC61582B146D3A00ACC840 /* HapticManager.swift */,
 				9679F8BA2AD0907900686F13 /* Info.plist */,
 				967EE0682AAE06FE000C4D5F /* Assets.xcassets */,
@@ -305,6 +318,8 @@
 		969E42E82ADC9ABD00E77BA7 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				96B64F6C2B3D8FCA0003E06D /* faceTexture.metal */,
+				96B64F6A2B3D8AF70003E06D /* VideoTexturedFace.shader */,
 				96FCF7312B1D65DE00F450A2 /* Male_Base_Head.usdz */,
 				9646DC6B2B1064F500092549 /* glasses.mp4 */,
 				969E42ED2ADC9D9E00E77BA7 /* promo.mp4 */,
@@ -434,6 +449,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				96B64F6B2B3D8AF70003E06D /* VideoTexturedFace.shader in Resources */,
 				969E42EE2ADC9D9E00E77BA7 /* promo.mp4 in Resources */,
 				967EE06C2AAE06FE000C4D5F /* Preview Assets.xcassets in Resources */,
 				9679F8D82AD0907A00686F13 /* Main.storyboard in Resources */,
@@ -474,6 +490,7 @@
 				96F0CF222B12A51700417716 /* LogManager.swift in Sources */,
 				961D67E52B12C64A00DBB883 /* CreditsView.swift in Sources */,
 				96FC61592B146D3A00ACC840 /* HapticManager.swift in Sources */,
+				96B64F732B3D90490003E06D /* ScnMatrix.swift in Sources */,
 				96F0CF1C2B12A3D500417716 /* ExportView.swift in Sources */,
 				961D67E32B12BDFC00DBB883 /* SceneKitView.swift in Sources */,
 				9679F8DC2AD0907A00686F13 /* PassThrough.metal in Sources */,
@@ -481,16 +498,19 @@
 				9679F8DF2AD0907A00686F13 /* PointCloudMetalView.mm in Sources */,
 				969AC2822AB7554C0096892E /* Extensions+Modifiers.swift in Sources */,
 				9679F8D12AD0907A00686F13 /* AAPLTransforms.mm in Sources */,
+				96B64F702B3D90410003E06D /* TextureToImage.swift in Sources */,
 				96F0CF1A2B12A39100417716 /* ExportViewModel.swift in Sources */,
 				967EE0672AAE06FB000C4D5F /* ContentView.swift in Sources */,
 				9679F8D42AD0907A00686F13 /* PreviewMetalView.swift in Sources */,
 				9679F8DD2AD0907A00686F13 /* CameraViewController.swift in Sources */,
 				963DF9B32AFEDAF700E6E589 /* PostScanView.swift in Sources */,
+				96B64F6D2B3D8FCA0003E06D /* faceTexture.metal in Sources */,
 				9679F8E12AD0907A00686F13 /* CameraView.swift in Sources */,
 				9680F7DF2B22D93400F38A6F /* FaceTrackingViewModel.swift in Sources */,
 				9680F7DD2B22D6FD00F38A6F /* ARFaceTrackingView.swift in Sources */,
 				9679F8D52AD0907A00686F13 /* HistogramCalculator.m in Sources */,
 				969AC2802AB7550C0096892E /* IntroductionView.swift in Sources */,
+				96B64F712B3D90410003E06D /* FaceTextureGenerator.swift in Sources */,
 				9679F8CF2AD0907A00686F13 /* VideoMixer.swift in Sources */,
 				9679F8D22AD0907A00686F13 /* Mixer.metal in Sources */,
 				967EE0652AAE06FB000C4D5F /* OpticALLYApp.swift in Sources */,
