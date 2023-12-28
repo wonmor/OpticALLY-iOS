@@ -12,10 +12,6 @@ import SceneKit.ModelIO
 import ARKit
 
 struct SceneKitView: UIViewRepresentable {
-    init() {
-        // ExternalData.alignPointClouds()
-    }
-    
     func makeUIView(context: Context) -> SCNView {
         let scnView = SCNView()
 
@@ -31,6 +27,12 @@ struct SceneKitView: UIViewRepresentable {
 
             scene.rootNode.addChildNode(node)
         }
+
+        // Create and add a giant sphere in the middle
+        let sphereGeometry = SCNSphere(radius: 5.0) // Adjust the radius as needed
+        let sphereNode = SCNNode(geometry: sphereGeometry)
+        sphereNode.position = SCNVector3(x: 0, y: 0, z: 0) // Centered in the scene
+        scene.rootNode.addChildNode(sphereNode)
 
         scnView.autoenablesDefaultLighting = true
         scnView.allowsCameraControl = true

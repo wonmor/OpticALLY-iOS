@@ -385,7 +385,7 @@ struct ExternalData {
         
         pointCloudGeometries.append(pointCloudGeometry)
         
-        alignPointClouds(scaleX: scaleX, scaleY: scaleY, scaleZ: scaleZ)
+        // alignPointClouds(scaleX: scaleX, scaleY: scaleY, scaleZ: scaleZ)
         
         print("Done constructing the 3D object!")
         LogManager.shared.log("Done constructing the 3D object!")
@@ -502,7 +502,7 @@ struct ExternalData {
         // Append the new geometry to the array
         pointCloudGeometries.append(newPointCloudGeometry)
         
-        alignPointClouds(scaleX: scaleX, scaleY: scaleY, scaleZ: scaleZ)
+        // alignPointClouds(scaleX: scaleX, scaleY: scaleY, scaleZ: scaleZ)
         
         print("Done constructing the 3D object!")
         LogManager.shared.log("Done constructing the 3D object!")
