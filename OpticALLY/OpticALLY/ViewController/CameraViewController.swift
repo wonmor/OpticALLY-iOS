@@ -224,6 +224,9 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         
         scaleX = Float(depthWidth)
         scaleY = Float(depthHeight)
+        
+        ExternalData.scaleX = scaleX
+        ExternalData.scaleY = scaleY
 
         let xInt = min(max(Int(scaledPointX), 0), depthWidth - 1)
         let yInt = min(max(Int(scaledPointY), 0), depthHeight - 1)

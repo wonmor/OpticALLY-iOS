@@ -71,6 +71,10 @@ struct ExternalData {
     static var depthWidth: Int = 640
     static var depthHeight: Int = 480
     
+    static var scaleX: Float = 0.0
+    static var scaleY: Float = 0.0
+    static var scaleZ: Float = 0.0
+    
     var vertices: [SCNVector3] = []
     var colors: [UIColor] = []
     
@@ -498,7 +502,7 @@ struct ExternalData {
         // Append the new geometry to the array
         pointCloudGeometries.append(newPointCloudGeometry)
         
-        alignPointClouds(scaleX: <#Float#>, scaleY: <#Float#>, scaleZ: <#Float#>)
+        alignPointClouds(scaleX: scaleX, scaleY: scaleY, scaleZ: scaleZ)
         
         print("Done constructing the 3D object!")
         LogManager.shared.log("Done constructing the 3D object!")
