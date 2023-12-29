@@ -25,14 +25,11 @@ struct SceneKitView: UIViewRepresentable {
             node.position = SCNVector3(x: 0, y: 0, z: 0)
             node.eulerAngles.z = .pi / -2
             
-            // scene.rootNode.addChildNode(node)
+            scene.rootNode.addChildNode(node)
 
             // Check if there's corresponding face geometry data
             if index < ExternalData.pointCloudDataArray.count {
-                let faceGeometryData = ExternalData.pointCloudDataArray[index].faceGeometry
-                let faceNode = SCNNode(geometry: faceGeometryData)
-                // Position and orient the face geometry
-                faceNode.position = faceGeometryData.boundingSphere.center
+                let faceNode = ExternalData.pointCloudDataArray[index].faceNode
                 
                 scene.rootNode.addChildNode(faceNode)
             }

@@ -30,7 +30,7 @@ struct PointCloudMetadata {
     var image: CVPixelBuffer
     var depth: AVDepthData
     
-    var faceGeometry: ARSCNFaceGeometry
+    var faceNode: SCNNode
 }
 
 /// ExternalData is a central repository for managing and processing 3D depth and color data, primarily focusing on creating point cloud geometries and exporting them in PLY format. It enables the integration of various sensory data inputs and computational geometry processing.

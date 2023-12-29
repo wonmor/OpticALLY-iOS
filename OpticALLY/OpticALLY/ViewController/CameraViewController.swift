@@ -289,7 +289,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             chinPosition3D: chinPosition3D,
             image: imageData,
             depth: depthData,
-            faceGeometry: previewFaceGeometry!
+            faceNode: previewFaceNode
         )
                                           
         ExternalData.pointCloudDataArray.append(metadata)
