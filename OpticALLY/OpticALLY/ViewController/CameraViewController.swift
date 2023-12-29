@@ -75,6 +75,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     private var previewSceneView: SCNView!
     private var previewFaceNode: SCNNode!
     private var previewFaceGeometry: ARSCNFaceGeometry!
+    private var previewFaceAnchor: ARFaceAnchor!
     
     private var sessionQueue = DispatchQueue(label: "session queue")
     private var dataOutputQueue = DispatchQueue(label: "data output queue")
@@ -97,6 +98,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     
     private var faceGeometry: ARSCNFaceGeometry?
     private var faceNode: SCNNode?
+    private var faceAnchor: ARFaceAnchor?
     
     private var scaleX: Float = 1.0
     private var scaleY: Float = 1.0
@@ -169,6 +171,8 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         
         scnFaceGeometry.update(from: faceAnchor.geometry)
         faceUvGenerator.update(frame: frame, scene: self.arSCNView!.scene, headNode: node, geometry: scnFaceGeometry)
+        
+        self.previewFaceAnchor = faceAnchor
     }
 
     
@@ -289,7 +293,8 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             chinPosition3D: chinPosition3D,
             image: imageData,
             depth: depthData,
-            faceNode: previewFaceNode
+            faceNode: previewFaceNode,
+            faceAnchor: previewFaceAnchor
         )
                                           
         ExternalData.pointCloudDataArray.append(metadata)
@@ -473,6 +478,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             self.previewFaceNode.scale = SCNVector3(x: faceScale, y: faceScale, z: faceScale)
             self.previewFaceGeometry.firstMaterial!.diffuse.contents = faceUvGenerator.texture
             self.previewFaceGeometry.firstMaterial!.isDoubleSided = true
+            self.previewFaceAnchor = faceAnchor
 
             previewSceneView.scene!.rootNode.addChildNode(self.previewFaceNode!)
         }
@@ -556,6 +562,8 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             let imageSampler = try CapturedImageSampler(arSession: session, viewController: self)
             
             guard let faceAnchor = frame.anchors.compactMap({ $0 as? ARFaceAnchor }).first else { return }
+            
+            self.faceAnchor = faceAnchor
             
             DispatchQueue.main.async { [self] in
                 self.synchronizedDepthData = frame.capturedDepthData
