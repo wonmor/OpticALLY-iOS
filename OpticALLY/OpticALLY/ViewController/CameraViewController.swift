@@ -119,7 +119,6 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     }
     
     public func renderer(_: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
-        print("running 2")
         guard anchor is ARFaceAnchor else {
             return nil
         }
@@ -130,18 +129,48 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     }
      
     public func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
-        print("running 1")
+        guard let faceAnchor = anchor as? ARFaceAnchor else {
+            return
+        }
+        
         guard let faceAnchor = anchor as? ARFaceAnchor,
               let frame = arSCNView!.session.currentFrame
         else {
             return
         }
-        
+
+        // Update face geometry
         self.previewFaceGeometry.update(from: faceAnchor.geometry)
 
+        // Extract the Euler angles from the viewModel
+        let yawAngle = viewModel?.faceYawAngle ?? 0.0
+        let pitchAngle = viewModel?.facePitchAngle ?? 0.0
+        let rollAngle = viewModel?.faceRollAngle ?? 0.0
+
+        // Convert angles to radians and then to Float
+        let yaw = Float(yawAngle * .pi / 180)
+        let pitch = Float(pitchAngle * .pi / 180)
+        let roll = Float(rollAngle * .pi / 180)
+
+        // Create rotation matrices
+        let rotationY = SCNMatrix4MakeRotation(yaw, 0, 1, 0)
+        let rotationX = SCNMatrix4MakeRotation(pitch, 1, 0, 0)
+        let rotationZ = SCNMatrix4MakeRotation(roll, 0, 0, 1)
+
+        // Combine rotations
+        let rotation = SCNMatrix4Mult(SCNMatrix4Mult(rotationZ, rotationX), rotationY)
+
+        // Set the transform of the previewFaceNode
+        self.previewFaceNode.transform = rotation
+
+        // Match the world position of the faceAnchor
+        let worldTransform = SCNMatrix4(faceAnchor.transform)// Convert simd_float4x4 to SCNMatrix4
+        self.previewFaceNode.worldPosition = SCNVector3(worldTransform.m41, worldTransform.m42, worldTransform.m43)
+        
         scnFaceGeometry.update(from: faceAnchor.geometry)
         faceUvGenerator.update(frame: frame, scene: self.arSCNView!.scene, headNode: node, geometry: scnFaceGeometry)
     }
+
     
     func convertToMatrix4(_ transform: CGAffineTransform) -> matrix_float4x4 {
         return matrix_float4x4(
