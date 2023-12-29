@@ -32,6 +32,7 @@ struct SceneKitView: UIViewRepresentable {
 
             // Add corresponding face geometry data
             if index < ExternalData.pointCloudDataArray.count {
+                print("faceNode, yup!")
                 let faceNode = ExternalData.pointCloudDataArray[index].faceNode
                 parentNode.addChildNode(faceNode)
             }
