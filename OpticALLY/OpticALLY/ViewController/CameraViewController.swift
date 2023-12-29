@@ -55,16 +55,7 @@ private let faceTextureSize = 1024 //px
 /// Should the face mesh be filled in? (i.e. fill in the eye and mouth holes with geometry)
 private let fillMesh = true
 
-protocol VirtualContentController: ARSCNViewDelegate {
-    /// The root node for the virtual content.
-    var contentNode: SCNNode? { get set }
-    
-    func renderer(_ renderer: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode?
-    
-    func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor)
-}
-
-class CameraViewController: UIViewController, ARSessionDelegate, VirtualContentController, AVCaptureDataOutputSynchronizerDelegate {
+class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelegate, AVCaptureDataOutputSynchronizerDelegate {
     var contentNode: SCNNode?
     
     // MARK: - Class Parameters
@@ -128,6 +119,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, VirtualContentC
     }
     
     public func renderer(_: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
+        print("running 2")
         guard anchor is ARFaceAnchor else {
             return nil
         }
@@ -138,6 +130,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, VirtualContentC
     }
      
     public func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
+        print("running 1")
         guard let faceAnchor = anchor as? ARFaceAnchor,
               let frame = arSCNView!.session.currentFrame
         else {
@@ -149,7 +142,6 @@ class CameraViewController: UIViewController, ARSessionDelegate, VirtualContentC
         scnFaceGeometry.update(from: faceAnchor.geometry)
         faceUvGenerator.update(frame: frame, scene: self.arSCNView!.scene, headNode: node, geometry: scnFaceGeometry)
     }
-    
     
     func convertToMatrix4(_ transform: CGAffineTransform) -> matrix_float4x4 {
         return matrix_float4x4(
@@ -400,23 +392,13 @@ class CameraViewController: UIViewController, ARSessionDelegate, VirtualContentC
 
         return finalPoint
     }
-    
-    func loadInit() {
-        configureARSCNView()
-        configureGestureRecognizers()
-        configureAVCaptureSession()
-        switchSession(toARSession: true)
-        configureCloudView()
-        addAndConfigureSwiftUIView()
-        
-        self.view.bringSubviewToFront(previewSceneView)
-    }
 
     private func configureARSCNView() {
         arSCNView = ARSCNView(frame: view.bounds)
         arSCNView!.isHidden = false
         view.addSubview(arSCNView!) // Add to view hierarchy
         arSCNView!.session.delegate = self
+        arSCNView!.delegate = self
         
         // Initialize face geometry
         if let device = arSCNView?.device {
@@ -470,10 +452,29 @@ class CameraViewController: UIViewController, ARSessionDelegate, VirtualContentC
         }
     }
     
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        arSCNView!.session.run(ARFaceTrackingConfiguration(),
+                              options: [.removeExistingAnchors,
+                                        .resetTracking,
+                                        .resetSceneReconstruction,
+                                        .stopTrackedRaycasts])
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        loadInit()
+        configureARSCNView()
+        configureGestureRecognizers()
+        configureAVCaptureSession()
+        switchSession(toARSession: true)
+    
+        configureCloudView()
+        addAndConfigureSwiftUIView()
+        
+        self.view.bringSubviewToFront(previewSceneView)
     }
     
     private func configureCloudView() {
