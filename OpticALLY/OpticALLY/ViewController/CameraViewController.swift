@@ -439,14 +439,23 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                 viewportSize: self.view.bounds.size,
                 face: self.scnFaceGeometry,
                 textureSize: faceTextureSize)
-            
-            // Preview
-            previewSceneView = SCNView(frame: CGRect(x: 0, y: 0, width: 200, height: 200), options: nil)
+
+            // Initialize and configure previewSceneView
+            previewSceneView = SCNView()
+            previewSceneView.translatesAutoresizingMaskIntoConstraints = false
             previewSceneView.rendersContinuously = true
             previewSceneView.backgroundColor = UIColor.black
             previewSceneView.allowsCameraControl = true
             self.view.addSubview(previewSceneView)
             previewSceneView.scene = SCNScene()
+
+            // Setup constraints for previewSceneView
+            NSLayoutConstraint.activate([
+                previewSceneView.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
+                previewSceneView.centerYAnchor.constraint(equalTo: self.view.centerYAnchor),
+                previewSceneView.widthAnchor.constraint(equalToConstant: 200),
+                previewSceneView.heightAnchor.constraint(equalToConstant: 200)
+            ])
             
             let camera = SCNCamera()
             camera.zNear = 0.001
