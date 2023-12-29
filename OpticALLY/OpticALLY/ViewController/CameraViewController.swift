@@ -452,9 +452,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             // Setup constraints for previewSceneView
             NSLayoutConstraint.activate([
                 previewSceneView.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
-                previewSceneView.centerYAnchor.constraint(equalTo: self.view.centerYAnchor),
                 previewSceneView.widthAnchor.constraint(equalToConstant: 200),
-                previewSceneView.heightAnchor.constraint(equalToConstant: 200)
             ])
             
             let camera = SCNCamera()
