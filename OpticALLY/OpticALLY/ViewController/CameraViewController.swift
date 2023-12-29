@@ -124,12 +124,31 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         guard anchor is ARFaceAnchor else {
             return nil
         }
-                
+        
         let node = SCNNode(geometry: scnFaceGeometry)
         scnFaceGeometry.firstMaterial?.diffuse.contents = faceUvGenerator.texture
         return node
     }
-     
+    
+    
+    func updatePupillaryDistance() {
+        // Step 1: Get 3D positions of both eyes
+        // Assuming leftEyePosition3D and rightEyePosition3D are already updated
+        // in the ARSessionDelegate methods
+        
+        // Step 2: Compute the Euclidean distance between the eyes
+        let xDistance = rightEyePosition3D.x - leftEyePosition3D.x
+        let yDistance = rightEyePosition3D.y - leftEyePosition3D.y
+        let zDistance = rightEyePosition3D.z - leftEyePosition3D.z
+        let distanceInMeters = sqrt(pow(xDistance, 2) + pow(yDistance, 2) + pow(zDistance, 2))
+        
+        // Step 3: Convert to millimeters (1 meter = 1000 millimeters)
+        let distanceInMillimeters = distanceInMeters * 1000
+        
+        // Step 4: Update ViewModel
+        viewModel?.pupilDistance = Double(distanceInMillimeters)
+    }
+    
     public func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
         guard let faceAnchor = anchor as? ARFaceAnchor else {
             return
@@ -140,31 +159,45 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         else {
             return
         }
-
+        
+        let leftEyeTransform = faceAnchor.leftEyeTransform
+        let rightEyeTransform = faceAnchor.rightEyeTransform
+        
+        // Convert the transform to an SCNVector3 for position
+        leftEyePosition3D = SCNVector3(leftEyeTransform.columns.3.x, leftEyeTransform.columns.3.y, leftEyeTransform.columns.3.z)
+        rightEyePosition3D = SCNVector3(rightEyeTransform.columns.3.x, rightEyeTransform.columns.3.y, rightEyeTransform.columns.3.z)
+        
+        DispatchQueue.main.async { [self] in
+            viewModel?.leftEyePosition3D = leftEyePosition3D
+            viewModel?.rightEyePosition3D = rightEyePosition3D
+            
+            updatePupillaryDistance()
+        }
+        
         // Update face geometry
         self.previewFaceGeometry.update(from: faceAnchor.geometry)
-
+        
         // Extract the Euler angles from the viewModel
         let yawAngle = viewModel?.faceYawAngle ?? 0.0
         let pitchAngle = viewModel?.facePitchAngle ?? 0.0
         let rollAngle = viewModel?.faceRollAngle ?? 0.0
-
+        
         // Convert angles to radians and then to Float
         let yaw = Float(yawAngle * .pi / 180)
         let pitch = Float(pitchAngle * .pi / 180)
         let roll = Float(rollAngle * .pi / 180)
-
+        
         // Create rotation matrices
         let rotationY = SCNMatrix4MakeRotation(yaw, 0, 1, 0)
         let rotationX = SCNMatrix4MakeRotation(pitch, 1, 0, 0)
         let rotationZ = SCNMatrix4MakeRotation(roll, 0, 0, 1)
-
+        
         // Combine rotations
         let rotation = SCNMatrix4Mult(SCNMatrix4Mult(rotationZ, rotationX), rotationY)
-
+        
         // Set the transform of the previewFaceNode
         self.previewFaceNode.transform = rotation
-
+        
         // Match the world position of the faceAnchor
         let worldTransform = SCNMatrix4(faceAnchor.transform)// Convert simd_float4x4 to SCNMatrix4
         self.previewFaceNode.worldPosition = SCNVector3(worldTransform.m41, worldTransform.m42, worldTransform.m43)
@@ -174,7 +207,6 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         
         self.previewFaceAnchor = faceAnchor
     }
-
     
     func convertToMatrix4(_ transform: CGAffineTransform) -> matrix_float4x4 {
         return matrix_float4x4(
@@ -296,17 +328,17 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             faceNode: previewFaceNode,
             faceAnchor: previewFaceAnchor
         )
-                                          
+        
         ExternalData.pointCloudDataArray.append(metadata)
     }
     
     func findClosest3DPoint(to point2D: CGPoint, within threshold: CGFloat, in depthData: AVDepthData) -> SCNVector3? {
         guard let depthPixelBuffer: CVPixelBuffer? = depthData.depthDataMap,
               let cameraCalibrationData = depthData.cameraCalibrationData else { return nil }
-
+        
         let depthWidth = CVPixelBufferGetWidth(depthPixelBuffer!)
         let depthHeight = CVPixelBufferGetHeight(depthPixelBuffer!)
-
+        
         let scaledPointX = point2D.x * CGFloat(depthWidth)
         let scaledPointY = point2D.y * CGFloat(depthHeight)
         
@@ -315,10 +347,10 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         
         ExternalData.scaleX = scaleX
         ExternalData.scaleY = scaleY
-
+        
         let xInt = min(max(Int(scaledPointX), 0), depthWidth - 1)
         let yInt = min(max(Int(scaledPointY), 0), depthHeight - 1)
-
+        
         let result = calculateClosest3DPoint(xInt: xInt, yInt: yInt, threshold: threshold, depthWidth: depthWidth, depthHeight: depthHeight, depthPixelBuffer: depthPixelBuffer!, cameraIntrinsics: cameraCalibrationData.intrinsicMatrix)
         
         if let result = result {
@@ -330,66 +362,66 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             return calculateClosest3DPoint(xInt: invertedXInt, yInt: invertedYInt, threshold: threshold, depthWidth: depthWidth, depthHeight: depthHeight, depthPixelBuffer: depthPixelBuffer!, cameraIntrinsics: cameraCalibrationData.intrinsicMatrix)
         }
     }
-
+    
     private func calculateClosest3DPoint(xInt: Int, yInt: Int, threshold: CGFloat, depthWidth: Int, depthHeight: Int, depthPixelBuffer: CVPixelBuffer, cameraIntrinsics: matrix_float3x3) -> SCNVector3? {
         CVPixelBufferLockBaseAddress(depthPixelBuffer, .readOnly)
         defer { CVPixelBufferUnlockBaseAddress(depthPixelBuffer, .readOnly) }
-
+        
         let depthPointer = CVPixelBufferGetBaseAddress(depthPixelBuffer)!.assumingMemoryBound(to: Float32.self)
         
         var closestDepthValue: Float32?
         var closestPoint = CGPoint(x: xInt, y: yInt)
-
+        
         let startX = max(xInt - Int(threshold), 0)
         let endX = min(xInt + Int(threshold), depthWidth - 1)
         let startY = max(yInt - Int(threshold), 0)
         let endY = min(yInt + Int(threshold), depthHeight - 1)
-
+        
         for y in startY...endY {
             for x in startX...endX {
                 let depthIndex = y * depthWidth + x
                 let depthValue = depthPointer[depthIndex]
-
+                
                 if closestDepthValue == nil || abs(depthValue - closestDepthValue!) < Float32(threshold) {
                     closestDepthValue = depthValue
                     closestPoint = CGPoint(x: x, y: y)
                 }
             }
         }
-
+        
         guard let finalDepthValue = closestDepthValue else { return nil }
-
+        
         let x = (Float(closestPoint.x) - cameraIntrinsics[2][0]) / cameraIntrinsics[0][0]
         let y = (Float(closestPoint.y) - cameraIntrinsics[2][1]) / cameraIntrinsics[1][1]
         let z = finalDepthValue
-
+        
         return SCNVector3(x * z, y * z, z)
     }
-
+    
     private func detectFaceLandmarks(in pixelBuffer: CVPixelBuffer, sceneView: SCNView, depthData: AVDepthData) {
         try? faceDetectionHandler.perform([faceDetectionRequest], on: pixelBuffer, orientation: .right)
         guard let observations = faceDetectionRequest.results else {
             return
         }
-
+        
         for observation in observations {
             if let leftEye = observation.landmarks?.leftEye, let rightEye = observation.landmarks?.rightEye {
-                leftEyePosition = averagePoint(from: leftEye.normalizedPoints, in: observation.boundingBox, pixelBuffer: pixelBuffer)
-                rightEyePosition = averagePoint(from: rightEye.normalizedPoints, in: observation.boundingBox, pixelBuffer: pixelBuffer)
-                
-                leftEyePosition3D = findClosest3DPoint(to: leftEyePosition, within: 15.0, in: depthData) ?? SCNVector3(0, 0, 0)
-                rightEyePosition3D = findClosest3DPoint(to: rightEyePosition, within: 15.0, in: depthData) ?? SCNVector3(0, 0, 0)
-                chinPosition3D = findClosest3DPoint(to: chinPosition, within: 15.0, in: depthData) ?? SCNVector3(0, 0, 0)
-                
-                print("leftEyePosition3D: \(leftEyePosition3D)")
-                
-                viewModel?.leftEyePosition = leftEyePosition
-                viewModel?.rightEyePosition = rightEyePosition
-                viewModel?.chinPosition = chinPosition
-                
-                viewModel?.leftEyePosition3D = leftEyePosition3D
-                viewModel?.rightEyePosition3D = rightEyePosition3D
-                viewModel?.chinPosition3D = chinPosition3D
+//                leftEyePosition = averagePoint(from: leftEye.normalizedPoints, in: observation.boundingBox, pixelBuffer: pixelBuffer)
+//                rightEyePosition = averagePoint(from: rightEye.normalizedPoints, in: observation.boundingBox, pixelBuffer: pixelBuffer)
+//                
+//                leftEyePosition3D = findClosest3DPoint(to: leftEyePosition, within: 15.0, in: depthData) ?? SCNVector3(0, 0, 0)
+//                rightEyePosition3D = findClosest3DPoint(to: rightEyePosition, within: 15.0, in: depthData) ?? SCNVector3(0, 0, 0)
+//                chinPosition3D = findClosest3DPoint(to: chinPosition, within: 15.0, in: depthData) ?? SCNVector3(0, 0, 0)
+//                
+//                print("leftEyePosition3D: \(leftEyePosition3D)")
+//                
+//                viewModel?.leftEyePosition = leftEyePosition
+//                viewModel?.rightEyePosition = rightEyePosition
+//                viewModel?.chinPosition = chinPosition
+//                
+//                viewModel?.leftEyePosition3D = leftEyePosition3D
+//                viewModel?.rightEyePosition3D = rightEyePosition3D
+//                viewModel?.chinPosition3D = chinPosition3D
             }
         }
     }
@@ -403,30 +435,30 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         let sum = normalizedPoints.reduce(CGPoint.zero, { CGPoint(x: $0.x + $1.x, y: $0.y + $1.y) })
         let count = CGFloat(normalizedPoints.count)
         let averageNormalized = CGPoint(x: sum.x / count, y: sum.y / count)
-
+        
         // Convert normalized point to UIKit coordinates
         let width = CGFloat(CVPixelBufferGetWidth(pixelBuffer))
         let height = CGFloat(CVPixelBufferGetHeight(pixelBuffer))
         let originX = boundingBox.origin.x * width
         let originY = boundingBox.origin.y * height
-
+        
         let averageUIKit = CGPoint(x: averageNormalized.x * boundingBox.width * width + originX,
                                    y: averageNormalized.y * boundingBox.height * height + originY)
-
+        
         // Transform to the coordinate system of the view (screen in this case)
         // Vision's Y-coordinate is flipped compared to UIKit's
         let transformedY = height - averageUIKit.y
-
+        
         // Scale the point from the pixel buffer size to the view size
         let scaleX = viewSize.width / width
         let scaleY = viewSize.height / height
         let finalPoint = CGPoint(x: averageUIKit.x * scaleX, y: transformedY * scaleY)
         
         print("finalPoint: \(finalPoint)")
-
+        
         return finalPoint
     }
-
+    
     private func configureARSCNView() {
         arSCNView = ARSCNView(frame: view.bounds)
         arSCNView!.isHidden = false
@@ -444,7 +476,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                 viewportSize: self.view.bounds.size,
                 face: self.scnFaceGeometry,
                 textureSize: faceTextureSize)
-
+            
             // Initialize and configure previewSceneView
             previewSceneView = SCNView()
             previewSceneView.translatesAutoresizingMaskIntoConstraints = false
@@ -453,7 +485,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             previewSceneView.allowsCameraControl = true
             self.view.addSubview(previewSceneView)
             previewSceneView.scene = SCNScene()
-
+            
             // Setup constraints for previewSceneView
             NSLayoutConstraint.activate([
                 previewSceneView.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
@@ -479,11 +511,11 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             self.previewFaceGeometry.firstMaterial!.diffuse.contents = faceUvGenerator.texture
             self.previewFaceGeometry.firstMaterial!.isDoubleSided = true
             self.previewFaceAnchor = faceAnchor
-
+            
             previewSceneView.scene!.rootNode.addChildNode(self.previewFaceNode!)
         }
     }
-
+    
     private func startARSession() {
         let configuration = ARFaceTrackingConfiguration()
         configuration.isLightEstimationEnabled = true
@@ -501,10 +533,10 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         super.viewDidAppear(animated)
         
         arSCNView!.session.run(ARFaceTrackingConfiguration(),
-                              options: [.removeExistingAnchors,
-                                        .resetTracking,
-                                        .resetSceneReconstruction,
-                                        .stopTrackedRaycasts])
+                               options: [.removeExistingAnchors,
+                                         .resetTracking,
+                                         .resetSceneReconstruction,
+                                         .stopTrackedRaycasts])
     }
     
     override func viewDidLoad() {
@@ -514,7 +546,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         configureGestureRecognizers()
         configureAVCaptureSession()
         switchSession(toARSession: true)
-    
+        
         configureCloudView()
         addAndConfigureSwiftUIView()
         
@@ -608,10 +640,10 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         }
         
         for anchor in anchors {
-           if let faceAnchor = anchor as? ARFaceAnchor, let faceGeometry = self.faceGeometry {
-               faceGeometry.update(from: faceAnchor.geometry)
-           }
-       }
+            if let faceAnchor = anchor as? ARFaceAnchor, let faceGeometry = self.faceGeometry {
+                faceGeometry.update(from: faceAnchor.geometry)
+            }
+        }
     }
     
     private func configureGestureRecognizers() {
