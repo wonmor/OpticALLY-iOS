@@ -35,8 +35,10 @@ class ExportViewModel: ObservableObject {
     @Published var showShareSheet = false
     @Published var isLoading = false
     @Published var estimatedExportTime: Int? = nil
+    
     @Published var hasTurnedRight = false
     @Published var hasTurnedLeft = false
+    @Published var hasTurnedCenter = false
     
     private var exportStartTime: Date?
     

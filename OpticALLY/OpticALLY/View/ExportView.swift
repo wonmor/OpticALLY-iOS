@@ -128,7 +128,22 @@ struct ExportView: View {
                             headTurnState = .right
                         }
                         
-                        if exportViewModel.hasTurnedRight && exportViewModel.hasTurnedLeft {
+                        // User has turned face left and right but not towards the center
+                        if exportViewModel.hasTurnedRight && exportViewModel.hasTurnedLeft && !exportViewModel.hasTurnedCenter {
+                            if yaw >= -10 && yaw <= 10 {
+                                // Rotate model to face center and trigger haptic feedback
+                                captureFrame()
+                                
+                                HapticManager.playHapticFeedback(type: .success)
+                                exportViewModel.hasTurnedCenter = true
+                            } else {
+                                showArrow = true
+                                headTurnMessage = "TURN YOUR HEAD CENTER"
+                                headTurnState = .center
+                            }
+                        }
+                        
+                        if exportViewModel.hasTurnedRight && exportViewModel.hasTurnedLeft && exportViewModel.hasTurnedCenter {
                             headTurnMessage = "SCAN COMPLETE"
                             HapticManager.playHapticFeedback(type: .success) // Play completion haptic
                             showConsoleOutput = true
@@ -250,6 +265,12 @@ struct ExportView: View {
                                 .frame(width: 50, height: 50)
                                 .foregroundColor(isFlashOn ? .black : .white)
                             
+                        } else if headTurnState == .center {
+                            Image(systemName: "smallcircle.filled.circle")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 50, height: 50)
+                                .foregroundColor(isFlashOn ? .black : .white)
                         }
                     }
 
