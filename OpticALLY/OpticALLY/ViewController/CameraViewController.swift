@@ -489,7 +489,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             // Setup constraints for previewSceneView
             NSLayoutConstraint.activate([
                 previewSceneView.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
-                previewSceneView.centerYAnchor.constraint(equalTo: self.view.centerYAnchor),
+                previewSceneView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 20), // Align to top with 20 points of padding
                 previewSceneView.widthAnchor.constraint(equalToConstant: 200),
                 previewSceneView.heightAnchor.constraint(equalToConstant: 200)
             ])

@@ -11,6 +11,27 @@ import SceneKit
 import ARKit
 import simd
 
+extension Data {
+    func index(at index: Int, bytesPerIndex: Int) -> Int {
+        var value: Int = 0
+        withUnsafeBytes { bytes in
+            switch bytesPerIndex {
+            case 1:
+                value = Int(bytes[index])
+            case 2:
+                let ptr = bytes.baseAddress!.advanced(by: index).assumingMemoryBound(to: UInt16.self)
+                value = Int(ptr.pointee)
+            case 4:
+                let ptr = bytes.baseAddress!.advanced(by: index).assumingMemoryBound(to: UInt32.self)
+                value = Int(ptr.pointee)
+            default:
+                print("Unsupported index size")
+            }
+        }
+        return value
+    }
+}
+
 func += (left: inout SCNVector3, right: SCNVector3) {
     left = SCNVector3(left.x + right.x, left.y + right.y, left.z + right.z)
 }

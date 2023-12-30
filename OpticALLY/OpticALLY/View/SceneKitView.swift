@@ -30,7 +30,7 @@ struct SceneKitView: UIViewRepresentable {
             node.position = SCNVector3(x: 0, y: 0, z: 0)
             node.eulerAngles.z = .pi / -2
 
-            // parentNode.addChildNode(node)
+            parentNode.addChildNode(node)
 
             // Add corresponding face geometry data
             if index < ExternalData.pointCloudDataArray.count {
@@ -38,28 +38,7 @@ struct SceneKitView: UIViewRepresentable {
                 let faceNode = ExternalData.pointCloudDataArray[index].faceNode
                 let faceAnchor = ExternalData.pointCloudDataArray[index].faceAnchor
                 
-                parentNode.addChildNode(faceNode)
-                
-                // Check if drawSphere feature is enabled
-                if drawSphere {
-                    for (index, vertex) in faceAnchor.geometry.vertices.enumerated() {
-                        print("Landmark Point \(index)")
-                        
-                        // Create a text node
-                        let text = SCNText(string: String(index), extrusionDepth: 0.1)
-                        let material = SCNMaterial()
-                        material.diffuse.contents = UIColor.red
-                        text.materials = [material]
-                        
-                        // Create a new node for the text
-                        let textNode = SCNNode(geometry: text)
-                        textNode.position = SCNVector3(vertex.x, vertex.y, vertex.z)
-                        textNode.scale = SCNVector3(x: 0.0005, y: 0.0005, z: 0.0002)
-                        
-                        // Add the text node as a child of the face node
-                        node.addChildNode(textNode)
-                    }
-                }
+                // parentNode.addChildNode(faceNode)
             }
         }
         
