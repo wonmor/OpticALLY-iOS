@@ -539,7 +539,6 @@ struct ExternalData {
                }
            }
 
-           // Export OBJ files for faceNodes using MDLAsset
         // Export OBJ files for faceNodes using MDLAsset
            for (index, metadata) in pointCloudDataArray.enumerated() {
                let objFileName = "faceNode_\(index).obj"
