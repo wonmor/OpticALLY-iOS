@@ -496,12 +496,13 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             ])
             
             let camera = SCNCamera()
+            camera.fieldOfView = 30
             camera.zNear = 0.001
             camera.zFar = 1000
             
             let cameraNode = SCNNode()
             cameraNode.camera = camera
-            cameraNode.position = SCNVector3Make(0, 0, 1)
+            cameraNode.position = SCNVector3Make(0, 0, 0.5) // Adjust the z-position to bring the camera closer
             previewSceneView.scene!.rootNode.addChildNode(cameraNode)
             cameraNode.look(at: SCNVector3Zero)
             
