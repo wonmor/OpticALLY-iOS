@@ -326,7 +326,8 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             image: imageData,
             depth: depthData,
             faceNode: previewFaceNode,
-            faceAnchor: previewFaceAnchor
+            faceAnchor: previewFaceAnchor,
+            faceTexture: textureToImage(self.faceUvGenerator.texture)!
         )
         
         ExternalData.pointCloudDataArray.append(metadata)
