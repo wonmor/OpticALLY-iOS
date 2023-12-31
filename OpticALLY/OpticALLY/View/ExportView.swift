@@ -64,12 +64,14 @@ struct ExportView: View {
     @State private var stateChangeCount = 0
     @State private var previousYaw: Double = 0
     @State private var isButtonDisabled: Bool = false
+    @State private var timerForExport = Timer.publish(every: 3, on: .main, in: .common).autoconnect()
+    @State private var showExportButton = false
     
     // Target states for scanning
     @State private var targetYaw: Double = 0
     @State private var targetPitch: Double = 0
     @State private var targetRoll: Double = 0
-
+    
     // Counter to keep track of the number of scans
     @State private var scanCount = 0
     
@@ -86,7 +88,7 @@ struct ExportView: View {
     private func captureFrame() {
         ExternalData.isSavingFileAsPLY = true
     }
-
+    
     var body: some View {
         ZStack {
             if showFaceTrackingView {
@@ -273,7 +275,7 @@ struct ExportView: View {
                                 .foregroundColor(isFlashOn ? .black : .white)
                         }
                     }
-
+                    
                     Spacer()
                     
                     // Button to start/pause scanning
@@ -288,131 +290,143 @@ struct ExportView: View {
                         }) {
                             if showConsoleOutput {
                                 if let lastLog = logManager.latestLog {
-                                    if lastLog.lowercased().contains("done") {
-                                        VStack {
-                                            Button(action: {
-                                                // Toggle the dropdown
-                                                showDropdown.toggle()
-                                            }) {
-                                                HStack {
-                                                    Image(systemName: "square.and.arrow.down")
-                                                    Text("Export")
-                                                        .font(.body)
-                                                        .bold()
-                                                }
-                                                .foregroundColor(.black)
-                                                .padding()
-                                                .background(Capsule().fill(Color.white))
+                                    if lastLog.lowercased().contains("done") && !showExportButton {
+                                        EmptyView()
+                                            .onAppear() {
+                                                // Start the timer
+                                                timerForExport = Timer.publish(every: 3, on: .main, in: .common).autoconnect()
                                             }
-                                            
-                                            // Dropdown list view
-                                            if showDropdown {
-                                                VStack {
-                                                    HStack {
-                                                        Button(action: {
-                                                            exportViewModel.exportPLY(showShareSheet: true)
-                                                            // exportViewModel.exportAV_PLY(showShareSheet: true)
-                                                        }) {
-                                                            Text(".PLY")
-                                                                .padding()
-                                                                .foregroundColor(.white)
-                                                                .background(Capsule().fill(Color(.black)))
-                                                        }
-                                                        
-                                                        // .OBJ Button
-                                                        Button(action: {
-                                                            if OpticALLYApp.isConnectedToNetwork() {
-                                                                exportViewModel.exportOBJ()
-                                                            } else {
-                                                                showAlert = true
-                                                            }
-                                                        }) {
-                                                            Text(".OBJ")
-                                                                .padding()
-                                                                .foregroundColor(.white)
-                                                                .background(Capsule().fill(Color(.black)))
-                                                        }
-                                                        .alert(isPresented: $showAlert) {
-                                                            Alert(
-                                                                title: Text("No Internet Connection"),
-                                                                message: Text("Please check your internet connection and try again."),
-                                                                dismissButton: .default(Text("OK"))
-                                                            )
-                                                        }
-                                                    }
-                                                }
-                                                .padding(.top, 5)
-                                                .sheet(isPresented: $exportViewModel.showShareSheet, onDismiss: {
-                                                    exportViewModel.showShareSheet = false
-                                                }) {
-                                                    // This will present the share sheet
-                                                    if let fileURL = exportViewModel.fileURL {
-                                                        ShareSheet(fileURL: fileURL)
-                                                    }
-                                                }
-                                                
-                                            } else {
-                                                Button(action: {
-                                                    globalState.currentView = .postScanning
-                                                }) {
-                                                    HStack {
-                                                        Image(systemName: "checkmark.circle.fill")
-                                                        Text("Continue")
-                                                            .font(.body)
-                                                            .bold()
-                                                    }
-                                                    .padding()
-                                                    .foregroundColor(.white)
-                                                    .background(Capsule().fill(Color.black).overlay(Capsule().stroke(Color.white, lineWidth: 2)))
-                                                }
-                                            }
-                                            
-                                        }
-                                        .padding()
-                                    } else {
-                                        HStack {
-                                            Image(systemName: "circle.dotted") // Different SF Symbols for start and pause
-                                            Text("Reading")
-                                                .font(.title3)
-                                                .bold()
-                                                .onAppear() {
-                                                    isButtonDisabled = true
-                                                }
-                                        }
-                                        .foregroundColor(.white)
-                                        .padding()
-                                        .background(Capsule().fill(Color.black).overlay(Capsule().stroke(Color.white, lineWidth: 2)))
                                     }
                                 }
+                            }
+                            
+                            if showExportButton {
+                                VStack {
+                                    Button(action: {
+                                        // Toggle the dropdown
+                                        showDropdown.toggle()
+                                    }) {
+                                        HStack {
+                                            Image(systemName: "square.and.arrow.down")
+                                            Text("Export")
+                                                .font(.body)
+                                                .bold()
+                                        }
+                                        .foregroundColor(.black)
+                                        .padding()
+                                        .background(Capsule().fill(Color.white))
+                                    }
+                                    
+                                    // Dropdown list view
+                                    if showDropdown {
+                                        VStack {
+                                            HStack {
+                                                Button(action: {
+                                                    exportViewModel.exportPLY(showShareSheet: true)
+                                                    // exportViewModel.exportAV_PLY(showShareSheet: true)
+                                                }) {
+                                                    Text(".PLY")
+                                                        .padding()
+                                                        .foregroundColor(.white)
+                                                        .background(Capsule().fill(Color(.black)))
+                                                }
+                                                
+                                                // .OBJ Button
+                                                Button(action: {
+                                                    if OpticALLYApp.isConnectedToNetwork() {
+                                                        exportViewModel.exportOBJ()
+                                                    } else {
+                                                        showAlert = true
+                                                    }
+                                                }) {
+                                                    Text(".OBJ")
+                                                        .padding()
+                                                        .foregroundColor(.white)
+                                                        .background(Capsule().fill(Color(.black)))
+                                                }
+                                                .alert(isPresented: $showAlert) {
+                                                    Alert(
+                                                        title: Text("No Internet Connection"),
+                                                        message: Text("Please check your internet connection and try again."),
+                                                        dismissButton: .default(Text("OK"))
+                                                    )
+                                                }
+                                            }
+                                        }
+                                        .padding(.top, 5)
+                                        .sheet(isPresented: $exportViewModel.showShareSheet, onDismiss: {
+                                            exportViewModel.showShareSheet = false
+                                        }) {
+                                            // This will present the share sheet
+                                            if let fileURL = exportViewModel.fileURL {
+                                                ShareSheet(fileURL: fileURL)
+                                            }
+                                        }
+                                        
+                                    } else {
+                                        Button(action: {
+                                            globalState.currentView = .postScanning
+                                        }) {
+                                            HStack {
+                                                Image(systemName: "checkmark.circle.fill")
+                                                Text("Continue")
+                                                    .font(.body)
+                                                    .bold()
+                                            }
+                                            .padding()
+                                            .foregroundColor(.white)
+                                            .background(Capsule().fill(Color.black).overlay(Capsule().stroke(Color.white, lineWidth: 2)))
+                                        }
+                                    }
+                                    
+                                }
+                                .padding()
                             } else {
-                                VStack(spacing: 5) {
-                                    Text("Start")
+                                HStack {
+                                    Image(systemName: "circle.dotted") // Different SF Symbols for start and pause
+                                    Text("Reading")
                                         .font(.title3)
                                         .bold()
                                         .onAppear() {
-                                            isButtonDisabled = false
+                                            isButtonDisabled = true
                                         }
-                                    
-                                    Image(systemName: "arrow.up")
-                                        .font(.largeTitle) // Adjust the size of the icon
                                 }
-                                .foregroundColor(.white) // Text and icon color
-                                .padding() // Padding around VStack
-                                .background(Capsule().fill(Color.black)) // Capsule shape filled with black color
-                                .overlay(
-                                    Capsule().stroke(Color.white, lineWidth: 2) // White border around the capsule
-                                )
+                                .foregroundColor(.white)
+                                .padding()
+                                .background(Capsule().fill(Color.black).overlay(Capsule().stroke(Color.white, lineWidth: 2)))
                             }
                         }
-                        .padding(.bottom)
+                    } else {
+                        VStack(spacing: 5) {
+                            Text("Start")
+                                .font(.title3)
+                                .bold()
+                                .onAppear() {
+                                    isButtonDisabled = false
+                                }
+                            
+                            Image(systemName: "arrow.up")
+                                .font(.largeTitle) // Adjust the size of the icon
+                        }
+                        .foregroundColor(.white) // Text and icon color
+                        .padding() // Padding around VStack
+                        .background(Capsule().fill(Color.black)) // Capsule shape filled with black color
+                        .overlay(
+                            Capsule().stroke(Color.white, lineWidth: 2) // White border around the capsule
+                        )
                     }
                 }
+                .padding(.bottom)
             }
         }
         .padding()
         .foregroundColor(isFlashOn ? .black : .white)
         .frame(maxWidth: .infinity, maxHeight: .infinity) // Setting the frame size to infinity
         .ignoresSafeArea()
+        .onReceive(timerForExport) { _ in
+            showExportButton = true
+            timerForExport.upstream.connect().cancel() // Stop the timer
+        }
     }
 }
 

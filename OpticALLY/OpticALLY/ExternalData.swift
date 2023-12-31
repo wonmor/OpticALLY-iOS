@@ -263,7 +263,6 @@ struct ExternalData {
 
         for y in 0..<height {
             for x in 0..<width {
-                print("Running")
                 let depthOffset = y * CVPixelBufferGetBytesPerRow(depthDataMap) + x * MemoryLayout<UInt16>.size
                 let depthPointer = CVPixelBufferGetBaseAddress(depthDataMap)!.advanced(by: depthOffset).assumingMemoryBound(to: UInt16.self)
                 let depthValue = Float(depthPointer.pointee)
