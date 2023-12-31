@@ -326,26 +326,26 @@ struct ExternalData {
                 counter += 1
             }
         }
-        
-        if let index: Int? = ExternalData.pointCloudGeometries.count,
-           index! < ExternalData.pointCloudDataArray.count {
-            let metadata = ExternalData.pointCloudDataArray[index!]
-            let faceTransform = adjustARKitMatrixForSceneKit(metadata.faceAnchor.transform) // simd_float4x4
-            let scnTransform = SCNMatrix4(faceTransform) // Convert to SCNMatrix4
-            let invertedTransform = SCNMatrix4Invert(scnTransform)
-            
-            // Assuming you have a function to extract yaw angle from the face anchor transform
-             let yawAngle = Float(metadata.yaw)
-            
-            // Calculate the counter-rotation (rotate in the opposite direction of the yaw)
-            let counterRotation = SCNMatrix4MakeRotation(yawAngle, 0, 1, 0)
-
-            // Apply the inverted transformation to each vertex
-            for i in 0..<vertices.count {
-                vertices[i] = applyMatrixToVector3(vertices[i], with: invertedTransform)
-                vertices[i] = applyMatrixToVector3(vertices[i], with: counterRotation)
-            }
-        }
+//        
+//        if let index: Int? = ExternalData.pointCloudGeometries.count,
+//           index! < ExternalData.pointCloudDataArray.count {
+//            let metadata = ExternalData.pointCloudDataArray[index!]
+//            let faceTransform = adjustARKitMatrixForSceneKit(metadata.faceAnchor.transform) // simd_float4x4
+//            let scnTransform = SCNMatrix4(faceTransform) // Convert to SCNMatrix4
+//            let invertedTransform = SCNMatrix4Invert(scnTransform)
+//            
+//            // Assuming you have a function to extract yaw angle from the face anchor transform
+//             let yawAngle = Float(metadata.yaw)
+//            
+//            // Calculate the counter-rotation (rotate in the opposite direction of the yaw)
+//            let counterRotation = SCNMatrix4MakeRotation(yawAngle, 0, 1, 0)
+//
+//            // Apply the inverted transformation to each vertex
+//            for i in 0..<vertices.count {
+//                vertices[i] = applyMatrixToVector3(vertices[i], with: invertedTransform)
+//                vertices[i] = applyMatrixToVector3(vertices[i], with: counterRotation)
+//            }
+//        }
            
         // Create the geometry source for vertices
         let vertexSource = SCNGeometrySource(vertices: vertices)
