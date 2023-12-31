@@ -246,10 +246,11 @@ struct ExternalData {
     }
     
     // Function to convert depth and color data into a point cloud geometry
-    static func createAVPointCloudGeometry(depthData: AVDepthData, colorData: UnsafePointer<UInt8>, width: Int, height: Int, bytesPerRow: Int, scaleX: Float, scaleY: Float, scaleZ: Float, percentile: Float = 35.0) {
+    static func createAVPointCloudGeometry(depthData: AVDepthData, colorData: UnsafePointer<UInt8>, metadata: PointCloudMetadata, width: Int, height: Int, bytesPerRow: Int, scaleX: Float, scaleY: Float, scaleZ: Float, percentile: Float = 35.0) {
         var vertices: [SCNVector3] = []
         var colors: [UIColor] = []
         var depthValues: [Float] = []
+        var depthValuesForLandmarks: [Float] = []
         
         let cameraIntrinsics = depthData.cameraCalibrationData!.intrinsicMatrix
         
@@ -265,6 +266,14 @@ struct ExternalData {
                 let depthPointer = CVPixelBufferGetBaseAddress(depthDataMap)!.advanced(by: depthOffset).assumingMemoryBound(to: UInt16.self)
                 let depthValue = Float(depthPointer.pointee)
                 depthValues.append(depthValue)
+                
+                if Int(metadata.leftEyePosition.x) == x && Int(metadata.leftEyePosition.y) == y {
+                    print("Left eye landmark point x: \(x), y: \(y), z: \(depthValue)")
+                }
+                
+                if Int(metadata.rightEyePosition.x) == x && Int(metadata.rightEyePosition.y) == y {
+                    print("Right eye landmark point x: \(x), y: \(y), z: \(depthValue)")
+                }
             }
         }
         
@@ -312,6 +321,26 @@ struct ExternalData {
             }
         }
         
+        if let index: Int? = ExternalData.pointCloudGeometries.count,
+           index! < ExternalData.pointCloudDataArray.count {
+            let metadata = ExternalData.pointCloudDataArray[index!]
+            let faceTransform = adjustARKitMatrixForSceneKit(metadata.faceAnchor.transform) // simd_float4x4
+            let scnTransform = SCNMatrix4(faceTransform) // Convert to SCNMatrix4
+            let invertedTransform = SCNMatrix4Invert(scnTransform)
+            
+            // Assuming you have a function to extract yaw angle from the face anchor transform
+             let yawAngle = Float(metadata.yaw)
+            
+            // Calculate the counter-rotation (rotate in the opposite direction of the yaw)
+            let counterRotation = SCNMatrix4MakeRotation(yawAngle, 0, 1, 0)
+
+            // Apply the inverted transformation to each vertex
+            for i in 0..<vertices.count {
+                vertices[i] = applyMatrixToVector3(vertices[i], with: invertedTransform)
+                vertices[i] = applyMatrixToVector3(vertices[i], with: counterRotation)
+            }
+        }
+           
         // Create the geometry source for vertices
         let vertexSource = SCNGeometrySource(vertices: vertices)
         
@@ -367,6 +396,16 @@ struct ExternalData {
         
         print("Done constructing the 3D object!")
         LogManager.shared.log("Done constructing the 3D object!")
+    }
+    
+    static func adjustARKitMatrixForSceneKit(_ matrix: simd_float4x4) -> simd_float4x4 {
+        var adjustedMatrix = matrix
+
+        // Invert the Z-axis
+        adjustedMatrix.columns.2.z *= -1
+        adjustedMatrix.columns.3.z *= -1
+
+        return adjustedMatrix
     }
     
     static func createPointCloudGeometry(depthData: AVDepthData, imageSampler: CapturedImageSampler, width: Int, height: Int, calibrationData: AVCameraCalibrationData, transform: SCNMatrix4, percentile: Float = 35.0) {

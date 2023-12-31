@@ -301,18 +301,6 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         // Assuming colorData is the base address for the BGRA image buffer
         let colorBaseAddress = CVPixelBufferGetBaseAddress(colorPixelBuffer!)!.assumingMemoryBound(to: UInt8.self)
         
-        // Call the point cloud creation function
-        ExternalData.createAVPointCloudGeometry(
-            depthData: depthData,
-            colorData: colorBaseAddress,
-            width: commonWidth,
-            height: commonHeight,
-            bytesPerRow: colorBytesPerRow, // Use the correct bytes per row for color data,
-            scaleX: scaleX,
-            scaleY: scaleY,
-            scaleZ: scaleZ
-        )
-        
         let metadata = PointCloudMetadata(
             yaw: viewModel?.faceYawAngle ?? 0.0,
             pitch: viewModel?.facePitchAngle ?? 0.0,
@@ -331,6 +319,19 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         )
         
         ExternalData.pointCloudDataArray.append(metadata)
+        
+        // Call the point cloud creation function
+        ExternalData.createAVPointCloudGeometry(
+            depthData: depthData,
+            colorData: colorBaseAddress,
+            metadata: metadata,
+            width: commonWidth,
+            height: commonHeight,
+            bytesPerRow: colorBytesPerRow, // Use the correct bytes per row for color data,
+            scaleX: scaleX,
+            scaleY: scaleY,
+            scaleZ: scaleZ
+        )
     }
     
     func findClosest3DPoint(to point2D: CGPoint, within threshold: CGFloat, in depthData: AVDepthData) -> SCNVector3? {
@@ -407,22 +408,18 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         
         for observation in observations {
             if let leftEye = observation.landmarks?.leftEye, let rightEye = observation.landmarks?.rightEye {
-//                leftEyePosition = averagePoint(from: leftEye.normalizedPoints, in: observation.boundingBox, pixelBuffer: pixelBuffer)
-//                rightEyePosition = averagePoint(from: rightEye.normalizedPoints, in: observation.boundingBox, pixelBuffer: pixelBuffer)
-//                
-//                leftEyePosition3D = findClosest3DPoint(to: leftEyePosition, within: 15.0, in: depthData) ?? SCNVector3(0, 0, 0)
-//                rightEyePosition3D = findClosest3DPoint(to: rightEyePosition, within: 15.0, in: depthData) ?? SCNVector3(0, 0, 0)
-//                chinPosition3D = findClosest3DPoint(to: chinPosition, within: 15.0, in: depthData) ?? SCNVector3(0, 0, 0)
-//                
-//                print("leftEyePosition3D: \(leftEyePosition3D)")
-//                
-//                viewModel?.leftEyePosition = leftEyePosition
-//                viewModel?.rightEyePosition = rightEyePosition
-//                viewModel?.chinPosition = chinPosition
-//                
-//                viewModel?.leftEyePosition3D = leftEyePosition3D
-//                viewModel?.rightEyePosition3D = rightEyePosition3D
-//                viewModel?.chinPosition3D = chinPosition3D
+                leftEyePosition = averagePoint(from: leftEye.normalizedPoints, in: observation.boundingBox, pixelBuffer: pixelBuffer)
+                rightEyePosition = averagePoint(from: rightEye.normalizedPoints, in: observation.boundingBox, pixelBuffer: pixelBuffer)
+                
+                print("leftEyePosition: \(leftEyePosition)")
+                
+                viewModel?.leftEyePosition = leftEyePosition
+                viewModel?.rightEyePosition = rightEyePosition
+                viewModel?.chinPosition = chinPosition
+                
+                viewModel?.leftEyePosition3D = leftEyePosition3D
+                viewModel?.rightEyePosition3D = rightEyePosition3D
+                viewModel?.chinPosition3D = chinPosition3D
             }
         }
     }
