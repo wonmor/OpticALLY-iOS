@@ -259,20 +259,26 @@ struct ExternalData {
         CVPixelBufferLockBaseAddress(depthDataMap, .readOnly)
         defer { CVPixelBufferUnlockBaseAddress(depthDataMap, .readOnly) }
         
-        // Collect all depth values
+        let threshold: CGFloat = 20.0 // Define a threshold value for matching
+
         for y in 0..<height {
             for x in 0..<width {
+                print("Running")
                 let depthOffset = y * CVPixelBufferGetBytesPerRow(depthDataMap) + x * MemoryLayout<UInt16>.size
                 let depthPointer = CVPixelBufferGetBaseAddress(depthDataMap)!.advanced(by: depthOffset).assumingMemoryBound(to: UInt16.self)
                 let depthValue = Float(depthPointer.pointee)
                 depthValues.append(depthValue)
                 
-                if Int(metadata.leftEyePosition.x) == x && Int(metadata.leftEyePosition.y) == y {
-                    print("Left eye landmark point x: \(x), y: \(y), z: \(depthValue)")
+                // Check if within threshold range for left eye
+                if abs(CGFloat(x) - metadata.leftEyePosition.x) <= threshold &&
+                   abs(CGFloat(y) - metadata.leftEyePosition.y) <= threshold {
+                    print("Near Left eye landmark point x: \(x), y: \(y), z: \(depthValue)")
                 }
                 
-                if Int(metadata.rightEyePosition.x) == x && Int(metadata.rightEyePosition.y) == y {
-                    print("Right eye landmark point x: \(x), y: \(y), z: \(depthValue)")
+                // Check if within threshold range for right eye
+                if abs(CGFloat(x) - metadata.rightEyePosition.x) <= threshold &&
+                   abs(CGFloat(y) - metadata.rightEyePosition.y) <= threshold {
+                    print("Near Right eye landmark point x: \(x), y: \(y), z: \(depthValue)")
                 }
             }
         }

@@ -258,80 +258,83 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     }
     
     private func processFrameAV(depthData: AVDepthData, imageData: CVImageBuffer) {
-        let depthPixelBuffer = depthData.depthDataMap
-        
-        let depthWidth = CVPixelBufferGetWidth(depthPixelBuffer)
-        let depthHeight = CVPixelBufferGetHeight(depthPixelBuffer)
-        
-        let colorPixelBuffer = resizePixelBuffer(imageData, width: depthWidth, height: depthHeight)
-        
-        CVPixelBufferLockBaseAddress(depthPixelBuffer, .readOnly)
-        CVPixelBufferLockBaseAddress(colorPixelBuffer!, .readOnly)
-        defer {
-            CVPixelBufferUnlockBaseAddress(depthPixelBuffer, .readOnly)
-            CVPixelBufferUnlockBaseAddress(colorPixelBuffer!, .readOnly)
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let self = self else { return }
+            let depthPixelBuffer = depthData.depthDataMap
+            
+            let depthWidth = CVPixelBufferGetWidth(depthPixelBuffer)
+            let depthHeight = CVPixelBufferGetHeight(depthPixelBuffer)
+            
+            let colorPixelBuffer = resizePixelBuffer(imageData, width: depthWidth, height: depthHeight)
+            
+            CVPixelBufferLockBaseAddress(depthPixelBuffer, .readOnly)
+            CVPixelBufferLockBaseAddress(colorPixelBuffer!, .readOnly)
+            defer {
+                CVPixelBufferUnlockBaseAddress(depthPixelBuffer, .readOnly)
+                CVPixelBufferUnlockBaseAddress(colorPixelBuffer!, .readOnly)
+            }
+            
+            let colorWidth = CVPixelBufferGetWidth(colorPixelBuffer!)
+            let colorHeight = CVPixelBufferGetHeight(colorPixelBuffer!)
+            
+            print("Image Width: \(colorWidth) | Image Height: \(colorHeight)")
+            print("Depth Data Width: \(depthWidth) | Depth Data Height: \(depthHeight)")
+            
+            let colorBytesPerRow = CVPixelBufferGetBytesPerRow(colorPixelBuffer!)
+            
+            let depthPixelFormatType = CVPixelBufferGetPixelFormatType(depthPixelBuffer)
+            var depthBytesPerPixel: Int = 0 // Initialize with zero
+            
+            switch depthPixelFormatType {
+            case kCVPixelFormatType_DepthFloat32:
+                depthBytesPerPixel = 4
+            case kCVPixelFormatType_DepthFloat16:
+                depthBytesPerPixel = 2
+                // Add more cases as necessary for different formats
+            default:
+                print("Unsupported depth pixel format type")
+                return
+            }
+            
+            // Ensure that you're iterating within the bounds of both buffers
+            let commonWidth = min(colorWidth, depthWidth)
+            let commonHeight = min(colorHeight, depthHeight)
+            
+            // Assuming colorData is the base address for the BGRA image buffer
+            let colorBaseAddress = CVPixelBufferGetBaseAddress(colorPixelBuffer!)!.assumingMemoryBound(to: UInt8.self)
+            
+            let metadata = PointCloudMetadata(
+                yaw: viewModel?.faceYawAngle ?? 0.0,
+                pitch: viewModel?.facePitchAngle ?? 0.0,
+                roll: viewModel?.faceRollAngle ?? 0.0,
+                leftEyePosition: leftEyePosition,
+                rightEyePosition: rightEyePosition,
+                chinPosition: chinPosition,
+                leftEyePosition3D: leftEyePosition3D,
+                rightEyePosition3D: rightEyePosition3D,
+                chinPosition3D: chinPosition3D,
+                image: imageData,
+                depth: depthData,
+                faceNode: previewFaceNode,
+                faceAnchor: previewFaceAnchor,
+                faceTexture: textureToImage(self.faceUvGenerator.texture)!
+            )
+            
+            ExternalData.pointCloudDataArray.append(metadata)
+            
+            // Call the point cloud creation function
+            ExternalData.createAVPointCloudGeometry(
+                depthData: depthData,
+                colorData: colorBaseAddress,
+                metadata: metadata,
+                width: commonWidth,
+                height: commonHeight,
+                bytesPerRow: colorBytesPerRow, // Use the correct bytes per row for color data,
+                scaleX: scaleX,
+                scaleY: scaleY,
+                scaleZ: scaleZ
+            )
         }
-        
-        let colorWidth = CVPixelBufferGetWidth(colorPixelBuffer!)
-        let colorHeight = CVPixelBufferGetHeight(colorPixelBuffer!)
-        
-        print("Image Width: \(colorWidth) | Image Height: \(colorHeight)")
-        print("Depth Data Width: \(depthWidth) | Depth Data Height: \(depthHeight)")
-        
-        let colorBytesPerRow = CVPixelBufferGetBytesPerRow(colorPixelBuffer!)
-        
-        let depthPixelFormatType = CVPixelBufferGetPixelFormatType(depthPixelBuffer)
-        var depthBytesPerPixel: Int = 0 // Initialize with zero
-        
-        switch depthPixelFormatType {
-        case kCVPixelFormatType_DepthFloat32:
-            depthBytesPerPixel = 4
-        case kCVPixelFormatType_DepthFloat16:
-            depthBytesPerPixel = 2
-            // Add more cases as necessary for different formats
-        default:
-            print("Unsupported depth pixel format type")
-            return
-        }
-        
-        // Ensure that you're iterating within the bounds of both buffers
-        let commonWidth = min(colorWidth, depthWidth)
-        let commonHeight = min(colorHeight, depthHeight)
-        
-        // Assuming colorData is the base address for the BGRA image buffer
-        let colorBaseAddress = CVPixelBufferGetBaseAddress(colorPixelBuffer!)!.assumingMemoryBound(to: UInt8.self)
-        
-        let metadata = PointCloudMetadata(
-            yaw: viewModel?.faceYawAngle ?? 0.0,
-            pitch: viewModel?.facePitchAngle ?? 0.0,
-            roll: viewModel?.faceRollAngle ?? 0.0,
-            leftEyePosition: leftEyePosition,
-            rightEyePosition: rightEyePosition,
-            chinPosition: chinPosition,
-            leftEyePosition3D: leftEyePosition3D,
-            rightEyePosition3D: rightEyePosition3D,
-            chinPosition3D: chinPosition3D,
-            image: imageData,
-            depth: depthData,
-            faceNode: previewFaceNode,
-            faceAnchor: previewFaceAnchor,
-            faceTexture: textureToImage(self.faceUvGenerator.texture)!
-        )
-        
-        ExternalData.pointCloudDataArray.append(metadata)
-        
-        // Call the point cloud creation function
-        ExternalData.createAVPointCloudGeometry(
-            depthData: depthData,
-            colorData: colorBaseAddress,
-            metadata: metadata,
-            width: commonWidth,
-            height: commonHeight,
-            bytesPerRow: colorBytesPerRow, // Use the correct bytes per row for color data,
-            scaleX: scaleX,
-            scaleY: scaleY,
-            scaleZ: scaleZ
-        )
     }
     
     func findClosest3DPoint(to point2D: CGPoint, within threshold: CGFloat, in depthData: AVDepthData) -> SCNVector3? {
