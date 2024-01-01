@@ -188,7 +188,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         let pitchAngle = viewModel?.facePitchAngle ?? 0.0
         let rollAngle = viewModel?.faceRollAngle ?? 0.0
         
-        // Convert angles to radians and then to Float
+        // Convert angles to radians and then to Float (the actual values used for vector transformations as they only accept radians, not degrees)
         let yaw = Float(yawAngle * .pi / 180)
         let pitch = Float(pitchAngle * .pi / 180)
         let roll = Float(rollAngle * .pi / 180)
@@ -315,9 +315,9 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             let colorBaseAddress = CVPixelBufferGetBaseAddress(colorPixelBuffer!)!.assumingMemoryBound(to: UInt8.self)
             
             let metadata = PointCloudMetadata(
-                yaw: viewModel?.faceYawAngle ?? 0.0,
-                pitch: viewModel?.facePitchAngle ?? 0.0,
-                roll: viewModel?.faceRollAngle ?? 0.0,
+                yaw: Double(previewYaws.last ?? 0.0),
+                pitch: Double(previewRolls.last ?? 0.0),
+                roll: Double(previewPitches.last ?? 0.0),
                 leftEyePosition: leftEyePosition,
                 rightEyePosition: rightEyePosition,
                 chinPosition: chinPosition,
