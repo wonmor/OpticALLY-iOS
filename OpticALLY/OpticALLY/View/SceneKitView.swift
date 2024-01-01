@@ -14,6 +14,10 @@ import ARKit
 let drawSphere = true // For visualizing landmark points
 
 struct SceneKitView: UIViewRepresentable {
+    @Binding var selectedNodeIndex: Int?
+    @Binding var position: SCNVector3
+    @Binding var rotation: SCNVector3
+
     func makeUIView(context: Context) -> SCNView {
         let scnView = SCNView()
 
@@ -25,8 +29,7 @@ struct SceneKitView: UIViewRepresentable {
         let parentNode = SCNNode()
 
         // Iterate through geometries and add each to the parent node
-        for (index, geometry) in ExternalData.pointCloudGeometries.enumerated() {
-            let node = SCNNode(geometry: geometry)
+        for (index, node) in ExternalData.pointCloudNodes.enumerated() {
             node.position = SCNVector3(x: 0, y: 0, z: 0)
             node.eulerAngles.z = .pi / -2
 
@@ -50,11 +53,18 @@ struct SceneKitView: UIViewRepresentable {
         scnView.autoenablesDefaultLighting = true
         scnView.allowsCameraControl = true
         scnView.backgroundColor = UIColor.white
-
+        
         return scnView
     }
 
-    func updateUIView(_ uiView: SCNView, context: Context) {}
+    func updateUIView(_ scnView: SCNView, context: Context) {
+        // Update the selected node's position and rotation
+        if let index = selectedNodeIndex,
+           let node = scnView.scene?.rootNode.childNodes[index] {
+            node.position = position
+            node.eulerAngles = rotation
+        }
+    }
 }
 
 struct SceneKitUSDZView: UIViewRepresentable {

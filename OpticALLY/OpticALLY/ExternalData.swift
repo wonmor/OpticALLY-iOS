@@ -70,6 +70,7 @@ struct ExternalData {
     static var isMeshView = false
     static var exportPLYData: Data?
     static var pointCloudGeometries: [SCNGeometry] = []
+    static var pointCloudNodes: [SCNNode] = []
     static var pointCloudDataArray: [PointCloudMetadata] = []
     static var verticesCount: Int = 0
     static var faceAnchor: ARFaceAnchor?
@@ -395,7 +396,27 @@ struct ExternalData {
         // Set additional material properties as needed, for example, to make the points more visible
         pointCloudGeometry.firstMaterial?.isDoubleSided = true
         
+        let pointCloudNode = SCNNode(geometry: pointCloudGeometry)
+        
+        pointCloudNode.rotation.x = Float(-metadata.yaw)
+        
+        // Create rotation matrices
+        let rotationY = SCNMatrix4MakeRotation(Float(metadata.yaw), 0, 1, 0)
+        let rotationX = SCNMatrix4MakeRotation(Float(metadata.pitch), 1, 0, 0)
+        let rotationZ = SCNMatrix4MakeRotation(Float(metadata.roll), 0, 0, 1)
+        
+        // Combine rotations
+        let rotation = SCNMatrix4Invert(SCNMatrix4Mult(SCNMatrix4Mult(rotationZ, rotationX), rotationY))
+        
+        // Set the transform of the previewFaceNode
+        // pointCloudNode.transform = rotation
+        
+        // Match the world position of the faceAnchor
+        // let worldTransform = SCNMatrix4(metadata.faceAnchor.transform)// Convert simd_float4x4 to SCNMatrix4
+        // pointCloudNode.worldPosition = SCNVector3(worldTransform.m41, worldTransform.m42, worldTransform.m43)
+        
         pointCloudGeometries.append(pointCloudGeometry)
+        pointCloudNodes.append(pointCloudNode)
         
         // alignPointClouds(scaleX: scaleX, scaleY: scaleY, scaleZ: scaleZ)
         
