@@ -136,7 +136,34 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         return node
     }
     
-    
+    func updateNodePivot(node: SCNNode, usingDepthData depthData: AVDepthData, withMetadata metadata: PointCloudMetadata) {
+        // Convert yaw, pitch, and roll to radians
+        let yawRad = Float(metadata.yaw) * (Float.pi / 180)
+        let pitchRad = Float(metadata.pitch) * (Float.pi / 180)
+        let rollRad = Float(metadata.roll) * (Float.pi / 180)
+
+        // Create rotation matrices
+        let rotationY = SCNMatrix4MakeRotation(yawRad, 0, 1, 0)
+        let rotationX = SCNMatrix4MakeRotation(pitchRad, 1, 0, 0)
+        let rotationZ = SCNMatrix4MakeRotation(rollRad, 0, 0, 1)
+
+        // Combine rotations into a single matrix
+        let combinedRotation = SCNMatrix4Mult(SCNMatrix4Mult(rotationZ, rotationX), rotationY)
+
+        // Assuming the pivot should be at the center of the geometry
+        if let geometry = node.geometry {
+            let (minBound, maxBound) = geometry.boundingBox
+            let center = SCNVector3Make(
+                minBound.x + (maxBound.x - minBound.x) / 2,
+                minBound.y + (maxBound.y - minBound.y) / 2,
+                minBound.z + (maxBound.z - minBound.z) / 2
+            )
+
+            // Set the pivot to be the center of the geometry after applying the combined rotation
+            node.pivot = SCNMatrix4Mult(SCNMatrix4MakeTranslation(center.x, center.y, center.z), combinedRotation)
+        }
+    }
+
     func updatePupillaryDistance() {
         // Step 1: Get 3D positions of both eyes
         // Assuming leftEyePosition3D and rightEyePosition3D are already updated
