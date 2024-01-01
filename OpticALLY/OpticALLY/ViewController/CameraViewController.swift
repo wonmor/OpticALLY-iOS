@@ -74,8 +74,9 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     /// Secondary scene view that shows the captured face
     private var previewSceneView: SCNView!
     private var previewFaceNode: SCNNode!
-    
     private var previewFaceGeometry: ARSCNFaceGeometry!
+    private var previewFaceAnchor: ARFaceAnchor!
+    
     private var previewFaceAnchors: [ARFaceAnchor] = []
     
     private var previewYaws: [Float] = []
@@ -156,8 +157,8 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     
     public func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
         guard let faceAnchor = anchor as? ARFaceAnchor else {
-               return
-           }
+            return
+        }
         
         guard let faceAnchor = anchor as? ARFaceAnchor,
               let frame = arSCNView!.session.currentFrame
@@ -210,7 +211,9 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         scnFaceGeometry.update(from: faceAnchor.geometry)
         faceUvGenerator.update(frame: frame, scene: self.arSCNView!.scene, headNode: node, geometry: scnFaceGeometry)
         
+        self.previewFaceAnchor = faceAnchor
         self.previewFaceAnchors.append(faceAnchor)
+        
         self.previewYaws.append(yaw)
         self.previewPitches.append(pitch)
         self.previewRolls.append(roll)
@@ -312,9 +315,9 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             let colorBaseAddress = CVPixelBufferGetBaseAddress(colorPixelBuffer!)!.assumingMemoryBound(to: UInt8.self)
             
             let metadata = PointCloudMetadata(
-                yaw: Double(previewYaws.last ?? 0),
-                pitch: Double(previewPitches.last ?? 0),
-                roll: Double(previewRolls.last ?? 0),
+                yaw: viewModel?.faceYawAngle ?? 0.0,
+                pitch: viewModel?.facePitchAngle ?? 0.0,
+                roll: viewModel?.faceRollAngle ?? 0.0,
                 leftEyePosition: leftEyePosition,
                 rightEyePosition: rightEyePosition,
                 chinPosition: chinPosition,
@@ -520,7 +523,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             self.previewFaceNode.scale = SCNVector3(x: faceScale, y: faceScale, z: faceScale)
             self.previewFaceGeometry.firstMaterial!.diffuse.contents = faceUvGenerator.texture
             self.previewFaceGeometry.firstMaterial!.isDoubleSided = true
-            self.previewFaceAnchors.append(faceAnchor!)
+            self.previewFaceAnchor = faceAnchor
             
             previewSceneView.scene!.rootNode.addChildNode(self.previewFaceNode!)
         }
