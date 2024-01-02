@@ -93,11 +93,6 @@ struct PostScanView: View {
                                 }
                             }
                         }
-                        .onChange(of: selectedNodeIndex) { _ in
-                            // Reset position and rotation to (0, 0, 0) when the node selection changes
-                            position = SCNVector3(0, 0, 0)
-                            rotation = SCNVector3(0, 0, 0)
-                        }
                         
                         // Position controls
                         Text("Position")
