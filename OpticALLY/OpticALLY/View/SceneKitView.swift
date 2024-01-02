@@ -76,12 +76,12 @@ struct SceneKitUSDZView: UIViewRepresentable {
 
         if let scene = SCNScene(named: usdzFileName) {
             // Enumerate through all nodes in the scene
-                    scene.rootNode.enumerateChildNodes { (node, _) in
-                        node.geometry?.materials.forEach { material in
-                            // Set the diffuse color of each material to white
-                            material.diffuse.contents = UIColor.white
-                        }
-                    }
+            scene.rootNode.enumerateChildNodes { (node, _) in
+                node.geometry?.materials.forEach { material in
+                    // Set the diffuse color of each material to white
+                    material.diffuse.contents = UIColor.white
+                }
+            }
             
             sceneView.scene = scene
         }

@@ -398,8 +398,6 @@ struct ExternalData {
         
         var pointCloudNode = SCNNode(geometry: pointCloudGeometry)
         
-        pointCloudNode.rotation.x = Float(-metadata.yaw)
-        
         // Create rotation matrices
         let rotationY = SCNMatrix4MakeRotation(Float(metadata.yaw), 0, 1, 0)
         let rotationX = SCNMatrix4MakeRotation(Float(metadata.pitch), 1, 0, 0)
@@ -408,14 +406,14 @@ struct ExternalData {
         // Combine rotations
         let rotation = SCNMatrix4Invert(SCNMatrix4Mult(SCNMatrix4Mult(rotationZ, rotationX), rotationY))
         
+        pointCloudNode = updateNodePivot(node: pointCloudNode, usingDepthData: depthData, withMetadata: metadata)
+        
         // Set the transform of the previewFaceNode
         // pointCloudNode.transform = rotation
         
         // Match the world position of the faceAnchor
         // let worldTransform = SCNMatrix4(metadata.faceAnchor.transform)// Convert simd_float4x4 to SCNMatrix4
         // pointCloudNode.worldPosition = SCNVector3(worldTransform.m41, worldTransform.m42, worldTransform.m43)
-        
-        pointCloudNode = updateNodePivot(node: pointCloudNode, usingDepthData: depthData, withMetadata: metadata)
         
         pointCloudGeometries.append(pointCloudGeometry)
         pointCloudNodes.append(pointCloudNode)
@@ -450,10 +448,56 @@ struct ExternalData {
             )
 
             // Set the pivot to be the center of the geometry after applying the combined rotation
-            node.pivot = SCNMatrix4Mult(SCNMatrix4MakeTranslation(center.x, center.y, center.z), combinedRotation)
+            node.pivot = SCNMatrix4Invert(SCNMatrix4Mult(SCNMatrix4MakeTranslation(center.x, center.y, center.z), combinedRotation))
         }
         
         return node
+    }
+    
+    static func calculatePivotForNodes(nodes: [SCNNode], withMetadata metadataArray: [PointCloudMetadata]) -> SCNVector3 {
+        guard !nodes.isEmpty && nodes.count == metadataArray.count else {
+            return SCNVector3(0, 0, 0) // Return a default pivot if arrays are empty or mismatched
+        }
+
+        // Calculate the average position of all nodes
+        var averagePosition = SCNVector3(0, 0, 0)
+        for node in nodes {
+            averagePosition.x += node.position.x
+            averagePosition.y += node.position.y
+            averagePosition.z += node.position.z
+        }
+        averagePosition.x /= Float(nodes.count)
+        averagePosition.y /= Float(nodes.count)
+        averagePosition.z /= Float(nodes.count)
+
+        // Calculate the average orientation (yaw, pitch, roll) of all nodes
+        var averageYaw: Float = 0, averagePitch: Float = 0, averageRoll: Float = 0
+        for metadata in metadataArray {
+            averageYaw += Float(metadata.yaw)
+            averagePitch += Float(metadata.pitch)
+            averageRoll += Float(metadata.roll)
+        }
+        averageYaw /= Float(metadataArray.count)
+        averagePitch /= Float(metadataArray.count)
+        averageRoll /= Float(metadataArray.count)
+
+        // Convert average yaw, pitch, and roll to radians
+        averageYaw *= (Float.pi / 180)
+        averagePitch *= (Float.pi / 180)
+        averageRoll *= (Float.pi / 180)
+
+        // Apply an arbitrary formula to adjust the pivot based on the average orientation
+        // This is a simple example and might need to be adjusted for your specific requirements
+        let pivotAdjustment = SCNVector3(averageYaw * 5, averagePitch * 5, averageRoll * 5)
+
+        // Calculate the final pivot point
+        let finalPivot = SCNVector3(
+            averagePosition.x + pivotAdjustment.x,
+            averagePosition.y + pivotAdjustment.y,
+            averagePosition.z + pivotAdjustment.z
+        )
+
+        return finalPivot
     }
     
     static func adjustARKitMatrixForSceneKit(_ matrix: simd_float4x4) -> simd_float4x4 {
