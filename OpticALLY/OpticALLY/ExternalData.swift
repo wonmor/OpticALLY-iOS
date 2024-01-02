@@ -259,8 +259,6 @@ struct ExternalData {
         let depthDataMap = convertedDepthData.depthDataMap
         CVPixelBufferLockBaseAddress(depthDataMap, .readOnly)
         defer { CVPixelBufferUnlockBaseAddress(depthDataMap, .readOnly) }
-        
-        let threshold: CGFloat = 20.0 // Define a threshold value for matching
 
         for y in 0..<height {
             for x in 0..<width {
@@ -270,14 +268,12 @@ struct ExternalData {
                 depthValues.append(depthValue)
                 
                 // Check if within threshold range for left eye
-                if abs(CGFloat(x) - metadata.leftEyePosition.x) <= threshold &&
-                   abs(CGFloat(y) - metadata.leftEyePosition.y) <= threshold {
+                if x == Int(round(metadata.leftEyePosition.x)) {
                     print("Near Left eye landmark point x: \(x), y: \(y), z: \(depthValue)")
                 }
                 
                 // Check if within threshold range for right eye
-                if abs(CGFloat(x) - metadata.rightEyePosition.x) <= threshold &&
-                   abs(CGFloat(y) - metadata.rightEyePosition.y) <= threshold {
+                if x == Int(round(metadata.rightEyePosition.x)) {
                     print("Near Right eye landmark point x: \(x), y: \(y), z: \(depthValue)")
                 }
             }
