@@ -561,26 +561,33 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         configureCloudView()
         addAndConfigureSwiftUIView()
         
-        self.view.bringSubviewToFront(previewSceneView)
-        
         // Add gesture recognizer for taps
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTapGesture(_:)))
         arSCNView?.addGestureRecognizer(tapGesture)
+        
+        self.view.bringSubviewToFront(arSCNView!)
+        self.view.bringSubviewToFront(previewSceneView)
     }
     
     @objc private func handleTapGesture(_ gesture: UITapGestureRecognizer) {
         let location = gesture.location(in: arSCNView)
         
-        var hitTestOptions = [SCNHitTestOption: Any]()
-        hitTestOptions[.boundingBoxOnly] = true
-        
-        let hitTestResults = arSCNView?.hitTest(location, options: hitTestOptions) ?? []
-        
-        guard let hit = hitTestResults.first else { return }
-        
-        let sphere = SCNNode(geometry: SCNSphere(radius: 0.005))
-        sphere.simdPosition = hit.simdWorldCoordinates
-        arSCNView?.scene.rootNode.addChildNode(sphere)
+        let hitTestResults = arSCNView?.hitTest(location, options: nil) ?? []
+
+        for result in hitTestResults {
+            if let node: SCNNode? = result.node, node!.geometry is ARSCNFaceGeometry {
+                let sphere = SCNNode(geometry: SCNSphere(radius: 0.005))
+                
+                // Convert hit test result to face node's local coordinate system
+                let localCoordinates = node!.convertPosition(result.worldCoordinates, from: nil)
+                sphere.position = localCoordinates
+                
+                // Add the sphere as a child of the face node
+                node!.addChildNode(sphere)
+                
+                break
+            }
+        }
     }
     
     private func configureCloudView() {
