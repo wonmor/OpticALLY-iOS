@@ -296,16 +296,15 @@ struct ExternalData {
                 let yrw = (Float(y) - cameraIntrinsics.columns.2.y) * depthValue / cameraIntrinsics.columns.1.y
                 let vertex = SCNVector3(x: xrw, y: yrw, z: depthValue * scaleFactor)
                 
-                // The coordinates are opposite due to the nature of the face model "protuding" from the rest...
-                print("Coordinate Check \(metadata.leftEyePosition.x) VS. \(-x)")
+                print("Coordinate Check (\(round(metadata.leftEyePosition.x)), \(round(metadata.leftEyePosition.y))) VS. (\(x), \(y))")
                 
                 // Check if within threshold range for left eye
-                if Int(-x) == Int(round(metadata.leftEyePosition.x)) && Int(-y) == Int(round(metadata.leftEyePosition.y)) {
+                if Int(x) == Int(round(metadata.leftEyePosition.x)) && Int(y) == Int(round(metadata.leftEyePosition.y)) {
                     print("Near Left eye landmark point x: \(x), y: \(y), z: \(depthValue * scaleFactor)")
                 }
                 
                 // Check if within threshold range for right eye
-                if Int(-x) == Int(round(metadata.rightEyePosition.x)) && Int(-y) == Int(round(metadata.rightEyePosition.y)) {
+                if Int(x) == Int(round(metadata.rightEyePosition.x)) && Int(y) == Int(round(metadata.rightEyePosition.y)) {
                     print("Near Right eye landmark point x: \(x), y: \(y), z: \(depthValue * scaleFactor)")
                 }
                 
