@@ -25,15 +25,12 @@ struct SceneKitView: UIViewRepresentable {
         let scene = SCNScene()
         scnView.scene = scene
 
-        // Create a parent node
-        let parentNode = SCNNode()
-
         // Iterate through geometries and add each to the parent node
         for (index, node) in ExternalData.pointCloudNodes.enumerated() {
             node.position = SCNVector3(x: 0, y: 0, z: 0)
             node.eulerAngles.z = .pi / -2
 
-            parentNode.addChildNode(node)
+            scene.rootNode.addChildNode(node)
 
             // Add corresponding face geometry data
             if index < ExternalData.pointCloudDataArray.count {
@@ -44,11 +41,6 @@ struct SceneKitView: UIViewRepresentable {
                 // parentNode.addChildNode(faceNode)
             }
         }
-        
-        print("Number of Nodes: \(parentNode.childNodes.count)")
-
-        // Add the parent node to the scene
-        scene.rootNode.addChildNode(parentNode)
         
         scnView.autoenablesDefaultLighting = true
         scnView.allowsCameraControl = true
