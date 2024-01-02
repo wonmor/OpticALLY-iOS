@@ -569,6 +569,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         self.view.bringSubviewToFront(previewSceneView)
     }
     
+    // This method is used to test SceneKit's hit-testing feature alongside ARKit FaceTrackingConfiguration...
     @objc private func handleTapGesture(_ gesture: UITapGestureRecognizer) {
         let location = gesture.location(in: arSCNView)
         
