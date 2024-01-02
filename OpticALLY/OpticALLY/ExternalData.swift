@@ -193,19 +193,19 @@ struct ExternalData {
             print("Geometry does not have vertex data")
             return
         }
-
+        
         var vertices = vertexSource.data.toArray(type: SCNVector3.self, count: vertexSource.vectorCount)
         for index in 0..<vertices.count {
             vertices[index] = applyMatrixToVector3(vertices[index], with: rotation)
             vertices[index] += translation // Adding SCNVector3
         }
-
+        
         // Replace old vertex data with transformed vertices
         let newVertexSource = SCNGeometrySource(vertices: vertices)
         let newGeometry = SCNGeometry(sources: [newVertexSource], elements: geometry.elements)
         geometry = newGeometry
     }
-
+    
     // Function to calculate the center of a set of vertices
     static func calculateCenter(of vertices: [SCNVector3]) -> SCNVector3 {
         var sum = SCNVector3(0, 0, 0)
@@ -259,7 +259,7 @@ struct ExternalData {
         let depthDataMap = convertedDepthData.depthDataMap
         CVPixelBufferLockBaseAddress(depthDataMap, .readOnly)
         defer { CVPixelBufferUnlockBaseAddress(depthDataMap, .readOnly) }
-
+        
         for y in 0..<height {
             for x in 0..<width {
                 let depthOffset = y * CVPixelBufferGetBytesPerRow(depthDataMap) + x * MemoryLayout<UInt16>.size
@@ -322,27 +322,27 @@ struct ExternalData {
                 counter += 1
             }
         }
-//        
-//        if let index: Int? = ExternalData.pointCloudGeometries.count,
-//           index! < ExternalData.pointCloudDataArray.count {
-//            let metadata = ExternalData.pointCloudDataArray[index!]
-//            let faceTransform = adjustARKitMatrixForSceneKit(metadata.faceAnchor.transform) // simd_float4x4
-//            let scnTransform = SCNMatrix4(faceTransform) // Convert to SCNMatrix4
-//            let invertedTransform = SCNMatrix4Invert(scnTransform)
-//            
-//            // Assuming you have a function to extract yaw angle from the face anchor transform
-//             let yawAngle = Float(metadata.yaw)
-//            
-//            // Calculate the counter-rotation (rotate in the opposite direction of the yaw)
-//            let counterRotation = SCNMatrix4MakeRotation(yawAngle, 0, 1, 0)
-//
-//            // Apply the inverted transformation to each vertex
-//            for i in 0..<vertices.count {
-//                vertices[i] = applyMatrixToVector3(vertices[i], with: invertedTransform)
-//                vertices[i] = applyMatrixToVector3(vertices[i], with: counterRotation)
-//            }
-//        }
-           
+        //        
+        //        if let index: Int? = ExternalData.pointCloudGeometries.count,
+        //           index! < ExternalData.pointCloudDataArray.count {
+        //            let metadata = ExternalData.pointCloudDataArray[index!]
+        //            let faceTransform = adjustARKitMatrixForSceneKit(metadata.faceAnchor.transform) // simd_float4x4
+        //            let scnTransform = SCNMatrix4(faceTransform) // Convert to SCNMatrix4
+        //            let invertedTransform = SCNMatrix4Invert(scnTransform)
+        //            
+        //            // Assuming you have a function to extract yaw angle from the face anchor transform
+        //             let yawAngle = Float(metadata.yaw)
+        //            
+        //            // Calculate the counter-rotation (rotate in the opposite direction of the yaw)
+        //            let counterRotation = SCNMatrix4MakeRotation(yawAngle, 0, 1, 0)
+        //
+        //            // Apply the inverted transformation to each vertex
+        //            for i in 0..<vertices.count {
+        //                vertices[i] = applyMatrixToVector3(vertices[i], with: invertedTransform)
+        //                vertices[i] = applyMatrixToVector3(vertices[i], with: counterRotation)
+        //            }
+        //        }
+        
         // Create the geometry source for vertices
         let vertexSource = SCNGeometrySource(vertices: vertices)
         
@@ -425,15 +425,15 @@ struct ExternalData {
         let yawRad = Float(metadata.yaw) * (Float.pi / 180)
         let pitchRad = Float(metadata.pitch) * (Float.pi / 180)
         let rollRad = Float(metadata.roll) * (Float.pi / 180)
-
+        
         // Create rotation matrices
         let rotationY = SCNMatrix4MakeRotation(yawRad, 0, 1, 0)
         let rotationX = SCNMatrix4MakeRotation(pitchRad, 1, 0, 0)
         let rotationZ = SCNMatrix4MakeRotation(rollRad, 0, 0, 1)
-
+        
         // Combine rotations into a single matrix
         let combinedRotation = SCNMatrix4Mult(SCNMatrix4Mult(rotationZ, rotationX), rotationY)
-
+        
         // Assuming the pivot should be at the center of the geometry
         if let geometry = node.geometry {
             let (minBound, maxBound) = geometry.boundingBox
@@ -442,9 +442,9 @@ struct ExternalData {
                 minBound.y + (maxBound.y - minBound.y) / 2,
                 minBound.z + (maxBound.z - minBound.z) / 2
             )
-
+            
             // Set the pivot to be the center of the geometry after applying the combined rotation
-            node.pivot = SCNMatrix4Invert(SCNMatrix4Mult(SCNMatrix4MakeTranslation(center.x, center.y, center.z), combinedRotation))
+            node.pivot = SCNMatrix4Mult(SCNMatrix4MakeTranslation(center.x, center.y, center.z), combinedRotation)
         }
         
         return node
@@ -454,7 +454,7 @@ struct ExternalData {
         guard !nodes.isEmpty && nodes.count == metadataArray.count else {
             return SCNVector3(0, 0, 0) // Return a default pivot if arrays are empty or mismatched
         }
-
+        
         // Calculate the average position of all nodes
         var averagePosition = SCNVector3(0, 0, 0)
         for node in nodes {
@@ -465,7 +465,7 @@ struct ExternalData {
         averagePosition.x /= Float(nodes.count)
         averagePosition.y /= Float(nodes.count)
         averagePosition.z /= Float(nodes.count)
-
+        
         // Calculate the average orientation (yaw, pitch, roll) of all nodes
         var averageYaw: Float = 0, averagePitch: Float = 0, averageRoll: Float = 0
         for metadata in metadataArray {
@@ -476,33 +476,33 @@ struct ExternalData {
         averageYaw /= Float(metadataArray.count)
         averagePitch /= Float(metadataArray.count)
         averageRoll /= Float(metadataArray.count)
-
+        
         // Convert average yaw, pitch, and roll to radians
         averageYaw *= (Float.pi / 180)
         averagePitch *= (Float.pi / 180)
         averageRoll *= (Float.pi / 180)
-
+        
         // Apply an arbitrary formula to adjust the pivot based on the average orientation
         // This is a simple example and might need to be adjusted for your specific requirements
         let pivotAdjustment = SCNVector3(averageYaw * 5, averagePitch * 5, averageRoll * 5)
-
+        
         // Calculate the final pivot point
         let finalPivot = SCNVector3(
             averagePosition.x + pivotAdjustment.x,
             averagePosition.y + pivotAdjustment.y,
             averagePosition.z + pivotAdjustment.z
         )
-
+        
         return finalPivot
     }
     
     static func adjustARKitMatrixForSceneKit(_ matrix: simd_float4x4) -> simd_float4x4 {
         var adjustedMatrix = matrix
-
+        
         // Invert the Z-axis
         adjustedMatrix.columns.2.z *= -1
         adjustedMatrix.columns.3.z *= -1
-
+        
         return adjustedMatrix
     }
     
@@ -658,80 +658,80 @@ struct ExternalData {
     }
     
     static func exportGeometryAsPLY(to url: URL) {
-           let fileManager = FileManager.default
-           let tempDirectoryURL = fileManager.temporaryDirectory
-           var fileURLs = [URL]()
-
-           // Export PLY files
-           for (index, geometry) in pointCloudGeometries.enumerated() {
-               let plyString = createPLYString(for: geometry)
-               let plyFileName = "geometry_\(index).ply"
-               let plyFileURL = tempDirectoryURL.appendingPathComponent(plyFileName)
-
-               do {
-                   try plyString.write(to: plyFileURL, atomically: true, encoding: .ascii)
-                   fileURLs.append(plyFileURL)
-               } catch {
-                   print("Failed to write PLY file: \(error)")
-               }
-           }
-
+        let fileManager = FileManager.default
+        let tempDirectoryURL = fileManager.temporaryDirectory
+        var fileURLs = [URL]()
+        
+        // Export PLY files
+        for (index, geometry) in pointCloudGeometries.enumerated() {
+            let plyString = createPLYString(for: geometry)
+            let plyFileName = "geometry_\(index).ply"
+            let plyFileURL = tempDirectoryURL.appendingPathComponent(plyFileName)
+            
+            do {
+                try plyString.write(to: plyFileURL, atomically: true, encoding: .ascii)
+                fileURLs.append(plyFileURL)
+            } catch {
+                print("Failed to write PLY file: \(error)")
+            }
+        }
+        
         // Export OBJ files for faceNodes using MDLAsset
-           for (index, metadata) in pointCloudDataArray.enumerated() {
-               let objFileName = "faceNode_\(index).obj"
-               let objFileURL = tempDirectoryURL.appendingPathComponent(objFileName)
-
-               if let device = MTLCreateSystemDefaultDevice(),
-                  let mesh: MDLMesh? = MDLMesh(scnGeometry: metadata.faceNode.geometry!, bufferAllocator: MTKMeshBufferAllocator(device: device)) {
-                   let asset = MDLAsset()
-                   asset.add(mesh!)
-                   do {
-                       try asset.export(to: objFileURL)
-                       fileURLs.append(objFileURL)
-
-                       // Append the MTL reference to the OBJ file
-                       let mtlFileName = "material_\(index).mtl"
-                       let mtlReference = "mtllib \(mtlFileName)\n"
-                       if var objContent = try? String(contentsOf: objFileURL) {
-                           objContent = mtlReference + objContent
-                           try objContent.write(to: objFileURL, atomically: true, encoding: .utf8)
-                       }
-                   } catch {
-                       print("Failed to write OBJ file: \(error)")
-                   }
-               }
-
-               // Export the texture image
-               let textureFileName = "texture_\(index).png"
-               let textureFileURL = tempDirectoryURL.appendingPathComponent(textureFileName)
-               if let textureData = metadata.faceTexture.pngData() {
-                   do {
-                       try textureData.write(to: textureFileURL)
-                       fileURLs.append(textureFileURL)
-                   } catch {
-                       print("Failed to write texture file: \(error)")
-                   }
-               }
-
-               // Create and export the MTL file
-               let mtlFileName = "material_\(index).mtl"
-               let mtlFileURL = tempDirectoryURL.appendingPathComponent(mtlFileName)
-               let mtlContent = "newmtl Material\nmap_Kd \(textureFileName)\n"
-               do {
-                   try mtlContent.write(to: mtlFileURL, atomically: true, encoding: .utf8)
-                   fileURLs.append(mtlFileURL)
-               } catch {
-                   print("Failed to write MTL file: \(error)")
-               }
-           }
-
+        for (index, metadata) in pointCloudDataArray.enumerated() {
+            let objFileName = "faceNode_\(index).obj"
+            let objFileURL = tempDirectoryURL.appendingPathComponent(objFileName)
+            
+            if let device = MTLCreateSystemDefaultDevice(),
+               let mesh: MDLMesh? = MDLMesh(scnGeometry: metadata.faceNode.geometry!, bufferAllocator: MTKMeshBufferAllocator(device: device)) {
+                let asset = MDLAsset()
+                asset.add(mesh!)
+                do {
+                    try asset.export(to: objFileURL)
+                    fileURLs.append(objFileURL)
+                    
+                    // Append the MTL reference to the OBJ file
+                    let mtlFileName = "material_\(index).mtl"
+                    let mtlReference = "mtllib \(mtlFileName)\n"
+                    if var objContent = try? String(contentsOf: objFileURL) {
+                        objContent = mtlReference + objContent
+                        try objContent.write(to: objFileURL, atomically: true, encoding: .utf8)
+                    }
+                } catch {
+                    print("Failed to write OBJ file: \(error)")
+                }
+            }
+            
+            // Export the texture image
+            let textureFileName = "texture_\(index).png"
+            let textureFileURL = tempDirectoryURL.appendingPathComponent(textureFileName)
+            if let textureData = metadata.faceTexture.pngData() {
+                do {
+                    try textureData.write(to: textureFileURL)
+                    fileURLs.append(textureFileURL)
+                } catch {
+                    print("Failed to write texture file: \(error)")
+                }
+            }
+            
+            // Create and export the MTL file
+            let mtlFileName = "material_\(index).mtl"
+            let mtlFileURL = tempDirectoryURL.appendingPathComponent(mtlFileName)
+            let mtlContent = "newmtl Material\nmap_Kd \(textureFileName)\n"
+            do {
+                try mtlContent.write(to: mtlFileURL, atomically: true, encoding: .utf8)
+                fileURLs.append(mtlFileURL)
+            } catch {
+                print("Failed to write MTL file: \(error)")
+            }
+        }
+        
         // Create a ZIP file using SSZipArchive
         SSZipArchive.createZipFile(atPath: url.path, withFilesAtPaths: fileURLs.map { $0.path })
-
+        
         // Cleanup temporary files
         fileURLs.forEach { try? fileManager.removeItem(at: $0) }
     }
-
+    
     private static func createMTLString(textureFileName: String) -> String {
         var mtlString = "newmtl Material\n"
         mtlString += "map_Kd \(textureFileName)\n"
