@@ -135,7 +135,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         scnFaceGeometry.firstMaterial?.diffuse.contents = faceUvGenerator.texture
         return node
     }
-
+    
     func updatePupillaryDistance() {
         // Step 1: Get 3D positions of both eyes
         // Assuming leftEyePosition3D and rightEyePosition3D are already updated
@@ -555,7 +555,6 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         super.viewDidLoad()
         
         configureARSCNView()
-        configureGestureRecognizers()
         configureAVCaptureSession()
         switchSession(toARSession: true)
         
@@ -563,6 +562,25 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         addAndConfigureSwiftUIView()
         
         self.view.bringSubviewToFront(previewSceneView)
+        
+        // Add gesture recognizer for taps
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTapGesture(_:)))
+        arSCNView?.addGestureRecognizer(tapGesture)
+    }
+    
+    @objc private func handleTapGesture(_ gesture: UITapGestureRecognizer) {
+        let location = gesture.location(in: arSCNView)
+        
+        var hitTestOptions = [SCNHitTestOption: Any]()
+        hitTestOptions[.boundingBoxOnly] = true
+        
+        let hitTestResults = arSCNView?.hitTest(location, options: hitTestOptions) ?? []
+        
+        guard let hit = hitTestResults.first else { return }
+        
+        let sphere = SCNNode(geometry: SCNSphere(radius: 0.005))
+        sphere.simdPosition = hit.simdWorldCoordinates
+        arSCNView?.scene.rootNode.addChildNode(sphere)
     }
     
     private func configureCloudView() {
@@ -658,11 +676,6 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         }
     }
     
-    private func configureGestureRecognizers() {
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTapGesture(_:)))
-        view.addGestureRecognizer(tapGesture)
-    }
-    
     private func configureARSession() {
         // Setup ARSession configuration
         let configuration = ARFaceTrackingConfiguration()
@@ -696,10 +709,6 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         } catch {
             print("Error configuring AVCaptureSession: \(error)")
         }
-    }
-    
-    @objc private func handleTapGesture(_ gesture: UITapGestureRecognizer) {
-        // Handle tap gesture
     }
     
     // MARK: - ARSession and AVCaptureSession Management
