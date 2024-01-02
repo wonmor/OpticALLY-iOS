@@ -433,6 +433,39 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                 viewModel?.leftEyePosition3D = leftEyePosition3D
                 viewModel?.rightEyePosition3D = rightEyePosition3D
                 viewModel?.chinPosition3D = chinPosition3D
+                
+                // Define an array of facial landmarks
+                let facialLandmarks = [leftEyePosition, rightEyePosition, chinPosition]
+
+                for landmark in facialLandmarks {
+                    let location = landmark
+                    
+                    let hitTestResults = arSCNView?.hitTest(location, options: nil) ?? []
+                    
+                    for result in hitTestResults {
+                        if let node: SCNNode? = result.node, node!.geometry is ARSCNFaceGeometry {
+                            let sphere = SCNNode(geometry: SCNSphere(radius: 0.005))
+                            
+                            // Convert hit test result to face node's local coordinate system
+                            let localCoordinates = node!.convertPosition(result.worldCoordinates, from: nil)
+                            sphere.position = localCoordinates
+                            
+                            // Add the sphere as a child of the face node
+                            node!.addChildNode(sphere)
+                            
+                            let previewSphere = SCNNode(geometry: SCNSphere(radius: 0.005))
+                            
+                            // Convert hit test result to face node's local coordinate system
+                            let localCoordinatesPreview = previewFaceNode!.convertPosition(result.worldCoordinates, from: nil)
+                            previewSphere.position = localCoordinatesPreview
+                            
+                            // Add the sphere as a child of the face node
+                            previewFaceNode!.addChildNode(previewSphere)
+                            
+                            break
+                        }
+                    }
+                }
             }
         }
     }
@@ -565,7 +598,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTapGesture(_:)))
         arSCNView?.addGestureRecognizer(tapGesture)
         
-        self.view.bringSubviewToFront(arSCNView!)
+        // self.view.bringSubviewToFront(arSCNView!)
         self.view.bringSubviewToFront(previewSceneView)
     }
     
