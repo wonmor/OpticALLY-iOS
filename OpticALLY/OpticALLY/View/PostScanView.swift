@@ -99,15 +99,15 @@ struct PostScanView: View {
                         Slider(value: Binding(
                             get: { Double(self.position.x) },
                             set: { self.position.x = Float($0) }
-                        ), in: -100...100)
+                        ), in: -1000...1000)
                         Slider(value: Binding(
                             get: { Double(self.position.y) },
                             set: { self.position.y = Float($0) }
-                        ), in: -100...100)
+                        ), in: -1000...1000)
                         Slider(value: Binding(
                             get: { Double(self.position.z) },
                             set: { self.position.z = Float($0) }
-                        ), in: -100...100)
+                        ), in: -1000...1000)
                         
                         // Rotation controls
                         Text("Rotation")

@@ -396,7 +396,7 @@ struct ExternalData {
         // Set additional material properties as needed, for example, to make the points more visible
         pointCloudGeometry.firstMaterial?.isDoubleSided = true
         
-        let pointCloudNode = SCNNode(geometry: pointCloudGeometry)
+        var pointCloudNode = SCNNode(geometry: pointCloudGeometry)
         
         pointCloudNode.rotation.x = Float(-metadata.yaw)
         
@@ -415,6 +415,8 @@ struct ExternalData {
         // let worldTransform = SCNMatrix4(metadata.faceAnchor.transform)// Convert simd_float4x4 to SCNMatrix4
         // pointCloudNode.worldPosition = SCNVector3(worldTransform.m41, worldTransform.m42, worldTransform.m43)
         
+        pointCloudNode = updateNodePivot(node: pointCloudNode, usingDepthData: depthData, withMetadata: metadata)
+        
         pointCloudGeometries.append(pointCloudGeometry)
         pointCloudNodes.append(pointCloudNode)
         
@@ -422,6 +424,36 @@ struct ExternalData {
         
         print("Done constructing the 3D object!")
         LogManager.shared.log("Done constructing the 3D object!")
+    }
+    
+    static func updateNodePivot(node: SCNNode, usingDepthData depthData: AVDepthData, withMetadata metadata: PointCloudMetadata) -> SCNNode {
+        // Convert yaw, pitch, and roll to radians
+        let yawRad = Float(metadata.yaw) * (Float.pi / 180)
+        let pitchRad = Float(metadata.pitch) * (Float.pi / 180)
+        let rollRad = Float(metadata.roll) * (Float.pi / 180)
+
+        // Create rotation matrices
+        let rotationY = SCNMatrix4MakeRotation(yawRad, 0, 1, 0)
+        let rotationX = SCNMatrix4MakeRotation(pitchRad, 1, 0, 0)
+        let rotationZ = SCNMatrix4MakeRotation(rollRad, 0, 0, 1)
+
+        // Combine rotations into a single matrix
+        let combinedRotation = SCNMatrix4Mult(SCNMatrix4Mult(rotationZ, rotationX), rotationY)
+
+        // Assuming the pivot should be at the center of the geometry
+        if let geometry = node.geometry {
+            let (minBound, maxBound) = geometry.boundingBox
+            let center = SCNVector3Make(
+                minBound.x + (maxBound.x - minBound.x) / 2,
+                minBound.y + (maxBound.y - minBound.y) / 2,
+                minBound.z + (maxBound.z - minBound.z) / 2
+            )
+
+            // Set the pivot to be the center of the geometry after applying the combined rotation
+            node.pivot = SCNMatrix4Mult(SCNMatrix4MakeTranslation(center.x, center.y, center.z), combinedRotation)
+        }
+        
+        return node
     }
     
     static func adjustARKitMatrixForSceneKit(_ matrix: simd_float4x4) -> simd_float4x4 {
