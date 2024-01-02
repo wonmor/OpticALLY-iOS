@@ -10,6 +10,8 @@ import SceneKit
 import ModelIO
 import SceneKit.ModelIO
 
+let debugMode = true
+
 struct PostScanView: View {
     @EnvironmentObject var globalState: GlobalState
     
@@ -85,44 +87,46 @@ struct PostScanView: View {
                         SceneKitView(selectedNodeIndex: $selectedNodeIndex, position: $position, rotation: $rotation)
                             .frame(height: 300)
                         
-                        // Node selection
-                        HStack {
-                            ForEach(0..<nodeCount, id: \.self) { index in
-                                Button("Node \(index)") {
-                                    selectedNodeIndex = index
+                        if debugMode {
+                            // Node selection
+                            HStack {
+                                ForEach(0..<nodeCount, id: \.self) { index in
+                                    Button("Node \(index)") {
+                                        selectedNodeIndex = index
+                                    }
                                 }
                             }
+                            
+                            // Position controls
+                            Text("Position")
+                            Slider(value: Binding(
+                                get: { Double(self.position.x) },
+                                set: { self.position.x = Float($0) }
+                            ), in: -1000...1000)
+                            Slider(value: Binding(
+                                get: { Double(self.position.y) },
+                                set: { self.position.y = Float($0) }
+                            ), in: -1000...1000)
+                            Slider(value: Binding(
+                                get: { Double(self.position.z) },
+                                set: { self.position.z = Float($0) }
+                            ), in: -1000...1000)
+                            
+                            // Rotation controls
+                            Text("Rotation")
+                            Slider(value: Binding(
+                                get: { Double(self.rotation.x) },
+                                set: { self.rotation.x = Float($0) }
+                            ), in: -10...10)
+                            Slider(value: Binding(
+                                get: { Double(self.rotation.y) },
+                                set: { self.rotation.y = Float($0) }
+                            ), in: -10...10)
+                            Slider(value: Binding(
+                                get: { Double(self.rotation.z) },
+                                set: { self.rotation.z = Float($0) }
+                            ), in: -10...10)
                         }
-                        
-                        // Position controls
-                        Text("Position")
-                        Slider(value: Binding(
-                            get: { Double(self.position.x) },
-                            set: { self.position.x = Float($0) }
-                        ), in: -1000...1000)
-                        Slider(value: Binding(
-                            get: { Double(self.position.y) },
-                            set: { self.position.y = Float($0) }
-                        ), in: -1000...1000)
-                        Slider(value: Binding(
-                            get: { Double(self.position.z) },
-                            set: { self.position.z = Float($0) }
-                        ), in: -1000...1000)
-                        
-                        // Rotation controls
-                        Text("Rotation")
-                        Slider(value: Binding(
-                            get: { Double(self.rotation.x) },
-                            set: { self.rotation.x = Float($0) }
-                        ), in: -10...10)
-                        Slider(value: Binding(
-                            get: { Double(self.rotation.y) },
-                            set: { self.rotation.y = Float($0) }
-                        ), in: -10...10)
-                        Slider(value: Binding(
-                            get: { Double(self.rotation.z) },
-                            set: { self.rotation.z = Float($0) }
-                        ), in: -10...10)
                     }
                 }
                 
