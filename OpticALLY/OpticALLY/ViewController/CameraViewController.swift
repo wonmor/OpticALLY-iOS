@@ -585,6 +585,15 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                 // Add the sphere as a child of the face node
                 node!.addChildNode(sphere)
                 
+                let previewSphere = SCNNode(geometry: SCNSphere(radius: 0.005))
+                
+                // Convert hit test result to face node's local coordinate system
+                let localCoordinatesPreview = previewFaceNode!.convertPosition(result.worldCoordinates, from: nil)
+                previewSphere.position = localCoordinatesPreview
+                
+                // Add the sphere as a child of the face node
+                previewFaceNode!.addChildNode(previewSphere)
+                
                 break
             }
         }
