@@ -266,16 +266,6 @@ struct ExternalData {
                 let depthPointer = CVPixelBufferGetBaseAddress(depthDataMap)!.advanced(by: depthOffset).assumingMemoryBound(to: UInt16.self)
                 let depthValue = Float(depthPointer.pointee)
                 depthValues.append(depthValue)
-                
-                // Check if within threshold range for left eye
-                if x == Int(round(metadata.leftEyePosition.x)) {
-                    print("Near Left eye landmark point x: \(x), y: \(y), z: \(depthValue)")
-                }
-                
-                // Check if within threshold range for right eye
-                if x == Int(round(metadata.rightEyePosition.x)) {
-                    print("Near Right eye landmark point x: \(x), y: \(y), z: \(depthValue)")
-                }
             }
         }
         
@@ -306,6 +296,16 @@ struct ExternalData {
                 let yrw = (Float(y) - cameraIntrinsics.columns.2.y) * depthValue / cameraIntrinsics.columns.1.y
                 let vertex = SCNVector3(x: xrw, y: yrw, z: depthValue * scaleFactor)
                 
+                // Check if within threshold range for left eye
+                if Int(xrw) == Int(round(metadata.leftEyePosition.x)) && Int(yrw) == Int(round(metadata.leftEyePosition.y)) {
+                    print("Near Left eye landmark point x: \(x), y: \(y), z: \(depthValue * scaleFactor)")
+                }
+                
+                // Check if within threshold range for right eye
+                if Int(xrw) == Int(round(metadata.rightEyePosition.x)) && Int(yrw) == Int(round(metadata.rightEyePosition.y)) {
+                    print("Near Right eye landmark point x: \(x), y: \(y), z: \(depthValue * scaleFactor)")
+                }
+                
                 vertices.append(vertex)
                 
                 let colorOffset = y * bytesPerRow + x * 4 // Assuming BGRA format
@@ -322,17 +322,17 @@ struct ExternalData {
                 counter += 1
             }
         }
-        //        
+        //
         //        if let index: Int? = ExternalData.pointCloudGeometries.count,
         //           index! < ExternalData.pointCloudDataArray.count {
         //            let metadata = ExternalData.pointCloudDataArray[index!]
         //            let faceTransform = adjustARKitMatrixForSceneKit(metadata.faceAnchor.transform) // simd_float4x4
         //            let scnTransform = SCNMatrix4(faceTransform) // Convert to SCNMatrix4
         //            let invertedTransform = SCNMatrix4Invert(scnTransform)
-        //            
+        //
         //            // Assuming you have a function to extract yaw angle from the face anchor transform
         //             let yawAngle = Float(metadata.yaw)
-        //            
+        //
         //            // Calculate the counter-rotation (rotate in the opposite direction of the yaw)
         //            let counterRotation = SCNMatrix4MakeRotation(yawAngle, 0, 1, 0)
         //
