@@ -246,34 +246,6 @@ struct ExternalData {
         return atan2(transform.m21, transform.m11)
     }
     
-    static func undistortPoint(_ point: CGPoint, lensDistortionLookupTable: [Float], inverseLensDistortionLookupTable: [Float], lensDistortionCenter: CGPoint) -> CGPoint {
-        // Calculate the radial distance from the distortion center
-        let dx = point.x - lensDistortionCenter.x
-        let dy = point.y - lensDistortionCenter.y
-        let rSquared = dx * dx + dy * dy
-        let r = sqrt(rSquared)
-
-        // Normalize the radial distance based on the largest radius in the lookup table
-        let maxRadius = Float(lensDistortionLookupTable.count - 1)
-        let normalizedRadius = min(Float(r), maxRadius) / maxRadius
-
-        // Linear interpolation in the lookup table
-        let index = Int(normalizedRadius * maxRadius)
-        let nextIndex = min(index + 1, lensDistortionLookupTable.count - 1)
-        let interpolation = normalizedRadius * maxRadius - Float(index)
-        let radialDistortionFactor = lensDistortionLookupTable[index] * (1 - interpolation) + lensDistortionLookupTable[nextIndex] * interpolation
-
-        // Apply the distortion correction
-        let undistortedRadius = r / CGFloat(radialDistortionFactor)
-        let scale = undistortedRadius / r
-
-        // Correct the point coordinates
-        let undistortedX = lensDistortionCenter.x + dx * scale
-        let undistortedY = lensDistortionCenter.y + dy * scale
-
-        return CGPoint(x: undistortedX, y: undistortedY)
-    }
-    
     // Function to convert depth and color data into a point cloud geometry
     static func createAVPointCloudGeometry(depthData: AVDepthData, colorData: UnsafePointer<UInt8>, metadata: PointCloudMetadata, width: Int, height: Int, bytesPerRow: Int, scaleX: Float, scaleY: Float, scaleZ: Float, percentile: Float = 35.0) {
         var vertices: [SCNVector3] = []
@@ -282,9 +254,12 @@ struct ExternalData {
         var depthValuesForLandmarks: [Float] = []
         
         let cameraIntrinsics = depthData.cameraCalibrationData!.intrinsicMatrix
-       let lensDistortionLookupTable = convertLensDistortionLookupTable(lookupTable: depthData.cameraCalibrationData!.lensDistortionLookupTable!)
-       let inverseLensDistortionLookupTable = convertLensDistortionLookupTable(lookupTable: depthData.cameraCalibrationData!.inverseLensDistortionLookupTable!)
-       let lensDistortionCenter = CGPoint(x: CGFloat(depthData.cameraCalibrationData!.lensDistortionCenter.x), y: CGFloat(depthData.cameraCalibrationData!.lensDistortionCenter.y))
+        let inverseLensDistortionLookupTable = convertLensDistortionLookupTable(lookupTable: depthData.cameraCalibrationData!.inverseLensDistortionLookupTable!)
+        let lensDistortionLookupTable = convertLensDistortionLookupTable(lookupTable: depthData.cameraCalibrationData!.lensDistortionLookupTable!)
+        let lensDistortionCenter = CGPoint(x: CGFloat(depthData.cameraCalibrationData!.lensDistortionCenter.x), y: CGFloat(depthData.cameraCalibrationData!.lensDistortionCenter.y))
+        
+        let intrinsicWidth = depthData.cameraCalibrationData!.intrinsicMatrixReferenceDimensions.width
+        let intrinsicHeight = depthData.cameraCalibrationData!.intrinsicMatrixReferenceDimensions.height
         
         let convertedDepthData = depthData.converting(toDepthDataType: kCVPixelFormatType_DepthFloat16)
         let depthDataMap = convertedDepthData.depthDataMap
@@ -323,13 +298,8 @@ struct ExternalData {
                 }
                 
                 let scaleFactor = Float(1.5) // Custom value for depth exaggeration
-                // Apply undistortion to the point
-                let distortedPoint = CGPoint(x: x, y: y)
-                let undistortedPoint = undistortPoint(distortedPoint, lensDistortionLookupTable: lensDistortionLookupTable, inverseLensDistortionLookupTable: inverseLensDistortionLookupTable, lensDistortionCenter: lensDistortionCenter)
-
-                // Now use undistortedPoint with cameraIntrinsics for 3D conversion
-                let xrw = (Float(undistortedPoint.x) - cameraIntrinsics.columns.2.x) * depthValue / cameraIntrinsics.columns.0.x
-                let yrw = (Float(undistortedPoint.y) - cameraIntrinsics.columns.2.y) * depthValue / cameraIntrinsics.columns.1.y
+                let xrw = (Float(x) - cameraIntrinsics.columns.2.x) * depthValue / cameraIntrinsics.columns.0.x
+                let yrw = (Float(y) - cameraIntrinsics.columns.2.y) * depthValue / cameraIntrinsics.columns.1.y
                 let vertex = SCNVector3(x: xrw, y: yrw, z: depthValue * scaleFactor)
                 
                 print("Coordinate Check (\(round(metadata.leftEyePosition.x)), \(round(metadata.leftEyePosition.y))) VS. (\(x), \(y))")
@@ -549,7 +519,13 @@ struct ExternalData {
         var colors: [UIColor] = []
         var depthValues: [Float] = []
         
-        let cameraIntrinsics = calibrationData.intrinsicMatrix
+        let cameraIntrinsics = depthData.cameraCalibrationData!.intrinsicMatrix
+        let inverseLensDistortionLookupTable = convertLensDistortionLookupTable(lookupTable: depthData.cameraCalibrationData!.inverseLensDistortionLookupTable!)
+        let lensDistortionLookupTable = convertLensDistortionLookupTable(lookupTable: depthData.cameraCalibrationData!.lensDistortionLookupTable!)
+        let lensDistortionCenter = CGPoint(x: CGFloat(depthData.cameraCalibrationData!.lensDistortionCenter.x), y: CGFloat(depthData.cameraCalibrationData!.lensDistortionCenter.y))
+        
+        let intrinsicWidth = depthData.cameraCalibrationData!.intrinsicMatrixReferenceDimensions.width
+        let intrinsicHeight = depthData.cameraCalibrationData!.intrinsicMatrixReferenceDimensions.height
         
         let convertedDepthData = depthData.converting(toDepthDataType: kCVPixelFormatType_DepthFloat16)
         let depthDataMap = convertedDepthData.depthDataMap
