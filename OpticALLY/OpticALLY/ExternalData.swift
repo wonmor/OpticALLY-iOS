@@ -255,7 +255,7 @@ struct ExternalData {
 
         // Normalize the radial distance based on the largest radius in the lookup table
         let maxRadius = Float(lensDistortionLookupTable.count - 1)
-        let normalizedRadius = min(r, maxRadius) / maxRadius
+        let normalizedRadius = min(Float(r), maxRadius) / maxRadius
 
         // Linear interpolation in the lookup table
         let index = Int(normalizedRadius * maxRadius)
@@ -264,7 +264,7 @@ struct ExternalData {
         let radialDistortionFactor = lensDistortionLookupTable[index] * (1 - interpolation) + lensDistortionLookupTable[nextIndex] * interpolation
 
         // Apply the distortion correction
-        let undistortedRadius = r / radialDistortionFactor
+        let undistortedRadius = r / CGFloat(radialDistortionFactor)
         let scale = undistortedRadius / r
 
         // Correct the point coordinates
