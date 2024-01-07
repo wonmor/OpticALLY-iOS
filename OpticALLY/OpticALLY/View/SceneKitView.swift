@@ -17,21 +17,22 @@ struct SceneKitView: UIViewRepresentable {
     @Binding var selectedNodeIndex: Int?
     @Binding var position: SCNVector3
     @Binding var rotation: SCNVector3
-
+    @Binding var resetTrigger: Bool
+    
     func makeUIView(context: Context) -> SCNView {
         let scnView = SCNView()
-
+        
         // Configure the scene
         let scene = SCNScene()
         scnView.scene = scene
-
+        
         // Iterate through geometries and add each to the parent node
         for (index, node) in ExternalData.pointCloudNodes.enumerated() {
             node.position = SCNVector3(x: 0, y: 0, z: 0)
             node.eulerAngles.z = .pi / -2
-
+            
             scene.rootNode.addChildNode(node)
-
+            
             // Add corresponding face geometry data
             if index < ExternalData.pointCloudDataArray.count {
                 print("faceNode, yup!")
@@ -48,8 +49,14 @@ struct SceneKitView: UIViewRepresentable {
         
         return scnView
     }
-
+    
     func updateUIView(_ scnView: SCNView, context: Context) {
+        if resetTrigger {
+           scnView.scene = SCNScene() // Reset the scene
+           // Reconfigure the scene if needed
+           resetTrigger = false // Reset the trigger
+       }
+        
         // Update the selected node's position and rotation
         if let index = selectedNodeIndex,
            let node = scnView.scene?.rootNode.childNodes[index] {
@@ -63,7 +70,7 @@ struct SceneKitUSDZView: UIViewRepresentable {
     var usdzFileName: String
     
     @ObservedObject var viewModel: FaceTrackingViewModel
-
+    
     func makeUIView(context: Context) -> SCNView {
         let sceneView = SCNView()
         sceneView.autoenablesDefaultLighting = true
@@ -73,7 +80,7 @@ struct SceneKitUSDZView: UIViewRepresentable {
             let transform = SCNMatrix4(faceAnchor.transform)
             sceneView.scene?.rootNode.childNodes.first?.transform = transform
         }
-
+        
         if let scene = SCNScene(named: usdzFileName) {
             // Enumerate through all nodes in the scene
             scene.rootNode.enumerateChildNodes { (node, _) in
@@ -85,10 +92,10 @@ struct SceneKitUSDZView: UIViewRepresentable {
             
             sceneView.scene = scene
         }
-
+        
         return sceneView
     }
-
+    
     func updateUIView(_ uiView: SCNView, context: Context) {
         guard let faceAnchor = viewModel.faceAnchor else { return }
         let faceTransform = SCNMatrix4(faceAnchor.transform)
@@ -99,10 +106,10 @@ struct SceneKitUSDZView: UIViewRepresentable {
 
 struct SceneKitMDLView: UIViewRepresentable {
     var mdlAsset: MDLAsset
-
+    
     func makeUIView(context: Context) -> SCNView {
         let scnView = SCNView()
-
+        
         // Configure the scene
         let scene = SCNScene()
         scnView.scene = scene
@@ -114,20 +121,20 @@ struct SceneKitMDLView: UIViewRepresentable {
             }
             
             ExternalData.verticesCount = object.vertexCount
-
+            
             let node = SCNNode(geometry: geometry)
             node.position = SCNVector3(x: 0, y: 0, z: 0)
             node.eulerAngles.z = .pi / -2
-
+            
             scene.rootNode.addChildNode(node)
         }
-
+        
         scnView.autoenablesDefaultLighting = true
         scnView.allowsCameraControl = true
         scnView.backgroundColor = UIColor.black
-
+        
         return scnView
     }
-
+    
     func updateUIView(_ uiView: SCNView, context: Context) {}
 }

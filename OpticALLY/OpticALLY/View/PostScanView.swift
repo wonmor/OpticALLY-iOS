@@ -22,6 +22,7 @@ struct PostScanView: View {
     @State private var showAlert = false
     @State private var isInteractionDisabled = false
     @State private var showTimeoutAlert = false
+    @State private var resetSceneKitView: Bool = false
     
     @State private var selectedNodeIndex: Int?
     @State private var position = SCNVector3(0, 0, 0)
@@ -47,6 +48,7 @@ struct PostScanView: View {
                     Button(action: {
                         ExternalData.reset() {
                             exportViewModel.reset() {
+                                resetSceneKitView = true
                                 globalState.currentView = .scanning
                             }
                         }
@@ -86,7 +88,7 @@ struct PostScanView: View {
                     
                 } else if !ExternalData.pointCloudGeometries.isEmpty {
                     VStack {
-                        SceneKitView(selectedNodeIndex: $selectedNodeIndex, position: $position, rotation: $rotation)
+                        SceneKitView(selectedNodeIndex: $selectedNodeIndex, position: $position, rotation: $rotation, resetTrigger: $resetSceneKitView)
                             .frame(height: 300)
                         
                         if debugMode {
