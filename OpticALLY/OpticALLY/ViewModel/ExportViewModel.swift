@@ -42,13 +42,15 @@ class ExportViewModel: ObservableObject {
     
     private var exportStartTime: Date?
     
-    func reset() {
+    func reset(completion: @escaping () -> Void) {
         fileURL = nil
         showShareSheet = false
         isLoading = false
         estimatedExportTime = nil
         hasTurnedRight = false
         hasTurnedLeft = false
+        
+        completion()
     }
     
     func fetchExportDurations() {

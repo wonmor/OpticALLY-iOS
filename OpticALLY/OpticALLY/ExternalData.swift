@@ -81,10 +81,10 @@ struct ExternalData {
     static var scaleY: Float = 0.0
     static var scaleZ: Float = 0.0
     
-    var vertices: [SCNVector3] = []
-    var colors: [UIColor] = []
+    static var vertices: [SCNVector3] = []
+    static var colors: [UIColor] = []
     
-    static func reset() {
+    static func reset(completion: @escaping () -> Void) {
         // Function to reset all variables
         renderingEnabled = true
         isSavingFileAsPLY = false
@@ -93,7 +93,14 @@ struct ExternalData {
         pointCloudGeometries.removeAll()
         pointCloudDataArray.removeAll()
         verticesCount = 0
+        
+        vertices.removeAll()
+        colors.removeAll()
+        
+        // Call the completion handler to indicate that the reset is complete
+        completion()
     }
+
     
     static func convertDepthData(depthMap: CVPixelBuffer) -> [[Float16]] {
         let width = CVPixelBufferGetWidth(depthMap)
