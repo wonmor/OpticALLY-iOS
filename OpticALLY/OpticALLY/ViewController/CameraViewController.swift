@@ -433,35 +433,44 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                 // Define an array of facial landmarks
                 let facialLandmarks = [leftEyePosition, rightEyePosition]
 
-                for landmark in facialLandmarks {
-                    let location = landmark
-                    
-                    let hitTestResults = arSCNView?.hitTest(location, options: nil) ?? []
-                    
-                    for result in hitTestResults {
-                        if let node: SCNNode? = result.node, node!.geometry is ARSCNFaceGeometry {
-                            let sphere = SCNNode(geometry: SCNSphere(radius: 0.005))
-                            
-                            // Convert hit test result to face node's local coordinate system
-                            let localCoordinates = node!.convertPosition(result.worldCoordinates, from: nil)
-                            sphere.position = localCoordinates
-                            
-                            // Add the sphere as a child of the face node
-                            node!.addChildNode(sphere)
-                            
-                            let previewSphere = SCNNode(geometry: SCNSphere(radius: 0.005))
-                            
-                            // Convert hit test result to face node's local coordinate system
-                            let localCoordinatesPreview = previewFaceNode!.convertPosition(result.worldCoordinates, from: nil)
-                            previewSphere.position = localCoordinatesPreview
-                            
-                            // Add the sphere as a child of the face node
-                            previewFaceNode!.addChildNode(previewSphere)
-                            
-                            break
-                        }
-                    }
-                }
+//                for landmark in facialLandmarks {
+//                    let location = landmark
+//                    
+//                    let hitTestResults = arSCNView?.hitTest(location, options: nil) ?? []
+//                    
+//                    for result in hitTestResults {
+//                        if let node: SCNNode? = result.node, node!.geometry is ARSCNFaceGeometry {
+//                            let sphere = SCNNode(geometry: SCNSphere(radius: 0.005))
+//                            
+//                            // Convert hit test result to face node's local coordinate system
+//                            let localCoordinates = node!.convertPosition(result.worldCoordinates, from: nil)
+//                            sphere.position = localCoordinates
+//                            
+//                            // Add the sphere as a child of the face node
+//                            node!.addChildNode(sphere)
+//                            
+//                            let previewSphere = SCNNode(geometry: SCNSphere(radius: 0.005))
+//                            
+//                            // Convert hit test result to face node's local coordinate system
+//                            let localCoordinatesPreview = previewFaceNode!.convertPosition(result.worldCoordinates, from: nil)
+//                            previewSphere.position = localCoordinatesPreview
+//                            
+//                            // Add the sphere as a child of the face node
+//                            previewFaceNode!.addChildNode(previewSphere)
+//                            
+//                            break
+//                        }
+//                    }
+//                }
+                
+                let leftEyeNode = SCNNode(geometry: SCNSphere(radius: 0.005)) // Create a node for the left eye
+                leftEyeNode.position = leftEyePosition3D // Set the position
+                
+                let rightEyeNode = SCNNode(geometry: SCNSphere(radius: 0.005))
+                rightEyeNode.position = rightEyePosition3D
+
+                previewFaceNode.addChildNode(leftEyeNode)
+                previewFaceNode.addChildNode(rightEyeNode)
             }
         }
     }
