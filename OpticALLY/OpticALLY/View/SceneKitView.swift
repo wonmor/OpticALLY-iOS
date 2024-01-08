@@ -26,6 +26,7 @@ struct SceneKitView: UIViewRepresentable {
 
         // Get the last three nodes from ExternalData.pointCloudNodes
         let lastThreeNodes = ExternalData.pointCloudNodes.suffix(3)
+        let lastThreeMetadatas = ExternalData.pointCloudDataArray.suffix(3)
         
         for (index, node) in lastThreeNodes.enumerated() {
             // Set the position and orientation of the node
@@ -41,6 +42,17 @@ struct SceneKitView: UIViewRepresentable {
                 let faceNode = ExternalData.pointCloudDataArray[actualIndex].faceNode
                 // Add faceNode to the scene or perform additional setup
             }
+            
+            // Add spheres for left and right eye positions
+            for eyePosition in [lastThreeMetadatas[index].leftEyePosition3D, lastThreeMetadatas[index].rightEyePosition3D] {
+                print("Eye Position: \(eyePosition)")
+                
+                // DEBUG: BELOW LINE DOES NOT WORK WHILE ABOVE ADDCHILDNODE IS ACTIVE... RESOLVE IT!
+               let sphereNode = SCNNode(geometry: SCNSphere(radius: 0.01)) // Adjust radius as needed
+               sphereNode.geometry?.firstMaterial?.diffuse.contents = UIColor.red
+               sphereNode.position = eyePosition
+               scene.rootNode.addChildNode(sphereNode)
+           }
         }
 
         scnView.autoenablesDefaultLighting = true
