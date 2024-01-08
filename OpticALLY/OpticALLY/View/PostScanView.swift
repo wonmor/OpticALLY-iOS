@@ -27,7 +27,7 @@ struct PostScanView: View {
     @State private var selectedNodeIndex: Int?
     @State private var position = SCNVector3(0, 0, 0)
     @State private var rotation = SCNVector3(0, 0, 0)
-    @State private var nodeCount = ExternalData.pointCloudNodes.count
+    @State private var nodeCount = ExternalData.pointCloudGeometries.suffix(3).count
     
     var body: some View {
         ZStack {

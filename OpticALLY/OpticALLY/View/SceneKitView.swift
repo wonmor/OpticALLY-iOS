@@ -21,42 +21,42 @@ struct SceneKitView: UIViewRepresentable {
     
     func makeUIView(context: Context) -> SCNView {
         let scnView = SCNView()
-        
-        // Configure the scene
         let scene = SCNScene()
         scnView.scene = scene
+
+        // Get the last three nodes from ExternalData.pointCloudNodes
+        let lastThreeNodes = ExternalData.pointCloudNodes.suffix(3)
         
-        // Iterate through geometries and add each to the parent node
-        for (index, node) in ExternalData.pointCloudNodes.enumerated() {
+        for (index, node) in lastThreeNodes.enumerated() {
+            // Set the position and orientation of the node
             node.position = SCNVector3(x: 0, y: 0, z: 0)
             node.eulerAngles.z = .pi / -2
             
+            // Add the node to the scene
             scene.rootNode.addChildNode(node)
-            
-            // Add corresponding face geometry data
-            if index < ExternalData.pointCloudDataArray.count {
-                print("faceNode, yup!")
-                let faceNode = ExternalData.pointCloudDataArray[index].faceNode
-                let faceAnchor = ExternalData.pointCloudDataArray[index].faceAnchor
-                
-                // parentNode.addChildNode(faceNode)
+
+            // Add corresponding face geometry data, if available
+            let actualIndex = ExternalData.pointCloudNodes.count - 3 + index
+            if actualIndex < ExternalData.pointCloudDataArray.count {
+                let faceNode = ExternalData.pointCloudDataArray[actualIndex].faceNode
+                // Add faceNode to the scene or perform additional setup
             }
         }
-        
+
         scnView.autoenablesDefaultLighting = true
         scnView.allowsCameraControl = true
         scnView.backgroundColor = UIColor.white
-        
+
         return scnView
     }
-    
+
     func updateUIView(_ scnView: SCNView, context: Context) {
         if resetTrigger {
-           scnView.scene = SCNScene() // Reset the scene
-           // Reconfigure the scene if needed
-           resetTrigger = false // Reset the trigger
-       }
-        
+            scnView.scene = SCNScene() // Reset the scene
+            // Reconfigure the scene if needed
+            resetTrigger = false // Reset the trigger
+        }
+
         // Update the selected node's position and rotation
         if let index = selectedNodeIndex,
            let node = scnView.scene?.rootNode.childNodes[index] {
