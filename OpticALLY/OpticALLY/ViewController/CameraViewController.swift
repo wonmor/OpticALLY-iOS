@@ -430,10 +430,6 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                 viewModel?.rightEyePosition = rightEyePosition
                 viewModel?.chinPosition = chinPosition
                 
-                viewModel?.leftEyePosition3D = leftEyePosition3D
-                viewModel?.rightEyePosition3D = rightEyePosition3D
-                viewModel?.chinPosition3D = chinPosition3D
-                
                 // Define an array of facial landmarks
                 let facialLandmarks = [leftEyePosition, rightEyePosition]
 
