@@ -29,6 +29,13 @@ struct PostScanView: View {
     @State private var rotation = SCNVector3(0, 0, 0)
     @State private var nodeCount = ExternalData.pointCloudGeometries.suffix(3).count
     
+    func reset() {
+        position = SCNVector3(0, 0, 0)
+        rotation = SCNVector3(0, 0, 0)
+        
+        selectedNodeIndex = nil
+    }
+    
     var body: some View {
         ZStack {
             if showCompletionCheckmark {
@@ -48,6 +55,8 @@ struct PostScanView: View {
                     Button(action: {
                         ExternalData.reset() {
                             exportViewModel.reset() {
+                                // Reset position and rotation to default values
+                                reset()
                                 resetSceneKitView = true
                                 globalState.currentView = .scanning
                             }
