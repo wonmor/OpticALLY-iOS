@@ -240,7 +240,7 @@ struct ExportView: View {
                         
                     } else {
                         ScrollView {
-                            Text("PUPIL DISTANCE\n\(faceTrackingViewModel.pupilDistance) mm")
+                            Text("PUPIL DISTANCE\n\(String(format: "%.1f", faceTrackingViewModel.pupilDistance)) mm")
                                 .padding()
                                 .frame(maxWidth: .infinity, alignment: .center)
                                 .multilineTextAlignment(.center)
