@@ -100,7 +100,6 @@ struct ExternalData {
         // Call the completion handler to indicate that the reset is complete
         completion()
     }
-
     
     static func convertDepthData(depthMap: CVPixelBuffer) -> [[Float16]] {
         let width = CVPixelBufferGetWidth(depthMap)

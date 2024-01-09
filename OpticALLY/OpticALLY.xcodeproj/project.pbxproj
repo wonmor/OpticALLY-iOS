@@ -13,6 +13,7 @@
 		9614F0B12ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */; };
 		961D67E32B12BDFC00DBB883 /* SceneKitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 961D67E22B12BDFC00DBB883 /* SceneKitView.swift */; };
 		961D67E52B12C64A00DBB883 /* CreditsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 961D67E42B12C64A00DBB883 /* CreditsView.swift */; };
+		9635D9E52B4DF9CD002E8E84 /* PythonKit in Frameworks */ = {isa = PBXBuildFile; productRef = 9635D9E42B4DF9CD002E8E84 /* PythonKit */; };
 		963DF9B32AFEDAF700E6E589 /* PostScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 963DF9B22AFEDAF600E6E589 /* PostScanView.swift */; };
 		9646DC6C2B1064F500092549 /* glasses.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 9646DC6B2B1064F500092549 /* glasses.mp4 */; };
 		96491C5F2AFD746300FD3666 /* ConsoleOutputCatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96491C5E2AFD746300FD3666 /* ConsoleOutputCatcher.swift */; };
@@ -149,6 +150,7 @@
 				9679F8E42AD0912200686F13 /* ZipArchive in Frameworks */,
 				969DF1CC2B1291D400FA9ABE /* FirebaseFirestore in Frameworks */,
 				969DF1D02B1291D400FA9ABE /* FirebaseStorage in Frameworks */,
+				9635D9E52B4DF9CD002E8E84 /* PythonKit in Frameworks */,
 				969DF1CA2B1291D400FA9ABE /* FirebaseAuth in Frameworks */,
 				969DF1CE2B1291D400FA9ABE /* FirebaseFirestoreSwift in Frameworks */,
 				9613ADFA2B2BE7B50072E47E /* ZIPFoundation in Frameworks */,
@@ -352,6 +354,7 @@
 				969DF1CD2B1291D400FA9ABE /* FirebaseFirestoreSwift */,
 				969DF1CF2B1291D400FA9ABE /* FirebaseStorage */,
 				9613ADF92B2BE7B50072E47E /* ZIPFoundation */,
+				9635D9E42B4DF9CD002E8E84 /* PythonKit */,
 			);
 			productName = OpticALLY;
 			productReference = 967EE0612AAE06FB000C4D5F /* OpticALLY.app */;
@@ -432,6 +435,7 @@
 				9679F8E22AD0912200686F13 /* XCRemoteSwiftPackageReference "ZipArchive" */,
 				969DF1C82B1291D400FA9ABE /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				9613ADF82B2BE7B50072E47E /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
+				9635D9E32B4DF9CD002E8E84 /* XCRemoteSwiftPackageReference "PythonKit" */,
 			);
 			productRefGroup = 967EE0622AAE06FB000C4D5F /* Products */;
 			projectDirPath = "";
@@ -889,6 +893,14 @@
 				minimumVersion = 0.9.17;
 			};
 		};
+		9635D9E32B4DF9CD002E8E84 /* XCRemoteSwiftPackageReference "PythonKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pvieito/PythonKit.git";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
 		9679F8E22AD0912200686F13 /* XCRemoteSwiftPackageReference "ZipArchive" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/ZipArchive/ZipArchive.git";
@@ -928,6 +940,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 9613ADF82B2BE7B50072E47E /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
 			productName = ZIPFoundation;
+		};
+		9635D9E42B4DF9CD002E8E84 /* PythonKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9635D9E32B4DF9CD002E8E84 /* XCRemoteSwiftPackageReference "PythonKit" */;
+			productName = PythonKit;
 		};
 		9679F8E32AD0912200686F13 /* ZipArchive */ = {
 			isa = XCSwiftPackageProductDependency;
