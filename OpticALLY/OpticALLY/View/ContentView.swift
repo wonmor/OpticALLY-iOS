@@ -6,10 +6,20 @@
 //
 
 import SwiftUI
+import PythonKit
 
 struct ContentView: View {
     @Environment(\.scenePhase) var scenePhase
     @EnvironmentObject var globalState: GlobalState
+    
+    init() {
+        let sys = Python.import("sys")
+        print("Python Version: \(sys.version_info.major).\(sys.version_info.minor)")
+        print("Python Encoding: \(sys.getdefaultencoding().upper())")
+        print("Python Path: \(sys.path)")
+
+        _ = Python.import("math") // verifies `lib-dynload` is found and signed successfully
+    }
 
     // Use a unique ID for each case of the view
     var uniqueID: String {
