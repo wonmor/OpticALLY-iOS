@@ -1,0 +1,6 @@
+framework module Pods_OpticALLYTests {
+  umbrella header "Pods-OpticALLYTests-umbrella.h"
+
+  export *
+  module * { export * }
+}
