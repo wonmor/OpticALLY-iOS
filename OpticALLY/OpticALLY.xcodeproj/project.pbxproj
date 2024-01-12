@@ -7,76 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		5802F46045FDC8B0A8FCBFF3 /* Pods_OpticALLY.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 71DA1325E0F65DBE4614ED02 /* Pods_OpticALLY.framework */; };
 		6016E7901D3F4DB25FB64160 /* Pods_OpticALLYTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0D77500E86B80935F9EC575F /* Pods_OpticALLYTests.framework */; };
-		9613ADFA2B2BE7B50072E47E /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 9613ADF92B2BE7B50072E47E /* ZIPFoundation */; };
 		9614F0B02ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */; };
 		9614F0B12ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */; };
 		961D67E32B12BDFC00DBB883 /* SceneKitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 961D67E22B12BDFC00DBB883 /* SceneKitView.swift */; };
 		961D67E52B12C64A00DBB883 /* CreditsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 961D67E42B12C64A00DBB883 /* CreditsView.swift */; };
-		9635D9E52B4DF9CD002E8E84 /* PythonKit in Frameworks */ = {isa = PBXBuildFile; productRef = 9635D9E42B4DF9CD002E8E84 /* PythonKit */; };
-		9635DD192B4ED856002E8E84 /* _zoneinfo.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635D9EB2B4ED855002E8E84 /* _zoneinfo.cpython-39-iphoneos.dylib */; };
-		9635DD1D2B4ED856002E8E84 /* _struct.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635D9EF2B4ED855002E8E84 /* _struct.cpython-39-iphoneos.dylib */; };
-		9635DD242B4ED856002E8E84 /* _opcode.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635D9F62B4ED855002E8E84 /* _opcode.cpython-39-iphoneos.dylib */; };
-		9635DD252B4ED856002E8E84 /* _elementtree.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635D9F72B4ED855002E8E84 /* _elementtree.cpython-39-iphoneos.dylib */; };
-		9635DD262B4ED856002E8E84 /* _json.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635D9F82B4ED855002E8E84 /* _json.cpython-39-iphoneos.dylib */; };
-		9635DD272B4ED856002E8E84 /* _hashlib.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635D9F92B4ED855002E8E84 /* _hashlib.cpython-39-iphoneos.dylib */; };
-		9635DD292B4ED856002E8E84 /* _blake2.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635D9FB2B4ED855002E8E84 /* _blake2.cpython-39-iphoneos.dylib */; };
-		9635DD2B2B4ED856002E8E84 /* _codecs_cn.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635D9FD2B4ED855002E8E84 /* _codecs_cn.cpython-39-iphoneos.dylib */; };
-		9635DD2C2B4ED856002E8E84 /* _ctypes.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635D9FE2B4ED855002E8E84 /* _ctypes.cpython-39-iphoneos.dylib */; };
-		9635DD2D2B4ED856002E8E84 /* _sha512.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635D9FF2B4ED855002E8E84 /* _sha512.cpython-39-iphoneos.dylib */; };
-		9635DD2E2B4ED856002E8E84 /* resource.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA002B4ED855002E8E84 /* resource.cpython-39-iphoneos.dylib */; };
-		9635DD332B4ED856002E8E84 /* _sqlite3.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA052B4ED855002E8E84 /* _sqlite3.cpython-39-iphoneos.dylib */; };
-		9635DD372B4ED856002E8E84 /* _lzma.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA092B4ED855002E8E84 /* _lzma.cpython-39-iphoneos.dylib */; };
-		9635DD392B4ED856002E8E84 /* _queue.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA0B2B4ED855002E8E84 /* _queue.cpython-39-iphoneos.dylib */; };
-		9635DD3A2B4ED856002E8E84 /* unicodedata.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA0C2B4ED855002E8E84 /* unicodedata.cpython-39-iphoneos.dylib */; };
-		9635DD3D2B4ED856002E8E84 /* _decimal.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA0F2B4ED855002E8E84 /* _decimal.cpython-39-iphoneos.dylib */; };
-		9635DD3E2B4ED856002E8E84 /* syslog.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA102B4ED855002E8E84 /* syslog.cpython-39-iphoneos.dylib */; };
-		9635DD412B4ED856002E8E84 /* _dbm.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA132B4ED855002E8E84 /* _dbm.cpython-39-iphoneos.dylib */; };
-		9635DD422B4ED856002E8E84 /* _bisect.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA142B4ED855002E8E84 /* _bisect.cpython-39-iphoneos.dylib */; };
-		9635DD462B4ED856002E8E84 /* _statistics.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA182B4ED855002E8E84 /* _statistics.cpython-39-iphoneos.dylib */; };
-		9635DD482B4ED856002E8E84 /* _md5.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA1A2B4ED855002E8E84 /* _md5.cpython-39-iphoneos.dylib */; };
-		9635DD492B4ED856002E8E84 /* _contextvars.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA1B2B4ED855002E8E84 /* _contextvars.cpython-39-iphoneos.dylib */; };
-		9635DD4B2B4ED856002E8E84 /* _codecs_hk.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA1D2B4ED855002E8E84 /* _codecs_hk.cpython-39-iphoneos.dylib */; };
-		9635DD4C2B4ED856002E8E84 /* _crypt.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA1E2B4ED855002E8E84 /* _crypt.cpython-39-iphoneos.dylib */; };
-		9635DD4D2B4ED856002E8E84 /* _lsprof.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA1F2B4ED855002E8E84 /* _lsprof.cpython-39-iphoneos.dylib */; };
-		9635DD4F2B4ED856002E8E84 /* math.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA212B4ED855002E8E84 /* math.cpython-39-iphoneos.dylib */; };
-		9635DD502B4ED856002E8E84 /* _codecs_tw.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA222B4ED855002E8E84 /* _codecs_tw.cpython-39-iphoneos.dylib */; };
-		9635DD522B4ED856002E8E84 /* _posixsubprocess.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA242B4ED855002E8E84 /* _posixsubprocess.cpython-39-iphoneos.dylib */; };
-		9635DD542B4ED856002E8E84 /* _bz2.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA262B4ED855002E8E84 /* _bz2.cpython-39-iphoneos.dylib */; };
-		9635DD552B4ED856002E8E84 /* _multibytecodec.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA272B4ED855002E8E84 /* _multibytecodec.cpython-39-iphoneos.dylib */; };
-		9635DD572B4ED856002E8E84 /* _codecs_kr.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA292B4ED855002E8E84 /* _codecs_kr.cpython-39-iphoneos.dylib */; };
-		9635DD582B4ED856002E8E84 /* _csv.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA2A2B4ED855002E8E84 /* _csv.cpython-39-iphoneos.dylib */; };
-		9635DD5A2B4ED856002E8E84 /* grp.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA2C2B4ED855002E8E84 /* grp.cpython-39-iphoneos.dylib */; };
-		9635DD5B2B4ED856002E8E84 /* array.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA2D2B4ED855002E8E84 /* array.cpython-39-iphoneos.dylib */; };
-		9635DD5C2B4ED856002E8E84 /* _sha256.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA2E2B4ED855002E8E84 /* _sha256.cpython-39-iphoneos.dylib */; };
-		9635DD5D2B4ED856002E8E84 /* _posixshmem.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA2F2B4ED855002E8E84 /* _posixshmem.cpython-39-iphoneos.dylib */; };
-		9635DD5E2B4ED856002E8E84 /* math.cpython-39-iphonesimulator.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA302B4ED855002E8E84 /* math.cpython-39-iphonesimulator.dylib */; };
-		9635DD612B4ED856002E8E84 /* _multiprocessing.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA332B4ED855002E8E84 /* _multiprocessing.cpython-39-iphoneos.dylib */; };
-		9635DD622B4ED856002E8E84 /* _heapq.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA342B4ED855002E8E84 /* _heapq.cpython-39-iphoneos.dylib */; };
-		9635DD632B4ED856002E8E84 /* _sha3.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA352B4ED855002E8E84 /* _sha3.cpython-39-iphoneos.dylib */; };
-		9635DD642B4ED856002E8E84 /* _codecs_iso2022.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA362B4ED855002E8E84 /* _codecs_iso2022.cpython-39-iphoneos.dylib */; };
-		9635DD662B4ED856002E8E84 /* _random.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA382B4ED855002E8E84 /* _random.cpython-39-iphoneos.dylib */; };
-		9635DD672B4ED856002E8E84 /* parser.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA392B4ED855002E8E84 /* parser.cpython-39-iphoneos.dylib */; };
-		9635DD682B4ED856002E8E84 /* _socket.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA3A2B4ED855002E8E84 /* _socket.cpython-39-iphoneos.dylib */; };
-		9635DD6B2B4ED856002E8E84 /* _pickle.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA3D2B4ED855002E8E84 /* _pickle.cpython-39-iphoneos.dylib */; };
-		9635DD6C2B4ED856002E8E84 /* _codecs_jp.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA3E2B4ED855002E8E84 /* _codecs_jp.cpython-39-iphoneos.dylib */; };
-		9635DD6F2B4ED856002E8E84 /* select.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA412B4ED855002E8E84 /* select.cpython-39-iphoneos.dylib */; };
-		9635DD702B4ED856002E8E84 /* zlib.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA422B4ED855002E8E84 /* zlib.cpython-39-iphoneos.dylib */; };
-		9635DD752B4ED856002E8E84 /* mmap.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA472B4ED855002E8E84 /* mmap.cpython-39-iphoneos.dylib */; };
-		9635DD762B4ED856002E8E84 /* _ssl.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA482B4ED855002E8E84 /* _ssl.cpython-39-iphoneos.dylib */; };
-		9635DD772B4ED856002E8E84 /* cmath.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA492B4ED855002E8E84 /* cmath.cpython-39-iphoneos.dylib */; };
-		9635DD7A2B4ED856002E8E84 /* termios.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA4C2B4ED855002E8E84 /* termios.cpython-39-iphoneos.dylib */; };
-		9635DD7C2B4ED856002E8E84 /* _uuid.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA4E2B4ED855002E8E84 /* _uuid.cpython-39-iphoneos.dylib */; };
-		9635DD7D2B4ED856002E8E84 /* audioop.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA4F2B4ED855002E8E84 /* audioop.cpython-39-iphoneos.dylib */; };
-		9635DD7E2B4ED856002E8E84 /* _sha1.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA502B4ED855002E8E84 /* _sha1.cpython-39-iphoneos.dylib */; };
-		9635DD832B4ED856002E8E84 /* binascii.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA552B4ED855002E8E84 /* binascii.cpython-39-iphoneos.dylib */; };
-		9635DD862B4ED856002E8E84 /* fcntl.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA582B4ED855002E8E84 /* fcntl.cpython-39-iphoneos.dylib */; };
-		9635DD882B4ED856002E8E84 /* pyexpat.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA5A2B4ED855002E8E84 /* pyexpat.cpython-39-iphoneos.dylib */; };
-		9635DD8A2B4ED856002E8E84 /* _asyncio.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA5C2B4ED855002E8E84 /* _asyncio.cpython-39-iphoneos.dylib */; };
-		9635DD8C2B4ED856002E8E84 /* _datetime.cpython-39-iphoneos.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DA5E2B4ED855002E8E84 /* _datetime.cpython-39-iphoneos.dylib */; };
-		9635E01B2B4ED857002E8E84 /* Python.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635DD152B4ED856002E8E84 /* Python.xcframework */; };
-		9635E01E2B4ED897002E8E84 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9635E01D2B4ED897002E8E84 /* SystemConfiguration.framework */; };
 		963DF9B32AFEDAF700E6E589 /* PostScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 963DF9B22AFEDAF600E6E589 /* PostScanView.swift */; };
 		96491C5F2AFD746300FD3666 /* ConsoleOutputCatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96491C5E2AFD746300FD3666 /* ConsoleOutputCatcher.swift */; };
 		9679F8CE2AD0907A00686F13 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8B32AD0907900686F13 /* AppDelegate.swift */; };
@@ -91,29 +26,22 @@
 		9679F8DE2AD0907A00686F13 /* FilterRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8C82AD0907A00686F13 /* FilterRenderer.swift */; };
 		9679F8DF2AD0907A00686F13 /* PointCloudMetalView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8C92AD0907A00686F13 /* PointCloudMetalView.mm */; };
 		9679F8E12AD0907A00686F13 /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8CC2AD0907A00686F13 /* CameraView.swift */; };
-		9679F8E42AD0912200686F13 /* ZipArchive in Frameworks */ = {isa = PBXBuildFile; productRef = 9679F8E32AD0912200686F13 /* ZipArchive */; };
 		967EE0652AAE06FB000C4D5F /* OpticALLYApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967EE0642AAE06FB000C4D5F /* OpticALLYApp.swift */; };
 		967EE0672AAE06FB000C4D5F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967EE0662AAE06FB000C4D5F /* ContentView.swift */; };
 		967EE0762AAE06FE000C4D5F /* OpticALLYTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967EE0752AAE06FE000C4D5F /* OpticALLYTests.swift */; };
 		967EE0802AAE06FE000C4D5F /* OpticALLYUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967EE07F2AAE06FE000C4D5F /* OpticALLYUITests.swift */; };
 		967EE0822AAE06FE000C4D5F /* OpticALLYUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967EE0812AAE06FE000C4D5F /* OpticALLYUITestsLaunchTests.swift */; };
-		967EE0982AAEE2C7000C4D5F /* snippet-extract in Frameworks */ = {isa = PBXBuildFile; productRef = 967EE0972AAEE2C7000C4D5F /* snippet-extract */; };
 		9680F7DB2B2283B200F38A6F /* CapturedImageSampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9680F7DA2B2283B200F38A6F /* CapturedImageSampler.swift */; };
 		9680F7DD2B22D6FD00F38A6F /* ARFaceTrackingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9680F7DC2B22D6FD00F38A6F /* ARFaceTrackingView.swift */; };
 		9680F7DF2B22D93400F38A6F /* FaceTrackingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9680F7DE2B22D93400F38A6F /* FaceTrackingViewModel.swift */; };
 		969AC2802AB7550C0096892E /* IntroductionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 969AC27F2AB7550C0096892E /* IntroductionView.swift */; };
 		969AC2822AB7554C0096892E /* Extensions+Modifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 969AC2812AB7554C0096892E /* Extensions+Modifiers.swift */; };
-		969DF1CA2B1291D400FA9ABE /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 969DF1C92B1291D400FA9ABE /* FirebaseAuth */; };
-		969DF1CC2B1291D400FA9ABE /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 969DF1CB2B1291D400FA9ABE /* FirebaseFirestore */; };
-		969DF1CE2B1291D400FA9ABE /* FirebaseFirestoreSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 969DF1CD2B1291D400FA9ABE /* FirebaseFirestoreSwift */; };
-		969DF1D02B1291D400FA9ABE /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 969DF1CF2B1291D400FA9ABE /* FirebaseStorage */; };
 		969E42EF2ADC9D9E00E77BA7 /* promo.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 969E42ED2ADC9D9E00E77BA7 /* promo.mp4 */; };
 		969E42F02ADC9D9E00E77BA7 /* promo.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 969E42ED2ADC9D9E00E77BA7 /* promo.mp4 */; };
 		96B64F6D2B3D8FCA0003E06D /* faceTexture.metal in Sources */ = {isa = PBXBuildFile; fileRef = 96B64F6C2B3D8FCA0003E06D /* faceTexture.metal */; };
 		96B64F702B3D90410003E06D /* TextureToImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96B64F6E2B3D90410003E06D /* TextureToImage.swift */; };
 		96B64F712B3D90410003E06D /* FaceTextureGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96B64F6F2B3D90410003E06D /* FaceTextureGenerator.swift */; };
 		96B64F732B3D90490003E06D /* ScnMatrix.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96B64F722B3D90490003E06D /* ScnMatrix.swift */; };
-		96BC2ABE2AC5E9D60081550B /* DevicePpi in Frameworks */ = {isa = PBXBuildFile; productRef = 96BC2ABD2AC5E9D60081550B /* DevicePpi */; };
 		96F0CF182B12A34400417716 /* ExternalData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF172B12A34400417716 /* ExternalData.swift */; };
 		96F0CF1A2B12A39100417716 /* ExportViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF192B12A39100417716 /* ExportViewModel.swift */; };
 		96F0CF1C2B12A3D500417716 /* ExportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF1B2B12A3D500417716 /* ExportView.swift */; };
@@ -981,85 +909,6 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		967EE05E2AAE06FB000C4D5F /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				9635DD6F2B4ED856002E8E84 /* select.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD882B4ED856002E8E84 /* pyexpat.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD462B4ED856002E8E84 /* _statistics.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD6C2B4ED856002E8E84 /* _codecs_jp.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD702B4ED856002E8E84 /* zlib.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD7E2B4ED856002E8E84 /* _sha1.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD752B4ED856002E8E84 /* mmap.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD7D2B4ED856002E8E84 /* audioop.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD552B4ED856002E8E84 /* _multibytecodec.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD2D2B4ED856002E8E84 /* _sha512.cpython-39-iphoneos.dylib in Frameworks */,
-				96BC2ABE2AC5E9D60081550B /* DevicePpi in Frameworks */,
-				9635DD612B4ED856002E8E84 /* _multiprocessing.cpython-39-iphoneos.dylib in Frameworks */,
-				967EE0982AAEE2C7000C4D5F /* snippet-extract in Frameworks */,
-				9635DD192B4ED856002E8E84 /* _zoneinfo.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD7A2B4ED856002E8E84 /* termios.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD772B4ED856002E8E84 /* cmath.cpython-39-iphoneos.dylib in Frameworks */,
-				9679F8E42AD0912200686F13 /* ZipArchive in Frameworks */,
-				969DF1CC2B1291D400FA9ABE /* FirebaseFirestore in Frameworks */,
-				9635DD5A2B4ED856002E8E84 /* grp.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD582B4ED856002E8E84 /* _csv.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD8C2B4ED856002E8E84 /* _datetime.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD492B4ED856002E8E84 /* _contextvars.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD3E2B4ED856002E8E84 /* syslog.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD5C2B4ED856002E8E84 /* _sha256.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD2C2B4ED856002E8E84 /* _ctypes.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD482B4ED856002E8E84 /* _md5.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD2B2B4ED856002E8E84 /* _codecs_cn.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD1D2B4ED856002E8E84 /* _struct.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD412B4ED856002E8E84 /* _dbm.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD372B4ED856002E8E84 /* _lzma.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD332B4ED856002E8E84 /* _sqlite3.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD272B4ED856002E8E84 /* _hashlib.cpython-39-iphoneos.dylib in Frameworks */,
-				969DF1D02B1291D400FA9ABE /* FirebaseStorage in Frameworks */,
-				9635DD2E2B4ED856002E8E84 /* resource.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD4D2B4ED856002E8E84 /* _lsprof.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD642B4ED856002E8E84 /* _codecs_iso2022.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD392B4ED856002E8E84 /* _queue.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD7C2B4ED856002E8E84 /* _uuid.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD5D2B4ED856002E8E84 /* _posixshmem.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD5E2B4ED856002E8E84 /* math.cpython-39-iphonesimulator.dylib in Frameworks */,
-				9635DD242B4ED856002E8E84 /* _opcode.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD4C2B4ED856002E8E84 /* _crypt.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD3D2B4ED856002E8E84 /* _decimal.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD4F2B4ED856002E8E84 /* math.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD832B4ED856002E8E84 /* binascii.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD542B4ED856002E8E84 /* _bz2.cpython-39-iphoneos.dylib in Frameworks */,
-				9635E01E2B4ED897002E8E84 /* SystemConfiguration.framework in Frameworks */,
-				9635DD572B4ED856002E8E84 /* _codecs_kr.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD522B4ED856002E8E84 /* _posixsubprocess.cpython-39-iphoneos.dylib in Frameworks */,
-				9635D9E52B4DF9CD002E8E84 /* PythonKit in Frameworks */,
-				9635DD252B4ED856002E8E84 /* _elementtree.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD672B4ED856002E8E84 /* parser.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD5B2B4ED856002E8E84 /* array.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD292B4ED856002E8E84 /* _blake2.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD8A2B4ED856002E8E84 /* _asyncio.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD862B4ED856002E8E84 /* fcntl.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD262B4ED856002E8E84 /* _json.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD632B4ED856002E8E84 /* _sha3.cpython-39-iphoneos.dylib in Frameworks */,
-				9635E01B2B4ED857002E8E84 /* Python.xcframework in Frameworks */,
-				969DF1CA2B1291D400FA9ABE /* FirebaseAuth in Frameworks */,
-				9635DD3A2B4ED856002E8E84 /* unicodedata.cpython-39-iphoneos.dylib in Frameworks */,
-				969DF1CE2B1291D400FA9ABE /* FirebaseFirestoreSwift in Frameworks */,
-				9635DD762B4ED856002E8E84 /* _ssl.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD422B4ED856002E8E84 /* _bisect.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD502B4ED856002E8E84 /* _codecs_tw.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD4B2B4ED856002E8E84 /* _codecs_hk.cpython-39-iphoneos.dylib in Frameworks */,
-				9613ADFA2B2BE7B50072E47E /* ZIPFoundation in Frameworks */,
-				9635DD622B4ED856002E8E84 /* _heapq.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD6B2B4ED856002E8E84 /* _pickle.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD682B4ED856002E8E84 /* _socket.cpython-39-iphoneos.dylib in Frameworks */,
-				9635DD662B4ED856002E8E84 /* _random.cpython-39-iphoneos.dylib in Frameworks */,
-				5802F46045FDC8B0A8FCBFF3 /* Pods_OpticALLY.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		967EE06E2AAE06FE000C4D5F /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -1089,7 +938,6 @@
 				34CD640F8F10CA628B4EE584 /* Pods-OpticALLYTests.debug.xcconfig */,
 				142BFD3AB043CC3731AC6394 /* Pods-OpticALLYTests.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -2381,7 +2229,6 @@
 			buildPhases = (
 				B26929BC540E92623434A9B0 /* [CP] Check Pods Manifest.lock */,
 				967EE05D2AAE06FB000C4D5F /* Sources */,
-				967EE05E2AAE06FB000C4D5F /* Frameworks */,
 				9635E0202B4EE1BA002E8E84 /* Purge Python Binary Modules for Non-Target Platforms */,
 				9635E0212B4EE1E9002E8E84 /* Sign Python Binary Modules */,
 			);
@@ -2479,10 +2326,10 @@
 			packageReferences = (
 				967EE0962AAEE2C7000C4D5F /* XCRemoteSwiftPackageReference "swift-docc-plugin" */,
 				96BC2ABC2AC5E9D60081550B /* XCRemoteSwiftPackageReference "DevicePpi" */,
-				9679F8E22AD0912200686F13 /* XCRemoteSwiftPackageReference "ZipArchive.git" */,
-				969DF1C82B1291D400FA9ABE /* XCRemoteSwiftPackageReference "firebase-ios-sdk.git" */,
-				9613ADF82B2BE7B50072E47E /* XCRemoteSwiftPackageReference "ZIPFoundation.git" */,
-				9635D9E32B4DF9CD002E8E84 /* XCRemoteSwiftPackageReference "PythonKit.git" */,
+				9679F8E22AD0912200686F13 /* XCRemoteSwiftPackageReference "ZipArchive" */,
+				969DF1C82B1291D400FA9ABE /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				9613ADF82B2BE7B50072E47E /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
+				9635D9E32B4DF9CD002E8E84 /* XCRemoteSwiftPackageReference "PythonKit" */,
 			);
 			productRefGroup = 967EE0622AAE06FB000C4D5F /* Products */;
 			projectDirPath = "";
@@ -3036,7 +2883,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		9613ADF82B2BE7B50072E47E /* XCRemoteSwiftPackageReference "ZIPFoundation.git" */ = {
+		9613ADF82B2BE7B50072E47E /* XCRemoteSwiftPackageReference "ZIPFoundation" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/weichsel/ZIPFoundation.git";
 			requirement = {
@@ -3044,7 +2891,7 @@
 				minimumVersion = 0.9.17;
 			};
 		};
-		9635D9E32B4DF9CD002E8E84 /* XCRemoteSwiftPackageReference "PythonKit.git" */ = {
+		9635D9E32B4DF9CD002E8E84 /* XCRemoteSwiftPackageReference "PythonKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/pvieito/PythonKit.git";
 			requirement = {
@@ -3052,7 +2899,7 @@
 				kind = branch;
 			};
 		};
-		9679F8E22AD0912200686F13 /* XCRemoteSwiftPackageReference "ZipArchive.git" */ = {
+		9679F8E22AD0912200686F13 /* XCRemoteSwiftPackageReference "ZipArchive" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/ZipArchive/ZipArchive.git";
 			requirement = {
@@ -3068,7 +2915,7 @@
 				minimumVersion = 1.3.0;
 			};
 		};
-		969DF1C82B1291D400FA9ABE /* XCRemoteSwiftPackageReference "firebase-ios-sdk.git" */ = {
+		969DF1C82B1291D400FA9ABE /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
 			requirement = {
@@ -3089,17 +2936,17 @@
 /* Begin XCSwiftPackageProductDependency section */
 		9613ADF92B2BE7B50072E47E /* ZIPFoundation */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 9613ADF82B2BE7B50072E47E /* XCRemoteSwiftPackageReference "ZIPFoundation.git" */;
+			package = 9613ADF82B2BE7B50072E47E /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
 			productName = ZIPFoundation;
 		};
 		9635D9E42B4DF9CD002E8E84 /* PythonKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 9635D9E32B4DF9CD002E8E84 /* XCRemoteSwiftPackageReference "PythonKit.git" */;
+			package = 9635D9E32B4DF9CD002E8E84 /* XCRemoteSwiftPackageReference "PythonKit" */;
 			productName = PythonKit;
 		};
 		9679F8E32AD0912200686F13 /* ZipArchive */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 9679F8E22AD0912200686F13 /* XCRemoteSwiftPackageReference "ZipArchive.git" */;
+			package = 9679F8E22AD0912200686F13 /* XCRemoteSwiftPackageReference "ZipArchive" */;
 			productName = ZipArchive;
 		};
 		967EE0972AAEE2C7000C4D5F /* snippet-extract */ = {
@@ -3109,22 +2956,22 @@
 		};
 		969DF1C92B1291D400FA9ABE /* FirebaseAuth */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 969DF1C82B1291D400FA9ABE /* XCRemoteSwiftPackageReference "firebase-ios-sdk.git" */;
+			package = 969DF1C82B1291D400FA9ABE /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseAuth;
 		};
 		969DF1CB2B1291D400FA9ABE /* FirebaseFirestore */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 969DF1C82B1291D400FA9ABE /* XCRemoteSwiftPackageReference "firebase-ios-sdk.git" */;
+			package = 969DF1C82B1291D400FA9ABE /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseFirestore;
 		};
 		969DF1CD2B1291D400FA9ABE /* FirebaseFirestoreSwift */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 969DF1C82B1291D400FA9ABE /* XCRemoteSwiftPackageReference "firebase-ios-sdk.git" */;
+			package = 969DF1C82B1291D400FA9ABE /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseFirestoreSwift;
 		};
 		969DF1CF2B1291D400FA9ABE /* FirebaseStorage */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 969DF1C82B1291D400FA9ABE /* XCRemoteSwiftPackageReference "firebase-ios-sdk.git" */;
+			package = 969DF1C82B1291D400FA9ABE /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseStorage;
 		};
 		96BC2ABD2AC5E9D60081550B /* DevicePpi */ = {
