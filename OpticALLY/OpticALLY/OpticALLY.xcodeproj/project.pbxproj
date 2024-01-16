@@ -1,0 +1,979 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		9613ADFA2B2BE7B50072E47E /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 9613ADF92B2BE7B50072E47E /* ZIPFoundation */; };
+		9614F0AF2ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */; };
+		9614F0B02ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */; };
+		9614F0B12ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */; };
+		961D67E32B12BDFC00DBB883 /* SceneKitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 961D67E22B12BDFC00DBB883 /* SceneKitView.swift */; };
+		961D67E52B12C64A00DBB883 /* CreditsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 961D67E42B12C64A00DBB883 /* CreditsView.swift */; };
+		963DF9B32AFEDAF700E6E589 /* PostScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 963DF9B22AFEDAF600E6E589 /* PostScanView.swift */; };
+		9646DC6C2B1064F500092549 /* glasses.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 9646DC6B2B1064F500092549 /* glasses.mp4 */; };
+		96491C5F2AFD746300FD3666 /* ConsoleOutputCatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96491C5E2AFD746300FD3666 /* ConsoleOutputCatcher.swift */; };
+		9679F8CE2AD0907A00686F13 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8B32AD0907900686F13 /* AppDelegate.swift */; };
+		9679F8CF2AD0907A00686F13 /* VideoMixer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8B52AD0907900686F13 /* VideoMixer.swift */; };
+		9679F8D12AD0907A00686F13 /* AAPLTransforms.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8B82AD0907900686F13 /* AAPLTransforms.mm */; };
+		9679F8D22AD0907A00686F13 /* Mixer.metal in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8B92AD0907900686F13 /* Mixer.metal */; };
+		9679F8D42AD0907A00686F13 /* PreviewMetalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8BB2AD0907900686F13 /* PreviewMetalView.swift */; };
+		9679F8D52AD0907A00686F13 /* HistogramCalculator.m in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8BC2AD0907900686F13 /* HistogramCalculator.m */; };
+		9679F8D72AD0907A00686F13 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9679F8BF2AD0907900686F13 /* LaunchScreen.storyboard */; };
+		9679F8D82AD0907A00686F13 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9679F8C02AD0907900686F13 /* Main.storyboard */; };
+		9679F8D92AD0907A00686F13 /* PointCloud.metal in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8C12AD0907900686F13 /* PointCloud.metal */; };
+		9679F8DC2AD0907A00686F13 /* PassThrough.metal in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8C42AD0907900686F13 /* PassThrough.metal */; };
+		9679F8DD2AD0907A00686F13 /* CameraViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8C52AD0907A00686F13 /* CameraViewController.swift */; };
+		9679F8DE2AD0907A00686F13 /* FilterRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8C82AD0907A00686F13 /* FilterRenderer.swift */; };
+		9679F8DF2AD0907A00686F13 /* PointCloudMetalView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8C92AD0907A00686F13 /* PointCloudMetalView.mm */; };
+		9679F8E12AD0907A00686F13 /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8CC2AD0907A00686F13 /* CameraView.swift */; };
+		9679F8E42AD0912200686F13 /* ZipArchive in Frameworks */ = {isa = PBXBuildFile; productRef = 9679F8E32AD0912200686F13 /* ZipArchive */; };
+		967EE0652AAE06FB000C4D5F /* OpticALLYApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967EE0642AAE06FB000C4D5F /* OpticALLYApp.swift */; };
+		967EE0672AAE06FB000C4D5F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967EE0662AAE06FB000C4D5F /* ContentView.swift */; };
+		967EE0692AAE06FE000C4D5F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 967EE0682AAE06FE000C4D5F /* Assets.xcassets */; };
+		967EE06C2AAE06FE000C4D5F /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 967EE06B2AAE06FE000C4D5F /* Preview Assets.xcassets */; };
+		967EE0762AAE06FE000C4D5F /* OpticALLYTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967EE0752AAE06FE000C4D5F /* OpticALLYTests.swift */; };
+		967EE0802AAE06FE000C4D5F /* OpticALLYUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967EE07F2AAE06FE000C4D5F /* OpticALLYUITests.swift */; };
+		967EE0822AAE06FE000C4D5F /* OpticALLYUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967EE0812AAE06FE000C4D5F /* OpticALLYUITestsLaunchTests.swift */; };
+		967EE0982AAEE2C7000C4D5F /* snippet-extract in Frameworks */ = {isa = PBXBuildFile; productRef = 967EE0972AAEE2C7000C4D5F /* snippet-extract */; };
+		9680F7DB2B2283B200F38A6F /* CapturedImageSampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9680F7DA2B2283B200F38A6F /* CapturedImageSampler.swift */; };
+		9680F7DD2B22D6FD00F38A6F /* ARFaceTrackingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9680F7DC2B22D6FD00F38A6F /* ARFaceTrackingView.swift */; };
+		9680F7DF2B22D93400F38A6F /* FaceTrackingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9680F7DE2B22D93400F38A6F /* FaceTrackingViewModel.swift */; };
+		969AC2802AB7550C0096892E /* IntroductionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 969AC27F2AB7550C0096892E /* IntroductionView.swift */; };
+		969AC2822AB7554C0096892E /* Extensions+Modifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 969AC2812AB7554C0096892E /* Extensions+Modifiers.swift */; };
+		969DF1C72B12916900FA9ABE /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 969DF1C62B12916900FA9ABE /* GoogleService-Info.plist */; };
+		969DF1CA2B1291D400FA9ABE /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 969DF1C92B1291D400FA9ABE /* FirebaseAuth */; };
+		969DF1CC2B1291D400FA9ABE /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 969DF1CB2B1291D400FA9ABE /* FirebaseFirestore */; };
+		969DF1CE2B1291D400FA9ABE /* FirebaseFirestoreSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 969DF1CD2B1291D400FA9ABE /* FirebaseFirestoreSwift */; };
+		969DF1D02B1291D400FA9ABE /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 969DF1CF2B1291D400FA9ABE /* FirebaseStorage */; };
+		969E42EE2ADC9D9E00E77BA7 /* promo.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 969E42ED2ADC9D9E00E77BA7 /* promo.mp4 */; };
+		969E42EF2ADC9D9E00E77BA7 /* promo.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 969E42ED2ADC9D9E00E77BA7 /* promo.mp4 */; };
+		969E42F02ADC9D9E00E77BA7 /* promo.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 969E42ED2ADC9D9E00E77BA7 /* promo.mp4 */; };
+		96B64F6B2B3D8AF70003E06D /* VideoTexturedFace.shader in Resources */ = {isa = PBXBuildFile; fileRef = 96B64F6A2B3D8AF70003E06D /* VideoTexturedFace.shader */; };
+		96B64F6D2B3D8FCA0003E06D /* faceTexture.metal in Sources */ = {isa = PBXBuildFile; fileRef = 96B64F6C2B3D8FCA0003E06D /* faceTexture.metal */; };
+		96B64F702B3D90410003E06D /* TextureToImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96B64F6E2B3D90410003E06D /* TextureToImage.swift */; };
+		96B64F712B3D90410003E06D /* FaceTextureGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96B64F6F2B3D90410003E06D /* FaceTextureGenerator.swift */; };
+		96B64F732B3D90490003E06D /* ScnMatrix.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96B64F722B3D90490003E06D /* ScnMatrix.swift */; };
+		96BC2ABE2AC5E9D60081550B /* DevicePpi in Frameworks */ = {isa = PBXBuildFile; productRef = 96BC2ABD2AC5E9D60081550B /* DevicePpi */; };
+		96F0CF182B12A34400417716 /* ExternalData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF172B12A34400417716 /* ExternalData.swift */; };
+		96F0CF1A2B12A39100417716 /* ExportViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF192B12A39100417716 /* ExportViewModel.swift */; };
+		96F0CF1C2B12A3D500417716 /* ExportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF1B2B12A3D500417716 /* ExportView.swift */; };
+		96F0CF222B12A51700417716 /* LogManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF212B12A51700417716 /* LogManager.swift */; };
+		96FC61592B146D3A00ACC840 /* HapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96FC61582B146D3A00ACC840 /* HapticManager.swift */; };
+		96FCF7322B1D65DE00F450A2 /* Male_Base_Head.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 96FCF7312B1D65DE00F450A2 /* Male_Base_Head.usdz */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		967EE0722AAE06FE000C4D5F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 967EE0592AAE06FB000C4D5F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 967EE0602AAE06FB000C4D5F;
+			remoteInfo = OpticALLY;
+		};
+		967EE07C2AAE06FE000C4D5F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 967EE0592AAE06FB000C4D5F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 967EE0602AAE06FB000C4D5F;
+			remoteInfo = OpticALLY;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = RobotoSlab.ttf; sourceTree = "<group>"; };
+		961D67E22B12BDFC00DBB883 /* SceneKitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneKitView.swift; sourceTree = "<group>"; };
+		961D67E42B12C64A00DBB883 /* CreditsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditsView.swift; sourceTree = "<group>"; };
+		963DF9B22AFEDAF600E6E589 /* PostScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostScanView.swift; sourceTree = "<group>"; };
+		9646DC6B2B1064F500092549 /* glasses.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = glasses.mp4; sourceTree = "<group>"; };
+		96491C5E2AFD746300FD3666 /* ConsoleOutputCatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsoleOutputCatcher.swift; sourceTree = "<group>"; };
+		9679F8B12AD0907800686F13 /* OpticALLY-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "OpticALLY-Bridging-Header.h"; sourceTree = "<group>"; };
+		9679F8B32AD0907900686F13 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		9679F8B42AD0907900686F13 /* HistogramCalculator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HistogramCalculator.h; sourceTree = "<group>"; };
+		9679F8B52AD0907900686F13 /* VideoMixer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoMixer.swift; sourceTree = "<group>"; };
+		9679F8B82AD0907900686F13 /* AAPLTransforms.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AAPLTransforms.mm; sourceTree = "<group>"; };
+		9679F8B92AD0907900686F13 /* Mixer.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = Mixer.metal; sourceTree = "<group>"; };
+		9679F8BA2AD0907900686F13 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		9679F8BB2AD0907900686F13 /* PreviewMetalView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreviewMetalView.swift; sourceTree = "<group>"; };
+		9679F8BC2AD0907900686F13 /* HistogramCalculator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HistogramCalculator.m; sourceTree = "<group>"; };
+		9679F8BF2AD0907900686F13 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		9679F8C02AD0907900686F13 /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
+		9679F8C12AD0907900686F13 /* PointCloud.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = PointCloud.metal; sourceTree = "<group>"; };
+		9679F8C42AD0907900686F13 /* PassThrough.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = PassThrough.metal; sourceTree = "<group>"; };
+		9679F8C52AD0907A00686F13 /* CameraViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraViewController.swift; sourceTree = "<group>"; };
+		9679F8C72AD0907A00686F13 /* PointCloudMetalView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PointCloudMetalView.h; sourceTree = "<group>"; };
+		9679F8C82AD0907A00686F13 /* FilterRenderer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FilterRenderer.swift; sourceTree = "<group>"; };
+		9679F8C92AD0907A00686F13 /* PointCloudMetalView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = PointCloudMetalView.mm; sourceTree = "<group>"; };
+		9679F8CA2AD0907A00686F13 /* AAPLTransforms.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AAPLTransforms.h; sourceTree = "<group>"; };
+		9679F8CC2AD0907A00686F13 /* CameraView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraView.swift; sourceTree = "<group>"; };
+		967EE0612AAE06FB000C4D5F /* OpticALLY.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OpticALLY.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		967EE0642AAE06FB000C4D5F /* OpticALLYApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpticALLYApp.swift; sourceTree = "<group>"; };
+		967EE0662AAE06FB000C4D5F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		967EE0682AAE06FE000C4D5F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		967EE06B2AAE06FE000C4D5F /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		967EE0712AAE06FE000C4D5F /* OpticALLYTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OpticALLYTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		967EE0752AAE06FE000C4D5F /* OpticALLYTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpticALLYTests.swift; sourceTree = "<group>"; };
+		967EE07B2AAE06FE000C4D5F /* OpticALLYUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OpticALLYUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		967EE07F2AAE06FE000C4D5F /* OpticALLYUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpticALLYUITests.swift; sourceTree = "<group>"; };
+		967EE0812AAE06FE000C4D5F /* OpticALLYUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpticALLYUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		9680F7DA2B2283B200F38A6F /* CapturedImageSampler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapturedImageSampler.swift; sourceTree = "<group>"; };
+		9680F7DC2B22D6FD00F38A6F /* ARFaceTrackingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARFaceTrackingView.swift; sourceTree = "<group>"; };
+		9680F7DE2B22D93400F38A6F /* FaceTrackingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceTrackingViewModel.swift; sourceTree = "<group>"; };
+		969AC27F2AB7550C0096892E /* IntroductionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroductionView.swift; sourceTree = "<group>"; };
+		969AC2812AB7554C0096892E /* Extensions+Modifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Extensions+Modifiers.swift"; sourceTree = "<group>"; };
+		969DF1C62B12916900FA9ABE /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		969E42ED2ADC9D9E00E77BA7 /* promo.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = promo.mp4; sourceTree = "<group>"; };
+		96B64F6A2B3D8AF70003E06D /* VideoTexturedFace.shader */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = VideoTexturedFace.shader; sourceTree = "<group>"; };
+		96B64F6C2B3D8FCA0003E06D /* faceTexture.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = faceTexture.metal; sourceTree = "<group>"; };
+		96B64F6E2B3D90410003E06D /* TextureToImage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TextureToImage.swift; sourceTree = "<group>"; };
+		96B64F6F2B3D90410003E06D /* FaceTextureGenerator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FaceTextureGenerator.swift; sourceTree = "<group>"; };
+		96B64F722B3D90490003E06D /* ScnMatrix.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScnMatrix.swift; sourceTree = "<group>"; };
+		96F0CF172B12A34400417716 /* ExternalData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalData.swift; sourceTree = "<group>"; };
+		96F0CF192B12A39100417716 /* ExportViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportViewModel.swift; sourceTree = "<group>"; };
+		96F0CF1B2B12A3D500417716 /* ExportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportView.swift; sourceTree = "<group>"; };
+		96F0CF212B12A51700417716 /* LogManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogManager.swift; sourceTree = "<group>"; };
+		96FC61582B146D3A00ACC840 /* HapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
+		96FCF7312B1D65DE00F450A2 /* Male_Base_Head.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = Male_Base_Head.usdz; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		967EE05E2AAE06FB000C4D5F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				96BC2ABE2AC5E9D60081550B /* DevicePpi in Frameworks */,
+				967EE0982AAEE2C7000C4D5F /* snippet-extract in Frameworks */,
+				9679F8E42AD0912200686F13 /* ZipArchive in Frameworks */,
+				969DF1CC2B1291D400FA9ABE /* FirebaseFirestore in Frameworks */,
+				969DF1D02B1291D400FA9ABE /* FirebaseStorage in Frameworks */,
+				969DF1CA2B1291D400FA9ABE /* FirebaseAuth in Frameworks */,
+				969DF1CE2B1291D400FA9ABE /* FirebaseFirestoreSwift in Frameworks */,
+				9613ADFA2B2BE7B50072E47E /* ZIPFoundation in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		967EE06E2AAE06FE000C4D5F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		967EE0782AAE06FE000C4D5F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		9679F8E82AD0956E00686F13 /* Storyboard */ = {
+			isa = PBXGroup;
+			children = (
+				9679F8BF2AD0907900686F13 /* LaunchScreen.storyboard */,
+				9679F8C02AD0907900686F13 /* Main.storyboard */,
+			);
+			path = Storyboard;
+			sourceTree = "<group>";
+		};
+		9679F8EB2AD095AA00686F13 /* ViewController */ = {
+			isa = PBXGroup;
+			children = (
+				9679F8C52AD0907A00686F13 /* CameraViewController.swift */,
+			);
+			path = ViewController;
+			sourceTree = "<group>";
+		};
+		9679F8EC2AD095F200686F13 /* Shader */ = {
+			isa = PBXGroup;
+			children = (
+				9679F8B92AD0907900686F13 /* Mixer.metal */,
+				9679F8C42AD0907900686F13 /* PassThrough.metal */,
+				9679F8B52AD0907900686F13 /* VideoMixer.swift */,
+				9679F8B42AD0907900686F13 /* HistogramCalculator.h */,
+				9679F8BC2AD0907900686F13 /* HistogramCalculator.m */,
+				9679F8CA2AD0907A00686F13 /* AAPLTransforms.h */,
+				9679F8C72AD0907A00686F13 /* PointCloudMetalView.h */,
+				9679F8C92AD0907A00686F13 /* PointCloudMetalView.mm */,
+				9679F8C82AD0907A00686F13 /* FilterRenderer.swift */,
+				9679F8B82AD0907900686F13 /* AAPLTransforms.mm */,
+				9679F8C12AD0907900686F13 /* PointCloud.metal */,
+			);
+			path = Shader;
+			sourceTree = "<group>";
+		};
+		9679F8ED2AD0961600686F13 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				96491C5E2AFD746300FD3666 /* ConsoleOutputCatcher.swift */,
+				96B64F722B3D90490003E06D /* ScnMatrix.swift */,
+				969AC2812AB7554C0096892E /* Extensions+Modifiers.swift */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		967EE0582AAE06FB000C4D5F = {
+			isa = PBXGroup;
+			children = (
+				967EE0632AAE06FB000C4D5F /* OpticALLY */,
+				967EE0742AAE06FE000C4D5F /* OpticALLYTests */,
+				967EE07E2AAE06FE000C4D5F /* OpticALLYUITests */,
+				967EE0622AAE06FB000C4D5F /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		967EE0622AAE06FB000C4D5F /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				967EE0612AAE06FB000C4D5F /* OpticALLY.app */,
+				967EE0712AAE06FE000C4D5F /* OpticALLYTests.xctest */,
+				967EE07B2AAE06FE000C4D5F /* OpticALLYUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		967EE0632AAE06FB000C4D5F /* OpticALLY */ = {
+			isa = PBXGroup;
+			children = (
+				969DF1C62B12916900FA9ABE /* GoogleService-Info.plist */,
+				969E42E82ADC9ABD00E77BA7 /* Resources */,
+				9679F8ED2AD0961600686F13 /* Shared */,
+				9679F8EC2AD095F200686F13 /* Shader */,
+				9679F8EB2AD095AA00686F13 /* ViewController */,
+				9679F8E82AD0956E00686F13 /* Storyboard */,
+				967EE0912AAEDBD2000C4D5F /* ViewModel */,
+				967EE0902AAEDBBE000C4D5F /* View */,
+				967EE0642AAE06FB000C4D5F /* OpticALLYApp.swift */,
+				9679F8B32AD0907900686F13 /* AppDelegate.swift */,
+				96F0CF172B12A34400417716 /* ExternalData.swift */,
+				9680F7DA2B2283B200F38A6F /* CapturedImageSampler.swift */,
+				96F0CF212B12A51700417716 /* LogManager.swift */,
+				96B64F6F2B3D90410003E06D /* FaceTextureGenerator.swift */,
+				96B64F6E2B3D90410003E06D /* TextureToImage.swift */,
+				96FC61582B146D3A00ACC840 /* HapticManager.swift */,
+				9679F8BA2AD0907900686F13 /* Info.plist */,
+				967EE0682AAE06FE000C4D5F /* Assets.xcassets */,
+				9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */,
+				967EE06A2AAE06FE000C4D5F /* Preview Content */,
+				9679F8B12AD0907800686F13 /* OpticALLY-Bridging-Header.h */,
+			);
+			path = OpticALLY;
+			sourceTree = "<group>";
+		};
+		967EE06A2AAE06FE000C4D5F /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				967EE06B2AAE06FE000C4D5F /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		967EE0742AAE06FE000C4D5F /* OpticALLYTests */ = {
+			isa = PBXGroup;
+			children = (
+				967EE0752AAE06FE000C4D5F /* OpticALLYTests.swift */,
+			);
+			path = OpticALLYTests;
+			sourceTree = "<group>";
+		};
+		967EE07E2AAE06FE000C4D5F /* OpticALLYUITests */ = {
+			isa = PBXGroup;
+			children = (
+				967EE07F2AAE06FE000C4D5F /* OpticALLYUITests.swift */,
+				967EE0812AAE06FE000C4D5F /* OpticALLYUITestsLaunchTests.swift */,
+			);
+			path = OpticALLYUITests;
+			sourceTree = "<group>";
+		};
+		967EE0902AAEDBBE000C4D5F /* View */ = {
+			isa = PBXGroup;
+			children = (
+				9679F8BB2AD0907900686F13 /* PreviewMetalView.swift */,
+				96F0CF1B2B12A3D500417716 /* ExportView.swift */,
+				9680F7DC2B22D6FD00F38A6F /* ARFaceTrackingView.swift */,
+				967EE0662AAE06FB000C4D5F /* ContentView.swift */,
+				961D67E22B12BDFC00DBB883 /* SceneKitView.swift */,
+				963DF9B22AFEDAF600E6E589 /* PostScanView.swift */,
+				9679F8CC2AD0907A00686F13 /* CameraView.swift */,
+				961D67E42B12C64A00DBB883 /* CreditsView.swift */,
+				969AC27F2AB7550C0096892E /* IntroductionView.swift */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
+		967EE0912AAEDBD2000C4D5F /* ViewModel */ = {
+			isa = PBXGroup;
+			children = (
+				96F0CF192B12A39100417716 /* ExportViewModel.swift */,
+				9680F7DE2B22D93400F38A6F /* FaceTrackingViewModel.swift */,
+			);
+			path = ViewModel;
+			sourceTree = "<group>";
+		};
+		969E42E82ADC9ABD00E77BA7 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				96B64F6C2B3D8FCA0003E06D /* faceTexture.metal */,
+				96B64F6A2B3D8AF70003E06D /* VideoTexturedFace.shader */,
+				96FCF7312B1D65DE00F450A2 /* Male_Base_Head.usdz */,
+				9646DC6B2B1064F500092549 /* glasses.mp4 */,
+				969E42ED2ADC9D9E00E77BA7 /* promo.mp4 */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		967EE0602AAE06FB000C4D5F /* OpticALLY */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 967EE0852AAE06FE000C4D5F /* Build configuration list for PBXNativeTarget "OpticALLY" */;
+			buildPhases = (
+				967EE05D2AAE06FB000C4D5F /* Sources */,
+				967EE05E2AAE06FB000C4D5F /* Frameworks */,
+				967EE05F2AAE06FB000C4D5F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = OpticALLY;
+			packageProductDependencies = (
+				967EE0972AAEE2C7000C4D5F /* snippet-extract */,
+				96BC2ABD2AC5E9D60081550B /* DevicePpi */,
+				9679F8E32AD0912200686F13 /* ZipArchive */,
+				969DF1C92B1291D400FA9ABE /* FirebaseAuth */,
+				969DF1CB2B1291D400FA9ABE /* FirebaseFirestore */,
+				969DF1CD2B1291D400FA9ABE /* FirebaseFirestoreSwift */,
+				969DF1CF2B1291D400FA9ABE /* FirebaseStorage */,
+				9613ADF92B2BE7B50072E47E /* ZIPFoundation */,
+			);
+			productName = OpticALLY;
+			productReference = 967EE0612AAE06FB000C4D5F /* OpticALLY.app */;
+			productType = "com.apple.product-type.application";
+		};
+		967EE0702AAE06FE000C4D5F /* OpticALLYTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 967EE0882AAE06FE000C4D5F /* Build configuration list for PBXNativeTarget "OpticALLYTests" */;
+			buildPhases = (
+				967EE06D2AAE06FE000C4D5F /* Sources */,
+				967EE06E2AAE06FE000C4D5F /* Frameworks */,
+				967EE06F2AAE06FE000C4D5F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				967EE0732AAE06FE000C4D5F /* PBXTargetDependency */,
+			);
+			name = OpticALLYTests;
+			productName = OpticALLYTests;
+			productReference = 967EE0712AAE06FE000C4D5F /* OpticALLYTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		967EE07A2AAE06FE000C4D5F /* OpticALLYUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 967EE08B2AAE06FE000C4D5F /* Build configuration list for PBXNativeTarget "OpticALLYUITests" */;
+			buildPhases = (
+				967EE0772AAE06FE000C4D5F /* Sources */,
+				967EE0782AAE06FE000C4D5F /* Frameworks */,
+				967EE0792AAE06FE000C4D5F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				967EE07D2AAE06FE000C4D5F /* PBXTargetDependency */,
+			);
+			name = OpticALLYUITests;
+			productName = OpticALLYUITests;
+			productReference = 967EE07B2AAE06FE000C4D5F /* OpticALLYUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		967EE0592AAE06FB000C4D5F /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					967EE0602AAE06FB000C4D5F = {
+						CreatedOnToolsVersion = 15.0;
+						LastSwiftMigration = 1500;
+					};
+					967EE0702AAE06FE000C4D5F = {
+						CreatedOnToolsVersion = 15.0;
+						TestTargetID = 967EE0602AAE06FB000C4D5F;
+					};
+					967EE07A2AAE06FE000C4D5F = {
+						CreatedOnToolsVersion = 15.0;
+						TestTargetID = 967EE0602AAE06FB000C4D5F;
+					};
+				};
+			};
+			buildConfigurationList = 967EE05C2AAE06FB000C4D5F /* Build configuration list for PBXProject "OpticALLY" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 967EE0582AAE06FB000C4D5F;
+			packageReferences = (
+				967EE0962AAEE2C7000C4D5F /* XCRemoteSwiftPackageReference "swift-docc-plugin" */,
+				96BC2ABC2AC5E9D60081550B /* XCRemoteSwiftPackageReference "DevicePpi" */,
+				9679F8E22AD0912200686F13 /* XCRemoteSwiftPackageReference "ZipArchive" */,
+				969DF1C82B1291D400FA9ABE /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				9613ADF82B2BE7B50072E47E /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
+				9635D9E32B4DF9CD002E8E84 /* XCRemoteSwiftPackageReference "PythonKit" */,
+			);
+			productRefGroup = 967EE0622AAE06FB000C4D5F /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				967EE0602AAE06FB000C4D5F /* OpticALLY */,
+				967EE0702AAE06FE000C4D5F /* OpticALLYTests */,
+				967EE07A2AAE06FE000C4D5F /* OpticALLYUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		967EE05F2AAE06FB000C4D5F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				96B64F6B2B3D8AF70003E06D /* VideoTexturedFace.shader in Resources */,
+				969E42EE2ADC9D9E00E77BA7 /* promo.mp4 in Resources */,
+				967EE06C2AAE06FE000C4D5F /* Preview Assets.xcassets in Resources */,
+				9679F8D82AD0907A00686F13 /* Main.storyboard in Resources */,
+				9679F8D72AD0907A00686F13 /* LaunchScreen.storyboard in Resources */,
+				969DF1C72B12916900FA9ABE /* GoogleService-Info.plist in Resources */,
+				967EE0692AAE06FE000C4D5F /* Assets.xcassets in Resources */,
+				9614F0AF2ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */,
+				9646DC6C2B1064F500092549 /* glasses.mp4 in Resources */,
+				96FCF7322B1D65DE00F450A2 /* Male_Base_Head.usdz in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		967EE06F2AAE06FE000C4D5F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				969E42EF2ADC9D9E00E77BA7 /* promo.mp4 in Resources */,
+				9614F0B02ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		967EE0792AAE06FE000C4D5F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				969E42F02ADC9D9E00E77BA7 /* promo.mp4 in Resources */,
+				9614F0B12ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		967EE05D2AAE06FB000C4D5F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				96F0CF222B12A51700417716 /* LogManager.swift in Sources */,
+				961D67E52B12C64A00DBB883 /* CreditsView.swift in Sources */,
+				96FC61592B146D3A00ACC840 /* HapticManager.swift in Sources */,
+				96B64F732B3D90490003E06D /* ScnMatrix.swift in Sources */,
+				96F0CF1C2B12A3D500417716 /* ExportView.swift in Sources */,
+				961D67E32B12BDFC00DBB883 /* SceneKitView.swift in Sources */,
+				9679F8DC2AD0907A00686F13 /* PassThrough.metal in Sources */,
+				96491C5F2AFD746300FD3666 /* ConsoleOutputCatcher.swift in Sources */,
+				9679F8DF2AD0907A00686F13 /* PointCloudMetalView.mm in Sources */,
+				969AC2822AB7554C0096892E /* Extensions+Modifiers.swift in Sources */,
+				9679F8D12AD0907A00686F13 /* AAPLTransforms.mm in Sources */,
+				96B64F702B3D90410003E06D /* TextureToImage.swift in Sources */,
+				96F0CF1A2B12A39100417716 /* ExportViewModel.swift in Sources */,
+				967EE0672AAE06FB000C4D5F /* ContentView.swift in Sources */,
+				9679F8D42AD0907A00686F13 /* PreviewMetalView.swift in Sources */,
+				9679F8DD2AD0907A00686F13 /* CameraViewController.swift in Sources */,
+				963DF9B32AFEDAF700E6E589 /* PostScanView.swift in Sources */,
+				96B64F6D2B3D8FCA0003E06D /* faceTexture.metal in Sources */,
+				9679F8E12AD0907A00686F13 /* CameraView.swift in Sources */,
+				9680F7DF2B22D93400F38A6F /* FaceTrackingViewModel.swift in Sources */,
+				9680F7DD2B22D6FD00F38A6F /* ARFaceTrackingView.swift in Sources */,
+				9679F8D52AD0907A00686F13 /* HistogramCalculator.m in Sources */,
+				969AC2802AB7550C0096892E /* IntroductionView.swift in Sources */,
+				96B64F712B3D90410003E06D /* FaceTextureGenerator.swift in Sources */,
+				9679F8CF2AD0907A00686F13 /* VideoMixer.swift in Sources */,
+				9679F8D22AD0907A00686F13 /* Mixer.metal in Sources */,
+				967EE0652AAE06FB000C4D5F /* OpticALLYApp.swift in Sources */,
+				9679F8D92AD0907A00686F13 /* PointCloud.metal in Sources */,
+				9679F8CE2AD0907A00686F13 /* AppDelegate.swift in Sources */,
+				96F0CF182B12A34400417716 /* ExternalData.swift in Sources */,
+				9680F7DB2B2283B200F38A6F /* CapturedImageSampler.swift in Sources */,
+				9679F8DE2AD0907A00686F13 /* FilterRenderer.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		967EE06D2AAE06FE000C4D5F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				967EE0762AAE06FE000C4D5F /* OpticALLYTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		967EE0772AAE06FE000C4D5F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				967EE0822AAE06FE000C4D5F /* OpticALLYUITestsLaunchTests.swift in Sources */,
+				967EE0802AAE06FE000C4D5F /* OpticALLYUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		967EE0732AAE06FE000C4D5F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 967EE0602AAE06FB000C4D5F /* OpticALLY */;
+			targetProxy = 967EE0722AAE06FE000C4D5F /* PBXContainerItemProxy */;
+		};
+		967EE07D2AAE06FE000C4D5F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 967EE0602AAE06FB000C4D5F /* OpticALLY */;
+			targetProxy = 967EE07C2AAE06FE000C4D5F /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		967EE0832AAE06FE000C4D5F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		967EE0842AAE06FE000C4D5F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		967EE0862AAE06FE000C4D5F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_ASSET_PATHS = "\"OpticALLY/Preview Content\"";
+				DEVELOPMENT_TEAM = Z64KRUX3W3;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = OpticALLY/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = OpticALLY;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Your camera is used for the AR Eye Measure feature.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Your microphone is used for the audio-visual experience.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "You can use the existing photo to measure the eye distance.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "You can use the existing photo to measure the eye distance.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UIRequiredDeviceCapabilities = metal;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.theoptically.optically;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "OpticALLY/OpticALLY-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		967EE0872AAE06FE000C4D5F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_ASSET_PATHS = "\"OpticALLY/Preview Content\"";
+				DEVELOPMENT_TEAM = Z64KRUX3W3;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = OpticALLY/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = OpticALLY;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Your camera is used for the AR Eye Measure feature.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Your microphone is used for the audio-visual experience.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "You can use the existing photo to measure the eye distance.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "You can use the existing photo to measure the eye distance.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UIRequiredDeviceCapabilities = metal;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.theoptically.optically;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "OpticALLY/OpticALLY-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		967EE0892AAE06FE000C4D5F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = Z64KRUX3W3;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.lightbulb.OpticALLYTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/OpticALLY.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/OpticALLY";
+			};
+			name = Debug;
+		};
+		967EE08A2AAE06FE000C4D5F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = Z64KRUX3W3;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.lightbulb.OpticALLYTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/OpticALLY.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/OpticALLY";
+			};
+			name = Release;
+		};
+		967EE08C2AAE06FE000C4D5F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = Z64KRUX3W3;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.lightbulb.OpticALLYUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = OpticALLY;
+			};
+			name = Debug;
+		};
+		967EE08D2AAE06FE000C4D5F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = Z64KRUX3W3;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.lightbulb.OpticALLYUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = OpticALLY;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		967EE05C2AAE06FB000C4D5F /* Build configuration list for PBXProject "OpticALLY" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				967EE0832AAE06FE000C4D5F /* Debug */,
+				967EE0842AAE06FE000C4D5F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		967EE0852AAE06FE000C4D5F /* Build configuration list for PBXNativeTarget "OpticALLY" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				967EE0862AAE06FE000C4D5F /* Debug */,
+				967EE0872AAE06FE000C4D5F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		967EE0882AAE06FE000C4D5F /* Build configuration list for PBXNativeTarget "OpticALLYTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				967EE0892AAE06FE000C4D5F /* Debug */,
+				967EE08A2AAE06FE000C4D5F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		967EE08B2AAE06FE000C4D5F /* Build configuration list for PBXNativeTarget "OpticALLYUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				967EE08C2AAE06FE000C4D5F /* Debug */,
+				967EE08D2AAE06FE000C4D5F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		9613ADF82B2BE7B50072E47E /* XCRemoteSwiftPackageReference "ZIPFoundation" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/weichsel/ZIPFoundation.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.9.17;
+			};
+		};
+		9635D9E32B4DF9CD002E8E84 /* XCRemoteSwiftPackageReference "PythonKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pvieito/PythonKit.git";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+		9679F8E22AD0912200686F13 /* XCRemoteSwiftPackageReference "ZipArchive" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ZipArchive/ZipArchive.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.5;
+			};
+		};
+		967EE0962AAEE2C7000C4D5F /* XCRemoteSwiftPackageReference "swift-docc-plugin" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-docc-plugin";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.3.0;
+			};
+		};
+		969DF1C82B1291D400FA9ABE /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 10.18.0;
+			};
+		};
+		96BC2ABC2AC5E9D60081550B /* XCRemoteSwiftPackageReference "DevicePpi" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Clafou/DevicePpi";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.2.18;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		9613ADF92B2BE7B50072E47E /* ZIPFoundation */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9613ADF82B2BE7B50072E47E /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
+			productName = ZIPFoundation;
+		};
+		9679F8E32AD0912200686F13 /* ZipArchive */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9679F8E22AD0912200686F13 /* XCRemoteSwiftPackageReference "ZipArchive" */;
+			productName = ZipArchive;
+		};
+		967EE0972AAEE2C7000C4D5F /* snippet-extract */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 967EE0962AAEE2C7000C4D5F /* XCRemoteSwiftPackageReference "swift-docc-plugin" */;
+			productName = "snippet-extract";
+		};
+		969DF1C92B1291D400FA9ABE /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 969DF1C82B1291D400FA9ABE /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		969DF1CB2B1291D400FA9ABE /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 969DF1C82B1291D400FA9ABE /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+		969DF1CD2B1291D400FA9ABE /* FirebaseFirestoreSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 969DF1C82B1291D400FA9ABE /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestoreSwift;
+		};
+		969DF1CF2B1291D400FA9ABE /* FirebaseStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 969DF1C82B1291D400FA9ABE /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseStorage;
+		};
+		96BC2ABD2AC5E9D60081550B /* DevicePpi */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 96BC2ABC2AC5E9D60081550B /* XCRemoteSwiftPackageReference "DevicePpi" */;
+			productName = DevicePpi;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 967EE0592AAE06FB000C4D5F /* Project object */;
+}

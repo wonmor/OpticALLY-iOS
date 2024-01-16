@@ -1,6 +1,0 @@
-framework module Pods_OpticALLY_OpticALLYUITests {
-  umbrella header "Pods-OpticALLY-OpticALLYUITests-umbrella.h"
-
-  export *
-  module * { export * }
-}
