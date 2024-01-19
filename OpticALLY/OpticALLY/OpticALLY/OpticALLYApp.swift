@@ -9,7 +9,6 @@ import SwiftUI
 import SystemConfiguration
 import DevicePpi
 import PythonSupport
-import PythonKit
 
 let faceTrackingViewModel = FaceTrackingViewModel()
 
@@ -41,11 +40,7 @@ struct OpticALLYApp: App {
     init() {
         PythonSupport.initialize()
 
-        let sys = Python.import("sys")
-
-        print("Python \(sys.version_info.major).\(sys.version_info.minor)")
-        print("Python Version: \(sys.version)")
-        print("Python Encoding: \(sys.getdefaultencoding().upper())")
+        PythonSupport.runSimpleString("Hello world")
         
         for family: String in UIFont.familyNames
         {
