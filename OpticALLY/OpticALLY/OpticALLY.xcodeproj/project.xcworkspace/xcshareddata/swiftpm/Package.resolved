@@ -118,6 +118,15 @@
       }
     },
     {
+      "identity" : "python-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/kewlbear/Python-iOS.git",
+      "state" : {
+        "revision" : "ace19caa26a9fc7a1a666757852fd4f8050ac4df",
+        "version" : "0.0.20211030092316"
+      }
+    },
+    {
       "identity" : "pythonkit",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pvieito/PythonKit.git",
