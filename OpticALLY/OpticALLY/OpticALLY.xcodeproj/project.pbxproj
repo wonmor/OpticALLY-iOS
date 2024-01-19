@@ -20,6 +20,7 @@
 		9671FDC32B5B1230004DA4C2 /* PythonKit in Frameworks */ = {isa = PBXBuildFile; productRef = 9671FDC22B5B1230004DA4C2 /* PythonKit */; };
 		9671FE742B5B1579004DA4C2 /* PythonSupport in Frameworks */ = {isa = PBXBuildFile; productRef = 9671FE732B5B1579004DA4C2 /* PythonSupport */; };
 		9671FED72B5B3B8A004DA4C2 /* rubicon-objc-0.4.0 in Resources */ = {isa = PBXBuildFile; fileRef = 9671FED62B5B3B8A004DA4C2 /* rubicon-objc-0.4.0 */; };
+		9671FED82B5B3BCA004DA4C2 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 969DF1C62B12916900FA9ABE /* GoogleService-Info.plist */; };
 		9679F8CE2AD0907A00686F13 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8B32AD0907900686F13 /* AppDelegate.swift */; };
 		9679F8CF2AD0907A00686F13 /* VideoMixer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8B52AD0907900686F13 /* VideoMixer.swift */; };
 		9679F8D12AD0907A00686F13 /* AAPLTransforms.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8B82AD0907900686F13 /* AAPLTransforms.mm */; };
@@ -469,6 +470,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9671FED82B5B3BCA004DA4C2 /* GoogleService-Info.plist in Resources */,
 				96B64F6B2B3D8AF70003E06D /* VideoTexturedFace.shader in Resources */,
 				969E42EE2ADC9D9E00E77BA7 /* promo.mp4 in Resources */,
 				967EE06C2AAE06FE000C4D5F /* Preview Assets.xcassets in Resources */,
