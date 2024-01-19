@@ -9,6 +9,8 @@ import SwiftUI
 import SystemConfiguration
 import DevicePpi
 import PythonSupport
+import PythonKit
+import Resources
 
 let faceTrackingViewModel = FaceTrackingViewModel()
 
@@ -33,13 +35,42 @@ class GlobalState: ObservableObject {
     @Published var currentView: ViewState = .introduction
 }
 
+var standardOutReader: StandardOutReader?
+
 @main
 struct OpticALLYApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
     init() {
-        PythonSupport.initialize()
-        PythonSupport.runSimpleString("print('Hello world')")
+           DispatchQueue.global(qos: .userInitiated).async {
+               SetPythonHome()
+               SetTMP()
+               
+               let sys = Python.import("sys")
+               
+               sys.stdout = Python.open(NSTemporaryDirectory() + "stdout.txt", "w", encoding: "utf8")
+               sys.stderr = sys.stdout
+               
+               print(sys.stdout.encoding)
+               
+               standardOutReader = StandardOutReader(STDOUT_FILENO: Int32(sys.stdout.fileno())!, STDERR_FILENO: Int32(sys.stderr.fileno())!)
+               
+               guard let rubiconPath = Bundle.main.url(forResource: "rubicon-objc-0.4.0", withExtension: nil)?.path else {
+                   return
+               }
+
+               sys.path.insert(1, rubiconPath)
+               
+               sys.path.insert(1, Bundle.main.bundlePath)
+               let bridge = Python.import("ObjCBridge")
+               
+   //            DispatchQueue.main.sync {
+   //                Buffer.shared.text = ""
+   //            }
+               
+               let code = Python.import("code")
+               code.interact(readfunc: bridge.input, exitmsg: "Bye.")
+           }
         
         for family: String in UIFont.familyNames
         {
@@ -82,5 +113,89 @@ struct OpticALLYApp: App {
         let needsConnection = flags.contains(.connectionRequired)
         
         return (isReachable && !needsConnection)
+    }
+}
+
+class PythonBridge: NSObject {
+    @objc func input(_ prompt: String) -> String {
+        Buffer.shared.append(prompt)
+//        print(prompt)
+        return Buffer.shared.read()
+    }
+}
+
+class Buffer: ObservableObject {
+    static let shared = Buffer()
+    
+    @Published var text = ""
+    
+    @Published var input = ""
+    
+    var inputs: [String] = []
+    
+    let semaphore = DispatchSemaphore(value: 0)
+    
+    func append(_ string: String) {
+        DispatchQueue.main.async {
+            self.text.append(string)
+        }
+    }
+    
+    func read() -> String {
+        if inputs.isEmpty {
+            standardOutReader?.isBufferEnabled = false
+            semaphore.wait()
+            standardOutReader?.isBufferEnabled = true
+        }
+        return inputs.removeFirst()
+    }
+    
+    func onCommit() {
+        var t = input
+        let table = [
+            "\u{2018}": "\'", // ‘
+            "\u{2019}": "\'", // ’
+            "\u{201C}": "\"", // “
+            "\u{201D}": "\"", // ”
+        ]
+        for (c, r) in table {
+            t = t.replacingOccurrences(of: c, with: r)
+        }
+        print(input, "->", t)
+
+        text.append(t.appending("\n"))
+        inputs.append(t)
+        input = ""
+        semaphore.signal()
+    }
+}
+
+class StandardOutReader {
+    let inputPipe = Pipe()
+    
+    let outputPipe = Pipe()
+    
+    var isBufferEnabled = true
+    
+    init(STDOUT_FILENO: Int32 = Darwin.STDOUT_FILENO, STDERR_FILENO: Int32 = Darwin.STDERR_FILENO) {
+        dup2(STDOUT_FILENO, outputPipe.fileHandleForWriting.fileDescriptor)
+        
+        dup2(inputPipe.fileHandleForWriting.fileDescriptor, STDOUT_FILENO)
+        dup2(inputPipe.fileHandleForWriting.fileDescriptor, STDERR_FILENO)
+        // listening on the readabilityHandler
+        inputPipe.fileHandleForReading.readabilityHandler = { [weak self] handle in
+            let data = handle.availableData
+            
+            self?.outputPipe.fileHandleForWriting.write(data)
+            
+            guard self?.isBufferEnabled ?? false else {
+                return
+            }
+            
+            let str = String(data: data, encoding: .ascii) ?? "<Non-ascii data of size\(data.count)>\n"
+            DispatchQueue.main.async {
+                Buffer.shared.text += str
+            }
+        }
     }
 }

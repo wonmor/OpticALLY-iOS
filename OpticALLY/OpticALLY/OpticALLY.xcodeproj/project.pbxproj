@@ -17,6 +17,9 @@
 		96491C5F2AFD746300FD3666 /* ConsoleOutputCatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96491C5E2AFD746300FD3666 /* ConsoleOutputCatcher.swift */; };
 		9671FDB92B5B0E67004DA4C2 /* Python-iOS in Frameworks */ = {isa = PBXBuildFile; productRef = 9671FDB82B5B0E67004DA4C2 /* Python-iOS */; };
 		9671FDC02B5B106C004DA4C2 /* ZipArchive in Frameworks */ = {isa = PBXBuildFile; productRef = 9671FDBF2B5B106C004DA4C2 /* ZipArchive */; };
+		9671FDC32B5B1230004DA4C2 /* PythonKit in Frameworks */ = {isa = PBXBuildFile; productRef = 9671FDC22B5B1230004DA4C2 /* PythonKit */; };
+		9671FE742B5B1579004DA4C2 /* PythonSupport in Frameworks */ = {isa = PBXBuildFile; productRef = 9671FE732B5B1579004DA4C2 /* PythonSupport */; };
+		9671FED72B5B3B8A004DA4C2 /* rubicon-objc-0.4.0 in Resources */ = {isa = PBXBuildFile; fileRef = 9671FED62B5B3B8A004DA4C2 /* rubicon-objc-0.4.0 */; };
 		9679F8CE2AD0907A00686F13 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8B32AD0907900686F13 /* AppDelegate.swift */; };
 		9679F8CF2AD0907A00686F13 /* VideoMixer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8B52AD0907900686F13 /* VideoMixer.swift */; };
 		9679F8D12AD0907A00686F13 /* AAPLTransforms.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8B82AD0907900686F13 /* AAPLTransforms.mm */; };
@@ -44,7 +47,6 @@
 		9680F7DF2B22D93400F38A6F /* FaceTrackingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9680F7DE2B22D93400F38A6F /* FaceTrackingViewModel.swift */; };
 		969AC2802AB7550C0096892E /* IntroductionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 969AC27F2AB7550C0096892E /* IntroductionView.swift */; };
 		969AC2822AB7554C0096892E /* Extensions+Modifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 969AC2812AB7554C0096892E /* Extensions+Modifiers.swift */; };
-		969DF1C72B12916900FA9ABE /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 969DF1C62B12916900FA9ABE /* GoogleService-Info.plist */; };
 		969DF1CA2B1291D400FA9ABE /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 969DF1C92B1291D400FA9ABE /* FirebaseAuth */; };
 		969DF1CC2B1291D400FA9ABE /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 969DF1CB2B1291D400FA9ABE /* FirebaseFirestore */; };
 		969DF1CE2B1291D400FA9ABE /* FirebaseFirestoreSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 969DF1CD2B1291D400FA9ABE /* FirebaseFirestoreSwift */; };
@@ -90,6 +92,8 @@
 		963DF9B22AFEDAF600E6E589 /* PostScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostScanView.swift; sourceTree = "<group>"; };
 		9646DC6B2B1064F500092549 /* glasses.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = glasses.mp4; sourceTree = "<group>"; };
 		96491C5E2AFD746300FD3666 /* ConsoleOutputCatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsoleOutputCatcher.swift; sourceTree = "<group>"; };
+		9671FDC52B5B14F2004DA4C2 /* ObjCBridge.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = ObjCBridge.py; sourceTree = "<group>"; };
+		9671FED62B5B3B8A004DA4C2 /* rubicon-objc-0.4.0 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "rubicon-objc-0.4.0"; sourceTree = "<group>"; };
 		9679F8B12AD0907800686F13 /* OpticALLY-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "OpticALLY-Bridging-Header.h"; sourceTree = "<group>"; };
 		9679F8B32AD0907900686F13 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		9679F8B42AD0907900686F13 /* HistogramCalculator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HistogramCalculator.h; sourceTree = "<group>"; };
@@ -148,7 +152,9 @@
 				9671FDB92B5B0E67004DA4C2 /* Python-iOS in Frameworks */,
 				967EE0982AAEE2C7000C4D5F /* snippet-extract in Frameworks */,
 				969DF1CC2B1291D400FA9ABE /* FirebaseFirestore in Frameworks */,
+				9671FE742B5B1579004DA4C2 /* PythonSupport in Frameworks */,
 				969DF1D02B1291D400FA9ABE /* FirebaseStorage in Frameworks */,
+				9671FDC32B5B1230004DA4C2 /* PythonKit in Frameworks */,
 				969DF1CA2B1291D400FA9ABE /* FirebaseAuth in Frameworks */,
 				969DF1CE2B1291D400FA9ABE /* FirebaseFirestoreSwift in Frameworks */,
 				9671FDC02B5B106C004DA4C2 /* ZipArchive in Frameworks */,
@@ -172,6 +178,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		9671FDC42B5B14F2004DA4C2 /* Python */ = {
+			isa = PBXGroup;
+			children = (
+				9671FDC52B5B14F2004DA4C2 /* ObjCBridge.py */,
+			);
+			path = Python;
+			sourceTree = "<group>";
+		};
 		9679F8E82AD0956E00686F13 /* Storyboard */ = {
 			isa = PBXGroup;
 			children = (
@@ -240,6 +254,8 @@
 		967EE0632AAE06FB000C4D5F /* OpticALLY */ = {
 			isa = PBXGroup;
 			children = (
+				9671FED62B5B3B8A004DA4C2 /* rubicon-objc-0.4.0 */,
+				9671FDC42B5B14F2004DA4C2 /* Python */,
 				969DF1C62B12916900FA9ABE /* GoogleService-Info.plist */,
 				969E42E82ADC9ABD00E77BA7 /* Resources */,
 				9679F8ED2AD0961600686F13 /* Shared */,
@@ -352,6 +368,8 @@
 				969DF1CF2B1291D400FA9ABE /* FirebaseStorage */,
 				9671FDB82B5B0E67004DA4C2 /* Python-iOS */,
 				9671FDBF2B5B106C004DA4C2 /* ZipArchive */,
+				9671FDC22B5B1230004DA4C2 /* PythonKit */,
+				9671FE732B5B1579004DA4C2 /* PythonSupport */,
 			);
 			productName = OpticALLY;
 			productReference = 967EE0612AAE06FB000C4D5F /* OpticALLY.app */;
@@ -432,6 +450,8 @@
 				969DF1C82B1291D400FA9ABE /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				9671FDB72B5B0E67004DA4C2 /* XCRemoteSwiftPackageReference "Python-iOS" */,
 				9671FDBE2B5B106C004DA4C2 /* XCRemoteSwiftPackageReference "ZipArchive" */,
+				9671FDC12B5B1230004DA4C2 /* XCRemoteSwiftPackageReference "PythonKit" */,
+				9671FE722B5B1579004DA4C2 /* XCRemoteSwiftPackageReference "PythonSupport" */,
 			);
 			productRefGroup = 967EE0622AAE06FB000C4D5F /* Products */;
 			projectDirPath = "";
@@ -453,8 +473,8 @@
 				969E42EE2ADC9D9E00E77BA7 /* promo.mp4 in Resources */,
 				967EE06C2AAE06FE000C4D5F /* Preview Assets.xcassets in Resources */,
 				9679F8D82AD0907A00686F13 /* Main.storyboard in Resources */,
+				9671FED72B5B3B8A004DA4C2 /* rubicon-objc-0.4.0 in Resources */,
 				9679F8D72AD0907A00686F13 /* LaunchScreen.storyboard in Resources */,
-				969DF1C72B12916900FA9ABE /* GoogleService-Info.plist in Resources */,
 				967EE0692AAE06FE000C4D5F /* Assets.xcassets in Resources */,
 				9614F0AF2ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */,
 				9646DC6C2B1064F500092549 /* glasses.mp4 in Resources */,
@@ -897,6 +917,22 @@
 				minimumVersion = 2.5.5;
 			};
 		};
+		9671FDC12B5B1230004DA4C2 /* XCRemoteSwiftPackageReference "PythonKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pvieito/PythonKit.git";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+		9671FE722B5B1579004DA4C2 /* XCRemoteSwiftPackageReference "PythonSupport" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/kewlbear/PythonSupport.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 		967EE0962AAEE2C7000C4D5F /* XCRemoteSwiftPackageReference "swift-docc-plugin" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/apple/swift-docc-plugin";
@@ -933,6 +969,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 9671FDBE2B5B106C004DA4C2 /* XCRemoteSwiftPackageReference "ZipArchive" */;
 			productName = ZipArchive;
+		};
+		9671FDC22B5B1230004DA4C2 /* PythonKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9671FDC12B5B1230004DA4C2 /* XCRemoteSwiftPackageReference "PythonKit" */;
+			productName = PythonKit;
+		};
+		9671FE732B5B1579004DA4C2 /* PythonSupport */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9671FE722B5B1579004DA4C2 /* XCRemoteSwiftPackageReference "PythonSupport" */;
+			productName = PythonSupport;
 		};
 		967EE0972AAEE2C7000C4D5F /* snippet-extract */ = {
 			isa = XCSwiftPackageProductDependency;
