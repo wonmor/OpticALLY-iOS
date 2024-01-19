@@ -39,8 +39,7 @@ struct OpticALLYApp: App {
     
     init() {
         PythonSupport.initialize()
-
-        PythonSupport.runSimpleString("Hello world")
+        PythonSupport.runSimpleString("print('Hello world')")
         
         for family: String in UIFont.familyNames
         {
