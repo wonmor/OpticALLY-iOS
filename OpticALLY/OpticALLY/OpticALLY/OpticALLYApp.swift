@@ -53,23 +53,27 @@ struct OpticALLYApp: App {
                
                print(sys.stdout.encoding)
                
+               print("Python \(sys.version_info.major).\(sys.version_info.minor)")
+               print("Python Version: \(sys.version)")
+               print("Python Encoding: \(sys.getdefaultencoding().upper())")
+               
                standardOutReader = StandardOutReader(STDOUT_FILENO: Int32(sys.stdout.fileno())!, STDERR_FILENO: Int32(sys.stderr.fileno())!)
                
-               guard let rubiconPath = Bundle.main.url(forResource: "rubicon-objc-0.4.0", withExtension: nil)?.path else {
-                   return
-               }
-
-               sys.path.insert(1, rubiconPath)
-               
-               sys.path.insert(1, Bundle.main.bundlePath)
-               let bridge = Python.import("ObjCBridge")
+//               guard let rubiconPath = Bundle.main.url(forResource: "rubicon-objc-0.4.0", withExtension: nil)?.path else {
+//                   return
+//               }
+//
+//               sys.path.insert(1, rubiconPath)
+//               
+//               sys.path.insert(1, Bundle.main.bundlePath)
+//               let bridge = Python.import("ObjCBridge")
                
    //            DispatchQueue.main.sync {
    //                Buffer.shared.text = ""
    //            }
-               
-               let code = Python.import("code")
-               code.interact(readfunc: bridge.input, exitmsg: "Bye.")
+//               
+//               let code = Python.import("code")
+//               code.interact(readfunc: bridge.input, exitmsg: "Bye.")
            }
         
         for family: String in UIFont.familyNames
