@@ -41,6 +41,12 @@ struct CreditNestedView: View {
                 .background(backgroundColor)
                 .cornerRadius(20)
             
+            Text("Python Version: \(sys!.version.description)")
+                .monospaced()
+                .padding(.horizontal)
+                .padding(.top)
+                .foregroundStyle(.black)
+            
             VStack {
                 Text("OPTICALLY")
                     .monospaced()

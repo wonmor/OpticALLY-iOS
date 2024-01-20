@@ -36,6 +36,7 @@ class GlobalState: ObservableObject {
 }
 
 var standardOutReader: StandardOutReader?
+var sys: PythonObject?
 
 @main
 struct OpticALLYApp: App {
@@ -46,18 +47,18 @@ struct OpticALLYApp: App {
                SetPythonHome()
                SetTMP()
                
-               let sys = Python.import("sys")
+               sys = Python.import("sys")
                
-               sys.stdout = Python.open(NSTemporaryDirectory() + "stdout.txt", "w", encoding: "utf8")
-               sys.stderr = sys.stdout
+               sys!.stdout = Python.open(NSTemporaryDirectory() + "stdout.txt", "w", encoding: "utf8")
+               sys!.stderr = sys!.stdout
                
-               print(sys.stdout.encoding)
+               print(sys!.stdout.encoding)
                
-               print("Python \(sys.version_info.major).\(sys.version_info.minor)")
-               print("Python Version: \(sys.version)")
-               print("Python Encoding: \(sys.getdefaultencoding().upper())")
+               print("Python \(sys!.version_info.major).\(sys!.version_info.minor)")
+               print("Python Version: \(sys!.version)")
+               print("Python Encoding: \(sys!.getdefaultencoding().upper())")
                
-               standardOutReader = StandardOutReader(STDOUT_FILENO: Int32(sys.stdout.fileno())!, STDERR_FILENO: Int32(sys.stderr.fileno())!)
+               standardOutReader = StandardOutReader(STDOUT_FILENO: Int32(sys!.stdout.fileno())!, STDERR_FILENO: Int32(sys!.stderr.fileno())!)
                
 //               guard let rubiconPath = Bundle.main.url(forResource: "rubicon-objc-0.4.0", withExtension: nil)?.path else {
 //                   return
