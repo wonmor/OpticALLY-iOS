@@ -5,7 +5,6 @@ import ARKit
 
 /// Generates the face texture from AR frames
 class FaceTextureGenerator {
-    
     private static func renderTargetDescriptor(textureSize: Int) -> MTLTextureDescriptor {
         let renderTargetDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .rgba8Unorm, width: textureSize, height: textureSize, mipmapped: false)
         // We only set .shared here so we can read the texture for exporting to the photo library
