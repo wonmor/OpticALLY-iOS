@@ -36,6 +36,7 @@ class GlobalState: ObservableObject {
 }
 
 var sys: PythonObject?
+var standardOutReader: StandardOutReader?
 
 @main
 struct OpticALLYApp: App {
