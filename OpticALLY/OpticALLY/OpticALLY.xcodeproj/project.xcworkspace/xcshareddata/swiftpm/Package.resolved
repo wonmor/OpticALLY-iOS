@@ -19,6 +19,15 @@
       }
     },
     {
+      "identity" : "blas-lapack-appstore-workaround",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/kewlbear/BLAS-LAPACK-AppStore-Workaround.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "dc78ff05b3c8c1c39d83aab9bdbaef59dc6c87f5"
+      }
+    },
+    {
       "identity" : "csqlite3",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/alloyapple/CSqlite3.git",
@@ -100,6 +109,15 @@
       }
     },
     {
+      "identity" : "lapacke-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/kewlbear/LAPACKE-iOS.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "6fbd386ff1cbde8ee6cbf83d2d398d21f8e4474d"
+      }
+    },
+    {
       "identity" : "leveldb",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/firebase/leveldb.git",
@@ -115,6 +133,24 @@
       "state" : {
         "revision" : "819d0a2173aff699fb8c364b6fb906f7cdb1a692",
         "version" : "2.30909.0"
+      }
+    },
+    {
+      "identity" : "numpy-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/kewlbear/NumPy-iOS.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "4d0f25e59ca6b9746ae447d6bb682d12a54cff13"
+      }
+    },
+    {
+      "identity" : "open3d-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/wonmor/Open3D-iOS",
+      "state" : {
+        "branch" : "main",
+        "revision" : "92d514dcbeb4b7955946cbf5f3c15a332727e15b"
       }
     },
     {
