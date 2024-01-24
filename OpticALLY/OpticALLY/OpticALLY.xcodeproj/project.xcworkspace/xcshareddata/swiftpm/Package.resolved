@@ -28,15 +28,6 @@
       }
     },
     {
-      "identity" : "csqlite3",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/alloyapple/CSqlite3.git",
-      "state" : {
-        "branch" : "master",
-        "revision" : "fe433d74268135019da44fc79c853d9253ecc615"
-      }
-    },
-    {
       "identity" : "deviceppi",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Clafou/DevicePpi",
@@ -167,8 +158,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/kewlbear/Python-iOS.git",
       "state" : {
-        "branch" : "main",
-        "revision" : "d3ed91b16565ea599d0947fcbc3e6db0d0f9ae00"
+        "revision" : "4f3ca2bc0cff1ef2511555eb6114f9eb12e50412",
+        "version" : "0.1.1-b20230423-090254"
       }
     },
     {
@@ -178,15 +169,6 @@
       "state" : {
         "branch" : "master",
         "revision" : "41dd1e76bb31661f59efbc1784e8f60ccc32a9d5"
-      }
-    },
-    {
-      "identity" : "pythonsupport",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/kewlbear/PythonSupport.git",
-      "state" : {
-        "branch" : "main",
-        "revision" : "f51608051ed3cc917bfe6f4a11ee7c342ab5549b"
       }
     },
     {

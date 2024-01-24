@@ -10,7 +10,8 @@ import SystemConfiguration
 import DevicePpi
 import PythonSupport
 import PythonKit
-import Resources
+import Open3DSupport
+import NumPySupport
 
 let faceTrackingViewModel = FaceTrackingViewModel()
 
@@ -36,6 +37,8 @@ class GlobalState: ObservableObject {
 }
 
 var sys: PythonObject?
+var o3d: PythonObject?
+
 var standardOutReader: StandardOutReader?
 
 @main
@@ -44,9 +47,11 @@ struct OpticALLYApp: App {
     
     init() {
            DispatchQueue.global(qos: .userInitiated).async {
-               SetPythonHome()
-               SetTMP()
+               PythonSupport.initialize()
+               Open3DSupport.sitePackagesURL.insertPythonPath()
+               NumPySupport.sitePackagesURL.insertPythonPath()
                
+               o3d = Python.import("open3d")
                sys = Python.import("sys")
                
                sys!.stdout = Python.open(NSTemporaryDirectory() + "stdout.txt", "w", encoding: "utf8")
