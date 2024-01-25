@@ -41,11 +41,21 @@ struct CreditNestedView: View {
                 .background(backgroundColor)
                 .cornerRadius(20)
             
+            Text("Open3D Version: \(o3d!.__version__.description)")
+                .monospaced()
+                .padding(.horizontal)
+                .padding(.top)
+                .foregroundStyle(.black)
+                .font(.caption)
+                .bold()
+            
             Text("Python Version: \(sys!.version.description)")
                 .monospaced()
                 .padding(.horizontal)
                 .padding(.top)
                 .foregroundStyle(.black)
+                .font(.caption)
+                .bold()
             
             VStack {
                 Text("OPTICALLY")

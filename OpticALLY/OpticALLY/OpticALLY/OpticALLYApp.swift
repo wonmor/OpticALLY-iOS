@@ -62,6 +62,7 @@ struct OpticALLYApp: App {
                print("Python \(sys!.version_info.major).\(sys!.version_info.minor)")
                print("Python Version: \(sys!.version)")
                print("Python Encoding: \(sys!.getdefaultencoding().upper())")
+               print("Open3D Version: \(o3d!.__version__)")
            }
         
         for family: String in UIFont.familyNames
