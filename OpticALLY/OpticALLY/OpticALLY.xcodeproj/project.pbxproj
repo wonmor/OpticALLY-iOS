@@ -92,6 +92,7 @@
 		961D67E22B12BDFC00DBB883 /* SceneKitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneKitView.swift; sourceTree = "<group>"; };
 		961D67E42B12C64A00DBB883 /* CreditsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditsView.swift; sourceTree = "<group>"; };
 		963DF9B22AFEDAF600E6E589 /* PostScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostScanView.swift; sourceTree = "<group>"; };
+		963FF2822B6316F700B89019 /* OpticALLY.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = OpticALLY.entitlements; sourceTree = "<group>"; };
 		9646DC6B2B1064F500092549 /* glasses.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = glasses.mp4; sourceTree = "<group>"; };
 		96491C5E2AFD746300FD3666 /* ConsoleOutputCatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsoleOutputCatcher.swift; sourceTree = "<group>"; };
 		9671FDC52B5B14F2004DA4C2 /* ObjCBridge.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = ObjCBridge.py; sourceTree = "<group>"; };
@@ -279,6 +280,7 @@
 				9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */,
 				967EE06A2AAE06FE000C4D5F /* Preview Content */,
 				9679F8B12AD0907800686F13 /* OpticALLY-Bridging-Header.h */,
+				963FF2822B6316F700B89019 /* OpticALLY.entitlements */,
 			);
 			path = OpticALLY;
 			sourceTree = "<group>";
@@ -612,6 +614,7 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_ENTITLEMENTS = "/Users/johnseong/Documents/GitHub/Project-Lightbulb/OpticALLY/OpticALLY/OpticALLY/OpticALLY.entitlements";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -675,6 +678,7 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_ENTITLEMENTS = "/Users/johnseong/Documents/GitHub/Project-Lightbulb/OpticALLY/OpticALLY/OpticALLY/OpticALLY.entitlements";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
