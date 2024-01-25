@@ -131,8 +131,7 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/kewlbear/NumPy-iOS.git",
       "state" : {
-        "branch" : "main",
-        "revision" : "4d0f25e59ca6b9746ae447d6bb682d12a54cff13"
+        "revision" : "c27e79ea5485f5b727aaaf330635f7d423513100"
       }
     },
     {
@@ -141,7 +140,7 @@
       "location" : "https://github.com/wonmor/Open3D-iOS",
       "state" : {
         "branch" : "main",
-        "revision" : "92d514dcbeb4b7955946cbf5f3c15a332727e15b"
+        "revision" : "24c1801f0a465463f8be51aac3b027988246270c"
       }
     },
     {
@@ -158,8 +157,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/kewlbear/Python-iOS.git",
       "state" : {
-        "revision" : "4f3ca2bc0cff1ef2511555eb6114f9eb12e50412",
-        "version" : "0.1.1-b20230423-090254"
+        "branch" : "3.8_kivy-ios",
+        "revision" : "f5333228b625560a90c17d9e2d3a9b2aac6967a9"
       }
     },
     {
