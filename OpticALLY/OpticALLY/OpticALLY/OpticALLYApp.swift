@@ -63,17 +63,6 @@ struct OpticALLYApp: App {
             
             standardOutReader = StandardOutReader(STDOUT_FILENO: Int32(sys!.stdout.fileno())!, STDERR_FILENO: Int32(sys!.stderr.fileno())!)
             
-            // This is how you manually add a PIP dependency.
-            // You go to their GitHub, manually clone the PIP dependency repo which incldues PyProject.toml, drop that into resources,
-            // and then use below command to import it on PythonKit.
-            //
-            // Instructions written by John Seong on Jan. 26, 2024.
-            guard let gilPath = Bundle.main.url(forResource: "gil-master", withExtension: nil)?.path else {
-                return
-            }
-
-            sys!.path.insert(1, gilPath)
-            
             sys!.path.insert(1, Bundle.main.bundlePath)
             
             print("Python \(sys!.version_info.major).\(sys!.version_info.minor)")

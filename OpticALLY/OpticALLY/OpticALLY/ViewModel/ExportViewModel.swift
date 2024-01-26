@@ -7,6 +7,9 @@
 
 import Foundation
 import Firebase
+import PythonKit
+import PythonSupport
+import LinkPython
 
 /// ExportViewModel handles the export and sharing functionality for 3D models. It is designed as a ViewModel for SwiftUI-based UI components and manages various properties and methods related to exporting models and tracking export durations.
 
@@ -140,6 +143,8 @@ class ExportViewModel: ObservableObject {
         }
     }
     
+    var tstate: UnsafeMutableRawPointer?
+    
     func exportOBJ() {
         if OpticALLYApp.isConnectedToNetwork() {
             // Fetch previous export durations to estimate the current export time
@@ -161,6 +166,16 @@ class ExportViewModel: ObservableObject {
             let plyFileURL = tempDirectory.appendingPathComponent("model.ply")
 
             do {
+                let gstate = PyGILState_Ensure()
+                
+              defer {
+                  DispatchQueue.main.async {
+                      guard let tstate = self.tstate else { fatalError() }
+                      PyEval_RestoreThread(tstate)
+                      self.tstate = nil
+                  }
+                  PyGILState_Release(gstate)
+              }
                 // Call convertToObj, which now handles both PLY export and OBJ conversion
                 let objFileURL = try OpticALLYApp.convertToObj(fileURL: plyFileURL)
 
@@ -189,5 +204,7 @@ class ExportViewModel: ObservableObject {
                 }
             }
         }
+        
+        tstate = PyEval_SaveThread()
     }
 }
