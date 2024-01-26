@@ -118,13 +118,3 @@ struct CreditLine: View {
         .multilineTextAlignment(.center)
     }
 }
-
-struct CreditsView_Previews: PreviewProvider {
-    @State static var showingCreditsDummy = true
-    
-    static var previews: some View {
-        CreditsView(showingCredits: $showingCreditsDummy)
-            .environmentObject(GlobalState())
-            .preferredColorScheme(.dark)
-    }
-}

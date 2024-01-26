@@ -39,11 +39,3 @@ struct ContentView: View {
         .animation(.easeInOut, value: globalState.currentView)
     }
 }
-
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
-            .environmentObject(GlobalState())
-            .preferredColorScheme(.dark)
-    }
-}

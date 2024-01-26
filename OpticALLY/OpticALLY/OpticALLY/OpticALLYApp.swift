@@ -38,6 +38,7 @@ class GlobalState: ObservableObject {
 
 var sys: PythonObject?
 var o3d: PythonObject?
+var np: PythonObject?
 
 var standardOutReader: StandardOutReader?
 
@@ -51,8 +52,9 @@ struct OpticALLYApp: App {
                Open3DSupport.sitePackagesURL.insertPythonPath()
                NumPySupport.sitePackagesURL.insertPythonPath()
                
-               o3d = Python.import("open3d")
                sys = Python.import("sys")
+               o3d = Python.import("open3d")
+               np = Python.import("numpy")
                
                sys!.stdout = Python.open(NSTemporaryDirectory() + "stdout.txt", "w", encoding: "utf8")
                sys!.stderr = sys!.stdout
@@ -82,6 +84,62 @@ struct OpticALLYApp: App {
                 .environmentObject(GlobalState())
         }
     }
+    
+    static func convertToObj(fileURL: URL) throws -> URL {
+        let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent("temp", isDirectory: true)
+        try? FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true, attributes: nil)
+
+        let inputFilePath = tempDir.appendingPathComponent(fileURL.lastPathComponent)
+        let outputFilePath = inputFilePath.deletingPathExtension().appendingPathExtension("obj")
+
+        do {
+            // Copy file to temp directory
+            try FileManager.default.copyItem(at: fileURL, to: inputFilePath)
+
+            // Use PythonKit to interact with Python
+            let o3d = Python.import("open3d")
+            let np = Python.import("numpy")
+
+            let pointCloud = o3d.io.read_point_cloud(inputFilePath.path)
+                   let outlierRemovalResult = pointCloud.remove_statistical_outlier(nb_neighbors: 20, std_ratio: 2.0)
+                   let filteredPointCloud = pointCloud.select_by_index(outlierRemovalResult[1])
+
+                   if !Bool(filteredPointCloud.has_normals())! {
+                       filteredPointCloud.estimate_normals()
+                   }
+
+                   let distances = filteredPointCloud.compute_nearest_neighbor_distance()
+                   let avgSpacing = Double(np.mean(distances))!
+                   let radii = [0.5, 1, 2, 4].map { avgSpacing * $0 }
+                   let mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_ball_pivoting(
+                       filteredPointCloud,
+                       o3d.utility.DoubleVector(radii.map { PythonObject($0) })
+                   )
+
+                   if Bool(mesh.is_empty())! {
+                       throw NSError(domain: "AppErrorDomain", code: -1, userInfo: [NSLocalizedDescriptionKey: "Mesh conversion resulted in an empty mesh."])
+                   }
+
+                   // Perform the triangle inversion using Python's slice directly
+                   let invertedTriangles = np.asarray(mesh.triangles)[:, Python.slice(None, None, None)].getitem([2, 1, 0])
+                   mesh.triangles = o3d.utility.Vector3iVector(invertedTriangles)
+                   mesh.compute_vertex_normals()
+
+                   o3d.io.write_triangle_mesh(outputFilePath.path, mesh)
+
+            // Clean up the input file
+            try FileManager.default.removeItem(at: inputFilePath)
+
+            return outputFilePath
+        } catch {
+            // Clean up in case of failure
+            if FileManager.default.fileExists(atPath: inputFilePath.path) {
+                try? FileManager.default.removeItem(at: inputFilePath)
+            }
+            throw error
+        }
+    }
+
     
     // Network Reachability Check
     static func isConnectedToNetwork() -> Bool {

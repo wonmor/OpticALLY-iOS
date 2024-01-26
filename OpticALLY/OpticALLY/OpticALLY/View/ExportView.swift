@@ -415,11 +415,3 @@ struct ExportView: View {
         .ignoresSafeArea()
     }
 }
-
-struct ExportView_Previews: PreviewProvider {
-    static var previews: some View {
-        ExportView(faceTrackingViewModel: faceTrackingViewModel)
-            .environmentObject(GlobalState())
-            .preferredColorScheme(.dark)
-    }
-}
