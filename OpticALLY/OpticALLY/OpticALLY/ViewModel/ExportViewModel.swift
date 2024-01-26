@@ -177,7 +177,7 @@ class ExportViewModel: ObservableObject {
                   PyGILState_Release(gstate)
               }
                 // Call convertToObj, which now handles both PLY export and OBJ conversion
-                let objFileURL = try OpticALLYApp.convertToObj(fileURL: plyFileURL)
+                let objFileURL = try OpticALLYApp.ballPivotingSurfaceReconstructionPLYtoOBJ(fileURL: plyFileURL)
 
                 // Update the UI with the results of the export process
                 DispatchQueue.main.async {

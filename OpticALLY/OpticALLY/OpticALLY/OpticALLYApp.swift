@@ -89,7 +89,7 @@ struct OpticALLYApp: App {
         }
     }
     
-    static func convertToObj(fileURL: URL) throws -> URL {
+    static func ballPivotingSurfaceReconstructionPLYtoOBJ(fileURL: URL) throws -> URL {
         let fileManager = FileManager.default
         let tempDir = fileManager.temporaryDirectory.appendingPathComponent("temp", isDirectory: true)
         
