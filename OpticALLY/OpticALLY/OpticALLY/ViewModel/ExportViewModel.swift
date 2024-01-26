@@ -141,10 +141,10 @@ class ExportViewModel: ObservableObject {
     }
     
     func exportOBJ() {
-        fetchExportDurations()
+//        fetchExportDurations()
 
         // Start the export timer
-        startExportTimer()
+//        startExportTimer()
 
         // Export the PLY data to the file
         let tempDirectory = FileManager.default.temporaryDirectory
@@ -168,8 +168,8 @@ class ExportViewModel: ObservableObject {
                     self.isLoading = false
 
                     // Stop the export timer and update the duration in Firestore
-                    let exportDuration = self.stopExportTimer()
-                    self.updateExportDurationInFirestore(newDuration: exportDuration)
+//                    let exportDuration = self.stopExportTimer()
+//                    self.updateExportDurationInFirestore(newDuration: exportDuration)
                 }
             } catch {
                 print("Error converting PLY to OBJ: \(error)")
