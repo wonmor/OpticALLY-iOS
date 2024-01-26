@@ -89,6 +89,58 @@ struct OpticALLYApp: App {
         }
     }
     
+    static func pairwiseRegistration(source: PythonObject, target: PythonObject, maxCorrespondenceDistanceCoarse: Double, maxCorrespondenceDistanceFine: Double) -> (PythonObject, PythonObject) {
+        print("Apply point-to-plane ICP")
+        let icpCoarse = o3d!.pipelines.registration.registration_icp(
+            source, target, maxCorrespondenceDistanceCoarse, np!.identity(4),
+            o3d!.pipelines.registration.TransformationEstimationPointToPlane())
+        let icpFine = o3d!.pipelines.registration.registration_icp(
+            source, target, maxCorrespondenceDistanceFine,
+            icpCoarse.transformation,
+            o3d!.pipelines.registration.TransformationEstimationPointToPlane())
+        
+        let transformationIcp = icpFine.transformation
+        let informationIcp = o3d!.pipelines.registration.get_information_matrix_from_point_clouds(
+            source, target, maxCorrespondenceDistanceFine, icpFine.transformation)
+        
+        return (transformationIcp, informationIcp)
+    }
+    
+    static func fullRegistration(pcds: [PythonObject], maxCorrespondenceDistanceCoarse: Double, maxCorrespondenceDistanceFine: Double) -> PythonObject {
+        let poseGraph = o3d!.pipelines.registration.PoseGraph()
+        var odometry = np!.identity(4)
+        poseGraph.nodes.append(o3d!.pipelines.registration.PoseGraphNode(odometry))
+        
+        for sourceId in 0..<pcds.count {
+            for targetId in (sourceId + 1)..<pcds.count {
+                let (transformationIcp, informationIcp) = pairwiseRegistration(
+                    source: pcds[sourceId], target: pcds[targetId],
+                    maxCorrespondenceDistanceCoarse: maxCorrespondenceDistanceCoarse,
+                    maxCorrespondenceDistanceFine: maxCorrespondenceDistanceFine)
+                
+                print("Build o3d.pipelines.registration.PoseGraph")
+                if targetId == sourceId + 1 {  // odometry case
+                    odometry = np!.dot(transformationIcp, odometry)
+                    poseGraph.nodes.append(
+                        o3d!.pipelines.registration.PoseGraphNode(np!.linalg.inv(odometry)))
+                    poseGraph.edges.append(
+                        o3d!.pipelines.registration.PoseGraphEdge(sourceId, targetId,
+                                                                 transformationIcp,
+                                                                 informationIcp,
+                                                                 uncertain: false))
+                } else {  // loop closure case
+                    poseGraph.edges.append(
+                        o3d!.pipelines.registration.PoseGraphEdge(sourceId, targetId,
+                                                                 transformationIcp,
+                                                                 informationIcp,
+                                                                 uncertain: true))
+                }
+            }
+        }
+        
+        return poseGraph
+    }
+    
     static func ballPivotingSurfaceReconstruction_PLYtoOBJ(fileURL: URL) throws -> URL {
         let fileManager = FileManager.default
         let tempDir = fileManager.temporaryDirectory.appendingPathComponent("temp", isDirectory: true)
@@ -109,11 +161,7 @@ struct OpticALLYApp: App {
         try fileManager.copyItem(at: fileURL, to: inputFilePath)
         
         do {
-            // Use PythonKit to interact with Python
-            let o3d = Python.import("open3d")
-            let np = Python.import("numpy")
-            
-            let pointCloud = o3d.io.read_point_cloud(inputFilePath.path)
+            let pointCloud = o3d!.io.read_point_cloud(inputFilePath.path)
             let outlierRemovalResult = pointCloud.remove_statistical_outlier(nb_neighbors: 20, std_ratio: 2.0)
             let filteredPointCloud = pointCloud.select_by_index(outlierRemovalResult[1])
             
@@ -122,11 +170,11 @@ struct OpticALLYApp: App {
             }
             
             let distances = filteredPointCloud.compute_nearest_neighbor_distance()
-            let avgSpacing = Double(np.mean(distances))!
+            let avgSpacing = Double(np!.mean(distances))!
             let radii = [0.5, 1, 2, 4].map { avgSpacing * $0 }
-            let mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_ball_pivoting(
+            let mesh = o3d!.geometry.TriangleMesh.create_from_point_cloud_ball_pivoting(
                 filteredPointCloud,
-                o3d.utility.DoubleVector(radii.map { PythonObject($0) })
+                o3d!.utility.DoubleVector(radii.map { PythonObject($0) })
             )
             
             if Bool(mesh.is_empty())! {
@@ -135,12 +183,13 @@ struct OpticALLYApp: App {
             
             mesh.compute_vertex_normals()
             
-            o3d.io.write_triangle_mesh(outputFilePath.path, mesh)
+            o3d!.io.write_triangle_mesh(outputFilePath.path, mesh)
             
             // Clean up the input file
             try FileManager.default.removeItem(at: inputFilePath)
             
             return outputFilePath
+            
         } catch {
             // Clean up in case of failure
             if FileManager.default.fileExists(atPath: inputFilePath.path) {
