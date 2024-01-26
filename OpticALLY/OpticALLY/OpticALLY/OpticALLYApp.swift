@@ -113,9 +113,7 @@ struct OpticALLYApp: App {
             let o3d = Python.import("open3d")
             let np = Python.import("numpy")
             
-            let pointCloud = o3d.io.read_point_cloud(inputFilePath.path)
-            let outlierRemovalResult = pointCloud.remove_statistical_outlier(nb_neighbors: 20, std_ratio: 2.0)
-            let filteredPointCloud = pointCloud.select_by_index(outlierRemovalResult[1])
+            let filteredPointCloud = o3d.io.read_point_cloud(inputFilePath.path)
             
             if !Bool(filteredPointCloud.has_normals())! {
                 filteredPointCloud.estimate_normals()
@@ -133,9 +131,6 @@ struct OpticALLYApp: App {
                 throw NSError(domain: "AppErrorDomain", code: -1, userInfo: [NSLocalizedDescriptionKey: "Mesh conversion resulted in an empty mesh."])
             }
             
-            // Perform the triangle inversion using Python's slice directly
-            //                   let invertedTriangles = np.asarray(mesh.triangles)[:, Python.slice(None, None, None)].getitem([2, 1, 0])
-            //                   mesh.triangles = o3d.utility.Vector3iVector(invertedTriangles)
             mesh.compute_vertex_normals()
             
             o3d.io.write_triangle_mesh(outputFilePath.path, mesh)
