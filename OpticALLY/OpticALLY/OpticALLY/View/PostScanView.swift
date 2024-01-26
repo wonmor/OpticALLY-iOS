@@ -147,12 +147,8 @@ struct PostScanView: View {
                 
                 if !ExternalData.isMeshView {
                     Button(action: {
-                        if OpticALLYApp.isConnectedToNetwork() {
-                            exportViewModel.exportOBJ()
-                            ExternalData.isMeshView = true
-                        } else {
-                            showAlert = true
-                        }
+                        exportViewModel.exportOBJ()
+                        ExternalData.isMeshView = true
                     }) {
                         HStack(spacing: 10) {
                             Image(systemName: "square.stack.3d.forward.dottedline.fill")

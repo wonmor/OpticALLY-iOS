@@ -321,11 +321,7 @@ struct ExportView: View {
                                                         
                                                         // .OBJ Button
                                                         Button(action: {
-                                                            if OpticALLYApp.isConnectedToNetwork() {
-                                                                exportViewModel.exportOBJ()
-                                                            } else {
-                                                                showAlert = true
-                                                            }
+                                                            exportViewModel.exportOBJ()
                                                         }) {
                                                             Text(".OBJ")
                                                                 .padding()

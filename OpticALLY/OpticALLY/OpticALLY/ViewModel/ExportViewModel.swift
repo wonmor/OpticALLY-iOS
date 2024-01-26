@@ -142,80 +142,41 @@ class ExportViewModel: ObservableObject {
     
     func exportOBJ() {
         fetchExportDurations()
-        
+
         // Start the export timer
         startExportTimer()
-        
-        // Convert to PLY and get the file URL
-        // Determine a temporary file URL to save the PLY file
-        let tempDirectory = FileManager.default.temporaryDirectory
-        let fileURL = tempDirectory.appendingPathComponent("model.ply")
-        
+
         // Export the PLY data to the file
-        ExternalData.exportAV_GeometryAsPLY(to: fileURL)
-        
+        let tempDirectory = FileManager.default.temporaryDirectory
+        let plyFileURL = tempDirectory.appendingPathComponent("model.ply")
+        ExternalData.exportAV_GeometryAsPLY(to: plyFileURL)
+
         // Update the state to indicate that there's a file to share
         DispatchQueue.main.async {
-            guard let plyFileURL: URL? = fileURL else {
-                print("Failed to get PLY file URL")
-                return
-            }
-            
-            // Start loading
-            DispatchQueue.main.async {
-                self.isLoading = true
-            }
-            
-            // Prepare the request
-            let url = URL(string: "https://harolden-server.apps.johnseong.com/convert-to-obj/")!
-            var request = URLRequest(url: url)
-            request.httpMethod = "POST"
-            
-            // Create a multipart form data body
-            let boundary = "Boundary-\(UUID().uuidString)"
-            request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-            
-            var data = Data()
-            data.append("--\(boundary)\r\n".data(using: .utf8)!)
-            data.append("Content-Disposition: form-data; name=\"file\"; filename=\"model.ply\"\r\n".data(using: .utf8)!)
-            data.append("Content-Type: application/octet-stream\r\n\r\n".data(using: .utf8)!)
-            data.append(try! Data(contentsOf: plyFileURL!))
-            data.append("\r\n".data(using: .utf8)!)
-            data.append("--\(boundary)--\r\n".data(using: .utf8)!)
-            
-            // Upload the file
-            let task = URLSession.shared.uploadTask(with: request, from: data) { data, response, error in
+            self.isLoading = true
+        }
+
+        DispatchQueue.global(qos: .userInitiated).async {
+            do {
+                // Use convertToObj to convert PLY to OBJ
+                let objFileURL = try OpticALLYApp.convertToObj(fileURL: plyFileURL)
+
+                // Update the state with the OBJ file URL and stop loading
                 DispatchQueue.main.async {
-                    self.isLoading = false // Stop loading
-                    if let error = error {
-                        print("Error: \(error)")
-                        return
-                    }
-                    
-                    guard let data = data else {
-                        print("No data received")
-                        return
-                    }
-                    
-                    print("Received .OBJ file...")
-                    
-                    // Save the OBJ file to a temporary location
-                    let tempDirectory = FileManager.default.temporaryDirectory
-                    let objFileURL = tempDirectory.appendingPathComponent("model.obj")
-                    do {
-                        try data.write(to: objFileURL)
-                        self.fileURL = objFileURL
-                        self.showShareSheet = true
-                        
-                        // Stop the export timer and update the duration in Firestore
-                        let exportDuration = self.stopExportTimer()
-                        self.updateExportDurationInFirestore(newDuration: exportDuration)
-                    } catch {
-                        print("Error saving OBJ file: \(error)")
-                    }
+                    self.fileURL = objFileURL
+                    self.showShareSheet = true
+                    self.isLoading = false
+
+                    // Stop the export timer and update the duration in Firestore
+                    let exportDuration = self.stopExportTimer()
+                    self.updateExportDurationInFirestore(newDuration: exportDuration)
+                }
+            } catch {
+                print("Error converting PLY to OBJ: \(error)")
+                DispatchQueue.main.async {
+                    self.isLoading = false
                 }
             }
-            task.resume()
         }
     }
 }
