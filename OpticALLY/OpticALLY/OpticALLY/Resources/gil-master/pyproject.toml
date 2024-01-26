@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gil"
+version = "1.25.0.0"
+description = "Gil (git links) tool"
+readme = "README.md"
+requires-python = ">=3.7"
+license = {file = "LICENSE"}
+authors = [{name = "Ivan Shynkarenka"}, {email = "chronoxor@gmail.com"}]
+keywords = ["git", "git-addons", "devops-tools", "subtree", "submodule", "dependency-links"]
+classifiers = [
+    "Operating System :: POSIX",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Build Tools",
+    "Topic :: Software Development :: Libraries :: Python Modules"
+]
+
+[project.urls]
+homepage = "https://github.com/chronoxor/gil"
+documentation = "https://github.com/chronoxor/gil"
+repository = "https://github.com/chronoxor/gil"
+
+[tool.setuptools]
+script-files = ["gil.py", "gil.bat", "gil"]
+platforms = ["Linux", "MacOS", "Windows"]
+py-modules = []
