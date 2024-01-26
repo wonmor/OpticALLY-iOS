@@ -141,39 +141,46 @@ class ExportViewModel: ObservableObject {
     }
     
     func exportOBJ() {
-//        fetchExportDurations()
+        // Fetch previous export durations to estimate the current export time
+        fetchExportDurations()
 
-        // Start the export timer
-//        startExportTimer()
+        // Start the export timer to measure the duration of the export process
+        startExportTimer()
 
-        // Export the PLY data to the file
-        let tempDirectory = FileManager.default.temporaryDirectory
-        let plyFileURL = tempDirectory.appendingPathComponent("model.ply")
-        ExternalData.exportAV_GeometryAsPLY(to: plyFileURL)
-
-        // Update the state to indicate that there's a file to share
+        // Indicate the start of the export process
         DispatchQueue.main.async {
             self.isLoading = true
         }
 
+        // Perform the export and conversion operations asynchronously to avoid blocking the UI
         DispatchQueue.global(qos: .userInitiated).async {
+            // Define the initial file URL for the PLY file
+            let tempDirectory = FileManager.default.temporaryDirectory
+            let plyFileURL = tempDirectory.appendingPathComponent("model.ply")
+
             do {
-                // Use convertToObj to convert PLY to OBJ
+                // Call convertToObj, which now handles both PLY export and OBJ conversion
                 let objFileURL = try OpticALLYApp.convertToObj(fileURL: plyFileURL)
 
-                // Update the state with the OBJ file URL and stop loading
+                // Update the UI with the results of the export process
                 DispatchQueue.main.async {
+                    // Update the state with the new OBJ file URL
                     self.fileURL = objFileURL
+                    // Indicate that the file is ready to be shared
                     self.showShareSheet = true
+                    // Mark the export process as completed
                     self.isLoading = false
 
-                    // Stop the export timer and update the duration in Firestore
-//                    let exportDuration = self.stopExportTimer()
-//                    self.updateExportDurationInFirestore(newDuration: exportDuration)
+                    // Stop the export timer and record the duration of the export process
+                    let exportDuration = self.stopExportTimer()
+                    // Update the Firestore database with the new export duration
+                    self.updateExportDurationInFirestore(newDuration: exportDuration)
                 }
             } catch {
-                print("Error converting PLY to OBJ: \(error)")
+                // Handle any errors that occurred during the export process
+                print("Error during PLY to OBJ conversion: \(error)")
                 DispatchQueue.main.async {
+                    // Mark the export process as completed, even if it ended in error
                     self.isLoading = false
                 }
             }

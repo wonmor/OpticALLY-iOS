@@ -47,25 +47,25 @@ struct OpticALLYApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
     init() {
-           DispatchQueue.global(qos: .userInitiated).async {
-               PythonSupport.initialize()
-               Open3DSupport.sitePackagesURL.insertPythonPath()
-               NumPySupport.sitePackagesURL.insertPythonPath()
-               
-               sys = Python.import("sys")
-               o3d = Python.import("open3d")
-               np = Python.import("numpy")
-               
-               sys!.stdout = Python.open(NSTemporaryDirectory() + "stdout.txt", "w", encoding: "utf8")
-               sys!.stderr = sys!.stdout
-               
-               print(sys!.stdout.encoding)
-               
-               print("Python \(sys!.version_info.major).\(sys!.version_info.minor)")
-               print("Python Version: \(sys!.version)")
-               print("Python Encoding: \(sys!.getdefaultencoding().upper())")
-               print("Open3D Version: \(o3d!.__version__)")
-           }
+        DispatchQueue.global(qos: .userInitiated).async {
+            PythonSupport.initialize()
+            Open3DSupport.sitePackagesURL.insertPythonPath()
+            NumPySupport.sitePackagesURL.insertPythonPath()
+            
+            sys = Python.import("sys")
+            o3d = Python.import("open3d")
+            np = Python.import("numpy")
+            
+            sys!.stdout = Python.open(NSTemporaryDirectory() + "stdout.txt", "w", encoding: "utf8")
+            sys!.stderr = sys!.stdout
+            
+            print(sys!.stdout.encoding)
+            
+            print("Python \(sys!.version_info.major).\(sys!.version_info.minor)")
+            print("Python Version: \(sys!.version)")
+            print("Python Encoding: \(sys!.getdefaultencoding().upper())")
+            print("Open3D Version: \(o3d!.__version__)")
+        }
         
         for family: String in UIFont.familyNames
         {
@@ -86,50 +86,59 @@ struct OpticALLYApp: App {
     }
     
     static func convertToObj(fileURL: URL) throws -> URL {
-        let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent("temp", isDirectory: true)
-        try? FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true, attributes: nil)
-
+        let fileManager = FileManager.default
+        let tempDir = fileManager.temporaryDirectory.appendingPathComponent("temp", isDirectory: true)
+        
+        // Define the input and output file paths
         let inputFilePath = tempDir.appendingPathComponent(fileURL.lastPathComponent)
         let outputFilePath = inputFilePath.deletingPathExtension().appendingPathExtension("obj")
-
+        
+        // Remove the existing input file if it exists to avoid the 'item already exists' error
+        if fileManager.fileExists(atPath: inputFilePath.path) {
+            try fileManager.removeItem(at: inputFilePath)
+        }
+        
+        // Create the temporary directory if it doesn't exist
+        try fileManager.createDirectory(at: tempDir, withIntermediateDirectories: true, attributes: nil)
+        
+        // Copy the file to the temporary directory now that we've ensured there are no conflicts
+        try fileManager.copyItem(at: fileURL, to: inputFilePath)
+        
         do {
-            // Copy file to temp directory
-            try FileManager.default.copyItem(at: fileURL, to: inputFilePath)
-
             // Use PythonKit to interact with Python
             let o3d = Python.import("open3d")
             let np = Python.import("numpy")
-
+            
             let pointCloud = o3d.io.read_point_cloud(inputFilePath.path)
-                   let outlierRemovalResult = pointCloud.remove_statistical_outlier(nb_neighbors: 20, std_ratio: 2.0)
-                   let filteredPointCloud = pointCloud.select_by_index(outlierRemovalResult[1])
-
-                   if !Bool(filteredPointCloud.has_normals())! {
-                       filteredPointCloud.estimate_normals()
-                   }
-
-                   let distances = filteredPointCloud.compute_nearest_neighbor_distance()
-                   let avgSpacing = Double(np.mean(distances))!
-                   let radii = [0.5, 1, 2, 4].map { avgSpacing * $0 }
-                   let mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_ball_pivoting(
-                       filteredPointCloud,
-                       o3d.utility.DoubleVector(radii.map { PythonObject($0) })
-                   )
-
-                   if Bool(mesh.is_empty())! {
-                       throw NSError(domain: "AppErrorDomain", code: -1, userInfo: [NSLocalizedDescriptionKey: "Mesh conversion resulted in an empty mesh."])
-                   }
-
-                   // Perform the triangle inversion using Python's slice directly
-//                   let invertedTriangles = np.asarray(mesh.triangles)[:, Python.slice(None, None, None)].getitem([2, 1, 0])
-//                   mesh.triangles = o3d.utility.Vector3iVector(invertedTriangles)
-                   mesh.compute_vertex_normals()
-
-                   o3d.io.write_triangle_mesh(outputFilePath.path, mesh)
-
+            let outlierRemovalResult = pointCloud.remove_statistical_outlier(nb_neighbors: 20, std_ratio: 2.0)
+            let filteredPointCloud = pointCloud.select_by_index(outlierRemovalResult[1])
+            
+            if !Bool(filteredPointCloud.has_normals())! {
+                filteredPointCloud.estimate_normals()
+            }
+            
+            let distances = filteredPointCloud.compute_nearest_neighbor_distance()
+            let avgSpacing = Double(np.mean(distances))!
+            let radii = [0.5, 1, 2, 4].map { avgSpacing * $0 }
+            let mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_ball_pivoting(
+                filteredPointCloud,
+                o3d.utility.DoubleVector(radii.map { PythonObject($0) })
+            )
+            
+            if Bool(mesh.is_empty())! {
+                throw NSError(domain: "AppErrorDomain", code: -1, userInfo: [NSLocalizedDescriptionKey: "Mesh conversion resulted in an empty mesh."])
+            }
+            
+            // Perform the triangle inversion using Python's slice directly
+            //                   let invertedTriangles = np.asarray(mesh.triangles)[:, Python.slice(None, None, None)].getitem([2, 1, 0])
+            //                   mesh.triangles = o3d.utility.Vector3iVector(invertedTriangles)
+            mesh.compute_vertex_normals()
+            
+            o3d.io.write_triangle_mesh(outputFilePath.path, mesh)
+            
             // Clean up the input file
             try FileManager.default.removeItem(at: inputFilePath)
-
+            
             return outputFilePath
         } catch {
             // Clean up in case of failure
@@ -141,35 +150,35 @@ struct OpticALLYApp: App {
     }
     
     // Network Reachability Check
-   static func isConnectedToNetwork() -> Bool {
-       var zeroAddress = sockaddr_in()
-       zeroAddress.sin_len = UInt8(MemoryLayout<sockaddr_in>.size)
-       zeroAddress.sin_family = sa_family_t(AF_INET)
-       
-       guard let defaultRouteReachability = withUnsafePointer(to: &zeroAddress, {
-           $0.withMemoryRebound(to: sockaddr.self, capacity: 1) {
-               SCNetworkReachabilityCreateWithAddress(nil, $0)
-           }
-       }) else {
-           return false
-       }
-       
-       var flags: SCNetworkReachabilityFlags = []
-       if !SCNetworkReachabilityGetFlags(defaultRouteReachability, &flags) {
-           return false
-       }
-       
-       let isReachable = flags.contains(.reachable)
-       let needsConnection = flags.contains(.connectionRequired)
-       
-       return (isReachable && !needsConnection)
-   }
+    static func isConnectedToNetwork() -> Bool {
+        var zeroAddress = sockaddr_in()
+        zeroAddress.sin_len = UInt8(MemoryLayout<sockaddr_in>.size)
+        zeroAddress.sin_family = sa_family_t(AF_INET)
+        
+        guard let defaultRouteReachability = withUnsafePointer(to: &zeroAddress, {
+            $0.withMemoryRebound(to: sockaddr.self, capacity: 1) {
+                SCNetworkReachabilityCreateWithAddress(nil, $0)
+            }
+        }) else {
+            return false
+        }
+        
+        var flags: SCNetworkReachabilityFlags = []
+        if !SCNetworkReachabilityGetFlags(defaultRouteReachability, &flags) {
+            return false
+        }
+        
+        let isReachable = flags.contains(.reachable)
+        let needsConnection = flags.contains(.connectionRequired)
+        
+        return (isReachable && !needsConnection)
+    }
 }
 
 class PythonBridge: NSObject {
     @objc func input(_ prompt: String) -> String {
         Buffer.shared.append(prompt)
-//        print(prompt)
+        //        print(prompt)
         return Buffer.shared.read()
     }
 }
@@ -212,7 +221,7 @@ class Buffer: ObservableObject {
             t = t.replacingOccurrences(of: c, with: r)
         }
         print(input, "->", t)
-
+        
         text.append(t.appending("\n"))
         inputs.append(t)
         input = ""
