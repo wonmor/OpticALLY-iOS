@@ -113,7 +113,9 @@ struct OpticALLYApp: App {
             let o3d = Python.import("open3d")
             let np = Python.import("numpy")
             
-            let filteredPointCloud = o3d.io.read_point_cloud(inputFilePath.path)
+            let pointCloud = o3d.io.read_point_cloud(inputFilePath.path)
+            let outlierRemovalResult = pointCloud.remove_statistical_outlier(nb_neighbors: 20, std_ratio: 2.0)
+            let filteredPointCloud = pointCloud.select_by_index(outlierRemovalResult[1])
             
             if !Bool(filteredPointCloud.has_normals())! {
                 filteredPointCloud.estimate_normals()
