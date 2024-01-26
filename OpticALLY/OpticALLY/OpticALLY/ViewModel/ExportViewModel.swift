@@ -141,11 +141,13 @@ class ExportViewModel: ObservableObject {
     }
     
     func exportOBJ() {
-        // Fetch previous export durations to estimate the current export time
-        fetchExportDurations()
-
-        // Start the export timer to measure the duration of the export process
-        startExportTimer()
+        if OpticALLYApp.isConnectedToNetwork() {
+            // Fetch previous export durations to estimate the current export time
+            fetchExportDurations()
+            
+            // Start the export timer to measure the duration of the export process
+            startExportTimer()
+        }
 
         // Indicate the start of the export process
         DispatchQueue.main.async {
@@ -171,10 +173,12 @@ class ExportViewModel: ObservableObject {
                     // Mark the export process as completed
                     self.isLoading = false
 
-                    // Stop the export timer and record the duration of the export process
-                    let exportDuration = self.stopExportTimer()
-                    // Update the Firestore database with the new export duration
-                    self.updateExportDurationInFirestore(newDuration: exportDuration)
+                    if OpticALLYApp.isConnectedToNetwork() {
+                        // Stop the export timer and record the duration of the export process
+                        let exportDuration = self.stopExportTimer()
+                        // Update the Firestore database with the new export duration
+                        self.updateExportDurationInFirestore(newDuration: exportDuration)
+                    }
                 }
             } catch {
                 // Handle any errors that occurred during the export process
