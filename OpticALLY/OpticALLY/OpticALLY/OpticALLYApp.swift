@@ -230,10 +230,11 @@ class Buffer: ObservableObject {
 
 class StandardOutReader {
     let inputPipe = Pipe()
-    
     let outputPipe = Pipe()
     
     var isBufferEnabled = true
+    
+    static var outputLines: [String] = [] // Array to store output lines
     
     init(STDOUT_FILENO: Int32 = Darwin.STDOUT_FILENO, STDERR_FILENO: Int32 = Darwin.STDERR_FILENO) {
         dup2(STDOUT_FILENO, outputPipe.fileHandleForWriting.fileDescriptor)
@@ -249,6 +250,13 @@ class StandardOutReader {
             guard self?.isBufferEnabled ?? false else {
                 return
             }
+            
+            if let output = String(data: data, encoding: .utf8) {
+               let lines = output.split(separator: "\n").map(String.init)
+               DispatchQueue.main.async {
+                   StandardOutReader.outputLines.append(contentsOf: lines)
+               }
+           }
             
             let str = String(data: data, encoding: .ascii) ?? "<Non-ascii data of size\(data.count)>\n"
             DispatchQueue.main.async {

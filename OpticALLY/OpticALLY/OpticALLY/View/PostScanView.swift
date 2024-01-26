@@ -186,15 +186,9 @@ struct PostScanView: View {
                             .monospaced()
                             .foregroundColor(.white)
                         
-                        if exportViewModel.estimatedExportTime != nil {
-                            Text("Estimated:\n\(exportViewModel.estimatedExportTime!) sec.")
-                                .monospaced()
-                                .foregroundColor(.white)
-                        } else {
-                            Text("Estimated:\nN/A")
-                                .monospaced()
-                                .foregroundColor(.white)
-                        }
+                        Text(StandardOutReader.outputLines.last ?? "Open3D is working on the task")
+                            .monospaced()
+                            .foregroundColor(.white)
                     }
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 30) // Adjust horizontal padding for wider background
