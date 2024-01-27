@@ -89,6 +89,49 @@ struct OpticALLYApp: App {
         }
     }
     
+    let linalg = Python.import("numpy.linalg")
+    
+    func rigidTransform3D(A: PythonObject, B: PythonObject) -> (PythonObject, PythonObject) {
+        let AShape = A.shape
+        let BShape = B.shape
+        
+        // Ensure A and B are 3xN
+        guard AShape[0] == 3, BShape[0] == 3 else {
+            fatalError("Input matrices A and B must be 3xN. Received shapes: \(AShape) and \(BShape).")
+        }
+        
+        // Compute centroids
+        let centroidA = np!.mean(A, axis: 1).reshape(-1, 1)
+        let centroidB = np!.mean(B, axis: 1).reshape(-1, 1)
+        
+        // Subtract mean
+        let Am = A - centroidA
+        let Bm = B - centroidB
+        
+        // Compute matrix H
+        let H = np!.dot(Am, Bm.T)
+        
+        // Perform SVD
+        let SVD = linalg.svd(H)
+        let U = SVD[0]
+        let Vt = SVD[2]
+        
+        // Compute rotation matrix R
+        var R = np!.dot(Vt.T, U.T)
+        
+        // Check for reflection and correct if necessary
+        if linalg.det(R) < 0 {
+            print("Reflection detected, correcting for it...")
+            Vt[2, Python.slice(Python.None)] *= -1
+            R = np!.dot(Vt.T, U.T)
+        }
+        
+        // Compute translation vector t
+        let t = -np!.dot(R, centroidA) + centroidB
+        
+        return (R, t)
+    }
+    
     static func pairwiseRegistration(source: PythonObject, target: PythonObject, maxCorrespondenceDistanceCoarse: Double, maxCorrespondenceDistanceFine: Double) -> (PythonObject, PythonObject) {
         print("Apply point-to-plane ICP")
         let icpCoarse = o3d!.pipelines.registration.registration_icp(
@@ -125,15 +168,15 @@ struct OpticALLYApp: App {
                         o3d!.pipelines.registration.PoseGraphNode(np!.linalg.inv(odometry)))
                     poseGraph.edges.append(
                         o3d!.pipelines.registration.PoseGraphEdge(sourceId, targetId,
-                                                                 transformationIcp,
-                                                                 informationIcp,
-                                                                 uncertain: false))
+                                                                  transformationIcp,
+                                                                  informationIcp,
+                                                                  uncertain: false))
                 } else {  // loop closure case
                     poseGraph.edges.append(
                         o3d!.pipelines.registration.PoseGraphEdge(sourceId, targetId,
-                                                                 transformationIcp,
-                                                                 informationIcp,
-                                                                 uncertain: true))
+                                                                  transformationIcp,
+                                                                  informationIcp,
+                                                                  uncertain: true))
                 }
             }
         }
@@ -303,11 +346,11 @@ class StandardOutReader {
             }
             
             if let output = String(data: data, encoding: .utf8) {
-               let lines = output.split(separator: "\n").map(String.init)
-               DispatchQueue.main.async {
-                   StandardOutReader.outputLines.append(contentsOf: lines)
-               }
-           }
+                let lines = output.split(separator: "\n").map(String.init)
+                DispatchQueue.main.async {
+                    StandardOutReader.outputLines.append(contentsOf: lines)
+                }
+            }
             
             let str = String(data: data, encoding: .ascii) ?? "<Non-ascii data of size\(data.count)>\n"
             DispatchQueue.main.async {
