@@ -772,6 +772,8 @@ struct ExternalData {
                 
                 // Load the PLY file as an Open3D point cloud
                 let pcd = o3d!.io.read_point_cloud(plyFileURL.path)
+                let searchParam = o3d!.geometry.KDTreeSearchParamHybrid(radius: 0.1, max_nn: 30)
+                pcd.estimate_normals(search_param: searchParam)
                 pcds.append(pcd)
             } catch {
                 print("Failed to write PLY file: \(error)")

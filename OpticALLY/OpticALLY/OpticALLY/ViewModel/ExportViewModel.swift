@@ -128,6 +128,16 @@ class ExportViewModel: ObservableObject {
     
     func exportPLY(showShareSheet: Bool) {
         DispatchQueue.global(qos: .userInitiated).async {
+            let gstate = PyGILState_Ensure()
+            
+          defer {
+              DispatchQueue.main.async {
+                  guard let tstate = self.tstate else { fatalError() }
+                  PyEval_RestoreThread(tstate)
+                  self.tstate = nil
+              }
+              PyGILState_Release(gstate)
+          }
             // Determine a temporary file URL to save the ZIP file
             let tempDirectory = FileManager.default.temporaryDirectory
 //            let zipFileURL = tempDirectory.appendingPathComponent("model.zip")
@@ -146,6 +156,8 @@ class ExportViewModel: ObservableObject {
                 self.showShareSheet = showShareSheet
             }
         }
+        
+        tstate = PyEval_SaveThread()
     }
     
     var tstate: UnsafeMutableRawPointer?
