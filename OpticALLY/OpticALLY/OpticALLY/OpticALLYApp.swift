@@ -12,6 +12,7 @@ import PythonSupport
 import PythonKit
 import Open3DSupport
 import NumPySupport
+import Accelerate
 
 let faceTrackingViewModel = FaceTrackingViewModel()
 
@@ -89,46 +90,139 @@ struct OpticALLYApp: App {
         }
     }
     
-    let linalg = Python.import("numpy.linalg")
+    func centroid(of matrix: [[Double]]) -> [Double] {
+        guard !matrix.isEmpty else { return [] }
+        let length = Double(matrix.first!.count)
+        return matrix.map { $0.reduce(0, +) / length }
+    }
+
+    func subtractMean(from matrix: [[Double]], using mean: [Double]) -> [[Double]] {
+        return matrix.enumerated().map { index, row in
+            row.map { $0 - mean[index] } // Use row.map instead of row.enumerated().map
+        }
+    }
     
-    func rigidTransform3D(A: PythonObject, B: PythonObject) -> (PythonObject, PythonObject) {
-        let AShape = A.shape
-        let BShape = B.shape
-        
+    func transpose(_ matrix: [[Double]]) -> [[Double]] {
+        guard let rowCount = matrix.first?.count else { return [] }
+        return (0..<rowCount).map { index in
+            matrix.map { $0[index] }
+        }
+    }
+
+    func matrixMultiply(_ A: [[Double]], _ B: [[Double]]) -> [[Double]] {
+        let m = A.count
+        let n = B[0].count
+        let p = B.count
+        var result = Array(repeating: Array(repeating: 0.0, count: n), count: m)
+        var flattenedA = A.flatMap { $0 }
+        var flattenedB = B.flatMap { $0 }
+        var flattenedResult = Array(repeating: 0.0, count: m*n)
+
+        flattenedResult.withUnsafeMutableBufferPointer { resultPtr in
+            flattenedA.withUnsafeBufferPointer { aPtr in
+                flattenedB.withUnsafeBufferPointer { bPtr in
+                    vDSP_mmulD(aPtr.baseAddress!, 1,
+                               bPtr.baseAddress!, 1,
+                               resultPtr.baseAddress!, 1,
+                               vDSP_Length(m), vDSP_Length(n), vDSP_Length(p))
+                }
+            }
+        }
+
+        // Reconstruct the 2D result matrix from the flattened result array
+        for i in 0..<m {
+            for j in 0..<n {
+                result[i][j] = flattenedResult[i*n + j]
+            }
+        }
+
+        return result
+    }
+
+    func svd(_ matrix: [[Double]]) -> (U: [[Double]], S: [Double], Vt: [[Double]]) {
+        var jobu: Int8 = 65 // 'A' All M columns of U are returned in array U
+        var jobvt: Int8 = 65 // 'A' All N rows of Vt are returned in the array Vt
+        var m = __CLPK_integer(matrix.count)
+        var n = __CLPK_integer(matrix[0].count)
+        var a = matrix.flatMap { $0 }
+        var lda = m
+        var ldu = m
+        var ldvt = n
+        var wkOpt = 0.0
+        var lwork = __CLPK_integer(-1)
+        var info = __CLPK_integer(0)
+
+        var s = [Double](repeating: 0.0, count: Int(min(m, n)))
+        var u = [Double](repeating: 0.0, count: Int(m * m))
+        var vt = [Double](repeating: 0.0, count: Int(n * n))
+        var iwork = [__CLPK_integer](repeating: 0, count: 8 * Int(min(m, n)))
+
+        // Query optimal workspace size
+        dgesdd_(&jobu, &m, &n, &a, &lda, &s, &u, &ldu, &vt, &ldvt, &wkOpt, &lwork, &iwork, &info)
+
+        lwork = __CLPK_integer(wkOpt)
+        var work = [Double](repeating: 0.0, count: Int(lwork))
+
+        // Compute SVD
+        dgesdd_(&jobu, &m, &n, &a, &lda, &s, &u, &ldu, &vt, &ldvt, &work, &lwork, &iwork, &info)
+
+        let U = Array(u).chunked(into: Int(m))
+        let Vt = Array(vt).chunked(into: Int(n))
+
+        return (U, s, Vt)
+    }
+
+    
+    func determinant(_ matrix: [[Double]]) -> Double {
+        guard matrix.count == 3 && matrix[0].count == 3 else {
+            fatalError("Determinant can only be calculated for a 3x3 matrix.")
+        }
+        let a = matrix[0][0], b = matrix[0][1], c = matrix[0][2]
+        let d = matrix[1][0], e = matrix[1][1], f = matrix[1][2]
+        let g = matrix[2][0], h = matrix[2][1], i = matrix[2][2]
+        return a * (e * i - f * h) - b * (d * i - f * g) + c * (d * h - e * g)
+    }
+
+    
+    func matrixMultiplyVector(_ matrix: [[Double]], _ vector: [Double]) -> [Double] {
+        var result = [Double](repeating: 0.0, count: matrix.count)
+        for i in 0..<matrix.count {
+            result[i] = zip(matrix[i], vector).map(*).reduce(0, +)
+        }
+        return result
+    }
+
+    func subtractVectors(_ A: [Double], _ B: [Double]) -> [Double] {
+        return zip(A, B).map(-)
+    }
+    
+    func rigidTransform3D(A: [[Double]], B: [[Double]]) -> (rotation: [[Double]], translation: [Double]) {
         // Ensure A and B are 3xN
-        guard AShape[0] == 3, BShape[0] == 3 else {
-            fatalError("Input matrices A and B must be 3xN. Received shapes: \(AShape) and \(BShape).")
+        guard A.count == 3, B.count == 3 else {
+            fatalError("Input matrices A and B must be 3xN.")
         }
-        
-        // Compute centroids
-        let centroidA = np!.mean(A, axis: 1).reshape(-1, 1)
-        let centroidB = np!.mean(B, axis: 1).reshape(-1, 1)
-        
-        // Subtract mean
-        let Am = A - centroidA
-        let Bm = B - centroidB
-        
-        // Compute matrix H
-        let H = np!.dot(Am, Bm.T)
-        
-        // Perform SVD
-        let SVD = linalg.svd(H)
-        let U = SVD[0]
-        let Vt = SVD[2]
-        
+
+        // Compute centroids and subtract mean
+        let centroidA = centroid(of: A)
+        let centroidB = centroid(of: B)
+        let Am = subtractMean(from: A, using: centroidA)
+        let Bm = subtractMean(from: B, using: centroidB)
+
+        // Compute matrix H and perform SVD
+        let H = matrixMultiply(Am, transpose(Bm))
+        let (U, _, Vt) = svd(H)
+
         // Compute rotation matrix R
-        var R = np!.dot(Vt.T, U.T)
-        
-        // Check for reflection and correct if necessary
-        if linalg.det(R) < 0 {
+        var R = matrixMultiply(Vt, transpose(U))
+        if determinant(R) < 0 {
             print("Reflection detected, correcting for it...")
-            Vt[2, Python.slice(Python.None)] *= -1
-            R = np!.dot(Vt.T, U.T)
+            R[2] = R[2].map { $0 * -1 }
+            R = matrixMultiply(Vt, transpose(U))
         }
-        
+
         // Compute translation vector t
-        let t = -np!.dot(R, centroidA) + centroidB
-        
+        let t = subtractVectors(centroidB, matrixMultiplyVector(R, centroidA))
+
         return (R, t)
     }
     

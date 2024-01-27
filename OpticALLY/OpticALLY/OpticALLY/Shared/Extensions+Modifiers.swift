@@ -11,6 +11,14 @@ import SceneKit
 import ARKit
 import simd
 
+extension Array {
+    func chunked(into size: Int) -> [[Element]] {
+        return stride(from: 0, to: self.count, by: size).map {
+            Array(self[$0..<Swift.min($0 + size, self.count)])
+        }
+    }
+}
+
 extension Data {
     func index(at index: Int, bytesPerIndex: Int) -> Int {
         var value: Int = 0
