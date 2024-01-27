@@ -224,16 +224,6 @@
 			path = Shader;
 			sourceTree = "<group>";
 		};
-		9679F8ED2AD0961600686F13 /* Shared */ = {
-			isa = PBXGroup;
-			children = (
-				96491C5E2AFD746300FD3666 /* ConsoleOutputCatcher.swift */,
-				96B64F722B3D90490003E06D /* ScnMatrix.swift */,
-				969AC2812AB7554C0096892E /* Extensions+Modifiers.swift */,
-			);
-			path = Shared;
-			sourceTree = "<group>";
-		};
 		967EE0582AAE06FB000C4D5F = {
 			isa = PBXGroup;
 			children = (
@@ -260,7 +250,6 @@
 				9671FDC42B5B14F2004DA4C2 /* Python */,
 				969DF1C62B12916900FA9ABE /* GoogleService-Info.plist */,
 				969E42E82ADC9ABD00E77BA7 /* Resources */,
-				9679F8ED2AD0961600686F13 /* Shared */,
 				9679F8EC2AD095F200686F13 /* Shader */,
 				9679F8EB2AD095AA00686F13 /* ViewController */,
 				9679F8E82AD0956E00686F13 /* Storyboard */,
@@ -269,6 +258,9 @@
 				967EE0642AAE06FB000C4D5F /* OpticALLYApp.swift */,
 				9679F8B32AD0907900686F13 /* AppDelegate.swift */,
 				96F0CF172B12A34400417716 /* ExternalData.swift */,
+				96491C5E2AFD746300FD3666 /* ConsoleOutputCatcher.swift */,
+				96B64F722B3D90490003E06D /* ScnMatrix.swift */,
+				969AC2812AB7554C0096892E /* Extensions+Modifiers.swift */,
 				9680F7DA2B2283B200F38A6F /* CapturedImageSampler.swift */,
 				96F0CF212B12A51700417716 /* LogManager.swift */,
 				96B64F6F2B3D90410003E06D /* FaceTextureGenerator.swift */,
