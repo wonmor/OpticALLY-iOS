@@ -255,7 +255,7 @@ struct ExternalData {
     }
     
     // Function to convert depth and color data into a point cloud geometry
-    static func createAVPointCloudGeometry(depthData: AVDepthData, colorData: UnsafePointer<UInt8>, metadata: PointCloudMetadata, width: Int, height: Int, bytesPerRow: Int, scaleX: Float, scaleY: Float, scaleZ: Float, percentile: Float = 35.0) {
+    static func convertToSceneKitModel(depthData: AVDepthData, colorData: UnsafePointer<UInt8>, metadata: PointCloudMetadata, width: Int, height: Int, bytesPerRow: Int, scaleX: Float, scaleY: Float, scaleZ: Float, percentile: Float = 35.0) {
         var vertices: [SCNVector3] = []
         var colors: [UIColor] = []
         var depthValues: [Float] = []
@@ -522,130 +522,7 @@ struct ExternalData {
         return adjustedMatrix
     }
     
-    static func createPointCloudGeometry(depthData: AVDepthData, imageSampler: CapturedImageSampler, width: Int, height: Int, calibrationData: AVCameraCalibrationData, transform: SCNMatrix4, percentile: Float = 35.0) {
-        var vertices: [SCNVector3] = []
-        var colors: [UIColor] = []
-        var depthValues: [Float] = []
-        
-        let cameraIntrinsics = depthData.cameraCalibrationData!.intrinsicMatrix
-        let inverseLensDistortionLookupTable = convertLensDistortionLookupTable(lookupTable: depthData.cameraCalibrationData!.inverseLensDistortionLookupTable!)
-        let lensDistortionLookupTable = convertLensDistortionLookupTable(lookupTable: depthData.cameraCalibrationData!.lensDistortionLookupTable!)
-        let lensDistortionCenter = CGPoint(x: CGFloat(depthData.cameraCalibrationData!.lensDistortionCenter.x), y: CGFloat(depthData.cameraCalibrationData!.lensDistortionCenter.y))
-        
-        let intrinsicWidth = depthData.cameraCalibrationData!.intrinsicMatrixReferenceDimensions.width
-        let intrinsicHeight = depthData.cameraCalibrationData!.intrinsicMatrixReferenceDimensions.height
-        
-        let convertedDepthData = depthData.converting(toDepthDataType: kCVPixelFormatType_DepthFloat16)
-        let depthDataMap = convertedDepthData.depthDataMap
-        CVPixelBufferLockBaseAddress(depthDataMap, .readOnly)
-        defer { CVPixelBufferUnlockBaseAddress(depthDataMap, .readOnly) }
-        
-        // Collect all depth values
-        for y in 0..<height {
-            for x in 0..<width {
-                let depthOffset = y * CVPixelBufferGetBytesPerRow(depthDataMap) + x * MemoryLayout<UInt16>.size
-                let depthPointer = CVPixelBufferGetBaseAddress(depthDataMap)!.advanced(by: depthOffset).assumingMemoryBound(to: UInt16.self)
-                let depthValue = Float(depthPointer.pointee)
-                depthValues.append(depthValue)
-            }
-        }
-        
-        // Sort the depth values
-        depthValues.sort()
-        
-        // Determine the depth threshold for the 30th percentile
-        let index = Int(Float(depthValues.count) * percentile / 100.0)
-        let depthThreshold = depthValues[max(0, min(index, depthValues.count - 1))]
-        
-        // Process points with depth values lower than the threshold
-        for y in 0..<height {
-            for x in 0..<width {
-                let depthOffset = y * CVPixelBufferGetBytesPerRow(depthDataMap) + x * MemoryLayout<UInt16>.size
-                let depthPointer = CVPixelBufferGetBaseAddress(depthDataMap)!.advanced(by: depthOffset).assumingMemoryBound(to: UInt16.self)
-                let depthValue = Float(depthPointer.pointee)
-                
-                if depthValue > depthThreshold {
-                    continue // Skip this point
-                }
-                
-                let scaleFactor = Float(2.0) // Custom scale factor for depth exaggeration
-                let xrw = (Float(x) - cameraIntrinsics.columns.2.x) * depthValue / cameraIntrinsics.columns.0.x
-                let yrw = (Float(y) - cameraIntrinsics.columns.2.y) * depthValue / cameraIntrinsics.columns.1.y
-                let vertex = SCNVector3(x: xrw, y: yrw, z: depthValue * scaleFactor)
-                vertices.append(vertex)
-                
-                // Get color using CapturedImageSampler
-                let normalizedX = CGFloat(x) / CGFloat(width)
-                let normalizedY = CGFloat(y) / CGFloat(height)
-                if let color = imageSampler.getColor(atX: normalizedX, y: normalizedY) {
-                    colors.append(color)
-                }
-            }
-        }
-        
-        if let index: Int? = ExternalData.pointCloudGeometries.count,
-           index! < ExternalData.pointCloudDataArray.count {
-            let metadata = ExternalData.pointCloudDataArray[index!]
-            let yawAngle = Float(metadata.yaw)
-            
-            // Calculate the center
-            let center = calculateCenter(of: vertices)
-            
-            // Rotate vertices around the Z-axis using the yaw angle
-            for i in 0..<vertices.count {
-                vertices[i] = rotateVertexAroundX(vertices[i], around: center, angleDegrees: -yawAngle)
-            }
-        }
-        
-        // Create the geometry source for vertices
-        let vertexSource = SCNGeometrySource(vertices: vertices)
-        
-        // Convert UIColors to Float Components
-        var colorComponents: [CGFloat] = []
-        for color in colors {
-            var red: CGFloat = 0
-            var green: CGFloat = 0
-            var blue: CGFloat = 0
-            var alpha: CGFloat = 0
-            color.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-            
-            colorComponents += [red, green, blue, alpha]
-        }
-        
-        // Create the geometry source for colors
-        let colorData = NSData(bytes: colorComponents, length: colorComponents.count * MemoryLayout<CGFloat>.size)
-        let colorSource = SCNGeometrySource(data: colorData as Data,
-                                            semantic: .color,
-                                            vectorCount: colors.count,
-                                            usesFloatComponents: true,
-                                            componentsPerVector: 4,
-                                            bytesPerComponent: MemoryLayout<CGFloat>.size,
-                                            dataOffset: 0,
-                                            dataStride: MemoryLayout<CGFloat>.size * 4)
-        
-        // Create the geometry element
-        let indices: [Int32] = Array(0..<Int32(vertices.count))
-        let indexData = Data(bytes: indices, count: indices.count * MemoryLayout<Int32>.size)
-        let element = SCNGeometryElement(data: indexData,
-                                         primitiveType: .point,
-                                         primitiveCount: vertices.count,
-                                         bytesPerIndex: MemoryLayout<Int32>.size)
-        
-        // Create the point cloud geometry
-        let newPointCloudGeometry = SCNGeometry(sources: [vertexSource, colorSource], elements: [element])
-        newPointCloudGeometry.firstMaterial?.lightingModel = .constant
-        newPointCloudGeometry.firstMaterial?.isDoubleSided = true
-        
-        // Append the new geometry to the array
-        pointCloudGeometries.append(newPointCloudGeometry)
-        
-        // alignPointClouds(scaleX: scaleX, scaleY: scaleY, scaleZ: scaleZ)
-        
-        print("Done constructing the 3D object!")
-        LogManager.shared.log("Done constructing the 3D object!")
-    }
-    
-    static func exportAV_GeometryAsPLY(to url: URL) {
+    static func exportGeometryAsPLY(to url: URL) {
         guard let geometry = pointCloudGeometries.first,
               let vertexSource = geometry.sources.first(where: { $0.semantic == .vertex }),
               let colorSource = geometry.sources.first(where: { $0.semantic == .color }) else {
@@ -679,7 +556,7 @@ struct ExternalData {
         }
     }
     
-    static func exportGeometryAsPLY(to url: URL) {
+    static func exportGeometryAsZIP(to url: URL) {
         let fileManager = FileManager.default
         let tempDirectoryURL = fileManager.temporaryDirectory
         var fileURLs = [URL]()
@@ -754,7 +631,7 @@ struct ExternalData {
         fileURLs.forEach { try? fileManager.removeItem(at: $0) }
     }
     
-    static func exportMultiwayRegistration(to url: URL) {
+    static func exportUsingMultiwayRegistration(to url: URL) {
         let fileManager = FileManager.default
         let tempDirectoryURL = fileManager.temporaryDirectory
         var plyFileURLs = [URL]()

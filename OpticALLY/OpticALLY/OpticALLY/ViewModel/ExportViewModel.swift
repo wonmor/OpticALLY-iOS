@@ -111,13 +111,13 @@ class ExportViewModel: ObservableObject {
         }
     }
     
-    func exportAV_PLY(showShareSheet: Bool) {
+    func exportPLY(showShareSheet: Bool) {
         // Determine a temporary file URL to save the PLY file
         let tempDirectory = FileManager.default.temporaryDirectory
         let fileURL = tempDirectory.appendingPathComponent("model.ply")
         
         // Export the PLY data to the file
-        ExternalData.exportAV_GeometryAsPLY(to: fileURL)
+        ExternalData.exportGeometryAsPLY(to: fileURL)
         
         // Update the state to indicate that there's a file to share
         DispatchQueue.main.async {
@@ -126,7 +126,7 @@ class ExportViewModel: ObservableObject {
         }
     }
     
-    func exportPLY(showShareSheet: Bool) {
+    func exportCombinedModel(showShareSheet: Bool) {
         DispatchQueue.global(qos: .userInitiated).async {
             let gstate = PyGILState_Ensure()
             
@@ -147,7 +147,7 @@ class ExportViewModel: ObservableObject {
             
             let plyFileURL = tempDirectory.appendingPathComponent("combined.ply")
             
-            ExternalData.exportMultiwayRegistration(to: plyFileURL)
+            ExternalData.exportUsingMultiwayRegistration(to: plyFileURL)
             
             // Update the state to indicate that there's a file to share
             DispatchQueue.main.async {

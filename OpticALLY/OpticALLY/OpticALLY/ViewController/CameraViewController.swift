@@ -333,7 +333,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             ExternalData.pointCloudDataArray.append(metadata)
             
             // Call the point cloud creation function
-            ExternalData.createAVPointCloudGeometry(
+            ExternalData.convertToSceneKitModel(
                 depthData: depthData,
                 colorData: colorBaseAddress,
                 metadata: metadata,
