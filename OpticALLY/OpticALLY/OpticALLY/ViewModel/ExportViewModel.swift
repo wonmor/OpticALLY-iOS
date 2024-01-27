@@ -130,14 +130,19 @@ class ExportViewModel: ObservableObject {
         DispatchQueue.global(qos: .userInitiated).async {
             // Determine a temporary file URL to save the ZIP file
             let tempDirectory = FileManager.default.temporaryDirectory
-            let zipFileURL = tempDirectory.appendingPathComponent("model.zip")
+//            let zipFileURL = tempDirectory.appendingPathComponent("model.zip")
+//            
+//            // Export the PLY data to multiple files and compress them into a ZIP file
+//            ExternalData.exportGeometryAsPLY(to: zipFileURL)
             
-            // Export the PLY data to multiple files and compress them into a ZIP file
-            ExternalData.exportGeometryAsPLY(to: zipFileURL)
+            let plyFileURL = tempDirectory.appendingPathComponent("combined.ply")
+            
+            ExternalData.exportMultiwayRegistration(to: plyFileURL)
             
             // Update the state to indicate that there's a file to share
             DispatchQueue.main.async {
-                self.fileURL = zipFileURL
+                // self.fileURL = zipFileURL
+                self.fileURL = plyFileURL
                 self.showShareSheet = showShareSheet
             }
         }

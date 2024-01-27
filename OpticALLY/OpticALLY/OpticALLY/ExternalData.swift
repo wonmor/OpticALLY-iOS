@@ -10,6 +10,8 @@ import AVFoundation
 import CoreVideo
 import SceneKit
 import ARKit
+import PythonKit
+import Open3DSupport
 import Foundation
 import Compression
 import ZipArchive
@@ -750,6 +752,51 @@ struct ExternalData {
         
         // Cleanup temporary files
         fileURLs.forEach { try? fileManager.removeItem(at: $0) }
+    }
+    
+    static func exportMultiwayRegistration(to url: URL) {
+        let fileManager = FileManager.default
+        let tempDirectoryURL = fileManager.temporaryDirectory
+        var plyFileURLs = [URL]()
+        var pcds = [PythonObject]()
+
+        // Read PLY files into Open3D point clouds
+        for (index, geometry) in pointCloudGeometries.enumerated() {
+            let plyString = createPLYString(for: geometry)
+            let plyFileName = "geometry_\(index).ply"
+            let plyFileURL = tempDirectoryURL.appendingPathComponent(plyFileName)
+            
+            do {
+                try plyString.write(to: plyFileURL, atomically: true, encoding: .ascii)
+                plyFileURLs.append(plyFileURL)
+                
+                // Load the PLY file as an Open3D point cloud
+                let pcd = o3d!.io.read_point_cloud(plyFileURL.path)
+                pcds.append(pcd)
+            } catch {
+                print("Failed to write PLY file: \(error)")
+            }
+        }
+        
+        // Run full registration on all point clouds
+        let poseGraph = OpticALLYApp.fullRegistration(pcds: pcds, maxCorrespondenceDistanceCoarse: 0.02, maxCorrespondenceDistanceFine: 0.01)  // Adjust distances as needed
+        
+        var pcdCombined = o3d!.geometry.PointCloud()
+
+        for pointId in 0..<Int(pcds.count) {
+            pcds[pointId].transform(poseGraph.nodes[pointId].pose)
+            pcdCombined = pcdCombined + pcds[pointId]
+        }
+        
+        let voxelSize = 0.02
+        
+        let pcdCombinedDown = pcdCombined.voxel_down_sample(voxel_size: voxelSize)
+        
+        // Use the provided URL instead of the temporary directory
+        o3d!.io.write_point_cloud(url.path, pcdCombinedDown)
+
+        // Cleanup temporary PLY files
+        plyFileURLs.forEach { try? fileManager.removeItem(at: $0) }
     }
     
     private static func createMTLString(textureFileName: String) -> String {
