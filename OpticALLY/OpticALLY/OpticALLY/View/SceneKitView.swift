@@ -47,6 +47,7 @@ struct SceneKitView: UIViewRepresentable {
         let sourcePoints: [[Double]] = nodes.map { [Double($0.position.x), Double($0.position.y), Double($0.position.z)] }
         
         // TO DO: BOTTOM LINE NEEDS EDIT!
+        // ADD 3D LANDMARK POINTS BELOW
         let targetPoints: [[Double]] = [] // Define your target points, matching the structure of sourcePoints
 
         // Compute the rigid transformation
