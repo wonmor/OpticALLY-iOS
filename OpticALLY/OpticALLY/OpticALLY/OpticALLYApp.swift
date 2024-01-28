@@ -90,26 +90,26 @@ struct OpticALLYApp: App {
         }
     }
     
-    func centroid(of matrix: [[Double]]) -> [Double] {
+    static func centroid(of matrix: [[Double]]) -> [Double] {
         guard !matrix.isEmpty else { return [] }
         let length = Double(matrix.first!.count)
         return matrix.map { $0.reduce(0, +) / length }
     }
 
-    func subtractMean(from matrix: [[Double]], using mean: [Double]) -> [[Double]] {
+    static func subtractMean(from matrix: [[Double]], using mean: [Double]) -> [[Double]] {
         return matrix.enumerated().map { index, row in
             row.map { $0 - mean[index] } // Use row.map instead of row.enumerated().map
         }
     }
     
-    func transpose(_ matrix: [[Double]]) -> [[Double]] {
+    static func transpose(_ matrix: [[Double]]) -> [[Double]] {
         guard let rowCount = matrix.first?.count else { return [] }
         return (0..<rowCount).map { index in
             matrix.map { $0[index] }
         }
     }
 
-    func matrixMultiply(_ A: [[Double]], _ B: [[Double]]) -> [[Double]] {
+    static func matrixMultiply(_ A: [[Double]], _ B: [[Double]]) -> [[Double]] {
         let m = A.count
         let n = B[0].count
         let p = B.count
@@ -139,7 +139,7 @@ struct OpticALLYApp: App {
         return result
     }
 
-    func svd(_ matrix: [[Double]]) -> (U: [[Double]], S: [Double], Vt: [[Double]]) {
+    static func svd(_ matrix: [[Double]]) -> (U: [[Double]], S: [Double], Vt: [[Double]]) {
         var jobu: Int8 = 65 // 'A' All M columns of U are returned in array U
         var jobvt: Int8 = 65 // 'A' All N rows of Vt are returned in the array Vt
         var m = __CLPK_integer(matrix.count)
@@ -173,7 +173,7 @@ struct OpticALLYApp: App {
     }
 
     
-    func determinant(_ matrix: [[Double]]) -> Double {
+    static func determinant(_ matrix: [[Double]]) -> Double {
         guard matrix.count == 3 && matrix[0].count == 3 else {
             fatalError("Determinant can only be calculated for a 3x3 matrix.")
         }
@@ -184,7 +184,7 @@ struct OpticALLYApp: App {
     }
 
     
-    func matrixMultiplyVector(_ matrix: [[Double]], _ vector: [Double]) -> [Double] {
+    static func matrixMultiplyVector(_ matrix: [[Double]], _ vector: [Double]) -> [Double] {
         var result = [Double](repeating: 0.0, count: matrix.count)
         for i in 0..<matrix.count {
             result[i] = zip(matrix[i], vector).map(*).reduce(0, +)
@@ -192,11 +192,11 @@ struct OpticALLYApp: App {
         return result
     }
 
-    func subtractVectors(_ A: [Double], _ B: [Double]) -> [Double] {
+    static func subtractVectors(_ A: [Double], _ B: [Double]) -> [Double] {
         return zip(A, B).map(-)
     }
     
-    func rigidTransform3D(A: [[Double]], B: [[Double]]) -> (rotation: [[Double]], translation: [Double]) {
+    static func rigidTransform3D(A: [[Double]], B: [[Double]]) -> (rotation: [[Double]], translation: [Double]) {
         // Ensure A and B are 3xN
         guard A.count == 3, B.count == 3 else {
             fatalError("Input matrices A and B must be 3xN.")

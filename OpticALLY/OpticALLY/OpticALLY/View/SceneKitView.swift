@@ -10,49 +10,23 @@ import SceneKit
 import ModelIO
 import SceneKit.ModelIO
 import ARKit
+import Accelerate
 
 let drawSphere = true // For visualizing landmark points
 
 struct SceneKitView: UIViewRepresentable {
-    @Binding var selectedNodeIndex: Int?
-    @Binding var position: SCNVector3
-    @Binding var rotation: SCNVector3
+    // Binding variables to interact with your SwiftUI view
+    @Binding var nodes: [SCNNode] // This should be the nodes you want to transform
     @Binding var resetTrigger: Bool
-    
+
     func makeUIView(context: Context) -> SCNView {
         let scnView = SCNView()
         let scene = SCNScene()
         scnView.scene = scene
 
-        // Get the last three nodes from ExternalData.pointCloudNodes
-        let lastThreeNodes = ExternalData.pointCloudNodes.suffix(3)
-        let lastThreeMetadatas = ExternalData.pointCloudDataArray.suffix(3)
-        
-        for (index, node) in lastThreeNodes.enumerated() {
-            // Set the position and orientation of the node
-            node.position = SCNVector3(x: 0, y: 0, z: 0)
-            node.eulerAngles.z = .pi / -2
-            
-            // Add the node to the scene
+        // Add nodes to the scene, assuming they are already created and configured
+        for node in nodes {
             scene.rootNode.addChildNode(node)
-
-            // Add corresponding face geometry data, if available
-            let actualIndex = ExternalData.pointCloudNodes.count - 3 + index
-            if actualIndex < ExternalData.pointCloudDataArray.count {
-                let faceNode = ExternalData.pointCloudDataArray[actualIndex].faceNode
-                // Add faceNode to the scene or perform additional setup
-            }
-            
-            // Add spheres for left and right eye positions
-            for eyePosition in [lastThreeMetadatas[index].leftEyePosition3D, lastThreeMetadatas[index].rightEyePosition3D] {
-                print("Eye Position: \(eyePosition)")
-                
-                // DEBUG: BELOW LINE DOES NOT WORK WHILE ABOVE ADDCHILDNODE IS ACTIVE... RESOLVE IT!
-               let sphereNode = SCNNode(geometry: SCNSphere(radius: 0.01)) // Adjust radius as needed
-               sphereNode.geometry?.firstMaterial?.diffuse.contents = UIColor.red
-               sphereNode.position = eyePosition
-               scene.rootNode.addChildNode(sphereNode)
-           }
         }
 
         scnView.autoenablesDefaultLighting = true
@@ -69,12 +43,40 @@ struct SceneKitView: UIViewRepresentable {
             resetTrigger = false // Reset the trigger
         }
 
-        // Update the selected node's position and rotation
-        if let index = selectedNodeIndex,
-           let node = scnView.scene?.rootNode.childNodes[index] {
-            node.position = position
-            node.eulerAngles = rotation
+        // Assume sourcePoints and targetPoints are already defined and available
+        let sourcePoints: [[Double]] = nodes.map { [Double($0.position.x), Double($0.position.y), Double($0.position.z)] }
+        
+        // TO DO: BOTTOM LINE NEEDS EDIT!
+        let targetPoints: [[Double]] = [] // Define your target points, matching the structure of sourcePoints
+
+        // Compute the rigid transformation
+        let (rotationMatrix, translationVector) = OpticALLYApp.rigidTransform3D(A: sourcePoints, B: targetPoints)
+
+        // Apply the transformation to each node
+        for (index, node) in nodes.enumerated() {
+            // Convert rotation matrix and translation vector to SceneKit types
+            let scnMatrix = rotationMatrixToSCNMatrix4(rotationMatrix)
+            let scnTranslation = SCNVector3(translationVector[0], translationVector[1], translationVector[2])
+
+            // Apply rotation and translation to the node
+            node.transform = scnMatrix
+            node.position = scnTranslation
         }
+    }
+
+    // Helper function to convert a rotation matrix to SCNMatrix4
+    private func rotationMatrixToSCNMatrix4(_ rotationMatrix: [[Double]]) -> SCNMatrix4 {
+        // Ensure the matrix is 3x3
+        guard rotationMatrix.count == 3 && rotationMatrix.allSatisfy({ $0.count == 3 }) else {
+            fatalError("Rotation matrix must be 3x3.")
+        }
+
+        return SCNMatrix4(
+            m11: Float(rotationMatrix[0][0]), m12: Float(rotationMatrix[0][1]), m13: Float(rotationMatrix[0][2]), m14: 0,
+            m21: Float(rotationMatrix[1][0]), m22: Float(rotationMatrix[1][1]), m23: Float(rotationMatrix[1][2]), m24: 0,
+            m31: Float(rotationMatrix[2][0]), m32: Float(rotationMatrix[2][1]), m33: Float(rotationMatrix[2][2]), m34: 0,
+            m41: 0, m42: 0, m43: 0, m44: 1
+        )
     }
 }
 
