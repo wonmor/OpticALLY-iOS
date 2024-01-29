@@ -29,17 +29,13 @@ struct SceneKitView: UIViewRepresentable {
         for node in nodes {
             // scene.rootNode.addChildNode(node)
         }
-        
-        for landmarkNode in ExternalData.landmarkMultiNodes[0] {
-            scene.rootNode.addChildNode(landmarkNode)
-        }
 
         // Add all nodes from landmarkMultiNodes to the scene
-//        for landmarkNodes in ExternalData.landmarkMultiNodes {
-//            for landmarkNode in landmarkNodes {
-//                scene.rootNode.addChildNode(landmarkNode)
-//            }
-//        }
+        for landmarkNodes in ExternalData.landmarkMultiNodes {
+            for landmarkNode in landmarkNodes {
+                scene.rootNode.addChildNode(landmarkNode)
+            }
+        }
 
         scnView.autoenablesDefaultLighting = true
         scnView.allowsCameraControl = true
