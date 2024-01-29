@@ -25,10 +25,21 @@ struct SceneKitView: UIViewRepresentable {
         let scene = SCNScene()
         scnView.scene = scene
 
-        // Add nodes to the scene, assuming they are already created and configured
+        // Add primary nodes to the scene
         for node in nodes {
-            scene.rootNode.addChildNode(node)
+            // scene.rootNode.addChildNode(node)
         }
+        
+        for landmarkNode in ExternalData.landmarkMultiNodes[0] {
+            scene.rootNode.addChildNode(landmarkNode)
+        }
+
+        // Add all nodes from landmarkMultiNodes to the scene
+//        for landmarkNodes in ExternalData.landmarkMultiNodes {
+//            for landmarkNode in landmarkNodes {
+//                scene.rootNode.addChildNode(landmarkNode)
+//            }
+//        }
 
         scnView.autoenablesDefaultLighting = true
         scnView.allowsCameraControl = true
@@ -44,26 +55,26 @@ struct SceneKitView: UIViewRepresentable {
             resetTrigger = false // Reset the trigger
         }
 
-        // Assume sourcePoints and targetPoints are already defined and available
-        let sourcePoints: [[Double]] = nodes.map { [Double($0.position.x), Double($0.position.y), Double($0.position.z)] }
-        
-        // TO DO: BOTTOM LINE NEEDS EDIT!
-        // ADD 3D LANDMARK POINTS BELOW
-        let targetPoints: [[Double]] = [] // Define your target points, matching the structure of sourcePoints
-
-        // Compute the rigid transformation
-        let (rotationMatrix, translationVector) = OpticALLYApp.rigidTransform3D(A: sourcePoints, B: targetPoints)
-
-        // Apply the transformation to each node
-        for (index, node) in nodes.enumerated() {
-            // Convert rotation matrix and translation vector to SceneKit types
-            let scnMatrix = rotationMatrixToSCNMatrix4(rotationMatrix)
-            let scnTranslation = SCNVector3(translationVector[0], translationVector[1], translationVector[2])
-
-            // Apply rotation and translation to the node
-            node.transform = scnMatrix
-            node.position = scnTranslation
-        }
+//        // Assume sourcePoints and targetPoints are already defined and available
+//        let sourcePoints: [[Double]] = nodes.map { [Double($0.position.x), Double($0.position.y), Double($0.position.z)] }
+//        
+//        // TO DO: BOTTOM LINE NEEDS EDIT!
+//        // ADD 3D LANDMARK POINTS BELOW
+//        let targetPoints: [[Double]] = [] // Define your target points, matching the structure of sourcePoints
+//
+//        // Compute the rigid transformation
+//        let (rotationMatrix, translationVector) = OpticALLYApp.rigidTransform3D(A: sourcePoints, B: targetPoints)
+//
+//        // Apply the transformation to each node
+//        for (index, node) in nodes.enumerated() {
+//            // Convert rotation matrix and translation vector to SceneKit types
+//            let scnMatrix = rotationMatrixToSCNMatrix4(rotationMatrix)
+//            let scnTranslation = SCNVector3(translationVector[0], translationVector[1], translationVector[2])
+//
+//            // Apply rotation and translation to the node
+//            node.transform = scnMatrix
+//            node.position = scnTranslation
+//        }
     }
 
     // Helper function to convert a rotation matrix to SCNMatrix4

@@ -74,6 +74,7 @@ struct ExternalData {
     static var pointCloudGeometries: [SCNGeometry] = []
     static var pointCloudNodes: [SCNNode] = []
     static var pointCloudDataArray: [PointCloudMetadata] = []
+    static var landmarkMultiNodes: [[SCNNode]] = []
     static var verticesCount: Int = 0
     static var faceAnchor: ARFaceAnchor?
     static var depthWidth: Int = 640

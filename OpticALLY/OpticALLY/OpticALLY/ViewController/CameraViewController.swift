@@ -574,6 +574,11 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             processLandmarkRegion(landmarks.innerLips)
             processLandmarkRegion(landmarks.faceContour)
         }
+        
+        if ExternalData.isSavingFileAsPLY {
+            // ExternalData.landmarkMultiNodes is a multi-dimensional array...
+            ExternalData.landmarkMultiNodes.append(landmarkNodes)
+        }
     }
     
     private func averagePoint(from normalizedPoints: [CGPoint], in boundingBox: CGRect, pixelBuffer: CVPixelBuffer) -> CGPoint {
