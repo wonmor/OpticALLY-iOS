@@ -97,7 +97,7 @@ struct PostScanView: View {
                     
                 } else if !ExternalData.pointCloudGeometries.isEmpty {
                     VStack {
-                        SceneKitView(selectedNodeIndex: $selectedNodeIndex, position: $position, rotation: $rotation, resetTrigger: $resetSceneKitView)
+                        SceneKitView(nodes: ExternalData.pointCloudNodes, resetTrigger: $resetSceneKitView)
                             .frame(height: 300)
                         
                         if debugMode {

@@ -11,6 +11,8 @@ import ARKit
 import SceneKit
 import AVFoundation
 import Vision
+import CoreImage
+import CoreVideo
 
 /// CameraViewController manages the camera and AR functionalities within the OpticALLY app.
 /// It utilizes ARKit for face tracking and AVFoundation for depth data processing.
@@ -116,8 +118,9 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     @IBOutlet weak private var mixFactorSlider: UISlider!
     @IBOutlet weak private var touchDepth: UILabel!
     @IBOutlet weak private var smoothDepthLabel: UILabel!
-    
     @IBOutlet weak private var cloudView: PointCloudMetalView!
+    
+    var imageView: UIImageView!
     
     deinit {
         if self.arSCNView != nil {
@@ -152,6 +155,41 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         
         // Step 4: Update ViewModel
         viewModel?.pupilDistance = Double(distanceInMillimeters)
+    }
+    
+    func drawEyePositionsOnPixelBuffer(pixelBuffer: CVPixelBuffer, leftEyePosition: CGPoint, rightEyePosition: CGPoint) -> CVPixelBuffer? {
+        let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
+        let temporaryContext = CIContext(options: nil)
+        guard let cgImage = temporaryContext.createCGImage(ciImage, from: ciImage.extent) else { return nil }
+
+        // Begin a graphics context to draw on
+        UIGraphicsBeginImageContext(CGSize(width: cgImage.width, height: cgImage.height))
+        guard let context = UIGraphicsGetCurrentContext() else { return nil }
+
+        // Draw the original image as the background
+        context.draw(cgImage, in: CGRect(x: 0, y: 0, width: cgImage.width, height: cgImage.height))
+
+        // Set up the circle properties
+        let circleRadius: CGFloat = 10 // Radius of the circles
+        let circleColor = UIColor.red.cgColor
+
+        // Function to draw a circle at a given point
+        func drawCircle(at point: CGPoint, color: CGColor, radius: CGFloat) {
+            let circleRect = CGRect(x: point.x - radius, y: point.y - radius, width: radius * 2, height: radius * 2)
+            context.setFillColor(color)
+            context.fillEllipse(in: circleRect)
+        }
+
+        // Draw the left and right eye positions
+        drawCircle(at: leftEyePosition, color: circleColor, radius: circleRadius)
+        drawCircle(at: rightEyePosition, color: circleColor, radius: circleRadius)
+
+        // Get the final image
+        guard let finalImage = UIGraphicsGetImageFromCurrentImageContext() else { return nil }
+        UIGraphicsEndImageContext()
+
+        // Convert UIImage back to CVPixelBuffer
+        return finalImage.toCVPixelBuffer()
     }
     
     public func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
@@ -345,6 +383,33 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                 scaleZ: scaleZ
             )
         }
+    }
+    
+    func drawEyePositionsOnImage(image: UIImage, leftEyePosition: CGPoint, rightEyePosition: CGPoint) -> UIImage? {
+        // Begin a graphics context to draw on
+        UIGraphicsBeginImageContextWithOptions(image.size, false, 0)
+        image.draw(at: .zero) // Draw the original image as the background
+
+        // Set up the circle properties
+        let circleRadius: CGFloat = 10 // Radius of the circles
+        let circleColor = UIColor.red
+
+        // Function to draw a circle at a given point
+        func drawCircle(at point: CGPoint, color: UIColor, radius: CGFloat) {
+            let circleRect = CGRect(x: point.x - radius, y: point.y - radius, width: radius * 2, height: radius * 2)
+            color.setFill()
+            UIRectFill(circleRect)
+        }
+
+        // Draw the left and right eye positions
+        drawCircle(at: leftEyePosition, color: circleColor, radius: circleRadius)
+        drawCircle(at: rightEyePosition, color: circleColor, radius: circleRadius)
+
+        // Get the final image
+        let finalImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+
+        return finalImage
     }
     
     func findClosest3DPoint(to point2D: CGPoint, within threshold: CGFloat, in depthData: AVDepthData) -> SCNVector3? {
@@ -599,12 +664,33 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         configureCloudView()
         addAndConfigureSwiftUIView()
         
+        // Configure imageView
+        configureImageView()
+        
         // Add gesture recognizer for taps
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTapGesture(_:)))
         arSCNView?.addGestureRecognizer(tapGesture)
         
         // self.view.bringSubviewToFront(arSCNView!)
         self.view.bringSubviewToFront(previewSceneView)
+        self.view.bringSubviewToFront(imageView)
+    }
+    
+    func configureImageView() {
+        imageView = UIImageView()
+        
+        self.view.addSubview(imageView)
+        
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            imageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            imageView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20), // 20 points from the top
+            imageView.widthAnchor.constraint(equalToConstant: 200), // Set your desired width
+            imageView.heightAnchor.constraint(equalToConstant: 200) // Set your desired height
+        ])
+        
+        imageView.contentMode = .scaleAspectFit // Set content mode as needed
+        imageView.backgroundColor = .clear // Set background color as needed
     }
     
     // This method is used to test SceneKit's hit-testing feature alongside ARKit FaceTrackingConfiguration...
@@ -709,12 +795,28 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                        let videoPixelBuffer = self.synchronizedVideoPixelBuffer {
                         self.detectFaceLandmarks(in: videoPixelBuffer, sceneView: arSCNView!, depthData: depthData)
                         // cloudView.setDepthFrame(depthData, withTexture: videoPixelBuffer)
+                        
+                        if let updatedPixelBuffer = drawEyePositionsOnPixelBuffer(pixelBuffer: frame.capturedImage, leftEyePosition: leftEyePosition, rightEyePosition: rightEyePosition),
+                           let image = convert(pixelBuffer: updatedPixelBuffer) {
+                            DispatchQueue.main.async {
+                                imageView.image = image
+                            }
+                        }
                     }
                 }
             }
         } catch {
             print("Error creating CapturedImageSampler: \(error)")
         }
+    }
+    
+    func convert(pixelBuffer: CVPixelBuffer) -> UIImage? {
+        let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
+        let context = CIContext(options: nil)
+        guard let cgImage = context.createCGImage(ciImage, from: ciImage.extent) else {
+            return nil
+        }
+        return UIImage(cgImage: cgImage)
     }
     
     func session(_ session: ARSession, didUpdate anchors: [ARAnchor]) {

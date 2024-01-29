@@ -16,7 +16,8 @@ let drawSphere = true // For visualizing landmark points
 
 struct SceneKitView: UIViewRepresentable {
     // Binding variables to interact with your SwiftUI view
-    @Binding var nodes: [SCNNode] // This should be the nodes you want to transform
+    var nodes: [SCNNode]
+    
     @Binding var resetTrigger: Bool
 
     func makeUIView(context: Context) -> SCNView {
@@ -39,7 +40,7 @@ struct SceneKitView: UIViewRepresentable {
     func updateUIView(_ scnView: SCNView, context: Context) {
         if resetTrigger {
             scnView.scene = SCNScene() // Reset the scene
-            // Reconfigure the scene if needed
+            // Reconfigure the scene if neededIHL
             resetTrigger = false // Reset the trigger
         }
 
