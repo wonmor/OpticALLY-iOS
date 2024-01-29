@@ -157,37 +157,67 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         viewModel?.pupilDistance = Double(distanceInMillimeters)
     }
     
+    func horizontallyMirroredPixelBuffer(from pixelBuffer: CVPixelBuffer) -> CVPixelBuffer? {
+        let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
+        let transform = CGAffineTransform(scaleX: -1, y: 1).translatedBy(x: -ciImage.extent.width, y: 0)
+        let mirroredImage = ciImage.transformed(by: transform)
+        
+        let context = CIContext()
+        var mirroredPixelBuffer: CVPixelBuffer?
+        CVPixelBufferCreate(nil, Int(mirroredImage.extent.width), Int(mirroredImage.extent.height),
+                            CVPixelBufferGetPixelFormatType(pixelBuffer), nil, &mirroredPixelBuffer)
+        
+        context.render(mirroredImage, to: mirroredPixelBuffer!)
+        return mirroredPixelBuffer
+    }
+    
+    func verticallyMirroredPixelBuffer(from pixelBuffer: CVPixelBuffer) -> CVPixelBuffer? {
+        let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
+        // Adjust the transform for vertical flipping
+        let transform = CGAffineTransform(scaleX: 1, y: -1).translatedBy(x: 0, y: -ciImage.extent.height)
+        let mirroredImage = ciImage.transformed(by: transform)
+
+        let context = CIContext()
+        var mirroredPixelBuffer: CVPixelBuffer?
+        CVPixelBufferCreate(nil, Int(mirroredImage.extent.width), Int(mirroredImage.extent.height),
+                            CVPixelBufferGetPixelFormatType(pixelBuffer), nil, &mirroredPixelBuffer)
+
+        context.render(mirroredImage, to: mirroredPixelBuffer!)
+        return mirroredPixelBuffer
+    }
+
+    
     func drawEyePositionsOnPixelBuffer(pixelBuffer: CVPixelBuffer, leftEyePosition: CGPoint, rightEyePosition: CGPoint) -> CVPixelBuffer? {
         let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
         let temporaryContext = CIContext(options: nil)
         guard let cgImage = temporaryContext.createCGImage(ciImage, from: ciImage.extent) else { return nil }
-
+        
         // Begin a graphics context to draw on
         UIGraphicsBeginImageContext(CGSize(width: cgImage.width, height: cgImage.height))
         guard let context = UIGraphicsGetCurrentContext() else { return nil }
-
+        
         // Draw the original image as the background
         context.draw(cgImage, in: CGRect(x: 0, y: 0, width: cgImage.width, height: cgImage.height))
-
+        
         // Set up the circle properties
         let circleRadius: CGFloat = 10 // Radius of the circles
         let circleColor = UIColor.red.cgColor
-
+        
         // Function to draw a circle at a given point
         func drawCircle(at point: CGPoint, color: CGColor, radius: CGFloat) {
             let circleRect = CGRect(x: point.x - radius, y: point.y - radius, width: radius * 2, height: radius * 2)
             context.setFillColor(color)
             context.fillEllipse(in: circleRect)
         }
-
+        
         // Draw the left and right eye positions
         drawCircle(at: leftEyePosition, color: circleColor, radius: circleRadius)
         drawCircle(at: rightEyePosition, color: circleColor, radius: circleRadius)
-
+        
         // Get the final image
         guard let finalImage = UIGraphicsGetImageFromCurrentImageContext() else { return nil }
         UIGraphicsEndImageContext()
-
+        
         // Convert UIImage back to CVPixelBuffer
         return finalImage.toCVPixelBuffer()
     }
@@ -389,26 +419,26 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         // Begin a graphics context to draw on
         UIGraphicsBeginImageContextWithOptions(image.size, false, 0)
         image.draw(at: .zero) // Draw the original image as the background
-
+        
         // Set up the circle properties
         let circleRadius: CGFloat = 10 // Radius of the circles
         let circleColor = UIColor.red
-
+        
         // Function to draw a circle at a given point
         func drawCircle(at point: CGPoint, color: UIColor, radius: CGFloat) {
             let circleRect = CGRect(x: point.x - radius, y: point.y - radius, width: radius * 2, height: radius * 2)
             color.setFill()
             UIRectFill(circleRect)
         }
-
+        
         // Draw the left and right eye positions
         drawCircle(at: leftEyePosition, color: circleColor, radius: circleRadius)
         drawCircle(at: rightEyePosition, color: circleColor, radius: circleRadius)
-
+        
         // Get the final image
         let finalImage = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
-
+        
         return finalImage
     }
     
@@ -479,34 +509,35 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     }
     
     private var landmarkNodes = [SCNNode]() // Add this property to your class
-
+    
     private func detectFaceLandmarks(in pixelBuffer: CVPixelBuffer, sceneView: SCNView, depthData: AVDepthData) {
+        // Use the flipped pixel buffer for face landmark detection
         try? faceDetectionHandler.perform([faceDetectionRequest], on: pixelBuffer, orientation: .right)
         guard let observations = faceDetectionRequest.results else {
             return
         }
-
+        
         // Remove previously added landmark nodes
         for node in landmarkNodes {
             node.removeFromParentNode()
         }
         landmarkNodes.removeAll() // Clear the array
-
+        
         for observation in observations {
             guard let landmarks = observation.landmarks else {
                 continue
             }
-
+            
             // Process each landmark region and add a node for it
             func processLandmarkRegion(_ region: VNFaceLandmarkRegion2D?) {
                 guard let region = region else { return }
                 let points = region.normalizedPoints.map { normalizedPoint in
                     averagePoint(from: [normalizedPoint], in: observation.boundingBox, pixelBuffer: pixelBuffer)
                 }
-
+                
                 for point in points {
                     let hitTestResults = arSCNView?.hitTest(point, options: nil) ?? []
-
+                    
                     for result in hitTestResults {
                         if let node: SCNNode? = result.node, node!.geometry is ARSCNFaceGeometry {
                             let sphere = SCNNode(geometry: SCNSphere(radius: 0.005))
@@ -516,7 +547,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                             // Add the sphere as a child of the face node and keep a reference to it
                             node!.addChildNode(sphere)
                             landmarkNodes.append(sphere)
-
+                            
                             let previewSphere = SCNNode(geometry: SCNSphere(radius: 0.005))
                             let localCoordinatesPreview = previewFaceNode!.convertPosition(result.worldCoordinates, from: nil)
                             previewSphere.position = localCoordinatesPreview
@@ -524,13 +555,13 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                             // Add the sphere as a child of the preview face node and keep a reference to it
                             previewFaceNode!.addChildNode(previewSphere)
                             landmarkNodes.append(previewSphere)
-
+                            
                             break
                         }
                     }
                 }
             }
-
+            
             // Process all the different landmarks
             processLandmarkRegion(landmarks.leftEye)
             processLandmarkRegion(landmarks.rightEye)
@@ -703,7 +734,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         let location = gesture.location(in: arSCNView)
         
         let hitTestResults = arSCNView?.hitTest(location, options: nil) ?? []
-
+        
         for result in hitTestResults {
             if let node: SCNNode? = result.node, node!.geometry is ARSCNFaceGeometry {
                 let sphere = SCNNode(geometry: SCNSphere(radius: 0.005))
