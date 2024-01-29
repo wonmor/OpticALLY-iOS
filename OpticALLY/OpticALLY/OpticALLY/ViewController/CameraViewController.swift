@@ -157,39 +157,45 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         viewModel?.pupilDistance = Double(distanceInMillimeters)
     }
     
-    func drawEyePositionsOnPixelBuffer(pixelBuffer: CVPixelBuffer, leftEyePosition: CGPoint, rightEyePosition: CGPoint) -> CVPixelBuffer? {
-        let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
-        let temporaryContext = CIContext(options: nil)
-        guard let cgImage = temporaryContext.createCGImage(ciImage, from: ciImage.extent) else { return nil }
+    func drawEyePositionsOnImage(image: UIImage, leftEyePosition: CGPoint, rightEyePosition: CGPoint) -> UIImage? {
+        UIGraphicsBeginImageContextWithOptions(image.size, false, image.scale)
+        image.draw(at: .zero)  // Draw the base image
 
-        // Begin a graphics context to draw on
-        UIGraphicsBeginImageContext(CGSize(width: cgImage.width, height: cgImage.height))
-        guard let context = UIGraphicsGetCurrentContext() else { return nil }
+        // Set up drawing attributes
+        let circleRadius: CGFloat = 10
+        let circleColor = UIColor.red
 
-        // Draw the original image as the background
-        context.draw(cgImage, in: CGRect(x: 0, y: 0, width: cgImage.width, height: cgImage.height))
-
-        // Set up the circle properties
-        let circleRadius: CGFloat = 10 // Radius of the circles
-        let circleColor = UIColor.red.cgColor
-
-        // Function to draw a circle at a given point
-        func drawCircle(at point: CGPoint, color: CGColor, radius: CGFloat) {
+        // Drawing function
+        func drawCircle(at point: CGPoint, color: UIColor, radius: CGFloat) {
             let circleRect = CGRect(x: point.x - radius, y: point.y - radius, width: radius * 2, height: radius * 2)
-            context.setFillColor(color)
-            context.fillEllipse(in: circleRect)
+            color.setFill()
+            UIRectFill(circleRect)
         }
 
-        // Draw the left and right eye positions
-        drawCircle(at: leftEyePosition, color: circleColor, radius: circleRadius)
-        drawCircle(at: rightEyePosition, color: circleColor, radius: circleRadius)
+        // Adjust eye positions and draw circles
+        let adjustedLeftEye = adjustedEyePosition(leftEyePosition, imageSize: image.size, imageViewSize: imageView.bounds.size)
+        let adjustedRightEye = adjustedEyePosition(rightEyePosition, imageSize: image.size, imageViewSize: imageView.bounds.size)
 
-        // Get the final image
-        guard let finalImage = UIGraphicsGetImageFromCurrentImageContext() else { return nil }
+        drawCircle(at: adjustedLeftEye, color: circleColor, radius: circleRadius)
+        drawCircle(at: adjustedRightEye, color: circleColor, radius: circleRadius)
+
+        let finalImage = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
 
-        // Convert UIImage back to CVPixelBuffer
-        return finalImage.toCVPixelBuffer()
+        return finalImage
+    }
+
+    func correctImageOrientation(_ srcImage: UIImage) -> UIImage? {
+        if srcImage.imageOrientation == .up {
+            return srcImage
+        }
+
+        UIGraphicsBeginImageContextWithOptions(srcImage.size, false, srcImage.scale)
+        srcImage.draw(in: CGRect(origin: CGPoint.zero, size: srcImage.size))
+        let normalizedImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+
+        return normalizedImage
     }
     
     public func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
@@ -383,33 +389,6 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                 scaleZ: scaleZ
             )
         }
-    }
-    
-    func drawEyePositionsOnImage(image: UIImage, leftEyePosition: CGPoint, rightEyePosition: CGPoint) -> UIImage? {
-        // Begin a graphics context to draw on
-        UIGraphicsBeginImageContextWithOptions(image.size, false, 0)
-        image.draw(at: .zero) // Draw the original image as the background
-
-        // Set up the circle properties
-        let circleRadius: CGFloat = 10 // Radius of the circles
-        let circleColor = UIColor.red
-
-        // Function to draw a circle at a given point
-        func drawCircle(at point: CGPoint, color: UIColor, radius: CGFloat) {
-            let circleRect = CGRect(x: point.x - radius, y: point.y - radius, width: radius * 2, height: radius * 2)
-            color.setFill()
-            UIRectFill(circleRect)
-        }
-
-        // Draw the left and right eye positions
-        drawCircle(at: leftEyePosition, color: circleColor, radius: circleRadius)
-        drawCircle(at: rightEyePosition, color: circleColor, radius: circleRadius)
-
-        // Get the final image
-        let finalImage = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-
-        return finalImage
     }
     
     func findClosest3DPoint(to point2D: CGPoint, within threshold: CGFloat, in depthData: AVDepthData) -> SCNVector3? {
@@ -796,12 +775,15 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                         self.detectFaceLandmarks(in: videoPixelBuffer, sceneView: arSCNView!, depthData: depthData)
                         // cloudView.setDepthFrame(depthData, withTexture: videoPixelBuffer)
                         
-                        if let updatedPixelBuffer = drawEyePositionsOnPixelBuffer(pixelBuffer: frame.capturedImage, leftEyePosition: leftEyePosition, rightEyePosition: rightEyePosition),
-                           let image = convert(pixelBuffer: updatedPixelBuffer) {
+                        if let videoPixelBuffer = self.synchronizedVideoPixelBuffer,
+                           let image = convert(pixelBuffer: videoPixelBuffer),
+                           let correctedImage = correctImageOrientation(image),
+                           let finalImage = drawEyePositionsOnImage(image: correctedImage, leftEyePosition: leftEyePosition, rightEyePosition: rightEyePosition) {
                             DispatchQueue.main.async {
-                                imageView.image = image
+                                self.imageView.image = finalImage
                             }
                         }
+
                     }
                 }
             }
@@ -810,15 +792,30 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         }
     }
     
+    func adjustedEyePosition(_ eyePosition: CGPoint, imageSize: CGSize, imageViewSize: CGSize) -> CGPoint {
+        let scaleX = imageViewSize.width / imageSize.width
+        let scaleY = imageViewSize.height / imageSize.height
+        let scale = min(scaleX, scaleY) // To maintain the aspect ratio
+
+        let offsetX = (imageViewSize.width - imageSize.width * scale) / 2
+        let offsetY = (imageViewSize.height - imageSize.height * scale) / 2
+
+        return CGPoint(
+            x: eyePosition.x * scale + offsetX,
+            y: eyePosition.y * scale + offsetY
+        )
+    }
+
     func convert(pixelBuffer: CVPixelBuffer) -> UIImage? {
         let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
         let context = CIContext(options: nil)
         guard let cgImage = context.createCGImage(ciImage, from: ciImage.extent) else {
             return nil
         }
-        return UIImage(cgImage: cgImage)
+        // Correct the image orientation
+        return UIImage(cgImage: cgImage, scale: 1.0, orientation: .right)
     }
-    
+
     func session(_ session: ARSession, didUpdate anchors: [ARAnchor]) {
         guard let faceAnchor = anchors.compactMap({ $0 as? ARFaceAnchor }).first else { return }
         
