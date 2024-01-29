@@ -478,65 +478,70 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         return SCNVector3(x * z, y * z, z)
     }
     
+    private var landmarkNodes = [SCNNode]() // Add this property to your class
+
     private func detectFaceLandmarks(in pixelBuffer: CVPixelBuffer, sceneView: SCNView, depthData: AVDepthData) {
         try? faceDetectionHandler.perform([faceDetectionRequest], on: pixelBuffer, orientation: .right)
         guard let observations = faceDetectionRequest.results else {
             return
         }
-        
+
+        // Remove previously added landmark nodes
+        for node in landmarkNodes {
+            node.removeFromParentNode()
+        }
+        landmarkNodes.removeAll() // Clear the array
+
         for observation in observations {
-            if let leftEye = observation.landmarks?.leftEye, let rightEye = observation.landmarks?.rightEye {
-                leftEyePosition = averagePoint(from: leftEye.normalizedPoints, in: observation.boundingBox, pixelBuffer: pixelBuffer)
-                rightEyePosition = averagePoint(from: rightEye.normalizedPoints, in: observation.boundingBox, pixelBuffer: pixelBuffer)
-                
-                print("leftEyePosition: \(leftEyePosition)")
-                
-                viewModel?.leftEyePosition = leftEyePosition
-                viewModel?.rightEyePosition = rightEyePosition
-                viewModel?.chinPosition = chinPosition
-                
-                // Define an array of facial landmarks
-                let facialLandmarks = [leftEyePosition, rightEyePosition]
-
-//                for landmark in facialLandmarks {
-//                    let location = landmark
-//                    
-//                    let hitTestResults = arSCNView?.hitTest(location, options: nil) ?? []
-//                    
-//                    for result in hitTestResults {
-//                        if let node: SCNNode? = result.node, node!.geometry is ARSCNFaceGeometry {
-//                            let sphere = SCNNode(geometry: SCNSphere(radius: 0.005))
-//                            
-//                            // Convert hit test result to face node's local coordinate system
-//                            let localCoordinates = node!.convertPosition(result.worldCoordinates, from: nil)
-//                            sphere.position = localCoordinates
-//                            
-//                            // Add the sphere as a child of the face node
-//                            node!.addChildNode(sphere)
-//                            
-//                            let previewSphere = SCNNode(geometry: SCNSphere(radius: 0.005))
-//                            
-//                            // Convert hit test result to face node's local coordinate system
-//                            let localCoordinatesPreview = previewFaceNode!.convertPosition(result.worldCoordinates, from: nil)
-//                            previewSphere.position = localCoordinatesPreview
-//                            
-//                            // Add the sphere as a child of the face node
-//                            previewFaceNode!.addChildNode(previewSphere)
-//                            
-//                            break
-//                        }
-//                    }
-//                }
-                
-                let leftEyeNode = SCNNode(geometry: SCNSphere(radius: 0.005)) // Create a node for the left eye
-                leftEyeNode.position = leftEyePosition3D // Set the position
-                
-                let rightEyeNode = SCNNode(geometry: SCNSphere(radius: 0.005))
-                rightEyeNode.position = rightEyePosition3D
-
-                previewFaceNode.addChildNode(leftEyeNode)
-                previewFaceNode.addChildNode(rightEyeNode)
+            guard let landmarks = observation.landmarks else {
+                continue
             }
+
+            // Process each landmark region and add a node for it
+            func processLandmarkRegion(_ region: VNFaceLandmarkRegion2D?) {
+                guard let region = region else { return }
+                let points = region.normalizedPoints.map { normalizedPoint in
+                    averagePoint(from: [normalizedPoint], in: observation.boundingBox, pixelBuffer: pixelBuffer)
+                }
+
+                for point in points {
+                    let hitTestResults = arSCNView?.hitTest(point, options: nil) ?? []
+
+                    for result in hitTestResults {
+                        if let node: SCNNode? = result.node, node!.geometry is ARSCNFaceGeometry {
+                            let sphere = SCNNode(geometry: SCNSphere(radius: 0.005))
+                            let localCoordinates = node!.convertPosition(result.worldCoordinates, from: nil)
+                            sphere.position = localCoordinates
+                            
+                            // Add the sphere as a child of the face node and keep a reference to it
+                            node!.addChildNode(sphere)
+                            landmarkNodes.append(sphere)
+
+                            let previewSphere = SCNNode(geometry: SCNSphere(radius: 0.005))
+                            let localCoordinatesPreview = previewFaceNode!.convertPosition(result.worldCoordinates, from: nil)
+                            previewSphere.position = localCoordinatesPreview
+                            
+                            // Add the sphere as a child of the preview face node and keep a reference to it
+                            previewFaceNode!.addChildNode(previewSphere)
+                            landmarkNodes.append(previewSphere)
+
+                            break
+                        }
+                    }
+                }
+            }
+
+            // Process all the different landmarks
+            processLandmarkRegion(landmarks.leftEye)
+            processLandmarkRegion(landmarks.rightEye)
+            processLandmarkRegion(landmarks.leftEyebrow)
+            processLandmarkRegion(landmarks.rightEyebrow)
+            processLandmarkRegion(landmarks.nose)
+            processLandmarkRegion(landmarks.noseCrest)
+            processLandmarkRegion(landmarks.medianLine)
+            processLandmarkRegion(landmarks.outerLips)
+            processLandmarkRegion(landmarks.innerLips)
+            processLandmarkRegion(landmarks.faceContour)
         }
     }
     
@@ -665,7 +670,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         addAndConfigureSwiftUIView()
         
         // Configure imageView
-        configureImageView()
+        // configureImageView()
         
         // Add gesture recognizer for taps
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTapGesture(_:)))
@@ -673,7 +678,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         
         // self.view.bringSubviewToFront(arSCNView!)
         self.view.bringSubviewToFront(previewSceneView)
-        self.view.bringSubviewToFront(imageView)
+        // self.view.bringSubviewToFront(imageView)
     }
     
     func configureImageView() {
@@ -799,7 +804,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                         if let updatedPixelBuffer = drawEyePositionsOnPixelBuffer(pixelBuffer: frame.capturedImage, leftEyePosition: leftEyePosition, rightEyePosition: rightEyePosition),
                            let image = convert(pixelBuffer: updatedPixelBuffer) {
                             DispatchQueue.main.async {
-                                imageView.image = image
+                                // imageView.image = image
                             }
                         }
                     }
