@@ -51,26 +51,25 @@ struct SceneKitView: UIViewRepresentable {
             resetTrigger = false // Reset the trigger
         }
 
-//        // Assume sourcePoints and targetPoints are already defined and available
-//        let sourcePoints: [[Double]] = nodes.map { [Double($0.position.x), Double($0.position.y), Double($0.position.z)] }
-//        
-//        // TO DO: BOTTOM LINE NEEDS EDIT!
-//        // ADD 3D LANDMARK POINTS BELOW
-//        let targetPoints: [[Double]] = [] // Define your target points, matching the structure of sourcePoints
-//
-//        // Compute the rigid transformation
-//        let (rotationMatrix, translationVector) = OpticALLYApp.rigidTransform3D(A: sourcePoints, B: targetPoints)
-//
-//        // Apply the transformation to each node
-//        for (index, node) in nodes.enumerated() {
-//            // Convert rotation matrix and translation vector to SceneKit types
-//            let scnMatrix = rotationMatrixToSCNMatrix4(rotationMatrix)
-//            let scnTranslation = SCNVector3(translationVector[0], translationVector[1], translationVector[2])
-//
-//            // Apply rotation and translation to the node
-//            node.transform = scnMatrix
-//            node.position = scnTranslation
-//        }
+        // Assume sourcePoints and targetPoints are already defined and available
+        let sourcePoints: [[Double]] = nodes.map { [Double($0.position.x), Double($0.position.y), Double($0.position.z)] }
+        
+        // ADD 3D LANDMARK POINTS BELOW
+        let targetPoints: [[Double]] = ExternalData.landmarkMultiNodes.map { [Double($0[0].position.x), Double($0[0].position.y), Double($0[0].position.z)] }
+
+        // Compute the rigid transformation
+        let (rotationMatrix, translationVector) = OpticALLYApp.rigidTransform3D(A: sourcePoints, B: targetPoints)
+
+        // Apply the transformation to each node
+        for (index, node) in nodes.enumerated() {
+            // Convert rotation matrix and translation vector to SceneKit types
+            let scnMatrix = rotationMatrixToSCNMatrix4(rotationMatrix)
+            let scnTranslation = SCNVector3(translationVector[0], translationVector[1], translationVector[2])
+
+            // Apply rotation and translation to the node
+            node.transform = scnMatrix
+            node.position = scnTranslation
+        }
     }
 
     // Helper function to convert a rotation matrix to SCNMatrix4
