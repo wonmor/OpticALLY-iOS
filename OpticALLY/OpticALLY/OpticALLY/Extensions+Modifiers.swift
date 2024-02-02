@@ -11,6 +11,13 @@ import SceneKit
 import ARKit
 import simd
 
+extension Array where Element == [Float] {
+    func transposed() -> [[Float]] {
+        guard let firstRow = self.first else { return [] }
+        return firstRow.indices.map { index in self.map { $0[index] } }
+    }
+}
+
 extension UIImage {
     func toCVPixelBuffer() -> CVPixelBuffer? {
         let attrs = [kCVPixelBufferCGImageCompatibilityKey: kCFBooleanTrue, kCVPixelBufferCGBitmapContextCompatibilityKey: kCFBooleanTrue] as CFDictionary

@@ -197,6 +197,8 @@ struct OpticALLYApp: App {
     }
     
     static func rigidTransform3D(A: [[Double]], B: [[Double]]) -> (rotation: [[Double]], translation: [Double]) {
+        print("I... \(A.count) \(B.count)")
+        
         // Ensure A and B are 3xN
         guard A.count == 3, B.count == 3 else {
             fatalError("Input matrices A and B must be 3xN.")

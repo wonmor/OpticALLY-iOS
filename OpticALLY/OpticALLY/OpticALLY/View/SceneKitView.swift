@@ -54,8 +54,11 @@ struct SceneKitView: UIViewRepresentable {
         // Assume sourcePoints and targetPoints are already defined and available
         let sourcePoints: [[Double]] = nodes.map { [Double($0.position.x), Double($0.position.y), Double($0.position.z)] }
         
-        // ADD 3D LANDMARK POINTS BELOW
+        // ADD 3D LANDMARK POINTS BELOW (TEMP: USING FIRST INDEX ONLY)
         let targetPoints: [[Double]] = ExternalData.landmarkMultiNodes.map { [Double($0[0].position.x), Double($0[0].position.y), Double($0[0].position.z)] }
+        
+        let matrixA = nodes.map { [$0.position.x, $0.position.y, $0.position.z] }.transposed()
+        let matrixB = ExternalData.landmarkMultiNodes.map { [$0[0].position.x, $0[0].position.y, $0[0].position.z] }.transposed()
 
         // Compute the rigid transformation
         let (rotationMatrix, translationVector) = OpticALLYApp.rigidTransform3D(A: sourcePoints, B: targetPoints)

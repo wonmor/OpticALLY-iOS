@@ -560,6 +560,11 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                         }
                     }
                 }
+                
+                if ExternalData.isSavingFileAsPLY {
+                    // ExternalData.landmarkMultiNodes is a multi-dimensional array...
+                    ExternalData.landmarkMultiNodes.append(landmarkNodes)
+                }
             }
             
             // Process all the different landmarks
@@ -573,11 +578,6 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             processLandmarkRegion(landmarks.outerLips)
             processLandmarkRegion(landmarks.innerLips)
             processLandmarkRegion(landmarks.faceContour)
-        }
-        
-        if ExternalData.isSavingFileAsPLY {
-            // ExternalData.landmarkMultiNodes is a multi-dimensional array...
-            ExternalData.landmarkMultiNodes.append(landmarkNodes)
         }
     }
     
