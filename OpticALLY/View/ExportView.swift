@@ -365,79 +365,76 @@ struct ExportView: View {
                                                 .background(Capsule().fill(Color.white))
                                             }
                                             
-                                            // Inside the VStack where the export options are presented
+                                            // Dropdown list view
                                             if showDropdown {
-                                                ScrollView(.vertical, showsIndicators: false) { // Enable vertical scrolling without showing scroll indicators
-                                                    VStack {
-                                                        Button(action: {
-                                                            exportViewModel.exportCombinedModel(showShareSheet: true)
-                                                        }) {
-                                                            Text("FULL HEAD .PLY")
-                                                                .bold()
-                                                                .font(.caption)
-                                                                .padding()
-                                                                .foregroundColor(.white)
-                                                                .background(Capsule().fill(Color(.black)))
-                                                        }
-                                                        
-                                                        Button(action: {
-                                                            exportViewModel.exportPLY(showShareSheet: true)
-                                                        }) {
-                                                            Text("SINGLE FACE .PLY")
-                                                                .font(.caption)
-                                                                .bold()
-                                                                .padding()
-                                                                .foregroundColor(.white)
-                                                                .background(Capsule().fill(Color(.black)))
-                                                        }
-                                                        
-                                                        Button(action: {
-                                                            exportViewModel.exportFaceNodes(showShareSheet: true)
-                                                        }) {
-                                                            Text("LANDMARK 3DMM")
-                                                                .font(.caption)
-                                                                .bold()
-                                                                .padding()
-                                                                .foregroundColor(.white)
-                                                                .background(Capsule().fill(Color(.black)))
-                                                        }
-                                                        
-                                                        Button(action: {
-                                                            exportViewModel.exportOBJ()
-                                                        }) {
-                                                            Text("MESH .OBJ")
-                                                                .font(.caption)
-                                                                .bold()
-                                                                .padding()
-                                                                .foregroundColor(.white)
-                                                                .background(Capsule().fill(Color(.black)))
-                                                        }
-                                                        
-                                                        Text("FOR DEVELOPERS")
+                                                VStack {
+                                                    Button(action: {
+                                                        exportViewModel.exportCombinedModel(showShareSheet: true)
+                                                    }) {
+                                                        Text("FULL HEAD .PLY")
                                                             .bold()
-                                                            .monospaced()
                                                             .font(.caption)
-                                                            .padding(.top)
-                                                            .padding(.horizontal)
-                                                            .multilineTextAlignment(.center)
-                                                        
-                                                        Button(action: {
-                                                            shareExportedData()
-                                                        }) {
-                                                            Text("RGB-D\n.BIN\n\nCALIBRATION\n.JSON")
-                                                                .font(.caption)
-                                                                .bold()
-                                                                .padding()
-                                                                .foregroundColor(.white)
-                                                                .frame(minWidth: 0, maxWidth: .infinity) // Allow button to expand
-                                                                .fixedSize(horizontal: false, vertical: true) // Allow height to adjust based on content
-                                                                .background(Capsule().fill(Color.black))
-                                                        }
-                                                        .padding() // Adjust padding as needed
+                                                            .padding()
+                                                            .foregroundColor(.white)
+                                                            .background(Capsule().fill(Color(.black)))
                                                     }
-                                                    .padding(.top, 5)
+                                                    
+                                                    Button(action: {
+                                                        exportViewModel.exportPLY(showShareSheet: true)
+                                                    }) {
+                                                        Text("SINGLE FACE .PLY")
+                                                            .font(.caption)
+                                                            .bold()
+                                                            .padding()
+                                                            .foregroundColor(.white)
+                                                            .background(Capsule().fill(Color(.black)))
+                                                    }
+                                                    
+                                                    Button(action: {
+                                                        exportViewModel.exportFaceNodes(showShareSheet: true)
+                                                    }) {
+                                                        Text("LANDMARK 3DMM")
+                                                            .font(.caption)
+                                                            .bold()
+                                                            .padding()
+                                                            .foregroundColor(.white)
+                                                            .background(Capsule().fill(Color(.black)))
+                                                    }
+                                                    
+                                                    Button(action: {
+                                                        exportViewModel.exportOBJ()
+                                                    }) {
+                                                        Text("MESH .OBJ")
+                                                            .font(.caption)
+                                                            .bold()
+                                                            .padding()
+                                                            .foregroundColor(.white)
+                                                            .background(Capsule().fill(Color(.black)))
+                                                    }
+                                                    
+                                                    Text("FOR DEVELOPERS")
+                                                        .bold()
+                                                        .monospaced()
+                                                        .font(.caption)
+                                                        .padding(.top)
+                                                        .padding(.horizontal)
+                                                        .multilineTextAlignment(.center)
+                                                    
+                                                    Button(action: {
+                                                        shareExportedData()
+                                                    }) {
+                                                        Text("RGB-D\n.BIN\n\nCALIBRATION\n.JSON")
+                                                            .font(.caption)
+                                                            .bold()
+                                                            .padding()
+                                                            .foregroundColor(.white)
+                                                            .frame(minWidth: 0, maxWidth: .infinity) // Allow button to expand
+                                                            .fixedSize(horizontal: false, vertical: true) // Allow height to adjust based on content
+                                                            .background(Capsule().fill(Color.black))
+                                                    }
+                                                    .padding() // Adjust padding as needed
                                                 }
-                                                .frame(maxHeight: 200) // Limit the height of the ScrollView
+                                                .padding(.top, 5)
                                                 .sheet(isPresented: $exportViewModel.showShareSheet, onDismiss: {
                                                     exportViewModel.showShareSheet = false
                                                 }) {
