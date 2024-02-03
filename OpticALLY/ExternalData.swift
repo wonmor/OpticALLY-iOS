@@ -130,27 +130,36 @@ struct ExternalData {
 
         return folderURL
     }
+    
+    // Static counters for depth and color files
+    private static var depthFileIndex: Int = 1
+    private static var colorFileIndex: Int = 1
 
-    static func saveDataToFaceScansFolder(data: Data, baseFileName: String, fileExtension: String) {
-        let folderURL = getFaceScansFolder()
-        let fileManager = FileManager.default
-        var fileIndex = 0
-        var fileURL = folderURL.appendingPathComponent("\(baseFileName)_\(fileIndex)").appendingPathExtension(fileExtension)
+    static func saveDataToFaceScansFolder(data: Data, isDepthData: Bool) {
+          let folderURL = getFaceScansFolder()
+          let fileManager = FileManager.default
 
-        // Increment fileIndex if file already exists
-        while fileManager.fileExists(atPath: fileURL.path) {
-            fileIndex += 1
-            fileURL = folderURL.appendingPathComponent("\(baseFileName)_\(fileIndex)").appendingPathExtension(fileExtension)
-        }
+          // Choose file base name and increment the appropriate index
+          let baseFileName: String
+          let fileExtension = "bin"
+          if isDepthData {
+              baseFileName = "depth\(String(format: "%02d", depthFileIndex))"
+              depthFileIndex += 1
+          } else {
+              baseFileName = "video\(String(format: "%02d", colorFileIndex))"
+              colorFileIndex += 1
+          }
 
-        // Write data to the file
-        do {
-            try data.write(to: fileURL)
-            print("\(baseFileName) data saved successfully to \(fileURL.path)")
-        } catch {
-            print("Error saving \(baseFileName) data: \(error)")
-        }
-    }
+          let fileURL = folderURL.appendingPathComponent(baseFileName).appendingPathExtension(fileExtension)
+
+          // Write data to the file
+          do {
+              try data.write(to: fileURL)
+              print("\(baseFileName) data saved successfully to \(fileURL.path)")
+          } catch {
+              print("Error saving \(baseFileName) data: \(error)")
+          }
+      }
     
     static func convertDepthData(depthMap: CVPixelBuffer) -> [[Float16]] {
         let width = CVPixelBufferGetWidth(depthMap)
@@ -453,7 +462,7 @@ struct ExternalData {
             }
         }
         // Save the depth data
-        saveDataToFaceScansFolder(data: depthRawData, baseFileName: "depth", fileExtension: "bin")
+        saveDataToFaceScansFolder(data: depthRawData, isDepthData: true)
 
         // Prepare the color data
         var colorRawData = Data()
@@ -466,7 +475,7 @@ struct ExternalData {
             }
         }
         // Save the color data
-        saveDataToFaceScansFolder(data: colorRawData, baseFileName: "color", fileExtension: "bin")
+        saveDataToFaceScansFolder(data: colorRawData, isDepthData: false)
         
         // Get or create the directory for saving files
         let folderURL = getFaceScansFolder()
