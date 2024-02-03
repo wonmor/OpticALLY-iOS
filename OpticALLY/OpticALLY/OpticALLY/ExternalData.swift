@@ -309,7 +309,7 @@ struct ExternalData {
                 let scaleFactor = Float(1.5) // Custom value for depth exaggeration
                 let xrw = (Float(x) - cameraIntrinsics.columns.2.x) * depthValue / cameraIntrinsics.columns.0.x
                 let yrw = (Float(y) - cameraIntrinsics.columns.2.y) * depthValue / cameraIntrinsics.columns.1.y
-                let zrw = 1 / depthValue * scaleFactor // Taking the reciprocal to flip inside out
+                let zrw =  -depthValue * scaleFactor // Added negative sign to flip inside out
                 
                 let vertex = SCNVector3(x: xrw, y: yrw, z: zrw)
                 

@@ -331,7 +331,7 @@ struct ExportView: View {
                                                     Button(action: {
                                                         exportViewModel.exportOBJ()
                                                     }) {
-                                                        Text(".OBJ")
+                                                        Text("MESH .OBJ")
                                                             .font(.caption)
                                                             .padding()
                                                             .foregroundColor(.white)
