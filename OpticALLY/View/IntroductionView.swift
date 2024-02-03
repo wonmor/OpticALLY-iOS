@@ -30,8 +30,8 @@ struct TextOverlayView: View {
                 globalState.currentView = .scanning
             }) {
                 HStack {
-                    Image(systemName: "eyeglasses")
-                    Text("Explore")
+                    Image(systemName: "plus.circle.fill")
+                    Text("New Scan")
                         .font(.body)
                         .bold()
                 }
@@ -40,6 +40,20 @@ struct TextOverlayView: View {
                 .background(Capsule().fill(Color.black).overlay(Capsule().stroke(Color.white, lineWidth: 2)))
             }
             .padding(.bottom)
+            
+            Button(action: {
+               showingCredits.toggle()
+           }) {
+               Text("PREVIOUS SCANS")
+                   .font(.footnote)
+                   .monospaced()
+                   .bold()
+           }
+           .padding(.bottom)
+           .sheet(isPresented: $showingCredits) {
+               CreditsView(showingCredits: $showingCredits)
+            }
+           .padding(.bottom)
             
             Button(action: {
                showingCredits.toggle()
@@ -101,13 +115,5 @@ struct IntroductionView: View {
                 .edgesIgnoringSafeArea(.all)
         }
         .animation(.easeInOut, value: playSecondVideo)
-    }
-}
-
-struct IntroductionView_Previews: PreviewProvider {
-    static var previews: some View {
-        IntroductionView()
-            .environmentObject(GlobalState())
-            .preferredColorScheme(.dark)
     }
 }
