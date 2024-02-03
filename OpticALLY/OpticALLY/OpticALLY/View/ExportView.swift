@@ -262,19 +262,35 @@ struct ExportView: View {
                     if showArrow {
                         if headTurnState == .left {
                             // Display a large arrow pointing to the direction the user should turn their head
-                            Image(systemName: "arrow.left")
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: 50, height: 50)
-                                .foregroundColor(isFlashOn ? .black : .white)
+                            if isFlashOn {
+                                LottieView(animationFileName: "left-arrow-2", loopMode: .loop)
+                                    .frame(width: 60, height: 60)
+                                    .scaleEffect(0.2)
+                                    .padding(.bottom)
+                                
+                            } else {
+                                LottieView(animationFileName: "left-arrow-2", loopMode: .loop)
+                                    .frame(width: 60, height: 60)
+                                    .colorInvert()
+                                    .scaleEffect(0.2)
+                                    .padding(.bottom)
+                            }
                             
                         } else if headTurnState == .right {
                             // Display a large arrow pointing to the direction the user should turn their head
-                            Image(systemName: "arrow.right")
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: 50, height: 50)
-                                .foregroundColor(isFlashOn ? .black : .white)
+                            if isFlashOn {
+                                LottieView(animationFileName: "right-arrow-2", loopMode: .loop)
+                                    .frame(width: 60, height: 60)
+                                    .scaleEffect(0.2)
+                                    .padding(.bottom)
+                                
+                            } else {
+                                LottieView(animationFileName: "right-arrow-2", loopMode: .loop)
+                                    .frame(width: 60, height: 60)
+                                    .colorInvert()
+                                    .scaleEffect(0.2)
+                                    .padding(.bottom)
+                            }
                             
                         } else if headTurnState == .center {
                             LottieView(animationFileName: "face-id", loopMode: .loop)
