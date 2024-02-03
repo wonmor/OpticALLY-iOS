@@ -5,6 +5,7 @@ struct TextOverlayView: View {
     @EnvironmentObject var globalState: GlobalState
     
     @State private var showingCredits = false
+    @State private var showingPreviousScanView = false
     
     var body: some View {
         VStack {
@@ -44,7 +45,7 @@ struct TextOverlayView: View {
             Button(action: {
                showingCredits.toggle()
            }) {
-               Text("PREVIOUS SCANS")
+               Text("CREDITS")
                    .font(.footnote)
                    .monospaced()
                    .bold()
@@ -56,19 +57,22 @@ struct TextOverlayView: View {
            .padding(.bottom)
             
             Button(action: {
-               showingCredits.toggle()
-           }) {
-               Text("CREDITS")
-                   .font(.footnote)
-                   .monospaced()
-                   .bold()
-           }
-           .padding(.bottom)
-           .sheet(isPresented: $showingCredits) {
-               CreditsView(showingCredits: $showingCredits)
+                showingPreviousScanView.toggle()
+            }) {
+                Text("PREVIOUS SCANS")
+                    .font(.footnote)
+                    .monospaced()
+                    .bold()
+                    .foregroundColor(.black) // Set text color to black
+                    .padding()
+                    .background(Capsule() // Use RoundedRectangle for rounded corners
+                        .fill(Color.white)) // Set the background to white
             }
-           .padding(.bottom)
-        }
+            .padding(.bottom)
+            .sheet(isPresented: $showingPreviousScanView) {
+                PreviousScanView(showingCredits: $showingPreviousScanView)
+            }
+}
         .background(Color(.black))
         .clipShape(RoundedRectangle(cornerSize: CGSize(width: 20, height: 10)))
         .shadow(color: .black, radius: 10, x: 5, y: 5)

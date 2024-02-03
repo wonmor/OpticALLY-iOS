@@ -72,6 +72,7 @@
 		96B64F712B3D90410003E06D /* FaceTextureGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96B64F6F2B3D90410003E06D /* FaceTextureGenerator.swift */; };
 		96B64F732B3D90490003E06D /* ScnMatrix.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96B64F722B3D90490003E06D /* ScnMatrix.swift */; };
 		96BC2ABE2AC5E9D60081550B /* DevicePpi in Frameworks */ = {isa = PBXBuildFile; productRef = 96BC2ABD2AC5E9D60081550B /* DevicePpi */; };
+		96E856BB2B6EFFE00037C3BB /* PreviousScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E856BA2B6EFFE00037C3BB /* PreviousScanView.swift */; };
 		96F0CF182B12A34400417716 /* ExternalData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF172B12A34400417716 /* ExternalData.swift */; };
 		96F0CF1A2B12A39100417716 /* ExportViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF192B12A39100417716 /* ExportViewModel.swift */; };
 		96F0CF1C2B12A3D500417716 /* ExportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF1B2B12A3D500417716 /* ExportView.swift */; };
@@ -157,6 +158,7 @@
 		96B64F6E2B3D90410003E06D /* TextureToImage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TextureToImage.swift; sourceTree = "<group>"; };
 		96B64F6F2B3D90410003E06D /* FaceTextureGenerator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FaceTextureGenerator.swift; sourceTree = "<group>"; };
 		96B64F722B3D90490003E06D /* ScnMatrix.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScnMatrix.swift; sourceTree = "<group>"; };
+		96E856BA2B6EFFE00037C3BB /* PreviousScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviousScanView.swift; sourceTree = "<group>"; };
 		96F0CF172B12A34400417716 /* ExternalData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalData.swift; sourceTree = "<group>"; };
 		96F0CF192B12A39100417716 /* ExportViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportViewModel.swift; sourceTree = "<group>"; };
 		96F0CF1B2B12A3D500417716 /* ExportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportView.swift; sourceTree = "<group>"; };
@@ -332,6 +334,7 @@
 				961D67E22B12BDFC00DBB883 /* SceneKitView.swift */,
 				963DF9B22AFEDAF600E6E589 /* PostScanView.swift */,
 				9679F8CC2AD0907A00686F13 /* CameraView.swift */,
+				96E856BA2B6EFFE00037C3BB /* PreviousScanView.swift */,
 				961D67E42B12C64A00DBB883 /* CreditsView.swift */,
 				969AC27F2AB7550C0096892E /* IntroductionView.swift */,
 			);
@@ -572,6 +575,7 @@
 				9679F8CF2AD0907A00686F13 /* VideoMixer.swift in Sources */,
 				9679F8D22AD0907A00686F13 /* Mixer.metal in Sources */,
 				967EE0652AAE06FB000C4D5F /* OpticALLYApp.swift in Sources */,
+				96E856BB2B6EFFE00037C3BB /* PreviousScanView.swift in Sources */,
 				9679F8D92AD0907A00686F13 /* PointCloud.metal in Sources */,
 				9679F8CE2AD0907A00686F13 /* AppDelegate.swift in Sources */,
 				96F0CF182B12A34400417716 /* ExternalData.swift in Sources */,

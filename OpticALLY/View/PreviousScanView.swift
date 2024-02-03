@@ -1,6 +1,13 @@
+//
+//  PreviousScanView.swift
+//  OpticALLY
+//
+//  Created by John Seong on 2/3/24.
+//
+
 import SwiftUI
 
-struct CreditsView: View {
+struct PreviousScanView: View {
     @Binding var showingCredits: Bool
     
     private let player = AVPlayer(url: Bundle.main.url(forResource: "promo", withExtension: "mp4")!)
@@ -11,15 +18,16 @@ struct CreditsView: View {
             
             BackgroundVideoPlayer(videoName: "promo")
                 .opacity(0.35)
-                .overlay(CreditNestedView(showingCredits: $showingCredits),
+                .overlay(PreviousScanNestedView(showingCredits: $showingCredits),
                          alignment: .center
                 )
         }
         .edgesIgnoringSafeArea(.all)
+        .colorInvert()
     }
 }
 
-struct CreditNestedView: View {
+struct PreviousScanNestedView: View {
     @Binding var showingCredits: Bool
     
     // Define common styling
@@ -32,30 +40,14 @@ struct CreditNestedView: View {
             Spacer()
             
             // Title
-            Text("CREDITS")
+            Text("PREVIOUS SCANS")
                 .bold()
                 .font(commonFont)
                 .foregroundColor(foregroundColor)
                 .padding()
                 .background(backgroundColor)
                 .cornerRadius(20)
-            
-            Text("Open3D Version: \(o3d!.__version__.description)")
-                .monospaced()
-                .padding(.horizontal)
-                .padding(.top)
-                .foregroundStyle(.black)
-                .font(.caption)
-                .bold()
-            
-            Text("Python Version: \(sys!.version.description)")
-                .monospaced()
-                .padding(.horizontal)
-                .padding(.top)
-                .foregroundStyle(.black)
-                .font(.caption)
-                .bold()
-            
+           
             VStack {
                 Text("OPTICALLY")
                     .monospaced()
@@ -70,9 +62,9 @@ struct CreditNestedView: View {
             
             // Credit Lines
             VStack(alignment: .center, spacing: 20) {
-                CreditLine(title: "Product Manager", name: "Drew Shepard")
-                CreditLine(title: "Developer", name: "John Seong")
-                CreditLine(title: "Consultant", name: "Shawn Patridge")
+                PreviousScanCreditView(title: "Product Manager", name: "Drew Shepard")
+                PreviousScanCreditView(title: "Developer", name: "John Seong")
+                PreviousScanCreditView(title: "Consultant", name: "Shawn Patridge")
             }
             .padding()
             .background(backgroundColor)
@@ -101,7 +93,7 @@ struct CreditNestedView: View {
     }
 }
 
-struct CreditLine: View {
+struct PreviousScanCreditView: View {
     var title: String
     var name: String
     
