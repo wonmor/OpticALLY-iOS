@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ZipArchive
 import Lottie
 
 enum CurrentState {
@@ -86,6 +87,34 @@ struct ExportView: View {
     
     private func captureFrame() {
         ExternalData.isSavingFileAsPLY = true
+    }
+    
+    func createZipArchive(from folderURL: URL, to zipFileURL: URL) {
+        SSZipArchive.createZipFile(atPath: zipFileURL.path, withContentsOfDirectory: folderURL.path)
+    }
+    
+    func shareExportedData() {
+        let folderURL = ExternalData.getFaceScansFolder() // The folder containing your JSON and bins
+        let zipFileURL = folderURL.appendingPathComponent("exportedData.zip") // Destination zip file
+        
+        // Create the zip archive
+        createZipArchive(from: folderURL, to: zipFileURL)
+        
+        // Find the current window scene
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
+        guard let rootViewController = windowScene.windows.first?.rootViewController else { return }
+        
+        // Present the share sheet with the zip file
+        let activityViewController = UIActivityViewController(activityItems: [zipFileURL], applicationActivities: nil)
+        
+        // For iPads, configure the presentation controller
+        if let popoverController = activityViewController.popoverPresentationController {
+            popoverController.sourceView = rootViewController.view
+            popoverController.sourceRect = CGRect(x: rootViewController.view.bounds.midX, y: rootViewController.view.bounds.midY, width: 0, height: 0)
+            popoverController.permittedArrowDirections = []
+        }
+        
+        rootViewController.present(activityViewController, animated: true, completion: nil)
     }
 
     var body: some View {
@@ -377,27 +406,18 @@ struct ExportView: View {
                                                         .padding(.horizontal)
                                                         .multilineTextAlignment(.center)
                                                     
-                                                    HStack {
-                                                        Button(action: {
-                                                            
-                                                        }) {
-                                                            Text(".BIN")
-                                                                .font(.caption)
-                                                                .padding()
-                                                                .foregroundColor(.white)
-                                                                .background(Capsule().fill(Color(.black)))
-                                                        }
-                                                        
-                                                        Button(action: {
-           
-                                                        }) {
-                                                            Text(".JSON")
-                                                                .font(.caption)
-                                                                .padding()
-                                                                .foregroundColor(.white)
-                                                                .background(Capsule().fill(Color(.black)))
-                                                        }
+                                                    Button(action: {
+                                                        shareExportedData()
+                                                    }) {
+                                                        Text("RGB-D\n.BIN\n\nCALIBRATION\n.JSON")
+                                                            .font(.caption)
+                                                            .padding()
+                                                            .foregroundColor(.white)
+                                                            .frame(minWidth: 0, maxWidth: .infinity) // Ensure the button stretches to fill the available width
+                                                            .background(RoundedRectangle(cornerRadius: 10) // Use RoundedRectangle with a cornerRadius of 10
+                                                                            .fill(Color.black)) // Fill the RoundedRectangle with black color
                                                     }
+                                                    .padding(.horizontal) // Add some horizontal padding to the button
                                                 }
                                                 .padding(.top, 5)
                                                 .sheet(isPresented: $exportViewModel.showShareSheet, onDismiss: {
