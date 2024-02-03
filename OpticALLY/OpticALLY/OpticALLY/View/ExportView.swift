@@ -413,9 +413,11 @@ struct ExportView: View {
                                                 Button(action: {
                                                     globalState.currentView = .postScanning
                                                 }) {
-                                                    HStack {
-                                                        Image(systemName: "checkmark.circle.fill")
-                                                        Text("Continue")
+                                                    VStack {
+                                                        Image(systemName: "ruler")
+                                                            .font(.title)
+                                                        
+                                                        Text("Measure")
                                                             .font(.body)
                                                             .bold()
                                                     }
