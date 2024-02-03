@@ -224,6 +224,7 @@ struct ExportView: View {
                                         LottieView(animationFileName: "face-id-2", loopMode: .loop)
                                             .frame(width: 60, height: 60)
                                             .opacity(0.5)
+                                            .scaleEffect(0.5)
                                             .padding(.top)
                                     }
                                     
@@ -231,6 +232,7 @@ struct ExportView: View {
                                     if lastLog.contains("Done") {
                                         LottieView(animationFileName: "face-found-successfully", loopMode: .playOnce)
                                             .frame(width: 60, height: 60)
+                                            .scaleEffect(0.5)
                                             .opacity(0.5)
                                     }
                                 }
