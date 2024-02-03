@@ -10,7 +10,7 @@ import SceneKit
 import ModelIO
 import SceneKit.ModelIO
 
-let debugMode = true
+let debugMode = false
 
 struct PostScanView: View {
     @EnvironmentObject var globalState: GlobalState

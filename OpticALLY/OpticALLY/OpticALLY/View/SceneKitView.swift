@@ -12,7 +12,7 @@ import SceneKit.ModelIO
 import ARKit
 import Accelerate
 
-let drawSphere = true // For visualizing landmark points
+let drawSphere = false // For visualizing landmark points
 
 struct SceneKitView: UIViewRepresentable {
     // Binding variables to interact with your SwiftUI view
@@ -27,13 +27,17 @@ struct SceneKitView: UIViewRepresentable {
 
         // Add primary nodes to the scene
         for node in nodes {
-            // scene.rootNode.addChildNode(node)
+            if !drawSphere {
+                scene.rootNode.addChildNode(node)
+            }
         }
 
-        // Add all nodes from landmarkMultiNodes to the scene
-        for landmarkNodes in ExternalData.landmarkMultiNodes {
-            for landmarkNode in landmarkNodes {
-                scene.rootNode.addChildNode(landmarkNode)
+        if drawSphere {
+            // Add all nodes from landmarkMultiNodes to the scene
+            for landmarkNodes in ExternalData.landmarkMultiNodes {
+                for landmarkNode in landmarkNodes {
+                    scene.rootNode.addChildNode(landmarkNode)
+                }
             }
         }
 
@@ -52,27 +56,27 @@ struct SceneKitView: UIViewRepresentable {
         }
 
         // Assume sourcePoints and targetPoints are already defined and available
-        let sourcePoints: [[Double]] = nodes.map { [Double($0.position.x), Double($0.position.y), Double($0.position.z)] }
-        
-        // ADD 3D LANDMARK POINTS BELOW (TEMP: USING FIRST INDEX ONLY)
-        let targetPoints: [[Double]] = ExternalData.landmarkMultiNodes.map { [Double($0[0].position.x), Double($0[0].position.y), Double($0[0].position.z)] }
-        
-        let matrixA = nodes.map { [$0.position.x, $0.position.y, $0.position.z] }.transposed()
-        let matrixB = ExternalData.landmarkMultiNodes.map { [$0[0].position.x, $0[0].position.y, $0[0].position.z] }.transposed()
-
-        // Compute the rigid transformation
-        let (rotationMatrix, translationVector) = OpticALLYApp.rigidTransform3D(A: sourcePoints, B: targetPoints)
-
-        // Apply the transformation to each node
-        for (index, node) in nodes.enumerated() {
-            // Convert rotation matrix and translation vector to SceneKit types
-            let scnMatrix = rotationMatrixToSCNMatrix4(rotationMatrix)
-            let scnTranslation = SCNVector3(translationVector[0], translationVector[1], translationVector[2])
-
-            // Apply rotation and translation to the node
-            node.transform = scnMatrix
-            node.position = scnTranslation
-        }
+//        let sourcePoints: [[Double]] = nodes.map { [Double($0.position.x), Double($0.position.y), Double($0.position.z)] }
+//        
+//        // ADD 3D LANDMARK POINTS BELOW (TEMP: USING FIRST INDEX ONLY)
+//        let targetPoints: [[Double]] = ExternalData.landmarkMultiNodes.map { [Double($0[0].position.x), Double($0[0].position.y), Double($0[0].position.z)] }
+//        
+//        let matrixA = nodes.map { [$0.position.x, $0.position.y, $0.position.z] }.transposed()
+//        let matrixB = ExternalData.landmarkMultiNodes.map { [$0[0].position.x, $0[0].position.y, $0[0].position.z] }.transposed()
+//
+//        // Compute the rigid transformation
+//        let (rotationMatrix, translationVector) = OpticALLYApp.rigidTransform3D(A: sourcePoints, B: targetPoints)
+//
+//        // Apply the transformation to each node
+//        for (index, node) in nodes.enumerated() {
+//            // Convert rotation matrix and translation vector to SceneKit types
+//            let scnMatrix = rotationMatrixToSCNMatrix4(rotationMatrix)
+//            let scnTranslation = SCNVector3(translationVector[0], translationVector[1], translationVector[2])
+//
+//            // Apply rotation and translation to the node
+//            node.transform = scnMatrix
+//            node.position = scnTranslation
+//        }
     }
 
     // Helper function to convert a rotation matrix to SCNMatrix4

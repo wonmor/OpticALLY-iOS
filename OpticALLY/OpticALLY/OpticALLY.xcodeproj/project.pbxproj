@@ -16,6 +16,12 @@
 		963FF2802B62FE9000B89019 /* Open3D-iOS in Frameworks */ = {isa = PBXBuildFile; productRef = 963FF27F2B62FE9000B89019 /* Open3D-iOS */; };
 		9646DC6C2B1064F500092549 /* glasses.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 9646DC6B2B1064F500092549 /* glasses.mp4 */; };
 		96491C5F2AFD746300FD3666 /* ConsoleOutputCatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96491C5E2AFD746300FD3666 /* ConsoleOutputCatcher.swift */; };
+		9663605A2B6E0200001D2119 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 966360592B6E0200001D2119 /* Lottie */; };
+		966360602B6E03FF001D2119 /* face-found-successfully.json in Resources */ = {isa = PBXBuildFile; fileRef = 9663605B2B6E03FF001D2119 /* face-found-successfully.json */; };
+		966360612B6E03FF001D2119 /* face-id.json in Resources */ = {isa = PBXBuildFile; fileRef = 9663605C2B6E03FF001D2119 /* face-id.json */; };
+		966360622B6E03FF001D2119 /* face-detection.json in Resources */ = {isa = PBXBuildFile; fileRef = 9663605D2B6E03FF001D2119 /* face-detection.json */; };
+		966360632B6E03FF001D2119 /* face-scan-2.json in Resources */ = {isa = PBXBuildFile; fileRef = 9663605E2B6E03FF001D2119 /* face-scan-2.json */; };
+		966360642B6E03FF001D2119 /* face-scan.json in Resources */ = {isa = PBXBuildFile; fileRef = 9663605F2B6E03FF001D2119 /* face-scan.json */; };
 		9671FDB92B5B0E67004DA4C2 /* Python-iOS in Frameworks */ = {isa = PBXBuildFile; productRef = 9671FDB82B5B0E67004DA4C2 /* Python-iOS */; };
 		9671FDC02B5B106C004DA4C2 /* ZipArchive in Frameworks */ = {isa = PBXBuildFile; productRef = 9671FDBF2B5B106C004DA4C2 /* ZipArchive */; };
 		9671FDC32B5B1230004DA4C2 /* PythonKit in Frameworks */ = {isa = PBXBuildFile; productRef = 9671FDC22B5B1230004DA4C2 /* PythonKit */; };
@@ -95,6 +101,11 @@
 		963FF2822B6316F700B89019 /* OpticALLY.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = OpticALLY.entitlements; sourceTree = "<group>"; };
 		9646DC6B2B1064F500092549 /* glasses.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = glasses.mp4; sourceTree = "<group>"; };
 		96491C5E2AFD746300FD3666 /* ConsoleOutputCatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsoleOutputCatcher.swift; sourceTree = "<group>"; };
+		9663605B2B6E03FF001D2119 /* face-found-successfully.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "face-found-successfully.json"; sourceTree = "<group>"; };
+		9663605C2B6E03FF001D2119 /* face-id.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "face-id.json"; sourceTree = "<group>"; };
+		9663605D2B6E03FF001D2119 /* face-detection.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "face-detection.json"; sourceTree = "<group>"; };
+		9663605E2B6E03FF001D2119 /* face-scan-2.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "face-scan-2.json"; sourceTree = "<group>"; };
+		9663605F2B6E03FF001D2119 /* face-scan.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "face-scan.json"; sourceTree = "<group>"; };
 		9671FDC52B5B14F2004DA4C2 /* ObjCBridge.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = ObjCBridge.py; sourceTree = "<group>"; };
 		9671FED62B5B3B8A004DA4C2 /* rubicon-objc-0.4.0 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "rubicon-objc-0.4.0"; sourceTree = "<group>"; };
 		9679F8B12AD0907800686F13 /* OpticALLY-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "OpticALLY-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -157,6 +168,7 @@
 				969DF1CC2B1291D400FA9ABE /* FirebaseFirestore in Frameworks */,
 				969DF1D02B1291D400FA9ABE /* FirebaseStorage in Frameworks */,
 				9671FDC32B5B1230004DA4C2 /* PythonKit in Frameworks */,
+				9663605A2B6E0200001D2119 /* Lottie in Frameworks */,
 				969DF1CA2B1291D400FA9ABE /* FirebaseAuth in Frameworks */,
 				969DF1CE2B1291D400FA9ABE /* FirebaseFirestoreSwift in Frameworks */,
 				9671FDC02B5B106C004DA4C2 /* ZipArchive in Frameworks */,
@@ -329,6 +341,11 @@
 		969E42E82ADC9ABD00E77BA7 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				9663605D2B6E03FF001D2119 /* face-detection.json */,
+				9663605B2B6E03FF001D2119 /* face-found-successfully.json */,
+				9663605C2B6E03FF001D2119 /* face-id.json */,
+				9663605E2B6E03FF001D2119 /* face-scan-2.json */,
+				9663605F2B6E03FF001D2119 /* face-scan.json */,
 				9671FED62B5B3B8A004DA4C2 /* rubicon-objc-0.4.0 */,
 				96B64F6C2B3D8FCA0003E06D /* faceTexture.metal */,
 				96B64F6A2B3D8AF70003E06D /* VideoTexturedFace.shader */,
@@ -366,6 +383,7 @@
 				9671FDBF2B5B106C004DA4C2 /* ZipArchive */,
 				9671FDC22B5B1230004DA4C2 /* PythonKit */,
 				963FF27F2B62FE9000B89019 /* Open3D-iOS */,
+				966360592B6E0200001D2119 /* Lottie */,
 			);
 			productName = OpticALLY;
 			productReference = 967EE0612AAE06FB000C4D5F /* OpticALLY.app */;
@@ -448,6 +466,7 @@
 				9671FDBE2B5B106C004DA4C2 /* XCRemoteSwiftPackageReference "ZipArchive" */,
 				9671FDC12B5B1230004DA4C2 /* XCRemoteSwiftPackageReference "PythonKit" */,
 				963FF27E2B62FE9000B89019 /* XCRemoteSwiftPackageReference "Open3D-iOS" */,
+				966360582B6E0200001D2119 /* XCRemoteSwiftPackageReference "lottie-spm" */,
 			);
 			productRefGroup = 967EE0622AAE06FB000C4D5F /* Products */;
 			projectDirPath = "";
@@ -473,10 +492,15 @@
 				9679F8D82AD0907A00686F13 /* Main.storyboard in Resources */,
 				9671FED72B5B3B8A004DA4C2 /* rubicon-objc-0.4.0 in Resources */,
 				9679F8D72AD0907A00686F13 /* LaunchScreen.storyboard in Resources */,
+				966360632B6E03FF001D2119 /* face-scan-2.json in Resources */,
 				967EE0692AAE06FE000C4D5F /* Assets.xcassets in Resources */,
+				966360602B6E03FF001D2119 /* face-found-successfully.json in Resources */,
 				9614F0AF2ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */,
+				966360642B6E03FF001D2119 /* face-scan.json in Resources */,
+				966360612B6E03FF001D2119 /* face-id.json in Resources */,
 				9646DC6C2B1064F500092549 /* glasses.mp4 in Resources */,
 				96FCF7322B1D65DE00F450A2 /* Male_Base_Head.usdz in Resources */,
+				966360622B6E03FF001D2119 /* face-detection.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -911,6 +935,14 @@
 				kind = branch;
 			};
 		};
+		966360582B6E0200001D2119 /* XCRemoteSwiftPackageReference "lottie-spm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/airbnb/lottie-spm.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.4.0;
+			};
+		};
 		9671FDB72B5B0E67004DA4C2 /* XCRemoteSwiftPackageReference "Python-iOS" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/kewlbear/Python-iOS.git";
@@ -966,6 +998,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 963FF27E2B62FE9000B89019 /* XCRemoteSwiftPackageReference "Open3D-iOS" */;
 			productName = "Open3D-iOS";
+		};
+		966360592B6E0200001D2119 /* Lottie */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 966360582B6E0200001D2119 /* XCRemoteSwiftPackageReference "lottie-spm" */;
+			productName = Lottie;
 		};
 		9671FDB82B5B0E67004DA4C2 /* Python-iOS */ = {
 			isa = XCSwiftPackageProductDependency;
