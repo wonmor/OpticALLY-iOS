@@ -371,7 +371,8 @@ struct ExportView: View {
                                                     Button(action: {
                                                         exportViewModel.exportCombinedModel(showShareSheet: true)
                                                     }) {
-                                                        Text("COMBINED .PLY")
+                                                        Text("FULL HEAD .PLY")
+                                                            .bold()
                                                             .font(.caption)
                                                             .padding()
                                                             .foregroundColor(.white)
@@ -381,8 +382,9 @@ struct ExportView: View {
                                                     Button(action: {
                                                         exportViewModel.exportPLY(showShareSheet: true)
                                                     }) {
-                                                        Text("SINGLE .PLY")
+                                                        Text("SINGLE FACE .PLY")
                                                             .font(.caption)
+                                                            .bold()
                                                             .padding()
                                                             .foregroundColor(.white)
                                                             .background(Capsule().fill(Color(.black)))
@@ -393,6 +395,7 @@ struct ExportView: View {
                                                     }) {
                                                         Text("MESH .OBJ")
                                                             .font(.caption)
+                                                            .bold()
                                                             .padding()
                                                             .foregroundColor(.white)
                                                             .background(Capsule().fill(Color(.black)))
@@ -411,13 +414,14 @@ struct ExportView: View {
                                                     }) {
                                                         Text("RGB-D\n.BIN\n\nCALIBRATION\n.JSON")
                                                             .font(.caption)
+                                                            .bold()
                                                             .padding()
                                                             .foregroundColor(.white)
-                                                            .frame(minWidth: 0, maxWidth: .infinity) // Ensure the button stretches to fill the available width
-                                                            .background(RoundedRectangle(cornerRadius: 10) // Use RoundedRectangle with a cornerRadius of 10
-                                                                            .fill(Color.black)) // Fill the RoundedRectangle with black color
+                                                            .frame(minWidth: 0, maxWidth: .infinity) // Allow button to expand
+                                                            .fixedSize(horizontal: false, vertical: true) // Allow height to adjust based on content
+                                                            .background(Capsule().fill(Color.black))
                                                     }
-                                                    .padding(.horizontal) // Add some horizontal padding to the button
+                                                    .padding() // Adjust padding as needed
                                                 }
                                                 .padding(.top, 5)
                                                 .sheet(isPresented: $exportViewModel.showShareSheet, onDismiss: {
