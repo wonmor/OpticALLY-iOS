@@ -341,6 +341,7 @@ struct ExportView: View {
                                                     Text("FOR DEVELOPERS")
                                                         .bold()
                                                         .monospaced()
+                                                        .font(.caption)
                                                         .padding(.top)
                                                         .padding(.horizontal)
                                                         .multilineTextAlignment(.center)
@@ -398,8 +399,7 @@ struct ExportView: View {
                                     } else {
                                         HStack {
                                             Image(systemName: "circle.dotted") // Different SF Symbols for start and pause
-                                            Text("Reading")
-                                                .font(.title3)
+                                            Text("Processing")
                                                 .bold()
                                                 .onAppear() {
                                                     isButtonDisabled = true
