@@ -180,38 +180,33 @@ struct ExternalData {
         return floatArray
     }
     
-    static func wrapEstimateImageData(
-        depthMap: CVPixelBuffer,
-        calibration: AVCameraCalibrationData
-    ) -> Data {
-        let jsonDict: [String : Any] = [
-            "calibration_data" : [
-                "intrinsic_matrix" : (0 ..< 3).map{ x in
-                    (0 ..< 3).map{ y in calibration.intrinsicMatrix[x][y]}
-                },
-                "pixel_size" : calibration.pixelSize,
-                "intrinsic_matrix_reference_dimensions" : [
-                    calibration.intrinsicMatrixReferenceDimensions.width,
-                    calibration.intrinsicMatrixReferenceDimensions.height
-                ],
-                "lens_distortion_center" : [
-                    calibration.lensDistortionCenter.x,
-                    calibration.lensDistortionCenter.y
-                ],
-                "lens_distortion_lookup_table" : convertLensDistortionLookupTable(
-                    lookupTable: calibration.lensDistortionLookupTable!
-                ),
-                "inverse_lens_distortion_lookup_table" : convertLensDistortionLookupTable(
-                    lookupTable: calibration.inverseLensDistortionLookupTable!
-                )
+    static func wrapEstimateImageData(depthMap: CVPixelBuffer, calibration: AVCameraCalibrationData) -> Data {
+        // Convert lens distortion lookup tables to Base64 strings
+        let lensDistortionLookupTableBase64 = calibration.lensDistortionLookupTable!.base64EncodedString()
+        let inverseLensDistortionLookupTableBase64 = calibration.inverseLensDistortionLookupTable!.base64EncodedString()
+
+        let jsonDict: [String: Any] = [
+            "pixelSize": calibration.pixelSize,
+            "intrinsicReferenceDimensionWidth": calibration.intrinsicMatrixReferenceDimensions.width,
+            "intrinsicReferenceDimensionHeight": calibration.intrinsicMatrixReferenceDimensions.height,
+            "lensDistortionLookup": lensDistortionLookupTableBase64,
+            "inverseLensDistortionLookup": inverseLensDistortionLookupTableBase64,
+            "lensDistortionCenter": [calibration.lensDistortionCenter.x, calibration.lensDistortionCenter.y],
+            "intrinsic": [
+                calibration.intrinsicMatrix.columns.0.x, 0, 0,
+                0, calibration.intrinsicMatrix.columns.1.y, 0,
+                calibration.intrinsicMatrix.columns.2.x, calibration.intrinsicMatrix.columns.2.y, 1
             ],
-            "depth_data" : convertDepthData(depthMap: depthMap)
+            "extrinsic": [1, 0, 0, 0, 1, 0, 0, 0, 1]  // Identity matrix for extrinsic parameters
         ]
-        let jsonStringData = try! JSONSerialization.data(
-            withJSONObject: jsonDict,
-            options: .prettyPrinted
-        )
-        return jsonStringData
+
+        do {
+            let jsonData = try JSONSerialization.data(withJSONObject: jsonDict, options: .prettyPrinted)
+            return jsonData
+        } catch {
+            print("Error creating JSON data: \(error)")
+            return Data()  // Return empty data in case of error
+        }
     }
     
     // Function to apply a matrix transformation to a SCNVector3
@@ -472,6 +467,21 @@ struct ExternalData {
         }
         // Save the color data
         saveDataToFaceScansFolder(data: colorRawData, baseFileName: "color", fileExtension: "bin")
+        
+        // Get or create the directory for saving files
+        let folderURL = getFaceScansFolder()
+
+        // Wrap depth and calibration data into JSON
+        let jsonData = wrapEstimateImageData(depthMap: depthData.depthDataMap, calibration: depthData.cameraCalibrationData!)
+        
+        // Save the calibration JSON data
+        let jsonFileURL = folderURL.appendingPathComponent("calibration.json")
+        do {
+            try jsonData.write(to: jsonFileURL)
+            print("Calibration data saved successfully to \(jsonFileURL.path)")
+        } catch {
+            print("Error saving calibration data: \(error)")
+        }
         
         print("Done constructing the 3D object!")
         LogManager.shared.log("Done constructing the 3D object!")
