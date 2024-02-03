@@ -22,6 +22,7 @@
 		966360622B6E03FF001D2119 /* face-detection.json in Resources */ = {isa = PBXBuildFile; fileRef = 9663605D2B6E03FF001D2119 /* face-detection.json */; };
 		966360632B6E03FF001D2119 /* face-scan-2.json in Resources */ = {isa = PBXBuildFile; fileRef = 9663605E2B6E03FF001D2119 /* face-scan-2.json */; };
 		966360642B6E03FF001D2119 /* face-scan.json in Resources */ = {isa = PBXBuildFile; fileRef = 9663605F2B6E03FF001D2119 /* face-scan.json */; };
+		966360662B6E064B001D2119 /* LottieView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 966360652B6E064B001D2119 /* LottieView.swift */; };
 		9671FDB92B5B0E67004DA4C2 /* Python-iOS in Frameworks */ = {isa = PBXBuildFile; productRef = 9671FDB82B5B0E67004DA4C2 /* Python-iOS */; };
 		9671FDC02B5B106C004DA4C2 /* ZipArchive in Frameworks */ = {isa = PBXBuildFile; productRef = 9671FDBF2B5B106C004DA4C2 /* ZipArchive */; };
 		9671FDC32B5B1230004DA4C2 /* PythonKit in Frameworks */ = {isa = PBXBuildFile; productRef = 9671FDC22B5B1230004DA4C2 /* PythonKit */; };
@@ -106,6 +107,7 @@
 		9663605D2B6E03FF001D2119 /* face-detection.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "face-detection.json"; sourceTree = "<group>"; };
 		9663605E2B6E03FF001D2119 /* face-scan-2.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "face-scan-2.json"; sourceTree = "<group>"; };
 		9663605F2B6E03FF001D2119 /* face-scan.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "face-scan.json"; sourceTree = "<group>"; };
+		966360652B6E064B001D2119 /* LottieView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LottieView.swift; sourceTree = "<group>"; };
 		9671FDC52B5B14F2004DA4C2 /* ObjCBridge.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = ObjCBridge.py; sourceTree = "<group>"; };
 		9671FED62B5B3B8A004DA4C2 /* rubicon-objc-0.4.0 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "rubicon-objc-0.4.0"; sourceTree = "<group>"; };
 		9679F8B12AD0907800686F13 /* OpticALLY-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "OpticALLY-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -318,6 +320,7 @@
 			children = (
 				9679F8BB2AD0907900686F13 /* PreviewMetalView.swift */,
 				96F0CF1B2B12A3D500417716 /* ExportView.swift */,
+				966360652B6E064B001D2119 /* LottieView.swift */,
 				9680F7DC2B22D6FD00F38A6F /* ARFaceTrackingView.swift */,
 				967EE0662AAE06FB000C4D5F /* ContentView.swift */,
 				961D67E22B12BDFC00DBB883 /* SceneKitView.swift */,
@@ -549,6 +552,7 @@
 				96B64F6D2B3D8FCA0003E06D /* faceTexture.metal in Sources */,
 				9679F8E12AD0907A00686F13 /* CameraView.swift in Sources */,
 				9680F7DF2B22D93400F38A6F /* FaceTrackingViewModel.swift in Sources */,
+				966360662B6E064B001D2119 /* LottieView.swift in Sources */,
 				9680F7DD2B22D6FD00F38A6F /* ARFaceTrackingView.swift in Sources */,
 				9679F8D52AD0907A00686F13 /* HistogramCalculator.m in Sources */,
 				969AC2802AB7550C0096892E /* IntroductionView.swift in Sources */,

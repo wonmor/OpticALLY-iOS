@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Lottie
 
 enum CurrentState {
     case begin
@@ -178,6 +179,7 @@ struct ExportView: View {
                         Text("Estimated:\n\(exportViewModel.estimatedExportTime!) sec.")
                             .monospaced()
                             .foregroundColor(isFlashOn ? .white :.black)
+                        
                     } else {
                         Text("Estimated:\nN/A")
                             .monospaced()
@@ -269,11 +271,15 @@ struct ExportView: View {
                                 .foregroundColor(isFlashOn ? .black : .white)
                             
                         } else if headTurnState == .center {
-                            Image(systemName: "smallcircle.filled.circle")
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: 50, height: 50)
-                                .foregroundColor(isFlashOn ? .black : .white)
+                            if isFlashOn {
+                                LottieView(animationFileName: "face-detection", loopMode: .loop)
+                                    .frame(width: 50, height: 50)
+
+                            } else {
+                                LottieView(animationFileName: "face-detection", loopMode: .loop)
+                                    .frame(width: 50, height: 50)
+                                    .colorInvert()
+                            }
                         }
                     }
 
