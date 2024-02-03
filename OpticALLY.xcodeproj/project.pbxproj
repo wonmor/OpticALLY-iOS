@@ -750,6 +750,7 @@
 				INFOPLIST_FILE = OpticALLY/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = OpticALLY;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Your camera is used for the AR Eye Measure feature.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Your microphone is used for the audio-visual experience.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "You can use the existing photo to measure the eye distance.";
@@ -798,6 +799,7 @@
 				INFOPLIST_FILE = OpticALLY/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = OpticALLY;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Your camera is used for the AR Eye Measure feature.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Your microphone is used for the audio-visual experience.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "You can use the existing photo to measure the eye distance.";
