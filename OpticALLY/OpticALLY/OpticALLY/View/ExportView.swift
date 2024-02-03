@@ -220,12 +220,18 @@ struct ExportView: View {
                                         .multilineTextAlignment(.center)
                                         .monospaced()
                                     
+                                    if lastLog.contains("Converting") {
+                                        LottieView(animationFileName: "face-id-2", loopMode: .loop)
+                                            .frame(width: 60, height: 60)
+                                            .opacity(0.5)
+                                            .padding(.top)
+                                    }
+                                    
                                     
                                     if lastLog.contains("Done") {
-                                        Image(systemName: "checkmark.circle.fill")
-                                            .resizable()
-                                            .frame(width: 60, height: 60) // Adjust the size as needed
-                                            .foregroundColor(isFlashOn ? .black : .white)
+                                        LottieView(animationFileName: "face-found-successfully", loopMode: .playOnce)
+                                            .frame(width: 60, height: 60)
+                                            .opacity(0.5)
                                     }
                                 }
                             }
