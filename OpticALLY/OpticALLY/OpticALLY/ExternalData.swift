@@ -104,6 +104,47 @@ struct ExternalData {
         completion()
     }
     
+    static func saveColorDataToBinFile(colorData: UnsafePointer<UInt8>, width: Int, height: Int, bytesPerRow: Int, filePath: String) {
+        var colorRawData = Data()
+        for y in 0..<height {
+            for x in 0..<width {
+                let offset = y * bytesPerRow + x * 4 // Assuming BGRA format
+                colorRawData.append(colorData[offset + 2]) // R
+                colorRawData.append(colorData[offset + 1]) // G
+                colorRawData.append(colorData[offset])     // B
+            }
+        }
+
+        // Write colorRawData to a .bin file
+        do {
+            let fileURL = URL(fileURLWithPath: filePath).appendingPathExtension("bin")
+            try colorRawData.write(to: fileURL)
+            print("Color data saved successfully to \(fileURL.path)")
+        } catch {
+            print("Error saving color data: \(error)")
+        }
+    }
+    
+    static func saveDepthDataToBinFile(depthData: AVDepthData, filePath: String) {
+        let convertedDepthMap = convertDepthData(depthMap: depthData.depthDataMap)
+        var depthRawData = Data()
+        for row in convertedDepthMap {
+            for value in row {
+                var val = value // Make a mutable copy
+                depthRawData.append(UnsafeBufferPointer(start: &val, count: 1))
+            }
+        }
+
+        // Write depthRawData to a .bin file
+        do {
+            let fileURL = URL(fileURLWithPath: filePath).appendingPathExtension("bin")
+            try depthRawData.write(to: fileURL)
+            print("Depth data saved successfully to \(fileURL.path)")
+        } catch {
+            print("Error saving depth data: \(error)")
+        }
+    }
+    
     static func convertDepthData(depthMap: CVPixelBuffer) -> [[Float16]] {
         let width = CVPixelBufferGetWidth(depthMap)
         let height = CVPixelBufferGetHeight(depthMap)
