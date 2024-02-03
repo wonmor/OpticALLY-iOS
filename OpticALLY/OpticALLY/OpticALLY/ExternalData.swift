@@ -104,44 +104,51 @@ struct ExternalData {
         completion()
     }
     
-    static func saveColorDataToBinFile(colorData: UnsafePointer<UInt8>, width: Int, height: Int, bytesPerRow: Int, filePath: String) {
-        var colorRawData = Data()
-        for y in 0..<height {
-            for x in 0..<width {
-                let offset = y * bytesPerRow + x * 4 // Assuming BGRA format
-                colorRawData.append(colorData[offset + 2]) // R
-                colorRawData.append(colorData[offset + 1]) // G
-                colorRawData.append(colorData[offset])     // B
-            }
-        }
-
-        // Write colorRawData to a .bin file
-        do {
-            let fileURL = URL(fileURLWithPath: filePath).appendingPathExtension("bin")
-            try colorRawData.write(to: fileURL)
-            print("Color data saved successfully to \(fileURL.path)")
-        } catch {
-            print("Error saving color data: \(error)")
-        }
+    static func getDocumentsDirectory() -> URL {
+        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+        return paths[0]
     }
     
-    static func saveDepthDataToBinFile(depthData: AVDepthData, filePath: String) {
-        let convertedDepthMap = convertDepthData(depthMap: depthData.depthDataMap)
-        var depthRawData = Data()
-        for row in convertedDepthMap {
-            for value in row {
-                var val = value // Make a mutable copy
-                depthRawData.append(UnsafeBufferPointer(start: &val, count: 1))
+    static func getFaceScansFolder() -> URL {
+        // Get the current date
+        let date = Date()
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy_MM_dd"
+        let dateString = dateFormatter.string(from: date)
+        
+        let folderName = "face_scans_\(dateString)"
+        let folderURL = getDocumentsDirectory().appendingPathComponent(folderName)
+
+        let fileManager = FileManager.default
+        if !fileManager.fileExists(atPath: folderURL.path) {
+            do {
+                try fileManager.createDirectory(at: folderURL, withIntermediateDirectories: true, attributes: nil)
+            } catch {
+                print("Error creating \(folderName) directory: \(error)")
             }
         }
 
-        // Write depthRawData to a .bin file
+        return folderURL
+    }
+
+    static func saveDataToFaceScansFolder(data: Data, baseFileName: String, fileExtension: String) {
+        let folderURL = getFaceScansFolder()
+        let fileManager = FileManager.default
+        var fileIndex = 0
+        var fileURL = folderURL.appendingPathComponent("\(baseFileName)_\(fileIndex)").appendingPathExtension(fileExtension)
+
+        // Increment fileIndex if file already exists
+        while fileManager.fileExists(atPath: fileURL.path) {
+            fileIndex += 1
+            fileURL = folderURL.appendingPathComponent("\(baseFileName)_\(fileIndex)").appendingPathExtension(fileExtension)
+        }
+
+        // Write data to the file
         do {
-            let fileURL = URL(fileURLWithPath: filePath).appendingPathExtension("bin")
-            try depthRawData.write(to: fileURL)
-            print("Depth data saved successfully to \(fileURL.path)")
+            try data.write(to: fileURL)
+            print("\(baseFileName) data saved successfully to \(fileURL.path)")
         } catch {
-            print("Error saving depth data: \(error)")
+            print("Error saving \(baseFileName) data: \(error)")
         }
     }
     
@@ -440,6 +447,31 @@ struct ExternalData {
         pointCloudNodes.append(pointCloudNode)
         
         // alignPointClouds(scaleX: scaleX, scaleY: scaleY, scaleZ: scaleZ)
+        
+        // For saving as .BIN file...
+        let convertedDepthMap = convertDepthData(depthMap: depthData.depthDataMap)
+        var depthRawData = Data()
+        for row in convertedDepthMap {
+            for value in row {
+                var val = value // Make a mutable copy
+                depthRawData.append(UnsafeBufferPointer(start: &val, count: 1))
+            }
+        }
+        // Save the depth data
+        saveDataToFaceScansFolder(data: depthRawData, baseFileName: "depth", fileExtension: "bin")
+
+        // Prepare the color data
+        var colorRawData = Data()
+        for y in 0..<height {
+            for x in 0..<width {
+                let offset = y * bytesPerRow + x * 4 // Assuming BGRA format
+                colorRawData.append(colorData[offset + 2]) // R
+                colorRawData.append(colorData[offset + 1]) // G
+                colorRawData.append(colorData[offset])     // B
+            }
+        }
+        // Save the color data
+        saveDataToFaceScansFolder(data: colorRawData, baseFileName: "color", fileExtension: "bin")
         
         print("Done constructing the 3D object!")
         LogManager.shared.log("Done constructing the 3D object!")
