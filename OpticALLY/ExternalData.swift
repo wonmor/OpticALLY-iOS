@@ -109,6 +109,27 @@ struct ExternalData {
         return paths[0]
     }
     
+    static func getFaceScansFolder_NoDev() -> URL {
+        let date = Date()
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy_MM_dd"
+        let dateString = dateFormatter.string(from: date)
+        
+        let folderName = "ply_obj_\(dateString)" // Removed "dev_" prefix
+        let folderURL = getDocumentsDirectory().appendingPathComponent(folderName)
+
+        let fileManager = FileManager.default
+        if !fileManager.fileExists(atPath: folderURL.path) {
+            do {
+                try fileManager.createDirectory(at: folderURL, withIntermediateDirectories: true, attributes: nil)
+            } catch {
+                print("Error creating \(folderName) directory: \(error)")
+            }
+        }
+
+        return folderURL
+    }
+    
     static func getFaceScansFolder() -> URL {
         // Get the current date
         let date = Date()
@@ -116,7 +137,7 @@ struct ExternalData {
         dateFormatter.dateFormat = "yyyy_MM_dd"
         let dateString = dateFormatter.string(from: date)
         
-        let folderName = "face_scans_\(dateString)"
+        let folderName = "bin_json_\(dateString)"
         let folderURL = getDocumentsDirectory().appendingPathComponent(folderName)
 
         let fileManager = FileManager.default
@@ -616,7 +637,7 @@ struct ExternalData {
         }
     }
     
-    static func exportGeometryAsZIP(to url: URL) {
+    static func exportFaceNodesAsZIP(to url: URL) {
         let fileManager = FileManager.default
         let tempDirectoryURL = fileManager.temporaryDirectory
         var fileURLs = [URL]()
