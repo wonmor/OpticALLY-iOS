@@ -177,7 +177,7 @@ class ExportViewModel: ObservableObject {
             let zipFileURL = tempDirectory.appendingPathComponent("model.zip")
 
             // Export the PLY data to multiple files and compress them into a ZIP file
-            ExternalData.exportGeometryAsPLY(to: zipFileURL)
+            ExternalData.exportFaceNodesAsZIP(to: zipFileURL)
             
             // Update the state to indicate that there's a file to share
             DispatchQueue.main.async {
