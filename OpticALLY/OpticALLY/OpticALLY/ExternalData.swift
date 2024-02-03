@@ -309,7 +309,9 @@ struct ExternalData {
                 let scaleFactor = Float(1.5) // Custom value for depth exaggeration
                 let xrw = (Float(x) - cameraIntrinsics.columns.2.x) * depthValue / cameraIntrinsics.columns.0.x
                 let yrw = (Float(y) - cameraIntrinsics.columns.2.y) * depthValue / cameraIntrinsics.columns.1.y
-                let vertex = SCNVector3(x: xrw, y: yrw, z: depthValue * scaleFactor)
+                let zrw = 1 / depthValue * scaleFactor // Taking the reciprocal to flip inside out
+                
+                let vertex = SCNVector3(x: xrw, y: yrw, z: zrw)
                 
                 print("Coordinate Check (\(round(metadata.leftEyePosition.x)), \(round(metadata.leftEyePosition.y))) VS. (\(x), \(y))")
                 
@@ -334,31 +336,11 @@ struct ExternalData {
                 let color = UIColor(red: CGFloat(rComponent), green: CGFloat(gComponent), blue: CGFloat(bComponent), alpha: CGFloat(aComponent))
                 colors.append(color)
                 
-                LogManager.shared.log("Converting \(counter)th point: \([rComponent, gComponent, bComponent, aComponent])")
+                LogManager.shared.log("Converting \(counter)th point")
                 
                 counter += 1
             }
         }
-        //
-        //        if let index: Int? = ExternalData.pointCloudGeometries.count,
-        //           index! < ExternalData.pointCloudDataArray.count {
-        //            let metadata = ExternalData.pointCloudDataArray[index!]
-        //            let faceTransform = adjustARKitMatrixForSceneKit(metadata.faceAnchor.transform) // simd_float4x4
-        //            let scnTransform = SCNMatrix4(faceTransform) // Convert to SCNMatrix4
-        //            let invertedTransform = SCNMatrix4Invert(scnTransform)
-        //
-        //            // Assuming you have a function to extract yaw angle from the face anchor transform
-        //             let yawAngle = Float(metadata.yaw)
-        //
-        //            // Calculate the counter-rotation (rotate in the opposite direction of the yaw)
-        //            let counterRotation = SCNMatrix4MakeRotation(yawAngle, 0, 1, 0)
-        //
-        //            // Apply the inverted transformation to each vertex
-        //            for i in 0..<vertices.count {
-        //                vertices[i] = applyMatrixToVector3(vertices[i], with: invertedTransform)
-        //                vertices[i] = applyMatrixToVector3(vertices[i], with: counterRotation)
-        //            }
-        //        }
         
         // Create the geometry source for vertices
         let vertexSource = SCNGeometrySource(vertices: vertices)
@@ -411,22 +393,7 @@ struct ExternalData {
         
         var pointCloudNode = SCNNode(geometry: pointCloudGeometry)
         
-        // Create rotation matrices
-        let rotationY = SCNMatrix4MakeRotation(Float(metadata.yaw), 0, 1, 0)
-        let rotationX = SCNMatrix4MakeRotation(Float(metadata.pitch), 1, 0, 0)
-        let rotationZ = SCNMatrix4MakeRotation(Float(metadata.roll), 0, 0, 1)
-        
-        // Combine rotations
-        let rotation = SCNMatrix4Invert(SCNMatrix4Mult(SCNMatrix4Mult(rotationZ, rotationX), rotationY))
-        
         pointCloudNode = updateNodePivot(node: pointCloudNode, usingDepthData: depthData, withMetadata: metadata)
-        
-        // Set the transform of the previewFaceNode
-        // pointCloudNode.transform = rotation
-        
-        // Match the world position of the faceAnchor
-        // let worldTransform = SCNMatrix4(metadata.faceAnchor.transform)// Convert simd_float4x4 to SCNMatrix4
-        // pointCloudNode.worldPosition = SCNVector3(worldTransform.m41, worldTransform.m42, worldTransform.m43)
         
         pointCloudGeometries.append(pointCloudGeometry)
         pointCloudNodes.append(pointCloudNode)

@@ -187,7 +187,7 @@ struct ExportView: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 30) // Adjust horizontal padding for wider background
                 .padding(.vertical, 15) // Adjust vertical padding for background height
-                .background(isFlashOn ? .black : .white) // Adjust background color and opacity
+                .background(isFlashOn ? Color(.darkGray) : .white) // Adjust background color and opacity
                 .cornerRadius(25) // Gives the pill shape
                 .zIndex(1) // Ensure the spinner and text are above other content
             }
@@ -217,7 +217,7 @@ struct ExportView: View {
                                     .multilineTextAlignment(.center)
                                     .monospaced()
                                 
-                                if lastLog.contains("Done") {
+                                if lastLog.contains("Done") && showDropdown == false {
                                     Image(systemName: "checkmark.circle.fill")
                                         .resizable()
                                         .frame(width: 60, height: 60) // Adjust the size as needed
@@ -308,32 +308,62 @@ struct ExportView: View {
                                             // Dropdown list view
                                             if showDropdown {
                                                 VStack {
+                                                    Button(action: {
+                                                        exportViewModel.exportCombinedModel(showShareSheet: true)
+                                                    }) {
+                                                        Text("COMBINED .PLY")
+                                                            .font(.caption)
+                                                            .padding()
+                                                            .foregroundColor(.white)
+                                                            .background(Capsule().fill(Color(.black)))
+                                                    }
+                                                    
+                                                    Button(action: {
+                                                        exportViewModel.exportPLY(showShareSheet: true)
+                                                    }) {
+                                                        Text("SINGLE .PLY")
+                                                            .font(.caption)
+                                                            .padding()
+                                                            .foregroundColor(.white)
+                                                            .background(Capsule().fill(Color(.black)))
+                                                    }
+                                                    
+                                                    Button(action: {
+                                                        exportViewModel.exportOBJ()
+                                                    }) {
+                                                        Text(".OBJ")
+                                                            .font(.caption)
+                                                            .padding()
+                                                            .foregroundColor(.white)
+                                                            .background(Capsule().fill(Color(.black)))
+                                                    }
+                                                    
+                                                    Text("FOR DEVELOPERS")
+                                                        .bold()
+                                                        .monospaced()
+                                                        .padding(.top)
+                                                        .padding(.horizontal)
+                                                        .multilineTextAlignment(.center)
+                                                    
                                                     HStack {
                                                         Button(action: {
-                                                            exportViewModel.exportCombinedModel(showShareSheet: true)
-                                                            // exportViewModel.exportPLY(showShareSheet: true)
+                                                            
                                                         }) {
-                                                            Text(".PLY")
+                                                            Text(".BIN")
+                                                                .font(.caption)
                                                                 .padding()
                                                                 .foregroundColor(.white)
                                                                 .background(Capsule().fill(Color(.black)))
                                                         }
                                                         
-                                                        // .OBJ Button
                                                         Button(action: {
-                                                            exportViewModel.exportOBJ()
+           
                                                         }) {
-                                                            Text(".OBJ")
+                                                            Text(".JSON")
+                                                                .font(.caption)
                                                                 .padding()
                                                                 .foregroundColor(.white)
                                                                 .background(Capsule().fill(Color(.black)))
-                                                        }
-                                                        .alert(isPresented: $showAlert) {
-                                                            Alert(
-                                                                title: Text("No Internet Connection"),
-                                                                message: Text("Please check your internet connection and try again."),
-                                                                dismissButton: .default(Text("OK"))
-                                                            )
                                                         }
                                                     }
                                                 }
