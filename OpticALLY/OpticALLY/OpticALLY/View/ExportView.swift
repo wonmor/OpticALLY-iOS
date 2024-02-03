@@ -268,7 +268,7 @@ struct ExportView: View {
                                 LottieView(animationFileName: "left-arrow-2", loopMode: .loop)
                                     .frame(width: 60, height: 60)
                                     .scaleEffect(0.2)
-                                    .opacity(0.6)
+                                    .opacity(0.5)
                                     .padding(.bottom)
                                 
                             } else {
@@ -276,7 +276,7 @@ struct ExportView: View {
                                     .frame(width: 60, height: 60)
                                     .colorInvert()
                                     .scaleEffect(0.2)
-                                    .opacity(0.6)
+                                    .opacity(0.5)
                                     .padding(.bottom)
                             }
                             
@@ -286,7 +286,7 @@ struct ExportView: View {
                                 LottieView(animationFileName: "right-arrow-2", loopMode: .loop)
                                     .frame(width: 60, height: 60)
                                     .scaleEffect(0.2)
-                                    .opacity(0.6)
+                                    .opacity(0.5)
                                     .padding(.bottom)
                                 
                             } else {
@@ -294,7 +294,7 @@ struct ExportView: View {
                                     .frame(width: 60, height: 60)
                                     .colorInvert()
                                     .scaleEffect(0.2)
-                                    .opacity(0.6)
+                                    .opacity(0.5)
                                     .padding(.bottom)
                             }
                             
