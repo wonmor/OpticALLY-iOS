@@ -271,17 +271,9 @@ struct ExportView: View {
                                 .foregroundColor(isFlashOn ? .black : .white)
                             
                         } else if headTurnState == .center {
-                            if isFlashOn {
-                                LottieView(animationFileName: "face-detection", loopMode: .loop)
-                                    .frame(width: 50, height: 50)
-                                    .opacity(0.2)
-
-                            } else {
-                                LottieView(animationFileName: "face-detection", loopMode: .loop)
-                                    .frame(width: 50, height: 50)
-                                    .colorInvert()
-                                    .opacity(0.2)
-                            }
+                            LottieView(animationFileName: "face-id", loopMode: .loop)
+                                .frame(width: 50, height: 50)
+                                .padding()
                         }
                     }
 
