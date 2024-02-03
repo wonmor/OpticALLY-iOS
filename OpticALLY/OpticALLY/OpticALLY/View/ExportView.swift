@@ -211,17 +211,20 @@ struct ExportView: View {
                     if showConsoleOutput {
                         ScrollView {
                             if let lastLog = logManager.latestLog {
-                                Text(lastLog)
-                                    .padding()
-                                    .frame(maxWidth: .infinity, alignment: .center)
-                                    .multilineTextAlignment(.center)
-                                    .monospaced()
-                                
-                                if lastLog.contains("Done") && showDropdown == false {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .resizable()
-                                        .frame(width: 60, height: 60) // Adjust the size as needed
-                                        .foregroundColor(isFlashOn ? .black : .white)
+                                if showDropdown == false {
+                                    Text(lastLog)
+                                        .padding()
+                                        .frame(maxWidth: .infinity, alignment: .center)
+                                        .multilineTextAlignment(.center)
+                                        .monospaced()
+                                    
+                                    
+                                    if lastLog.contains("Done") {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .resizable()
+                                            .frame(width: 60, height: 60) // Adjust the size as needed
+                                            .foregroundColor(isFlashOn ? .black : .white)
+                                    }
                                 }
                             }
                         }
