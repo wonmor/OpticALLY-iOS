@@ -77,6 +77,8 @@
 		96E856C02B7041D10037C3BB /* FileItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E856BF2B7041D10037C3BB /* FileItem.swift */; };
 		96E856C22B7041E60037C3BB /* FilesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E856C12B7041E60037C3BB /* FilesViewModel.swift */; };
 		96E856C42B70421F0037C3BB /* FilesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E856C32B70421F0037C3BB /* FilesListView.swift */; };
+		96E856C62B70441C0037C3BB /* FolderDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E856C52B70441C0037C3BB /* FolderDetailView.swift */; };
+		96E856CA2B7045510037C3BB /* SceneKitPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E856C92B7045510037C3BB /* SceneKitPreview.swift */; };
 		96F0CF182B12A34400417716 /* ExternalData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF172B12A34400417716 /* ExternalData.swift */; };
 		96F0CF1A2B12A39100417716 /* ExportViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF192B12A39100417716 /* ExportViewModel.swift */; };
 		96F0CF1C2B12A3D500417716 /* ExportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF1B2B12A3D500417716 /* ExportView.swift */; };
@@ -167,6 +169,8 @@
 		96E856BF2B7041D10037C3BB /* FileItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileItem.swift; sourceTree = "<group>"; };
 		96E856C12B7041E60037C3BB /* FilesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilesViewModel.swift; sourceTree = "<group>"; };
 		96E856C32B70421F0037C3BB /* FilesListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilesListView.swift; sourceTree = "<group>"; };
+		96E856C52B70441C0037C3BB /* FolderDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderDetailView.swift; sourceTree = "<group>"; };
+		96E856C92B7045510037C3BB /* SceneKitPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneKitPreview.swift; sourceTree = "<group>"; };
 		96F0CF172B12A34400417716 /* ExternalData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalData.swift; sourceTree = "<group>"; };
 		96F0CF192B12A39100417716 /* ExportViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportViewModel.swift; sourceTree = "<group>"; };
 		96F0CF1B2B12A3D500417716 /* ExportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportView.swift; sourceTree = "<group>"; };
@@ -292,6 +296,7 @@
 				96491C5E2AFD746300FD3666 /* ConsoleOutputCatcher.swift */,
 				96B64F722B3D90490003E06D /* ScnMatrix.swift */,
 				969AC2812AB7554C0096892E /* Extensions+Modifiers.swift */,
+				96E856C92B7045510037C3BB /* SceneKitPreview.swift */,
 				9680F7DA2B2283B200F38A6F /* CapturedImageSampler.swift */,
 				96F0CF212B12A51700417716 /* LogManager.swift */,
 				96B64F6F2B3D90410003E06D /* FaceTextureGenerator.swift */,
@@ -340,6 +345,7 @@
 				966360652B6E064B001D2119 /* LottieView.swift */,
 				9680F7DC2B22D6FD00F38A6F /* ARFaceTrackingView.swift */,
 				96E856C32B70421F0037C3BB /* FilesListView.swift */,
+				96E856C52B70441C0037C3BB /* FolderDetailView.swift */,
 				967EE0662AAE06FB000C4D5F /* ContentView.swift */,
 				961D67E22B12BDFC00DBB883 /* SceneKitView.swift */,
 				963DF9B22AFEDAF600E6E589 /* PostScanView.swift */,
@@ -579,6 +585,7 @@
 				9679F8DF2AD0907A00686F13 /* PointCloudMetalView.mm in Sources */,
 				969AC2822AB7554C0096892E /* Extensions+Modifiers.swift in Sources */,
 				9679F8D12AD0907A00686F13 /* AAPLTransforms.mm in Sources */,
+				96E856CA2B7045510037C3BB /* SceneKitPreview.swift in Sources */,
 				96B64F702B3D90410003E06D /* TextureToImage.swift in Sources */,
 				96F0CF1A2B12A39100417716 /* ExportViewModel.swift in Sources */,
 				96E856C42B70421F0037C3BB /* FilesListView.swift in Sources */,
@@ -593,6 +600,7 @@
 				966360662B6E064B001D2119 /* LottieView.swift in Sources */,
 				96E856C22B7041E60037C3BB /* FilesViewModel.swift in Sources */,
 				9680F7DD2B22D6FD00F38A6F /* ARFaceTrackingView.swift in Sources */,
+				96E856C62B70441C0037C3BB /* FolderDetailView.swift in Sources */,
 				9679F8D52AD0907A00686F13 /* HistogramCalculator.m in Sources */,
 				969AC2802AB7550C0096892E /* IntroductionView.swift in Sources */,
 				96B64F712B3D90410003E06D /* FaceTextureGenerator.swift in Sources */,
