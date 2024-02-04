@@ -14,6 +14,25 @@ import Open3DSupport
 import NumPySupport
 import Accelerate
 
+/// OpticALLYApp is the main entry point for the OpticALLY application, which is designed to use advanced computer vision and 3D reconstruction techniques to analyze and manipulate spatial data. This SwiftUI application integrates various technologies, including Python libraries for computational geometry and machine learning, to provide functionalities such as face tracking, 3D scanning, and object recognition.
+
+/// The application initializes Python environments, loads necessary Python libraries, and sets up the infrastructure for reading and processing 3D data. It also includes utilities for matrix operations, singular value decomposition (SVD), and network connectivity checks, essential for data processing and analysis tasks.
+
+/// Main Features:
+/// - Face Tracking: Utilizes device capabilities and custom algorithms for real-time face tracking.
+/// - 3D Scanning: Employs 3D reconstruction algorithms to scan objects and environments, creating detailed 3D models.
+/// - Object Recognition: Integrates machine learning models to identify and classify objects within the scanned data.
+
+/// Technical Details:
+/// - Python Integration: Leverages PythonSupport and PythonKit for running Python code within the Swift environment.
+/// - 3D Data Processing: Uses Open3DSupport and NumPySupport for handling 3D point clouds and numerical operations.
+/// - Performance Optimization: Incorporates Accelerate framework for efficient matrix computations and linear algebra operations.
+
+/// Usage:
+/// The application's main view is managed by ContentView, which adapts its display based on the current application state, controlled by GlobalState. Users can navigate through different stages of the application, from introduction to scanning and post-scanning analysis, with the UI dynamically updating to reflect the current context.
+
+/// Note: Due to the complex integration of Python and Swift, along with the use of external libraries for 3D data processing, it's crucial to manage resources wisely to ensure smooth performance and avoid memory leaks.
+
 let faceTrackingViewModel = FaceTrackingViewModel()
 
 let devicePPI: Double = {
