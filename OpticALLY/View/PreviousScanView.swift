@@ -61,10 +61,8 @@ struct PreviousScanNestedView: View {
             .bold()
             
             // Credit Lines
-            VStack(alignment: .center, spacing: 20) {
-                PreviousScanCreditView(title: "Product Manager", name: "Drew Shepard")
-                PreviousScanCreditView(title: "Developer", name: "John Seong")
-                PreviousScanCreditView(title: "Consultant", name: "Shawn Patridge")
+            VStack(alignment: .center) {
+                FilesListView()
             }
             .padding()
             .background(backgroundColor)

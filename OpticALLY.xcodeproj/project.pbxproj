@@ -74,6 +74,9 @@
 		96BC2ABE2AC5E9D60081550B /* DevicePpi in Frameworks */ = {isa = PBXBuildFile; productRef = 96BC2ABD2AC5E9D60081550B /* DevicePpi */; };
 		96E856BB2B6EFFE00037C3BB /* PreviousScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E856BA2B6EFFE00037C3BB /* PreviousScanView.swift */; };
 		96E856BD2B6F0CF90037C3BB /* cargo-loading.json in Resources */ = {isa = PBXBuildFile; fileRef = 96E856BC2B6F0CF90037C3BB /* cargo-loading.json */; };
+		96E856C02B7041D10037C3BB /* FileItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E856BF2B7041D10037C3BB /* FileItem.swift */; };
+		96E856C22B7041E60037C3BB /* FilesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E856C12B7041E60037C3BB /* FilesViewModel.swift */; };
+		96E856C42B70421F0037C3BB /* FilesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E856C32B70421F0037C3BB /* FilesListView.swift */; };
 		96F0CF182B12A34400417716 /* ExternalData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF172B12A34400417716 /* ExternalData.swift */; };
 		96F0CF1A2B12A39100417716 /* ExportViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF192B12A39100417716 /* ExportViewModel.swift */; };
 		96F0CF1C2B12A3D500417716 /* ExportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF1B2B12A3D500417716 /* ExportView.swift */; };
@@ -161,6 +164,9 @@
 		96B64F722B3D90490003E06D /* ScnMatrix.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScnMatrix.swift; sourceTree = "<group>"; };
 		96E856BA2B6EFFE00037C3BB /* PreviousScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviousScanView.swift; sourceTree = "<group>"; };
 		96E856BC2B6F0CF90037C3BB /* cargo-loading.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "cargo-loading.json"; sourceTree = "<group>"; };
+		96E856BF2B7041D10037C3BB /* FileItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileItem.swift; sourceTree = "<group>"; };
+		96E856C12B7041E60037C3BB /* FilesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilesViewModel.swift; sourceTree = "<group>"; };
+		96E856C32B70421F0037C3BB /* FilesListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilesListView.swift; sourceTree = "<group>"; };
 		96F0CF172B12A34400417716 /* ExternalData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalData.swift; sourceTree = "<group>"; };
 		96F0CF192B12A39100417716 /* ExportViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportViewModel.swift; sourceTree = "<group>"; };
 		96F0CF1B2B12A3D500417716 /* ExportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportView.swift; sourceTree = "<group>"; };
@@ -271,6 +277,7 @@
 		967EE0632AAE06FB000C4D5F /* OpticALLY */ = {
 			isa = PBXGroup;
 			children = (
+				96E856BE2B7041BE0037C3BB /* Model */,
 				9671FDC42B5B14F2004DA4C2 /* Python */,
 				969DF1C62B12916900FA9ABE /* GoogleService-Info.plist */,
 				969E42E82ADC9ABD00E77BA7 /* Resources */,
@@ -332,6 +339,7 @@
 				96F0CF1B2B12A3D500417716 /* ExportView.swift */,
 				966360652B6E064B001D2119 /* LottieView.swift */,
 				9680F7DC2B22D6FD00F38A6F /* ARFaceTrackingView.swift */,
+				96E856C32B70421F0037C3BB /* FilesListView.swift */,
 				967EE0662AAE06FB000C4D5F /* ContentView.swift */,
 				961D67E22B12BDFC00DBB883 /* SceneKitView.swift */,
 				963DF9B22AFEDAF600E6E589 /* PostScanView.swift */,
@@ -347,6 +355,7 @@
 			isa = PBXGroup;
 			children = (
 				96F0CF192B12A39100417716 /* ExportViewModel.swift */,
+				96E856C12B7041E60037C3BB /* FilesViewModel.swift */,
 				9680F7DE2B22D93400F38A6F /* FaceTrackingViewModel.swift */,
 			);
 			path = ViewModel;
@@ -372,6 +381,14 @@
 				969E42ED2ADC9D9E00E77BA7 /* promo.mp4 */,
 			);
 			path = Resources;
+			sourceTree = "<group>";
+		};
+		96E856BE2B7041BE0037C3BB /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				96E856BF2B7041D10037C3BB /* FileItem.swift */,
+			);
+			path = Model;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -564,14 +581,17 @@
 				9679F8D12AD0907A00686F13 /* AAPLTransforms.mm in Sources */,
 				96B64F702B3D90410003E06D /* TextureToImage.swift in Sources */,
 				96F0CF1A2B12A39100417716 /* ExportViewModel.swift in Sources */,
+				96E856C42B70421F0037C3BB /* FilesListView.swift in Sources */,
 				967EE0672AAE06FB000C4D5F /* ContentView.swift in Sources */,
 				9679F8D42AD0907A00686F13 /* PreviewMetalView.swift in Sources */,
 				9679F8DD2AD0907A00686F13 /* CameraViewController.swift in Sources */,
+				96E856C02B7041D10037C3BB /* FileItem.swift in Sources */,
 				963DF9B32AFEDAF700E6E589 /* PostScanView.swift in Sources */,
 				96B64F6D2B3D8FCA0003E06D /* faceTexture.metal in Sources */,
 				9679F8E12AD0907A00686F13 /* CameraView.swift in Sources */,
 				9680F7DF2B22D93400F38A6F /* FaceTrackingViewModel.swift in Sources */,
 				966360662B6E064B001D2119 /* LottieView.swift in Sources */,
+				96E856C22B7041E60037C3BB /* FilesViewModel.swift in Sources */,
 				9680F7DD2B22D6FD00F38A6F /* ARFaceTrackingView.swift in Sources */,
 				9679F8D52AD0907A00686F13 /* HistogramCalculator.m in Sources */,
 				969AC2802AB7550C0096892E /* IntroductionView.swift in Sources */,
