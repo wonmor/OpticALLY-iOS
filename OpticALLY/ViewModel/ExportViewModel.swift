@@ -147,7 +147,7 @@ class ExportViewModel: ObservableObject {
             
             let plyFileURL = tempDirectory.appendingPathComponent("combined.ply")
             
-            ExternalData.exportUsingMultiwayRegistration(to: plyFileURL)
+            ExternalData.exportUsingMultiwayRegistrationAsPLY(to: plyFileURL)
             
             // Update the state to indicate that there's a file to share
             DispatchQueue.main.async {
@@ -240,6 +240,14 @@ class ExportViewModel: ObservableObject {
                         let exportDuration = self.stopExportTimer()
                         // Update the Firestore database with the new export duration
                         self.updateExportDurationInFirestore(newDuration: exportDuration)
+                    }
+                    
+                    do {
+                        let objData = try Data(contentsOf: objFileURL)
+                        ExternalData.saveSingleScan(data: objData, fileExtension: "obj")
+                        
+                    } catch {
+                        print("Error reading back OBJ data: \(error)")
                     }
                 }
             } catch {

@@ -158,7 +158,6 @@ struct ExternalData {
 
     static func saveDataToFaceScansFolder(data: Data, isDepthData: Bool) {
           let folderURL = getFaceScansFolder()
-          let fileManager = FileManager.default
 
           // Choose file base name and increment the appropriate index
           let baseFileName: String
@@ -181,6 +180,64 @@ struct ExternalData {
               print("Error saving \(baseFileName) data: \(error)")
           }
       }
+    
+    static func saveSingleScan(data: Data, fileExtension: String) {
+        let folderURL = getFaceScansFolder_NoDev()
+        
+        // Choose file base name and increment the appropriate index
+        let baseFileName: String
+        
+        baseFileName = "single_face_scan"
+
+        let fileURL = folderURL.appendingPathComponent(baseFileName).appendingPathExtension(fileExtension)
+
+        // Write data to the file
+        do {
+            try data.write(to: fileURL)
+            print("\(baseFileName) data saved successfully to \(fileURL.path)")
+        } catch {
+            print("Error saving \(baseFileName) data: \(error)")
+        }
+    }
+    
+    static func saveCombinedScan(data: Data, fileExtension: String) {
+        let folderURL = getFaceScansFolder_NoDev()
+        
+        // Choose file base name and increment the appropriate index
+        let baseFileName: String
+        
+        baseFileName = "combined_face_scan"
+
+        let fileURL = folderURL.appendingPathComponent(baseFileName).appendingPathExtension(fileExtension)
+
+        // Write data to the file
+        do {
+            try data.write(to: fileURL)
+            print("\(baseFileName) data saved successfully to \(fileURL.path)")
+        } catch {
+            print("Error saving \(baseFileName) data: \(error)")
+        }
+    }
+    
+    static func saveLandmark3DMM(data: Data) {
+        let folderURL = getFaceScansFolder_NoDev()
+        
+        // Choose file base name and increment the appropriate index
+        let baseFileName: String
+        
+        baseFileName = "landmark_3dmm"
+
+        let fileExtension = "zip"
+        let fileURL = folderURL.appendingPathComponent(baseFileName).appendingPathExtension(fileExtension)
+
+        // Write data to the file
+        do {
+            try data.write(to: fileURL)
+            print("\(baseFileName) data saved successfully to \(fileURL.path)")
+        } catch {
+            print("Error saving \(baseFileName) data: \(error)")
+        }
+    }
     
     static func convertDepthData(depthMap: CVPixelBuffer) -> [[Float16]] {
         let width = CVPixelBufferGetWidth(depthMap)
@@ -632,6 +689,10 @@ struct ExternalData {
         do {
             try plyString.write(to: url, atomically: true, encoding: .ascii)
             print("PLY file was successfully saved to: \(url.path)")
+            
+            if let plyData = plyString.data(using: .utf8) {
+                saveSingleScan(data: plyData, fileExtension: "ply")
+            }
         } catch {
             print("Failed to write PLY file: \(error)")
         }
@@ -708,11 +769,19 @@ struct ExternalData {
         // Create a ZIP file using SSZipArchive
         SSZipArchive.createZipFile(atPath: url.path, withFilesAtPaths: fileURLs.map { $0.path })
         
+        do {
+            let zipData = try Data(contentsOf: url)
+            saveLandmark3DMM(data: zipData)
+            
+        } catch {
+            print("Error reading back ZIP data: \(error)")
+        }
+        
         // Cleanup temporary files
         fileURLs.forEach { try? fileManager.removeItem(at: $0) }
     }
     
-    static func exportUsingMultiwayRegistration(to url: URL) {
+    static func exportUsingMultiwayRegistrationAsPLY(to url: URL) {
         let fileManager = FileManager.default
         let tempDirectoryURL = fileManager.temporaryDirectory
         var plyFileURLs = [URL]()
@@ -754,6 +823,17 @@ struct ExternalData {
         
         // Use the provided URL instead of the temporary directory
         o3d!.io.write_point_cloud(url.path, pcdCombinedDown)
+        
+        // Read the PLY file back into memory
+        do {
+            let plyData = try Data(contentsOf: url)
+            
+            // Use the PLY data with saveCombinedScan
+            saveCombinedScan(data: plyData, fileExtension: "ply")
+            print("PLY data saved using saveCombinedScan")
+        } catch {
+            print("Error reading back PLY data: \(error)")
+        }
 
         // Cleanup temporary PLY files
         plyFileURLs.forEach { try? fileManager.removeItem(at: $0) }
