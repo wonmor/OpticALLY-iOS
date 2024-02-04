@@ -194,10 +194,11 @@ struct ExportView: View {
             // Display a loading spinner when isLoading is true
             if exportViewModel.isLoading {
                 VStack(spacing: 10) { // Adjust spacing as needed
-                    ProgressView()
-                        .scaleEffect(2.5, anchor: .center) // Adjust size as needed
-                        .progressViewStyle(CircularProgressViewStyle(tint: isFlashOn ? .white : .black)) // Spinner color
+                    LottieView(animationFileName: "cargo-loading", loopMode: .loop)
+                        .frame(width: 60, height: 60)
+                        .scaleEffect(0.1)
                         .padding()
+                        .colorInvert()
                     
                     Text("EXPORT IN PROGRESS")
                         .bold()

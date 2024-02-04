@@ -176,19 +176,27 @@ struct PostScanView: View {
                 // Display a loading spinner when isLoading is true
                 if exportViewModel.isLoading {
                     VStack(spacing: 10) { // Adjust spacing as needed
-                        ProgressView()
-                            .scaleEffect(1.5, anchor: .center) // Adjust size as needed
-                            .progressViewStyle(CircularProgressViewStyle(tint: .white)) // Spinner color
+                        LottieView(animationFileName: "cargo-loading", loopMode: .loop)
+                            .frame(width: 60, height: 60)
+                            .scaleEffect(0.1)
                             .padding()
+                            .colorInvert()
                         
                         Text("PROCESSING POINT CLOUD")
                             .bold()
                             .monospaced()
                             .foregroundColor(.white)
                         
-                        Text(StandardOutReader.outputLines.last ?? "Open3D is working on the task")
-                            .monospaced()
-                            .foregroundColor(.white)
+                        if exportViewModel.estimatedExportTime != nil {
+                            Text("Estimated:\n\(exportViewModel.estimatedExportTime!) sec.")
+                                .monospaced()
+                                .foregroundColor(.white)
+                            
+                        } else {
+                            Text("Estimated:\nN/A")
+                                .monospaced()
+                                .foregroundColor(.white)
+                        }
                     }
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 30) // Adjust horizontal padding for wider background
