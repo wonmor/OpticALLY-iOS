@@ -40,15 +40,7 @@ struct CreditNestedView: View {
                 .background(backgroundColor)
                 .cornerRadius(20)
             
-            Text("Open3D Version: \(o3d!.__version__.description)")
-                .monospaced()
-                .padding(.horizontal)
-                .padding(.top)
-                .foregroundStyle(.black)
-                .font(.caption)
-                .bold()
-            
-            Text("Python Version: \(sys!.version.description)")
+            Text("Open3D Version:\n\(o3d!.__version__.description)")
                 .monospaced()
                 .padding(.horizontal)
                 .padding(.top)
@@ -70,9 +62,9 @@ struct CreditNestedView: View {
             
             // Credit Lines
             VStack(alignment: .center, spacing: 20) {
-                CreditLine(title: "Product Manager", name: "Drew Shepard")
-                CreditLine(title: "Developer", name: "John Seong")
-                CreditLine(title: "Consultant", name: "Shawn Patridge")
+                CreditLine(title: "Product Manager", name: "D. Shepard")
+                CreditLine(title: "Developer", name: "J. Seong")
+                CreditLine(title: "Consultant", name: "S. Patridge")
             }
             .padding()
             .background(backgroundColor)
