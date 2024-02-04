@@ -86,7 +86,7 @@ struct FileRow: View {
         case .faceModel:
             return "PLY & OBJ Export"
         case .rawData:
-            return "BIN & JSON Dump"
+            return "BIN & JSON Cache"
         }
     }
 }
