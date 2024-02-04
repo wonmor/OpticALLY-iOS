@@ -26,19 +26,21 @@ class FilesViewModel: ObservableObject {
 
             for item in items {
                 if item.lastPathComponent.starts(with: "ply_obj_") {
-                    // Extract date from folder name
                     let dateString = String(item.lastPathComponent.dropFirst("ply_obj_".count))
                     if let date = dateFormatter.date(from: dateString) {
                         faceModels.append(FileItem(name: item.lastPathComponent, date: date, type: .faceModel))
                     }
                 } else if item.lastPathComponent.starts(with: "bin_json_") {
-                    // Extract date from folder name
                     let dateString = String(item.lastPathComponent.dropFirst("bin_json_".count))
                     if let date = dateFormatter.date(from: dateString) {
                         rawDatas.append(FileItem(name: item.lastPathComponent, date: date, type: .rawData))
                     }
                 }
             }
+
+            // Sort the arrays by date in descending order so the latest scans are at the top
+            faceModels.sort { $0.date > $1.date }
+            rawDatas.sort { $0.date > $1.date }
         } catch {
             print("Error loading files: \(error)")
         }
