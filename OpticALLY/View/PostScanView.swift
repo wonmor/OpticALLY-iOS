@@ -143,6 +143,27 @@ struct PostScanView: View {
                     }
                 }
                 
+                Text("Perspective-n-Point & ICP\nWork in Progress")
+                    .padding()
+                    .monospaced()
+                    .font(.title3)
+                    .multilineTextAlignment(.center)
+                
+                ZStack {
+                   RoundedRectangle(cornerRadius: 10) // Rounded rectangle shape
+                       .stroke(lineWidth: 2) // White border with a specified width
+                       .foregroundColor(.white) // Sets the color of the border
+                       .background(RoundedRectangle(cornerRadius: 10).fill(Color.white)) // Background color of the rectangle
+                       .shadow(radius: 5) // Optional: Adds a shadow for a 3D effect
+
+                   VStack(alignment: .center, spacing: 10) { // Vertical stack for your text
+                       Text("NOT APPLIED YET")
+                           .bold() // Makes the text bold
+                           .foregroundColor(.black) // Optional: Sets the color of the "NOT APPLIED YET" text
+                   }
+                   .padding() // Adds padding around the text inside the box
+               }
+                
                 Spacer()
                 
                 if !ExternalData.isMeshView {
