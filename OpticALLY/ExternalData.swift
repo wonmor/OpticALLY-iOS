@@ -34,7 +34,7 @@ struct PointCloudMetadata {
     var depth: AVDepthData
     
     var faceNode: SCNNode
-    var faceAnchor: ARFaceAnchor
+    var faceAnchor: ARFaceAnchor?
     var faceTexture: UIImage
 }
 

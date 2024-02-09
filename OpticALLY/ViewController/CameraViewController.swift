@@ -394,7 +394,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                 image: imageData,
                 depth: depthData,
                 faceNode: previewFaceNode,
-                faceAnchor: previewFaceAnchors.last!,
+                faceAnchor: previewFaceAnchors.last ?? nil, // able to handle non-face objects
                 faceTexture: textureToImage(self.faceUvGenerator.texture)!
             )
             

@@ -53,10 +53,10 @@ fragment float4 fragmentShaderPoints(RasterizerDataColor in [[stage_in]],
     const float faceMaxDepth = 1000.0; // Adjust to the maximum depth for face
 
     // If outside the depth range for the face, discard the fragment
-    if (in.depth < faceMinDepth || in.depth > faceMaxDepth) {
-        discard_fragment();
-        return float4(0, 0, 0, 0);  // transparent color
-    }
+//    if (in.depth < faceMinDepth || in.depth > faceMaxDepth) {
+//        discard_fragment();
+//        return float4(0, 0, 0, 0);  // transparent color
+//    }
 
     constexpr sampler textureSampler (mag_filter::linear, min_filter::linear);
     const float4 colorSample = colorTexture.sample (textureSampler, in.coor);

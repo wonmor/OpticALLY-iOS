@@ -12,6 +12,8 @@
 		9614F0B12ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */; };
 		961D67E32B12BDFC00DBB883 /* SceneKitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 961D67E22B12BDFC00DBB883 /* SceneKitView.swift */; };
 		961D67E52B12C64A00DBB883 /* CreditsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 961D67E42B12C64A00DBB883 /* CreditsView.swift */; };
+		963966192B76B7A900EB435B /* opencv2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 963966182B76B7A900EB435B /* opencv2.framework */; };
+		9639661C2B76B82B00EB435B /* OpenCVWrapper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9639661B2B76B82B00EB435B /* OpenCVWrapper.mm */; };
 		963DF9B32AFEDAF700E6E589 /* PostScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 963DF9B22AFEDAF600E6E589 /* PostScanView.swift */; };
 		963FF2802B62FE9000B89019 /* Open3D-iOS in Frameworks */ = {isa = PBXBuildFile; productRef = 963FF27F2B62FE9000B89019 /* Open3D-iOS */; };
 		9646DC6C2B1064F500092549 /* glasses.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 9646DC6B2B1064F500092549 /* glasses.mp4 */; };
@@ -108,6 +110,10 @@
 		9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = RobotoSlab.ttf; sourceTree = "<group>"; };
 		961D67E22B12BDFC00DBB883 /* SceneKitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneKitView.swift; sourceTree = "<group>"; };
 		961D67E42B12C64A00DBB883 /* CreditsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditsView.swift; sourceTree = "<group>"; };
+		963966182B76B7A900EB435B /* opencv2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = opencv2.framework; sourceTree = "<group>"; };
+		9639661A2B76B82B00EB435B /* OpenCVWrapper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OpenCVWrapper.h; sourceTree = "<group>"; };
+		9639661B2B76B82B00EB435B /* OpenCVWrapper.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = OpenCVWrapper.mm; sourceTree = "<group>"; };
+		9639661D2B76B87300EB435B /* PrefixHeader.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PrefixHeader.pch; sourceTree = "<group>"; };
 		963DF9B22AFEDAF600E6E589 /* PostScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostScanView.swift; sourceTree = "<group>"; };
 		963FF2822B6316F700B89019 /* OpticALLY.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = OpticALLY.entitlements; sourceTree = "<group>"; };
 		9646DC6B2B1064F500092549 /* glasses.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = glasses.mp4; sourceTree = "<group>"; };
@@ -190,6 +196,7 @@
 				969DF1CC2B1291D400FA9ABE /* FirebaseFirestore in Frameworks */,
 				969DF1D02B1291D400FA9ABE /* FirebaseStorage in Frameworks */,
 				9671FDC32B5B1230004DA4C2 /* PythonKit in Frameworks */,
+				963966192B76B7A900EB435B /* opencv2.framework in Frameworks */,
 				9663605A2B6E0200001D2119 /* Lottie in Frameworks */,
 				969DF1CA2B1291D400FA9ABE /* FirebaseAuth in Frameworks */,
 				969DF1CE2B1291D400FA9ABE /* FirebaseFirestoreSwift in Frameworks */,
@@ -281,6 +288,9 @@
 		967EE0632AAE06FB000C4D5F /* OpticALLY */ = {
 			isa = PBXGroup;
 			children = (
+				9639661A2B76B82B00EB435B /* OpenCVWrapper.h */,
+				9639661B2B76B82B00EB435B /* OpenCVWrapper.mm */,
+				963966182B76B7A900EB435B /* opencv2.framework */,
 				96E856BE2B7041BE0037C3BB /* Model */,
 				9671FDC42B5B14F2004DA4C2 /* Python */,
 				969DF1C62B12916900FA9ABE /* GoogleService-Info.plist */,
@@ -308,6 +318,7 @@
 				967EE06A2AAE06FE000C4D5F /* Preview Content */,
 				9679F8B12AD0907800686F13 /* OpticALLY-Bridging-Header.h */,
 				963FF2822B6316F700B89019 /* OpticALLY.entitlements */,
+				9639661D2B76B87300EB435B /* PrefixHeader.pch */,
 			);
 			path = OpticALLY;
 			sourceTree = "<group>";
@@ -580,6 +591,7 @@
 				96B64F732B3D90490003E06D /* ScnMatrix.swift in Sources */,
 				96F0CF1C2B12A3D500417716 /* ExportView.swift in Sources */,
 				961D67E32B12BDFC00DBB883 /* SceneKitView.swift in Sources */,
+				9639661C2B76B82B00EB435B /* OpenCVWrapper.mm in Sources */,
 				9679F8DC2AD0907A00686F13 /* PassThrough.metal in Sources */,
 				96491C5F2AFD746300FD3666 /* ConsoleOutputCatcher.swift in Sources */,
 				9679F8DF2AD0907A00686F13 /* PointCloudMetalView.mm in Sources */,
@@ -688,10 +700,12 @@
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				FRAMEWORK_SEARCH_PATHS = "$(PROJECT_DIR)/**";
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREFIX_HEADER = "/Users/johnseong/Documents/GitHub/Project-Lightbulb/OpticALLY/PrefixHeader.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
@@ -752,8 +766,10 @@
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				FRAMEWORK_SEARCH_PATHS = "$(PROJECT_DIR)/**";
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PREFIX_HEADER = "/Users/johnseong/Documents/GitHub/Project-Lightbulb/OpticALLY/PrefixHeader.pch";
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -782,6 +798,10 @@
 				DEVELOPMENT_ASSET_PATHS = "\"OpticALLY/Preview Content\"";
 				DEVELOPMENT_TEAM = Z64KRUX3W3;
 				ENABLE_PREVIEWS = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/OpticALLY",
+				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = OpticALLY/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = OpticALLY;
@@ -831,6 +851,10 @@
 				DEVELOPMENT_ASSET_PATHS = "\"OpticALLY/Preview Content\"";
 				DEVELOPMENT_TEAM = Z64KRUX3W3;
 				ENABLE_PREVIEWS = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/OpticALLY",
+				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = OpticALLY/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = OpticALLY;
