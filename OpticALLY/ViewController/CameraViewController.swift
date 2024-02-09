@@ -403,6 +403,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             // Call the point cloud creation function
             ExternalData.convertToSceneKitModel(
                 depthData: depthData,
+                colorPixelBuffer: colorPixelBuffer!,
                 colorData: colorBaseAddress,
                 metadata: metadata,
                 width: commonWidth,

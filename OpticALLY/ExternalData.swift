@@ -260,6 +260,23 @@ struct ExternalData {
         return convertedDepthMap
     }
     
+    static func convertColorData(colorData: UnsafePointer<UInt8>, width: Int, height: Int, bytesPerRow: Int) -> [[UInt8]] {
+        var convertedColorData: [[UInt8]] = Array(
+            repeating: Array(repeating: 0, count: width * 4), // Assuming RGBA format
+            count: height
+        )
+        for y in 0..<height {
+            for x in 0..<width {
+                let offset = y * bytesPerRow + x * 4 // Assuming BGRA format
+                convertedColorData[y][x * 4] = colorData[offset] // B
+                convertedColorData[y][x * 4 + 1] = colorData[offset + 1] // G
+                convertedColorData[y][x * 4 + 2] = colorData[offset + 2] // R
+                convertedColorData[y][x * 4 + 3] = colorData[offset + 3] // A
+            }
+        }
+        return convertedColorData
+    }
+    
     static func convertLensDistortionLookupTable(lookupTable: Data) -> [Float] {
         let tableLength = lookupTable.count / MemoryLayout<Float>.size
         var floatArray: [Float] = Array(repeating: 0, count: tableLength)
@@ -386,7 +403,7 @@ struct ExternalData {
     }
     
     // Function to convert depth and color data into a point cloud geometry
-    static func convertToSceneKitModel(depthData: AVDepthData, colorData: UnsafePointer<UInt8>, metadata: PointCloudMetadata, width: Int, height: Int, bytesPerRow: Int, scaleX: Float, scaleY: Float, scaleZ: Float, percentile: Float = 35.0) {
+    static func convertToSceneKitModel(depthData: AVDepthData, colorPixelBuffer: CVPixelBuffer, colorData: UnsafePointer<UInt8>, metadata: PointCloudMetadata, width: Int, height: Int, bytesPerRow: Int, scaleX: Float, scaleY: Float, scaleZ: Float, percentile: Float = 35.0) {
         var vertices: [SCNVector3] = []
         var colors: [UIColor] = []
         var depthValues: [Float] = []
@@ -541,16 +558,35 @@ struct ExternalData {
         }
         // Save the depth data
         saveDataToFaceScansFolder(data: depthRawData, isDepthData: true)
+        
+        // Step 1: Lock the pixel buffer
+        CVPixelBufferLockBaseAddress(colorPixelBuffer, .readOnly)
+        defer {
+            // Step 6: Unlock the pixel buffer
+            CVPixelBufferUnlockBaseAddress(colorPixelBuffer, .readOnly)
+        }
+
+        // Step 2: Access the data
+        guard let baseAddress = CVPixelBufferGetBaseAddress(colorPixelBuffer) else { return }
+
+        // Step 3: Calculate the data size
+        let width = CVPixelBufferGetWidth(colorPixelBuffer)
+        let height = CVPixelBufferGetHeight(colorPixelBuffer)
+        let bytesPerRow = CVPixelBufferGetBytesPerRow(colorPixelBuffer)
+        let dataSize = height * bytesPerRow
+
+        // Step 4: Convert to UInt8 (if necessary)
+        let bufferPointer = baseAddress.assumingMemoryBound(to: UInt8.self)
+        let data = Data(bytes: bufferPointer, count: dataSize)
+        
+        saveDataToFaceScansFolder(data: data, isDepthData: false)
 
         // Prepare the color data
         var colorRawData = Data()
-        for y in 0..<height {
-            for x in 0..<width {
-                let offset = y * bytesPerRow + x * 4 // Assuming BGRA format
-                colorRawData.append(colorData[offset + 2]) // R
-                colorRawData.append(colorData[offset + 1]) // G
-                colorRawData.append(colorData[offset])     // B
-                colorRawData.append(colorData[offset + 3]) // A
+        for row in convertedDepthMap {
+            for value in row {
+                var val = value // Make a mutable copy
+                colorRawData.append(UnsafeBufferPointer(start: &val, count: 1))
             }
         }
         // Save the color data
