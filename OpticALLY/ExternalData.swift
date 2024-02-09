@@ -239,17 +239,17 @@ struct ExternalData {
         }
     }
     
-    static func convertDepthData(depthMap: CVPixelBuffer) -> [[Float16]] {
+    static func convertDepthData(depthMap: CVPixelBuffer) -> [[Float32]] {
         let width = CVPixelBufferGetWidth(depthMap)
         let height = CVPixelBufferGetHeight(depthMap)
-        var convertedDepthMap: [[Float16]] = Array(
+        var convertedDepthMap: [[Float32]] = Array(
             repeating: Array(repeating: 0, count: width),
             count: height
         )
         CVPixelBufferLockBaseAddress(depthMap, CVPixelBufferLockFlags(rawValue: 2))
         let floatBuffer = unsafeBitCast(
             CVPixelBufferGetBaseAddress(depthMap),
-            to: UnsafeMutablePointer<Float16>.self
+            to: UnsafeMutablePointer<Float32>.self
         )
         for row in 0 ..< height {
             for col in 0 ..< width {
@@ -550,6 +550,7 @@ struct ExternalData {
                 colorRawData.append(colorData[offset + 2]) // R
                 colorRawData.append(colorData[offset + 1]) // G
                 colorRawData.append(colorData[offset])     // B
+                colorRawData.append(colorData[offset + 3]) // A
             }
         }
         // Save the color data

@@ -513,6 +513,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     private func detectFaceLandmarks(in pixelBuffer: CVPixelBuffer, sceneView: SCNView, depthData: AVDepthData) {
         // Use the flipped pixel buffer for face landmark detection
         try? faceDetectionHandler.perform([faceDetectionRequest], on: pixelBuffer, orientation: .right)
+        
         guard let observations = faceDetectionRequest.results else {
             return
         }
@@ -559,11 +560,6 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                             break
                         }
                     }
-                }
-                
-                if ExternalData.isSavingFileAsPLY {
-                    // ExternalData.landmarkMultiNodes is a multi-dimensional array...
-                    ExternalData.landmarkMultiNodes.append(landmarkNodes)
                 }
             }
             
