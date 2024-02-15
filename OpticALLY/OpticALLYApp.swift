@@ -101,6 +101,13 @@ struct OpticALLYApp: App {
         }
     }
     
+    static func undistortDepthMap(depthMap: Mat, mapX: Mat, mapY: Mat) -> Mat {
+        let depthMapUndistorted = Mat()
+        Imgproc.remap(src: depthMap, dst: depthMapUndistorted, map1: mapX, map2: mapY, interpolation: Imgproc.INTER_LINEAR)
+        return depthMapUndistorted
+    }
+    
+    
     var body: some Scene {
         WindowGroup {
             ContentView()

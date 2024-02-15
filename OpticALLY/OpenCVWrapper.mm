@@ -55,6 +55,54 @@
     return [NSString stringWithFormat:@"OpenCV Version %s",  CV_VERSION];
 }
 
++ (UIImage *)undistortDepthMap:(UIImage *)depthMapImage mapX:(cv::Mat)mapX mapY:(cv::Mat)mapY {
+    cv::Mat depthMap;
+    UIImageToMat(depthMapImage, depthMap, true); // Assuming depth map is in grayscale
+
+    cv::Mat undistortedDepthMap;
+    cv::remap(depthMap, undistortedDepthMap, mapX, mapY, cv::INTER_LINEAR);
+
+    return MatToUIImage(undistortedDepthMap);
+}
+
++ (UIImage *)processImage:(UIImage *)image withMapX:(cv::Mat)mapX mapY:(cv::Mat)mapY {
+    cv::Mat src;
+    [image convertToMat:&src :false]; // Convert UIImage to cv::Mat without alpha
+
+    // Convert to grayscale
+    cv::Mat gray;
+    cv::cvtColor(src, gray, cv::COLOR_RGB2GRAY);
+
+    // Undistort the grayscale image
+    cv::Mat undistortedGray;
+    cv::remap(gray, undistortedGray, mapX, mapY, cv::INTER_LINEAR);
+
+    return MatToUIImage(undistortedGray);
+}
+
++ (UIImage *)undistortImage:(UIImage *)image withCameraMatrix:(NSArray<NSNumber *> *)cameraMatrix distortionCoefficients:(NSArray<NSNumber *> *)distCoeffs {
+    cv::Mat src;
+    UIImageToMat(image, src);
+
+    // Convert NSArray to cv::Mat
+    cv::Mat cameraMat(3, 3, CV_64F);
+    for (int i = 0; i < 3; ++i) {
+        for (int j = 0; j < 3; ++j) {
+            cameraMat.at<double>(i, j) = [cameraMatrix[i * 3 + j] doubleValue];
+        }
+    }
+
+    cv::Mat distCoeffsMat(distCoeffs.count, 1, CV_64F);
+    for (size_t i = 0; i < distCoeffs.count; ++i) {
+        distCoeffsMat.at<double>(i, 0) = [distCoeffs[i] doubleValue];
+    }
+
+    cv::Mat dst;
+    cv::undistort(src, dst, cameraMat, distCoeffsMat);
+
+    return MatToUIImage(dst);
+}
+
 + (UIImage *)grayscaleImg:(UIImage *)image {
     cv::Mat mat;
     [image convertToMat: &mat :false];

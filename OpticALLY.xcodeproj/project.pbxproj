@@ -74,6 +74,7 @@
 		96B64F712B3D90410003E06D /* FaceTextureGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96B64F6F2B3D90410003E06D /* FaceTextureGenerator.swift */; };
 		96B64F732B3D90490003E06D /* ScnMatrix.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96B64F722B3D90490003E06D /* ScnMatrix.swift */; };
 		96BC2ABE2AC5E9D60081550B /* DevicePpi in Frameworks */ = {isa = PBXBuildFile; productRef = 96BC2ABD2AC5E9D60081550B /* DevicePpi */; };
+		96BDE6362B7EB4EF00CCEABA /* ImageDepth.py in Resources */ = {isa = PBXBuildFile; fileRef = 96BDE6352B7EB4EF00CCEABA /* ImageDepth.py */; };
 		96E856BB2B6EFFE00037C3BB /* PreviousScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E856BA2B6EFFE00037C3BB /* PreviousScanView.swift */; };
 		96E856BD2B6F0CF90037C3BB /* cargo-loading.json in Resources */ = {isa = PBXBuildFile; fileRef = 96E856BC2B6F0CF90037C3BB /* cargo-loading.json */; };
 		96E856C02B7041D10037C3BB /* FileItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E856BF2B7041D10037C3BB /* FileItem.swift */; };
@@ -170,6 +171,7 @@
 		96B64F6E2B3D90410003E06D /* TextureToImage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TextureToImage.swift; sourceTree = "<group>"; };
 		96B64F6F2B3D90410003E06D /* FaceTextureGenerator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FaceTextureGenerator.swift; sourceTree = "<group>"; };
 		96B64F722B3D90490003E06D /* ScnMatrix.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScnMatrix.swift; sourceTree = "<group>"; };
+		96BDE6352B7EB4EF00CCEABA /* ImageDepth.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = ImageDepth.py; sourceTree = "<group>"; };
 		96E856BA2B6EFFE00037C3BB /* PreviousScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviousScanView.swift; sourceTree = "<group>"; };
 		96E856BC2B6F0CF90037C3BB /* cargo-loading.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "cargo-loading.json"; sourceTree = "<group>"; };
 		96E856BF2B7041D10037C3BB /* FileItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileItem.swift; sourceTree = "<group>"; };
@@ -225,6 +227,7 @@
 		9671FDC42B5B14F2004DA4C2 /* Python */ = {
 			isa = PBXGroup;
 			children = (
+				96BDE6352B7EB4EF00CCEABA /* ImageDepth.py */,
 				9671FDC52B5B14F2004DA4C2 /* ObjCBridge.py */,
 			);
 			path = Python;
@@ -552,6 +555,7 @@
 				966360602B6E03FF001D2119 /* face-found-successfully.json in Resources */,
 				9614F0AF2ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */,
 				966360642B6E03FF001D2119 /* face-scan.json in Resources */,
+				96BDE6362B7EB4EF00CCEABA /* ImageDepth.py in Resources */,
 				966360612B6E03FF001D2119 /* face-id.json in Resources */,
 				9646DC6C2B1064F500092549 /* glasses.mp4 in Resources */,
 				9663606B2B6E0BD7001D2119 /* left-arrow-2.json in Resources */,
