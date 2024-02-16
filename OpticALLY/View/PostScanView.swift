@@ -121,6 +121,7 @@ struct PostScanView: View {
                     do {
                         try data.write(to: fileURL)
                         print("PLY file saved to: \(fileURL.path)")
+                        self.fileURLToShare = fileURL
                         completion(true, fileURL)  // Pass the file URL to the completion handler
                     } catch {
                         print("Failed to save PLY file: \(error.localizedDescription)")
@@ -326,7 +327,7 @@ struct PostScanView: View {
                         HStack(spacing: 10) {
                             Image(systemName: "square.stack.3d.forward.dottedline.fill")
                             
-                            Text("Convert to Mesh")
+                            Text("Reconstruct & Export")
                                 .bold()
                                 .font(.title3)
                         }
@@ -347,16 +348,33 @@ struct PostScanView: View {
                 }
                 
                 if isLoading {
-                    VStack {
-                        ProgressView("Uploading...", value: uploadProgress, total: 1.0)
-                            .progressViewStyle(LinearProgressViewStyle())
-                        Text("Please wait...")
+                    VStack(spacing: 10) { // Adjust spacing as needed
+                        LottieView(animationFileName: "cargo-loading", loopMode: .loop)
+                            .frame(width: 60, height: 60)
+                            .scaleEffect(0.1)
+                            .padding()
+                            .colorInvert()
+                        
+                        Text("PROCESSING POINT CLOUD")
+                            .bold()
+                            .monospaced()
+                            .foregroundColor(.white)
+                        
+                        if exportViewModel.estimatedExportTime != nil {
+                            Text("Estimated:\n\(exportViewModel.estimatedExportTime!) sec.")
+                                .monospaced()
+                                .foregroundColor(.white)
+                            
+                        } else {
+                            Text("Estimated:\nN/A")
+                                .monospaced()
+                                .foregroundColor(.white)
+                        }
                     }
-                    .frame(width: 200, height: 100)
-                    .background(Color.white)
-                    .foregroundColor(.black)
-                    .cornerRadius(10)
-                    .shadow(radius: 10)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 30) // Adjust horizontal padding for wider background
+                    .padding(.vertical, 15) // Adjust vertical padding for background height
+                    .zIndex(1) // Ensure the spinner and text are above other content
                 }
                 
                 // Display a loading spinner when isLoading is true
@@ -406,31 +424,21 @@ struct PostScanView: View {
                 )
             }
             .sheet(isPresented: $showShareSheet, onDismiss: {
-                // Handle actions after the share sheet is dismissed, if necessary
+                showShareSheet = false
             }) {
+                // This will present the share sheet
+                
                 if let fileURL = fileURLToShare {
-                    ActivityView(activityItems: [fileURL], applicationActivities: nil)
+                    ShareSheet(fileURL: fileURL)
+                        .onAppear() {
+                            print("Shared: \(fileURL)")
+                        }
                 }
             }
 
         }
     }
 }
-
-struct ActivityView: UIViewControllerRepresentable {
-    var activityItems: [Any]
-    var applicationActivities: [UIActivity]?
-    
-    func makeUIViewController(context: UIViewControllerRepresentableContext<ActivityView>) -> UIActivityViewController {
-        let controller = UIActivityViewController(activityItems: activityItems, applicationActivities: applicationActivities)
-        return controller
-    }
-    
-    func updateUIViewController(_ uiViewController: UIActivityViewController, context: UIViewControllerRepresentableContext<ActivityView>) {
-        // Update the controller if needed
-    }
-}
-
 
 struct CheckmarkView: View {
     @Binding var isVisible: Bool
