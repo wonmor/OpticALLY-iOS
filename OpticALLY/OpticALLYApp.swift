@@ -59,7 +59,7 @@ class GlobalState: ObservableObject {
 var sys: PythonObject?
 var o3d: PythonObject?
 var np: PythonObject?
-var imageDpeth: PythonObject?
+var imageDepth: PythonObject?
 
 var standardOutReader: StandardOutReader?
 
@@ -88,7 +88,7 @@ struct OpticALLYApp: App {
             
             imageDepth = Python.import("ImageDepth")
             
-            print("Importing Python Code... \(imageDepth.test_output())")
+            print("Importing Python Code... \(imageDepth!.test_output())")
             print("Python \(sys!.version_info.major).\(sys!.version_info.minor)")
             print("Python Version: \(sys!.version)")
             print("Python Encoding: \(sys!.getdefaultencoding().upper())")

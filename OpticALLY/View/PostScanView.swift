@@ -9,6 +9,7 @@ import SwiftUI
 import SceneKit
 import ModelIO
 import SceneKit.ModelIO
+import PythonKit
 
 let debugMode = false
 
@@ -168,6 +169,22 @@ struct PostScanView: View {
                 
                 if !ExternalData.isMeshView {
                     Button(action: {
+                        // Construct the paths for the calibration, image, and depth files
+                        let dateFormatter = DateFormatter()
+                        dateFormatter.dateFormat = "yyyy_MM_dd"
+                        let dateString = dateFormatter.string(from: Date())
+                        
+                        let baseFolder = ExternalData.getFaceScansFolder().path // Assuming ExternalData.getFaceScansFolder() gives the base directory for the files
+                        
+                        let calibrationFilePath = "\(baseFolder)/calibration.json" // Assuming calibration file is named 'calibration.json'
+                        let imageFilePath = "\(baseFolder)/video01.bin" // Assuming the first image file is named 'video01.bin'
+                        let depthFilePath = "\(baseFolder)/depth01.bin" // Assuming the first depth file is named 'depth01.bin'
+                        
+                        
+                
+                        // let imageDepthInstance = imageDepth!.ImageDepth(calibrationFilePath, imageFilePath, depthFilePath)
+                        
+                        // Existing methods...
                         exportViewModel.exportOBJ()
                         ExternalData.isMeshView = true
                     }) {

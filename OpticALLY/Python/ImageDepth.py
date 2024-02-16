@@ -10,7 +10,7 @@ def test_output():
 
 class ImageDepth:
     def __init__(self,
-        calibration_file,
+        json_string,
         image_file,
         depth_file,
         width=640,
@@ -20,7 +20,7 @@ class ImageDepth:
         normal_radius=0.1) :
 
         self.image_file = image_file
-        self.calibration_file = calibration_file
+        self.json_string = json_string
         self.depth_file = depth_file
         self.width = width
         self.height = height
@@ -29,7 +29,7 @@ class ImageDepth:
         self.normal_radius = normal_radius
         self.pose = np.eye(4, 4)
 
-        self.load_calibration(calibration_file)
+        self.load_calibration(json_string)
         self.create_undistortion_lookup()
         
         self.load_image(image_file)
@@ -46,29 +46,28 @@ class ImageDepth:
 
         # self.estimate_normals(idx, file, xy)
 
-    def load_calibration(self, file):
-        with open(file) as f:
-            data = json.load(f)
+    def load_calibration(self, json_string):
+        data = json.loads(json_string)
 
-            lensDistortionLookupBase64 = data["lensDistortionLookup"]
-            inverseLensDistortionLookupBase64 = data["inverseLensDistortionLookup"]
-            lensDistortionLookupByte = base64.decodebytes(lensDistortionLookupBase64.encode("ascii"))
-            inverseLensDistortionLookupByte = base64.decodebytes(inverseLensDistortionLookupBase64.encode("ascii"))
+        lensDistortionLookupBase64 = data["lensDistortionLookup"]
+        inverseLensDistortionLookupBase64 = data["inverseLensDistortionLookup"]
+        lensDistortionLookupByte = base64.decodebytes(lensDistortionLookupBase64.encode("ascii"))
+        inverseLensDistortionLookupByte = base64.decodebytes(inverseLensDistortionLookupBase64.encode("ascii"))
 
-            lensDistortionLookup = struct.unpack(f"<{len(lensDistortionLookupByte)//4}f",lensDistortionLookupByte)
-            inverseLensDistortionLookup = struct.unpack(f"<{len(inverseLensDistortionLookupByte)//4}f",inverseLensDistortionLookupByte)
+        lensDistortionLookup = struct.unpack(f"<{len(lensDistortionLookupByte)//4}f", lensDistortionLookupByte)
+        inverseLensDistortionLookup = struct.unpack(f"<{len(inverseLensDistortionLookupByte)//4}f", inverseLensDistortionLookupByte)
 
-            self.lensDistortionLookup = lensDistortionLookup
-            self.inverseLensDistortionLookup = inverseLensDistortionLookup
+        self.lensDistortionLookup = lensDistortionLookup
+        self.inverseLensDistortionLookup = inverseLensDistortionLookup
 
-            self.intrinsic = np.array(data["intrinsic"]).reshape((3,3))
-            self.intrinsic = self.intrinsic.transpose()
+        self.intrinsic = np.array(data["intrinsic"]).reshape((3,3))
+        self.intrinsic = self.intrinsic.transpose()
 
-            self.scale = float(self.width) / data["intrinsicReferenceDimensionWidth"]
-            self.intrinsic[0,0] *= self.scale
-            self.intrinsic[1,1] *= self.scale
-            self.intrinsic[0,2] *= self.scale
-            self.intrinsic[1,2] *= self.scale
+        self.scale = float(self.width) / data["intrinsicReferenceDimensionWidth"]
+        self.intrinsic[0,0] *= self.scale
+        self.intrinsic[1,1] *= self.scale
+        self.intrinsic[0,2] *= self.scale
+        self.intrinsic[1,2] *= self.scale
 
     def create_undistortion_lookup(self):
         xy_pos = [(x,y) for y in range(0, self.height) for x in range(0, self.width)]
