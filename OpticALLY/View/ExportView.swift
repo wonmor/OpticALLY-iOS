@@ -355,20 +355,20 @@ struct ExportView: View {
                                 if let lastLog = logManager.latestLog {
                                     if lastLog.lowercased().contains("done") {
                                         VStack {
-                                            Button(action: {
-                                                // Toggle the dropdown
-                                                showDropdown.toggle()
-                                            }) {
-                                                HStack {
-                                                    Image(systemName: "square.and.arrow.down")
-                                                    Text("Export")
-                                                        .font(.body)
-                                                        .bold()
-                                                }
-                                                .foregroundColor(.black)
-                                                .padding()
-                                                .background(Capsule().fill(Color.white))
-                                            }
+//                                            Button(action: {
+//                                                // Toggle the dropdown
+//                                                showDropdown.toggle()
+//                                            }) {
+//                                                HStack {
+//                                                    Image(systemName: "square.and.arrow.down")
+//                                                    Text("Export")
+//                                                        .font(.body)
+//                                                        .bold()
+//                                                }
+//                                                .foregroundColor(.black)
+//                                                .padding()
+//                                                .background(Capsule().fill(Color.white))
+//                                            }
                                             
                                             // Dropdown list view
                                             if showDropdown {

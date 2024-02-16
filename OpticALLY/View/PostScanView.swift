@@ -36,6 +36,9 @@ struct PostScanView: View {
     
     @State private var scnNode: SCNNode?
     
+    @State private var fileURLToShare: URL? = nil
+    @State private var showShareSheet: Bool = false
+    
     let fileManager = FileManager.default
     
     func reset() {
@@ -299,34 +302,20 @@ struct PostScanView: View {
 
                         
                         uploadFiles(calibrationFileURL: URL(fileURLWithPath: calibrationFilePath), imageFilesZipURL: URL(fileURLWithPath: videoZipPath), depthFilesZipURL: URL(fileURLWithPath: depthZipPath)) { success, fileURL in
-                               if success, let fileURL = fileURL {
-                                   // Use the file URL, e.g., update the state, UI, etc.
-                                   print("PLY file processed successfully. File URL: \(fileURL.path)")
-                                   
-                                   // Convert PLY to SceneKit model
-                                   DispatchQueue.global(qos: .userInitiated).async {
-                                       if let node = createSceneKitModel(fromPLYFile: fileURL.path) {
-                                           DispatchQueue.main.async {
-                                               self.scnNode = node  // Assign the converted SceneKit node
-                                               self.triggerUpdate = true  // Trigger UI update
-                                               // Update the state with the new PLY file URL
-                                               self.exportViewModel.fileURL = fileURL
-                                               // Indicate that the file is ready to be viewed or shared
-                                               self.exportViewModel.showShareSheet = true
-                                               // Mark the export process as completed
-                                               self.exportViewModel.isLoading = false
-                                               
-                                               ExternalData.isMeshView = true
-                                           }
+                            if success, let fileURL = fileURL {
+                                DispatchQueue.main.async {
+                                    self.fileURLToShare = fileURL  // Store the file URL for sharing
+                                    self.showShareSheet = true  // Trigger the share sheet to open
+
                                        }
-                                   }
-                               } else {
-                                   // Handle errors
-                                   DispatchQueue.main.async {
-                                       self.showAlert = true
-                                   }
-                               }
-                           }
+                            
+                                } else {
+                                    // Handle errors
+                                    DispatchQueue.main.async {
+                                        self.showAlert = true
+                                    }
+                                }
+                            }
                 
                         // let imageDepthInstance = imageDepth!.ImageDepth(calibrationFilePath, imageFilePath, depthFilePath)
                         
@@ -416,9 +405,32 @@ struct PostScanView: View {
                     dismissButton: .default(Text("OK"))
                 )
             }
+            .sheet(isPresented: $showShareSheet, onDismiss: {
+                // Handle actions after the share sheet is dismissed, if necessary
+            }) {
+                if let fileURL = fileURLToShare {
+                    ActivityView(activityItems: [fileURL], applicationActivities: nil)
+                }
+            }
+
         }
     }
 }
+
+struct ActivityView: UIViewControllerRepresentable {
+    var activityItems: [Any]
+    var applicationActivities: [UIActivity]?
+    
+    func makeUIViewController(context: UIViewControllerRepresentableContext<ActivityView>) -> UIActivityViewController {
+        let controller = UIActivityViewController(activityItems: activityItems, applicationActivities: applicationActivities)
+        return controller
+    }
+    
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: UIViewControllerRepresentableContext<ActivityView>) {
+        // Update the controller if needed
+    }
+}
+
 
 struct CheckmarkView: View {
     @Binding var isVisible: Bool
