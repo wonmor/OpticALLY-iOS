@@ -10,6 +10,7 @@ import SceneKit
 import ModelIO
 import SceneKit.ModelIO
 import PythonKit
+import ZipArchive
 
 let debugMode = false
 
@@ -34,6 +35,8 @@ struct PostScanView: View {
     @State private var isLoading: Bool = false
     
     @State private var scnNode: SCNNode?
+    
+    let fileManager = FileManager.default
     
     func reset() {
         position = SCNVector3(0, 0, 0)
@@ -257,20 +260,20 @@ struct PostScanView: View {
                     .font(.title3)
                     .multilineTextAlignment(.center)
                 
-                ZStack {
-                   RoundedRectangle(cornerRadius: 10) // Rounded rectangle shape
-                       .stroke(lineWidth: 2) // White border with a specified width
-                       .foregroundColor(.white) // Sets the color of the border
-                       .background(RoundedRectangle(cornerRadius: 10).fill(Color.white)) // Background color of the rectangle
-                       .shadow(radius: 5) // Optional: Adds a shadow for a 3D effect
-
-                   VStack(alignment: .center, spacing: 10) { // Vertical stack for your text
-                       Text("NOT APPLIED YET")
-                           .bold() // Makes the text bold
-                           .foregroundColor(.black) // Optional: Sets the color of the "NOT APPLIED YET" text
-                   }
-                   .padding() // Adds padding around the text inside the box
-               }
+//                ZStack {
+//                   RoundedRectangle(cornerRadius: 10) // Rounded rectangle shape
+//                       .stroke(lineWidth: 2) // White border with a specified width
+//                       .foregroundColor(.white) // Sets the color of the border
+//                       .background(RoundedRectangle(cornerRadius: 10).fill(Color.white)) // Background color of the rectangle
+//                       .shadow(radius: 5) // Optional: Adds a shadow for a 3D effect
+//
+//                   VStack(alignment: .center, spacing: 10) { // Vertical stack for your text
+//                       Text("NOT APPLIED YET")
+//                           .bold() // Makes the text bold
+//                           .foregroundColor(.black) // Optional: Sets the color of the "NOT APPLIED YET" text
+//                   }
+//                   .padding() // Adds padding around the text inside the box
+//               }
                 
                 Spacer()
                 
@@ -284,10 +287,18 @@ struct PostScanView: View {
                         let baseFolder = ExternalData.getFaceScansFolder().path // Assuming ExternalData.getFaceScansFolder() gives the base directory for the files
                         
                         let calibrationFilePath = "\(baseFolder)/calibration.json" // Assuming calibration file is named 'calibration.json'
-                        let imageFilePath = "\(baseFolder)/video01.bin" // Assuming the first image file is named 'video01.bin'
-                        let depthFilePath = "\(baseFolder)/depth01.bin" // Assuming the first depth file is named 'depth01.bin'
+
+                        let videoZipPath = "\(baseFolder)/videos.zip"
+                        let depthZipPath = "\(baseFolder)/depths.zip"
+
+                        let videoFiles = fileManager.getFilePathsWithPrefix(baseFolder: baseFolder, prefix: "video")
+                        let depthFiles = fileManager.getFilePathsWithPrefix(baseFolder: baseFolder, prefix: "depth")
+
+                        SSZipArchive.createZipFile(atPath: videoZipPath, withFilesAtPaths: videoFiles)
+                        SSZipArchive.createZipFile(atPath: depthZipPath, withFilesAtPaths: depthFiles)
+
                         
-                        uploadFiles(calibrationFileURL: URL(fileURLWithPath: calibrationFilePath), imageFilesZipURL: URL(fileURLWithPath: imageFilePath), depthFilesZipURL: URL(fileURLWithPath: depthFilePath)) { success, fileURL in
+                        uploadFiles(calibrationFileURL: URL(fileURLWithPath: calibrationFilePath), imageFilesZipURL: URL(fileURLWithPath: videoZipPath), depthFilesZipURL: URL(fileURLWithPath: depthZipPath)) { success, fileURL in
                                if success, let fileURL = fileURL {
                                    // Use the file URL, e.g., update the state, UI, etc.
                                    print("PLY file processed successfully. File URL: \(fileURL.path)")
