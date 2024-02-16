@@ -33,6 +33,7 @@
 		9671FDC32B5B1230004DA4C2 /* PythonKit in Frameworks */ = {isa = PBXBuildFile; productRef = 9671FDC22B5B1230004DA4C2 /* PythonKit */; };
 		9671FED72B5B3B8A004DA4C2 /* rubicon-objc-0.4.0 in Resources */ = {isa = PBXBuildFile; fileRef = 9671FED62B5B3B8A004DA4C2 /* rubicon-objc-0.4.0 */; };
 		9671FED82B5B3BCA004DA4C2 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 969DF1C62B12916900FA9ABE /* GoogleService-Info.plist */; };
+		96795D6E2B7FE786003A5192 /* ParsePLY.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96795D6D2B7FE786003A5192 /* ParsePLY.swift */; };
 		9679F8CE2AD0907A00686F13 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8B32AD0907900686F13 /* AppDelegate.swift */; };
 		9679F8CF2AD0907A00686F13 /* VideoMixer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8B52AD0907900686F13 /* VideoMixer.swift */; };
 		9679F8D12AD0907A00686F13 /* AAPLTransforms.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8B82AD0907900686F13 /* AAPLTransforms.mm */; };
@@ -130,6 +131,7 @@
 		9663606A2B6E0BD7001D2119 /* right-arrow-2.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "right-arrow-2.json"; sourceTree = "<group>"; };
 		9671FDC52B5B14F2004DA4C2 /* ObjCBridge.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = ObjCBridge.py; sourceTree = "<group>"; };
 		9671FED62B5B3B8A004DA4C2 /* rubicon-objc-0.4.0 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "rubicon-objc-0.4.0"; sourceTree = "<group>"; };
+		96795D6D2B7FE786003A5192 /* ParsePLY.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParsePLY.swift; sourceTree = "<group>"; };
 		9679F8B12AD0907800686F13 /* OpticALLY-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "OpticALLY-Bridging-Header.h"; sourceTree = "<group>"; };
 		9679F8B32AD0907900686F13 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		9679F8B42AD0907900686F13 /* HistogramCalculator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HistogramCalculator.h; sourceTree = "<group>"; };
@@ -313,6 +315,7 @@
 				9680F7DA2B2283B200F38A6F /* CapturedImageSampler.swift */,
 				96F0CF212B12A51700417716 /* LogManager.swift */,
 				96B64F6F2B3D90410003E06D /* FaceTextureGenerator.swift */,
+				96795D6D2B7FE786003A5192 /* ParsePLY.swift */,
 				96B64F6E2B3D90410003E06D /* TextureToImage.swift */,
 				96FC61582B146D3A00ACC840 /* HapticManager.swift */,
 				9679F8BA2AD0907900686F13 /* Info.plist */,
@@ -623,6 +626,7 @@
 				9679F8CF2AD0907A00686F13 /* VideoMixer.swift in Sources */,
 				9679F8D22AD0907A00686F13 /* Mixer.metal in Sources */,
 				967EE0652AAE06FB000C4D5F /* OpticALLYApp.swift in Sources */,
+				96795D6E2B7FE786003A5192 /* ParsePLY.swift in Sources */,
 				96E856BB2B6EFFE00037C3BB /* PreviousScanView.swift in Sources */,
 				9679F8D92AD0907A00686F13 /* PointCloud.metal in Sources */,
 				9679F8CE2AD0907A00686F13 /* AppDelegate.swift in Sources */,

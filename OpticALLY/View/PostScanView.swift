@@ -30,11 +30,113 @@ struct PostScanView: View {
     @State private var rotation = SCNVector3(0, 0, 0)
     @State private var nodeCount = ExternalData.pointCloudGeometries.suffix(3).count
     
+    @State private var uploadProgress: Double = 0.0
+    @State private var isLoading: Bool = false
+    
+    @State private var scnNode: SCNNode?
+    
     func reset() {
         position = SCNVector3(0, 0, 0)
         rotation = SCNVector3(0, 0, 0)
         
         selectedNodeIndex = nil
+    }
+    
+    func convertFileData(fieldName: String,
+                         fileName: String,
+                         mimeType: String,
+                         fileURL: URL,
+                         using boundary: String) -> Data {
+        var data = Data()
+
+        data.append("--\(boundary)\r\n".data(using: .utf8)!)
+        data.append("Content-Disposition: form-data; name=\"\(fieldName)\"; filename=\"\(fileName)\"\r\n".data(using: .utf8)!)
+        data.append("Content-Type: \(mimeType)\r\n\r\n".data(using: .utf8)!)
+
+        if let fileData = try? Data(contentsOf: fileURL) {
+            data.append(fileData)
+        } else {
+            print("Could not read file data")
+        }
+
+        data.append("\r\n".data(using: .utf8)!)
+
+        return data
+    }
+    
+    func uploadFiles(calibrationFileURL: URL, imageFilesZipURL: URL, depthFilesZipURL: URL, completion: @escaping (Bool, URL?) -> Void) {
+        let endpoint = "https://harolden-server.apps.johnseong.com/process3d/"
+        guard let url = URL(string: endpoint) else {
+            print("Invalid URL")
+            completion(false, URL(string: ""))
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+
+        let boundary = "Boundary-\(UUID().uuidString)"
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+
+        var data = Data()
+
+        // Append Calibration File
+        data.append(convertFileData(fieldName: "calibration_file",
+                                    fileName: calibrationFileURL.lastPathComponent,
+                                    mimeType: "application/json",
+                                    fileURL: calibrationFileURL,
+                                    using: boundary))
+
+        // Append Image Files Zip
+        data.append(convertFileData(fieldName: "image_files_zip",
+                                    fileName: imageFilesZipURL.lastPathComponent,
+                                    mimeType: "application/zip",
+                                    fileURL: imageFilesZipURL,
+                                    using: boundary))
+
+        // Append Depth Files Zip
+        data.append(convertFileData(fieldName: "depth_files_zip",
+                                    fileName: depthFilesZipURL.lastPathComponent,
+                                    mimeType: "application/zip",
+                                    fileURL: depthFilesZipURL,
+                                    using: boundary))
+
+        data.append("--\(boundary)--".data(using: .utf8)!)
+
+        request.httpBody = data
+
+        // Create URLSessionUploadTask
+        let task = URLSession.shared.uploadTask(with: request, from: data) { data, response, error in
+            DispatchQueue.main.async {
+                self.isLoading = false  // Stop loading indicator
+                if let data = data, error == nil {
+                    // Save the PLY file
+                    let fileURL = FileManager.default.temporaryDirectory.appendingPathComponent("output_from_server.ply")
+                    do {
+                        try data.write(to: fileURL)
+                        print("PLY file saved to: \(fileURL.path)")
+                        completion(true, fileURL)  // Pass the file URL to the completion handler
+                    } catch {
+                        print("Failed to save PLY file: \(error.localizedDescription)")
+                        completion(false, nil)
+                    }
+                } else {
+                    print("Network error: \(error?.localizedDescription ?? "Unknown error")")
+                    completion(false, nil)
+                }
+            }
+        }
+
+        // Handle upload progress
+        task.observe(\.countOfBytesSent) { task, _ in
+            DispatchQueue.main.async {
+                let progress = Double(task.countOfBytesSent) / Double(task.countOfBytesExpectedToSend)
+                self.uploadProgress = progress
+            }
+        }
+
+        self.isLoading = true  // Start loading indicator
+        task.resume()
     }
     
     var body: some View {
@@ -77,10 +179,15 @@ struct PostScanView: View {
                 
                 if triggerUpdate {
                     if exportViewModel.fileURL != nil {
-                        SceneKitMDLView(mdlAsset: MDLAsset(url: exportViewModel.fileURL!))
-                            .onAppear(perform: {
-                                print("File URL: \(exportViewModel.fileURL!)")
-                            })
+//                        SceneKitMDLView(mdlAsset: MDLAsset(url: exportViewModel.fileURL!))
+//                            .onAppear(perform: {
+//                                print("File URL: \(exportViewModel.fileURL!)")
+//                            })
+                        
+                        if let node = scnNode {
+                            SceneKitSingleView(node: node)
+                                .frame(width: 300, height: 300)  // Adjust the size as needed
+                        }
                     } else {
                         EmptyView()
                             .onAppear() {
@@ -180,13 +287,41 @@ struct PostScanView: View {
                         let imageFilePath = "\(baseFolder)/video01.bin" // Assuming the first image file is named 'video01.bin'
                         let depthFilePath = "\(baseFolder)/depth01.bin" // Assuming the first depth file is named 'depth01.bin'
                         
-                        
+                        uploadFiles(calibrationFileURL: URL(fileURLWithPath: calibrationFilePath), imageFilesZipURL: URL(fileURLWithPath: imageFilePath), depthFilesZipURL: URL(fileURLWithPath: depthFilePath)) { success, fileURL in
+                               if success, let fileURL = fileURL {
+                                   // Use the file URL, e.g., update the state, UI, etc.
+                                   print("PLY file processed successfully. File URL: \(fileURL.path)")
+                                   
+                                   // Convert PLY to SceneKit model
+                                   DispatchQueue.global(qos: .userInitiated).async {
+                                       if let node = createSceneKitModel(fromPLYFile: fileURL.path) {
+                                           DispatchQueue.main.async {
+                                               self.scnNode = node  // Assign the converted SceneKit node
+                                               self.triggerUpdate = true  // Trigger UI update
+                                               // Update the state with the new PLY file URL
+                                               self.exportViewModel.fileURL = fileURL
+                                               // Indicate that the file is ready to be viewed or shared
+                                               self.exportViewModel.showShareSheet = true
+                                               // Mark the export process as completed
+                                               self.exportViewModel.isLoading = false
+                                               
+                                               ExternalData.isMeshView = true
+                                           }
+                                       }
+                                   }
+                               } else {
+                                   // Handle errors
+                                   DispatchQueue.main.async {
+                                       self.showAlert = true
+                                   }
+                               }
+                           }
                 
                         // let imageDepthInstance = imageDepth!.ImageDepth(calibrationFilePath, imageFilePath, depthFilePath)
                         
                         // Existing methods...
-                        exportViewModel.exportOBJ()
-                        ExternalData.isMeshView = true
+                        // exportViewModel.exportOBJ()
+                        // ExternalData.isMeshView = true
                     }) {
                         HStack(spacing: 10) {
                             Image(systemName: "square.stack.3d.forward.dottedline.fill")
@@ -209,6 +344,19 @@ struct PostScanView: View {
                         .monospaced()
                         .padding()
                         .multilineTextAlignment(.center)
+                }
+                
+                if isLoading {
+                    VStack {
+                        ProgressView("Uploading...", value: uploadProgress, total: 1.0)
+                            .progressViewStyle(LinearProgressViewStyle())
+                        Text("Please wait...")
+                    }
+                    .frame(width: 200, height: 100)
+                    .background(Color.white)
+                    .foregroundColor(.black)
+                    .cornerRadius(10)
+                    .shadow(radius: 10)
                 }
                 
                 // Display a loading spinner when isLoading is true

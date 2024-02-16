@@ -95,6 +95,23 @@ struct SceneKitView: UIViewRepresentable {
     }
 }
 
+struct SceneKitSingleView: UIViewRepresentable {
+    var node: SCNNode
+
+    func makeUIView(context: Context) -> SCNView {
+        let scnView = SCNView()
+        scnView.scene = SCNScene()
+        scnView.scene?.rootNode.addChildNode(node)
+        scnView.allowsCameraControl = true  // Optional: Allow user to control the camera
+        scnView.autoenablesDefaultLighting = true  // Optional: Add default lighting
+        return scnView
+    }
+
+    func updateUIView(_ scnView: SCNView, context: Context) {
+        // Update the view if needed
+    }
+}
+
 struct SceneKitUSDZView: UIViewRepresentable {
     var usdzFileName: String
     

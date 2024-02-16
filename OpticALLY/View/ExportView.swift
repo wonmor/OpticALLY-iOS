@@ -341,6 +341,10 @@ struct ExportView: View {
                     if !isRingAnimationStarted {
                         Button(action: {
                             if !isButtonDisabled {
+                                // Temporary addition to prevent previous scans from showinwg up...
+                                OpticALLYApp.clearDocumentsFolder()
+                                // REMOVE ABOVE LINE IN PRODUCTION!
+                                
                                 HapticManager.playHapticFeedback(type: .success)
                                 headTurnMessage = "TURN YOUR HEAD\nLEFT/RIGHT"
                                 isRingAnimationStarted = true  // Start the ring animation

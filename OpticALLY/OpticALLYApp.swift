@@ -113,6 +113,21 @@ struct OpticALLYApp: App {
         }
     }
     
+    static func clearDocumentsFolder() {
+        let fileManager = FileManager.default
+        guard let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else { return }
+
+        do {
+            let fileURLs = try fileManager.contentsOfDirectory(at: documentsURL, includingPropertiesForKeys: nil, options: [])
+            for fileURL in fileURLs {
+                try fileManager.removeItem(at: fileURL)
+            }
+            print("Cleared documents folder successfully.")
+        } catch {
+            print("Error clearing documents folder: \(error)")
+        }
+    }
+    
     static func centroid(of matrix: [[Double]]) -> [Double] {
         guard !matrix.isEmpty else { return [] }
         let length = Double(matrix.first!.count)
