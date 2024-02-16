@@ -59,6 +59,7 @@ class GlobalState: ObservableObject {
 var sys: PythonObject?
 var o3d: PythonObject?
 var np: PythonObject?
+var imageDpeth: PythonObject?
 
 var standardOutReader: StandardOutReader?
 
@@ -85,6 +86,9 @@ struct OpticALLYApp: App {
             
             sys!.path.insert(1, Bundle.main.bundlePath)
             
+            imageDepth = Python.import("ImageDepth")
+            
+            print("Importing Python Code... \(imageDepth.test_output())")
             print("Python \(sys!.version_info.major).\(sys!.version_info.minor)")
             print("Python Version: \(sys!.version)")
             print("Python Encoding: \(sys!.getdefaultencoding().upper())")
@@ -100,13 +104,6 @@ struct OpticALLYApp: App {
             }
         }
     }
-    
-    static func undistortDepthMap(depthMap: Mat, mapX: Mat, mapY: Mat) -> Mat {
-        let depthMapUndistorted = Mat()
-        Imgproc.remap(src: depthMap, dst: depthMapUndistorted, map1: mapX, map2: mapY, interpolation: Imgproc.INTER_LINEAR)
-        return depthMapUndistorted
-    }
-    
     
     var body: some Scene {
         WindowGroup {

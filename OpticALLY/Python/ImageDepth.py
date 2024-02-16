@@ -1,9 +1,12 @@
 import open3d as o3d
 import numpy as np
-import cv2 as cv
+
 import json
 import struct
 import base64
+
+def test_output():
+    return "Hello from ImageDepth"
 
 class ImageDepth:
     def __init__(self,
@@ -34,14 +37,14 @@ class ImageDepth:
         # Should be the entry point from Swift side...
         
         # Below line requires OpenCV...
-        self.process_image()
+        # self.process_image()
         
-        self.load_depth(depth_file)
+        # self.load_depth(depth_file)
         
         # Below line requires OpenCV...
-        self.undistort_depth_map()
+        # self.undistort_depth_map()
 
-        self.estimate_normals(idx, file, xy)
+        # self.estimate_normals(idx, file, xy)
 
     def load_calibration(self, file):
         with open(file) as f:
@@ -139,9 +142,6 @@ class ImageDepth:
         self.pcd.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=self.normal_radius, max_nn=30))
         self.pcd.orient_normals_towards_camera_location()
 
-    def undistort_depth_map(self):
-        self.depth_map_undistort = cv.remap(self.depth_map, self.map_x, self.map_y, cv.INTER_LINEAR)
-
     def load_image(self, file):
         print(f"Loading {file}")
         self.img = np.fromfile(file, dtype='uint8')
@@ -150,14 +150,6 @@ class ImageDepth:
 
         # swap RB
         self.img = self.img[:,:,[2,1,0]]
-
-    def process_image(self):
-        cv.cvtColor(self.img, cv.COLOR_RGB2GRAY)
-
-        self.gray = cv.cvtColor(self.img, cv.COLOR_RGB2GRAY)
-
-        self.img_undistort = cv.remap(self.img, self.map_x, self.map_y, cv.INTER_LINEAR)
-        self.gray_undistort = cv.remap(self.gray, self.map_x, self.map_y, cv.INTER_LINEAR)
 
     def project3d(self, pts):
         # expect pts to be Nx2

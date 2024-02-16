@@ -66,7 +66,6 @@ struct ExportView: View {
     @State private var stateChangeCount = 0
     @State private var previousYaw: Double = 0
     @State private var isButtonDisabled: Bool = false
-    @State private var scanningTimer: Timer? = nil
     
     // Target states for scanning
     @State private var targetYaw: Double = 0
@@ -129,6 +128,62 @@ struct ExportView: View {
                 .padding()
                 .onAppear {
                     previousYaw = faceTrackingViewModel.faceYawAngle
+                }
+                .onChange(of: faceTrackingViewModel.faceYawAngle) { yaw in
+                    if startButtonPressed {
+                        let pitch = faceTrackingViewModel.facePitchAngle
+                        let roll = faceTrackingViewModel.faceRollAngle
+                        
+                        // Rotate the USDZ model
+                        if yaw <= -30 {
+                            // Rotate model to face right and trigger haptic feedback
+                            captureFrame()
+                            
+                            HapticManager.playHapticFeedback(type: .success)
+                            exportViewModel.hasTurnedRight = true
+                            
+                            showArrow = true
+                            headTurnMessage = "TURN YOUR HEAD LEFT"
+                            headTurnState = .left
+                            
+                        } else if yaw >= 30 {
+                            // Rotate model to face left and trigger haptic feedback
+                            captureFrame()
+                            
+                            HapticManager.playHapticFeedback(type: .success)
+                            exportViewModel.hasTurnedLeft = true
+                            
+                            showArrow = true
+                            headTurnMessage = "TURN YOUR HEAD RIGHT"
+                            headTurnState = .right
+                        }
+                        
+                        // User has turned face left and right but not towards the center
+                        if exportViewModel.hasTurnedRight && exportViewModel.hasTurnedLeft && !exportViewModel.hasTurnedCenter {
+                            if yaw >= -10 && yaw <= 10 {
+                                // Rotate model to face center and trigger haptic feedback
+                                captureFrame()
+                                
+                                HapticManager.playHapticFeedback(type: .success)
+                                exportViewModel.hasTurnedCenter = true
+                            } else {
+                                showArrow = true
+                                headTurnMessage = "TURN YOUR HEAD CENTER"
+                                headTurnState = .center
+                            }
+                        }
+                        
+                        if exportViewModel.hasTurnedRight && exportViewModel.hasTurnedLeft && exportViewModel.hasTurnedCenter {
+                            headTurnMessage = "SCAN COMPLETE"
+                            HapticManager.playHapticFeedback(type: .success) // Play completion haptic
+                            showConsoleOutput = true
+                            showArrow = false
+                            isRingAnimationStarted = false
+                            isFlashOn = true
+                            startButtonPressed = false
+                            showFaceTrackingView = false
+                        }
+                    }
                 }
             }
             
@@ -285,15 +340,11 @@ struct ExportView: View {
                     // Button to start/pause scanning
                     if !isRingAnimationStarted {
                         Button(action: {
-                            HapticManager.playHapticFeedback(type: .success)
-                            headTurnMessage = "TURN YOUR HEAD\nLEFT/RIGHT"
-                            
-                            if startButtonPressed {
-                                // Stop scanning
-                                stopScanning()
-                            } else {
-                                // Start scanning
-                                startScanning()
+                            if !isButtonDisabled {
+                                HapticManager.playHapticFeedback(type: .success)
+                                headTurnMessage = "TURN YOUR HEAD\nLEFT/RIGHT"
+                                isRingAnimationStarted = true  // Start the ring animation
+                                startButtonPressed = true
                             }
                         }) {
                             if showConsoleOutput {
@@ -430,11 +481,14 @@ struct ExportView: View {
                                 }
                             } else {
                                 VStack(spacing: 5) {
-                                    Text(startButtonPressed ? "Stop" : "Start")
+                                    Text("Start")
                                         .font(.title3)
                                         .bold()
+                                        .onAppear() {
+                                            isButtonDisabled = false
+                                        }
                                     
-                                    Image(systemName: startButtonPressed ? "stop" : "arrow.up")
+                                    Image(systemName: "arrow.up")
                                         .font(.largeTitle) // Adjust the size of the icon
                                 }
                                 .foregroundColor(.white) // Text and icon color
@@ -454,28 +508,5 @@ struct ExportView: View {
         .foregroundColor(isFlashOn ? .black : .white)
         .frame(maxWidth: .infinity, maxHeight: .infinity) // Setting the frame size to infinity
         .ignoresSafeArea()
-    }
-    
-    private func startScanning() {
-        startButtonPressed = true
-        isRingAnimationStarted = true
-
-        scanningTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
-            captureFrame()
-        }
-    }
-
-    private func stopScanning() {
-        startButtonPressed = false
-        isRingAnimationStarted = false
-        showConsoleOutput = true
-        showArrow = false
-        isFlashOn = true
-        showFaceTrackingView = false
-        headTurnMessage = "SCAN COMPLETE"
-        HapticManager.playHapticFeedback(type: .success)
-
-        scanningTimer?.invalidate()
-        scanningTimer = nil
     }
 }
