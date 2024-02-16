@@ -130,10 +130,6 @@ struct ExportView: View {
                     previousYaw = faceTrackingViewModel.faceYawAngle
                 }
                 .onChange(of: faceTrackingViewModel.faceYawAngle) { yaw in
-                    if abs(faceTrackingViewModel.faceYawAngle - previousYaw) >= 10 {
-                        captureFrame()
-                    }
-                    
                     if startButtonPressed {
                         let pitch = faceTrackingViewModel.facePitchAngle
                         let roll = faceTrackingViewModel.faceRollAngle
@@ -188,7 +184,6 @@ struct ExportView: View {
                             showFaceTrackingView = false
                         }
                     }
-                    previousYaw = faceTrackingViewModel.faceYawAngle
                 }
             }
             
