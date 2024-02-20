@@ -284,7 +284,7 @@ struct PostScanView: View {
                 
                 Spacer()
                 
-                if !ExternalData.isMeshView {
+                if ExternalData.isMeshView {
                     VStack {
                         Button(action: {
                             // Toggle the dropdown
@@ -359,13 +359,13 @@ struct PostScanView: View {
                             }
                         }
                     }
-                    
-                } else if !exportViewModel.isLoading {
-                    Text("PUPIL DISTANCE\n\(String(format: "%.1f", faceTrackingViewModel.pupilDistance)) mm")
-                        .padding()
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .multilineTextAlignment(.center)
-                        .monospaced()
+                    if !exportViewModel.isLoading {
+                        Text("PUPIL DISTANCE\n\(String(format: "%.1f", faceTrackingViewModel.pupilDistance)) mm")
+                            .padding()
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .multilineTextAlignment(.center)
+                            .monospaced()
+                    }
                 }
                 
                 if isLoading {
