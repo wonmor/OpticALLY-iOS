@@ -38,14 +38,80 @@ struct PostScanView: View {
     
     @State private var fileURLToShare: URL? = nil
     @State private var showShareSheet: Bool = false
+    @State private var showDropdown: Bool = false
     
     let fileManager = FileManager.default
+    
+    func initialize() {
+        // Construct the paths for the calibration, image, and depth files
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy_MM_dd"
+        let dateString = dateFormatter.string(from: Date())
+        
+        let baseFolder = ExternalData.getFaceScansFolder().path // Assuming ExternalData.getFaceScansFolder() gives the base directory for the files
+        
+        let calibrationFilePath = "\(baseFolder)/calibration.json" // Assuming calibration file is named 'calibration.json'
+        
+        let videoZipPath = "\(baseFolder)/videos.zip"
+        let depthZipPath = "\(baseFolder)/depths.zip"
+        
+        let videoFiles = fileManager.getFilePathsWithPrefix(baseFolder: baseFolder, prefix: "video")
+        let depthFiles = fileManager.getFilePathsWithPrefix(baseFolder: baseFolder, prefix: "depth")
+        
+        SSZipArchive.createZipFile(atPath: videoZipPath, withFilesAtPaths: videoFiles)
+        SSZipArchive.createZipFile(atPath: depthZipPath, withFilesAtPaths: depthFiles)
+        
+        
+        uploadFiles(calibrationFileURL: URL(fileURLWithPath: calibrationFilePath), imageFilesZipURL: URL(fileURLWithPath: videoZipPath), depthFilesZipURL: URL(fileURLWithPath: depthZipPath)) { success, fileURL in
+            if success, let fileURL = fileURL {
+                DispatchQueue.main.async {
+                    self.fileURLToShare = fileURL  // Store the file URL for sharing
+                    ExternalData.isMeshView = true
+                    
+                }
+                
+            } else {
+                // Handle errors
+                DispatchQueue.main.async {
+                    self.showAlert = true
+                }
+            }
+        }
+    }
     
     func reset() {
         position = SCNVector3(0, 0, 0)
         rotation = SCNVector3(0, 0, 0)
         
         selectedNodeIndex = nil
+    }
+    
+    func createZipArchive(from folderURL: URL, to zipFileURL: URL) {
+        SSZipArchive.createZipFile(atPath: zipFileURL.path, withContentsOfDirectory: folderURL.path)
+    }
+    
+    func shareExportedData() {
+        let folderURL = ExternalData.getFaceScansFolder() // The folder containing your JSON and bins
+        let zipFileURL = folderURL.appendingPathComponent("exportedData.zip") // Destination zip file
+        
+        // Create the zip archive
+        createZipArchive(from: folderURL, to: zipFileURL)
+        
+        // Find the current window scene
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
+        guard let rootViewController = windowScene.windows.first?.rootViewController else { return }
+        
+        // Present the share sheet with the zip file
+        let activityViewController = UIActivityViewController(activityItems: [zipFileURL], applicationActivities: nil)
+        
+        // For iPads, configure the presentation controller
+        if let popoverController = activityViewController.popoverPresentationController {
+            popoverController.sourceView = rootViewController.view
+            popoverController.sourceRect = CGRect(x: rootViewController.view.bounds.midX, y: rootViewController.view.bounds.midY, width: 0, height: 0)
+            popoverController.permittedArrowDirections = []
+        }
+        
+        rootViewController.present(activityViewController, animated: true, completion: nil)
     }
     
     func convertFileData(fieldName: String,
@@ -185,6 +251,10 @@ struct PostScanView: View {
                     Spacer()
                 }
                 .padding(.top)
+                .onAppear() {
+                    // Basically onViewAppear...
+                    self.initialize()
+                }
                 
                 if triggerUpdate {
                     if self.fileURLToShare != nil {
@@ -210,143 +280,92 @@ struct PostScanView: View {
                                 )
                             }
                     }
-                    
-                } else if !ExternalData.pointCloudGeometries.isEmpty {
-                    VStack {
-                        SceneKitView(nodes: ExternalData.pointCloudNodes, resetTrigger: $resetSceneKitView)
-                            .frame(height: 300)
-                        
-                        if debugMode {
-                            // Node selection
-                            HStack {
-                                ForEach(0..<nodeCount, id: \.self) { index in
-                                    Button("Node \(index)") {
-                                        selectedNodeIndex = index
-                                    }
-                                }
-                            }
-                            
-                            // Position controls
-                            Text("Position")
-                            Slider(value: Binding(
-                                get: { Double(self.position.x) },
-                                set: { self.position.x = Float($0) }
-                            ), in: -1000...1000)
-                            Slider(value: Binding(
-                                get: { Double(self.position.y) },
-                                set: { self.position.y = Float($0) }
-                            ), in: -1000...1000)
-                            Slider(value: Binding(
-                                get: { Double(self.position.z) },
-                                set: { self.position.z = Float($0) }
-                            ), in: -1000...1000)
-                            
-                            // Rotation controls
-                            Text("Rotation")
-                            Slider(value: Binding(
-                                get: { Double(self.rotation.x) },
-                                set: { self.rotation.x = Float($0) }
-                            ), in: -10...10)
-                            Slider(value: Binding(
-                                get: { Double(self.rotation.y) },
-                                set: { self.rotation.y = Float($0) }
-                            ), in: -10...10)
-                            Slider(value: Binding(
-                                get: { Double(self.rotation.z) },
-                                set: { self.rotation.z = Float($0) }
-                            ), in: -10...10)
-                        }
-                    }
                 }
-                
-                Text("Perspective-n-Point & ICP\nWork in Progress")
-                    .padding()
-                    .monospaced()
-                    .font(.title3)
-                    .multilineTextAlignment(.center)
-                
-                //                ZStack {
-                //                   RoundedRectangle(cornerRadius: 10) // Rounded rectangle shape
-                //                       .stroke(lineWidth: 2) // White border with a specified width
-                //                       .foregroundColor(.white) // Sets the color of the border
-                //                       .background(RoundedRectangle(cornerRadius: 10).fill(Color.white)) // Background color of the rectangle
-                //                       .shadow(radius: 5) // Optional: Adds a shadow for a 3D effect
-                //
-                //                   VStack(alignment: .center, spacing: 10) { // Vertical stack for your text
-                //                       Text("NOT APPLIED YET")
-                //                           .bold() // Makes the text bold
-                //                           .foregroundColor(.black) // Optional: Sets the color of the "NOT APPLIED YET" text
-                //                   }
-                //                   .padding() // Adds padding around the text inside the box
-                //               }
                 
                 Spacer()
                 
                 if !ExternalData.isMeshView {
-                    Button(action: {
-                        // Construct the paths for the calibration, image, and depth files
-                        let dateFormatter = DateFormatter()
-                        dateFormatter.dateFormat = "yyyy_MM_dd"
-                        let dateString = dateFormatter.string(from: Date())
+                    VStack {
+                        Button(action: {
+                            // Toggle the dropdown
+                            showDropdown.toggle()
+                        }) {
+                            HStack {
+                                Image(systemName: "square.and.arrow.down")
+                                Text("Export")
+                                    .font(.body)
+                                    .bold()
+                            }
+                            .foregroundColor(.black)
+                            .padding()
+                            .background(Capsule().fill(Color.white))
+                        }
                         
-                        let baseFolder = ExternalData.getFaceScansFolder().path // Assuming ExternalData.getFaceScansFolder() gives the base directory for the files
-                        
-                        let calibrationFilePath = "\(baseFolder)/calibration.json" // Assuming calibration file is named 'calibration.json'
-                        
-                        let videoZipPath = "\(baseFolder)/videos.zip"
-                        let depthZipPath = "\(baseFolder)/depths.zip"
-                        
-                        let videoFiles = fileManager.getFilePathsWithPrefix(baseFolder: baseFolder, prefix: "video")
-                        let depthFiles = fileManager.getFilePathsWithPrefix(baseFolder: baseFolder, prefix: "depth")
-                        
-                        SSZipArchive.createZipFile(atPath: videoZipPath, withFilesAtPaths: videoFiles)
-                        SSZipArchive.createZipFile(atPath: depthZipPath, withFilesAtPaths: depthFiles)
-                        
-                        
-                        uploadFiles(calibrationFileURL: URL(fileURLWithPath: calibrationFilePath), imageFilesZipURL: URL(fileURLWithPath: videoZipPath), depthFilesZipURL: URL(fileURLWithPath: depthZipPath)) { success, fileURL in
-                            if success, let fileURL = fileURL {
-                                DispatchQueue.main.async {
-                                    self.fileURLToShare = fileURL  // Store the file URL for sharing
-                                    // self.showShareSheet = true  // Trigger the share sheet to open
-                                    ExternalData.isMeshView = true
-                                    
+                        // Dropdown list view
+                        if showDropdown {
+                            VStack {
+                                Button(action: {
+                                    self.showShareSheet = true  // Trigger the share sheet to open
+                                }) {
+                                    Text("FULL HEAD .OBJ")
+                                        .font(.caption)
+                                        .bold()
+                                        .padding()
+                                        .foregroundColor(.white)
+                                        .background(Capsule().fill(Color(.black)))
                                 }
                                 
-                            } else {
-                                // Handle errors
-                                DispatchQueue.main.async {
-                                    self.showAlert = true
+                                Button(action: {
+                                    exportViewModel.exportFaceNodes(showShareSheet: true)
+                                }) {
+                                    Text("LANDMARK 3DMM")
+                                        .font(.caption)
+                                        .bold()
+                                        .padding()
+                                        .foregroundColor(.white)
+                                        .background(Capsule().fill(Color(.black)))
+                                }
+                                
+                                Text("FOR DEVELOPERS")
+                                    .bold()
+                                    .monospaced()
+                                    .font(.caption)
+                                    .padding(.top)
+                                    .padding(.horizontal)
+                                    .multilineTextAlignment(.center)
+                                
+                                Button(action: {
+                                    shareExportedData()
+                                }) {
+                                    Text("RGB-D\n.BIN\n\nCALIBRATION\n.JSON")
+                                        .font(.caption)
+                                        .bold()
+                                        .padding()
+                                        .foregroundColor(.white)
+                                        .frame(minWidth: 0, maxWidth: .infinity) // Allow button to expand
+                                        .fixedSize(horizontal: false, vertical: true) // Allow height to adjust based on content
+                                        .background(Capsule().fill(Color.black))
+                                }
+                                .padding() // Adjust padding as needed
+                            }
+                            .padding(.top, 5)
+                            .sheet(isPresented: $exportViewModel.showShareSheet, onDismiss: {
+                                exportViewModel.showShareSheet = false
+                            }) {
+                                // This will present the share sheet
+                                if let fileURL = exportViewModel.fileURL {
+                                    ShareSheet(fileURL: fileURL)
                                 }
                             }
                         }
-                        
-                        // let imageDepthInstance = imageDepth!.ImageDepth(calibrationFilePath, imageFilePath, depthFilePath)
-                        
-                        // Existing methods...
-                        // exportViewModel.exportOBJ()
-                        // ExternalData.isMeshView = true
-                    }) {
-                        HStack(spacing: 10) {
-                            Image(systemName: "square.stack.3d.forward.dottedline.fill")
-                            
-                            Text("Reconstruct & Export")
-                                .bold()
-                                .font(.title3)
-                        }
-                        .padding()
-                        .foregroundColor(.white)
-                        .background(Capsule().fill(Color.clear)) // Transparent background
-                        .overlay(
-                            Capsule().stroke(Color.white, lineWidth: 2) // White border
-                        )
                     }
-                    .padding()
                     
                 } else if !exportViewModel.isLoading {
-                    Text("**\(ExternalData.verticesCount)** VERTICES")
-                        .monospaced()
+                    Text("PUPIL DISTANCE\n\(String(format: "%.1f", faceTrackingViewModel.pupilDistance)) mm")
                         .padding()
+                        .frame(maxWidth: .infinity, alignment: .center)
                         .multilineTextAlignment(.center)
+                        .monospaced()
                 }
                 
                 if isLoading {
@@ -361,17 +380,6 @@ struct PostScanView: View {
                             .bold()
                             .monospaced()
                             .foregroundColor(.white)
-                        
-                        if exportViewModel.estimatedExportTime != nil {
-                            Text("Estimated:\n\(exportViewModel.estimatedExportTime!) sec.")
-                                .monospaced()
-                                .foregroundColor(.white)
-                            
-                        } else {
-                            Text("Estimated:\nN/A")
-                                .monospaced()
-                                .foregroundColor(.white)
-                        }
                     }
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 30) // Adjust horizontal padding for wider background

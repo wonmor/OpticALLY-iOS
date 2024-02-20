@@ -153,6 +153,23 @@ struct SceneKitUSDZView: UIViewRepresentable {
 struct SceneKitMDLView: UIViewRepresentable {
     var mdlAsset: MDLAsset
     
+    // Function to increase the saturation of a color
+        private func increaseSaturation(color: Any) -> UIColor {
+            guard let uiColor = color as? UIColor else { return UIColor.white } // Default to white if conversion fails
+            var hue: CGFloat = 0
+            var saturation: CGFloat = 0
+            var brightness: CGFloat = 0
+            var alpha: CGFloat = 0
+            
+            if uiColor.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha) {
+                // Increase saturation by a certain factor, ensure it doesn't exceed 1.0
+                saturation = min(saturation * 1.5, 1.0) // Adjust the factor as needed
+                return UIColor(hue: hue, saturation: saturation, brightness: brightness, alpha: alpha)
+            } else {
+                return uiColor // Return the original color if hue/saturation/brightness cannot be extracted
+            }
+        }
+    
     func makeUIView(context: Context) -> SCNView {
         let scnView = SCNView()
         
@@ -161,9 +178,13 @@ struct SceneKitMDLView: UIViewRepresentable {
         scnView.scene = scene
         
         if let object = mdlAsset.object(at: 0) as? MDLMesh, let geometry: SCNGeometry? = SCNGeometry(mdlMesh: object) {
-            // Modify each material to be double-sided
+            // Modify each material to be double-sided and increase saturation
             geometry!.materials.forEach { material in
                 material.isDoubleSided = true
+                if let diffuseContents = material.diffuse.contents {
+                    // Increase the saturation of the diffuse color
+                    material.diffuse.contents = increaseSaturation(color: diffuseContents)
+                }
             }
             
             ExternalData.verticesCount = object.vertexCount

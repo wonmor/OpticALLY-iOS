@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import ZipArchive
 import Lottie
 
 enum CurrentState {
@@ -87,34 +86,6 @@ struct ExportView: View {
     
     private func captureFrame() {
         ExternalData.isSavingFileAsPLY = true
-    }
-    
-    func createZipArchive(from folderURL: URL, to zipFileURL: URL) {
-        SSZipArchive.createZipFile(atPath: zipFileURL.path, withContentsOfDirectory: folderURL.path)
-    }
-    
-    func shareExportedData() {
-        let folderURL = ExternalData.getFaceScansFolder() // The folder containing your JSON and bins
-        let zipFileURL = folderURL.appendingPathComponent("exportedData.zip") // Destination zip file
-        
-        // Create the zip archive
-        createZipArchive(from: folderURL, to: zipFileURL)
-        
-        // Find the current window scene
-        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
-        guard let rootViewController = windowScene.windows.first?.rootViewController else { return }
-        
-        // Present the share sheet with the zip file
-        let activityViewController = UIActivityViewController(activityItems: [zipFileURL], applicationActivities: nil)
-        
-        // For iPads, configure the presentation controller
-        if let popoverController = activityViewController.popoverPresentationController {
-            popoverController.sourceView = rootViewController.view
-            popoverController.sourceRect = CGRect(x: rootViewController.view.bounds.midX, y: rootViewController.view.bounds.midY, width: 0, height: 0)
-            popoverController.permittedArrowDirections = []
-        }
-        
-        rootViewController.present(activityViewController, animated: true, completion: nil)
     }
 
     var body: some View {
@@ -355,118 +326,21 @@ struct ExportView: View {
                                 if let lastLog = logManager.latestLog {
                                     if lastLog.lowercased().contains("done") {
                                         VStack {
-//                                            Button(action: {
-//                                                // Toggle the dropdown
-//                                                showDropdown.toggle()
-//                                            }) {
-//                                                HStack {
-//                                                    Image(systemName: "square.and.arrow.down")
-//                                                    Text("Export")
-//                                                        .font(.body)
-//                                                        .bold()
-//                                                }
-//                                                .foregroundColor(.black)
-//                                                .padding()
-//                                                .background(Capsule().fill(Color.white))
-//                                            }
-                                            
-                                            // Dropdown list view
-                                            if showDropdown {
+                                            Button(action: {
+                                                globalState.currentView = .postScanning
+                                            }) {
                                                 VStack {
-                                                    Button(action: {
-                                                        exportViewModel.exportCombinedModel(showShareSheet: true)
-                                                    }) {
-                                                        Text("FULL HEAD .PLY")
-                                                            .bold()
-                                                            .font(.caption)
-                                                            .padding()
-                                                            .foregroundColor(.white)
-                                                            .background(Capsule().fill(Color(.black)))
-                                                    }
+                                                    Image(systemName: "ruler")
+                                                        .font(.title)
                                                     
-                                                    Button(action: {
-                                                        exportViewModel.exportPLY(showShareSheet: true)
-                                                    }) {
-                                                        Text("SINGLE FACE .PLY")
-                                                            .font(.caption)
-                                                            .bold()
-                                                            .padding()
-                                                            .foregroundColor(.white)
-                                                            .background(Capsule().fill(Color(.black)))
-                                                    }
-                                                    
-                                                    Button(action: {
-                                                        exportViewModel.exportFaceNodes(showShareSheet: true)
-                                                    }) {
-                                                        Text("LANDMARK 3DMM")
-                                                            .font(.caption)
-                                                            .bold()
-                                                            .padding()
-                                                            .foregroundColor(.white)
-                                                            .background(Capsule().fill(Color(.black)))
-                                                    }
-                                                    
-                                                    Button(action: {
-                                                        exportViewModel.exportOBJ()
-                                                    }) {
-                                                        Text("MESH .OBJ")
-                                                            .font(.caption)
-                                                            .bold()
-                                                            .padding()
-                                                            .foregroundColor(.white)
-                                                            .background(Capsule().fill(Color(.black)))
-                                                    }
-                                                    
-                                                    Text("FOR DEVELOPERS")
+                                                    Text("Measure")
+                                                        .font(.body)
                                                         .bold()
-                                                        .monospaced()
-                                                        .font(.caption)
-                                                        .padding(.top)
-                                                        .padding(.horizontal)
-                                                        .multilineTextAlignment(.center)
-                                                    
-                                                    Button(action: {
-                                                        shareExportedData()
-                                                    }) {
-                                                        Text("RGB-D\n.BIN\n\nCALIBRATION\n.JSON")
-                                                            .font(.caption)
-                                                            .bold()
-                                                            .padding()
-                                                            .foregroundColor(.white)
-                                                            .frame(minWidth: 0, maxWidth: .infinity) // Allow button to expand
-                                                            .fixedSize(horizontal: false, vertical: true) // Allow height to adjust based on content
-                                                            .background(Capsule().fill(Color.black))
-                                                    }
-                                                    .padding() // Adjust padding as needed
                                                 }
-                                                .padding(.top, 5)
-                                                .sheet(isPresented: $exportViewModel.showShareSheet, onDismiss: {
-                                                    exportViewModel.showShareSheet = false
-                                                }) {
-                                                    // This will present the share sheet
-                                                    if let fileURL = exportViewModel.fileURL {
-                                                        ShareSheet(fileURL: fileURL)
-                                                    }
-                                                }
-                                                
-                                            } else {
-                                                Button(action: {
-                                                    globalState.currentView = .postScanning
-                                                }) {
-                                                    VStack {
-                                                        Image(systemName: "ruler")
-                                                            .font(.title)
-                                                        
-                                                        Text("Measure")
-                                                            .font(.body)
-                                                            .bold()
-                                                    }
-                                                    .padding()
-                                                    .foregroundColor(.white)
-                                                    .background(Capsule().fill(Color.black).overlay(Capsule().stroke(Color.white, lineWidth: 2)))
-                                                }
+                                                .padding()
+                                                .foregroundColor(.white)
+                                                .background(Capsule().fill(Color.black).overlay(Capsule().stroke(Color.white, lineWidth: 2)))
                                             }
-                                            
                                         }
                                         .padding()
                                     } else {
