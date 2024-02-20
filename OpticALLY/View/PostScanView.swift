@@ -300,6 +300,7 @@ struct PostScanView: View {
                             .padding()
                             .background(Capsule().fill(Color.white))
                         }
+                        .padding(.top)
                         
                         // Dropdown list view
                         if showDropdown {
