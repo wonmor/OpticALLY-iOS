@@ -14,6 +14,8 @@ import Vision
 import CoreImage
 import CoreVideo
 
+let showVisionLandmarkPoints = false
+
 /// CameraViewController manages the camera and AR functionalities within the OpticALLY app.
 /// It utilizes ARKit for face tracking and AVFoundation for depth data processing.
 /// This controller is responsible for synchronizing and processing depth data
@@ -546,17 +548,19 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                             let localCoordinates = node!.convertPosition(result.worldCoordinates, from: nil)
                             sphere.position = localCoordinates
                             
-                            // Add the sphere as a child of the face node and keep a reference to it
-                            node!.addChildNode(sphere)
-                            landmarkNodes.append(sphere)
-                            
-                            let previewSphere = SCNNode(geometry: SCNSphere(radius: 0.005))
-                            let localCoordinatesPreview = previewFaceNode!.convertPosition(result.worldCoordinates, from: nil)
-                            previewSphere.position = localCoordinatesPreview
-                            
-                            // Add the sphere as a child of the preview face node and keep a reference to it
-                            previewFaceNode!.addChildNode(previewSphere)
-                            landmarkNodes.append(previewSphere)
+                            if showVisionLandmarkPoints {
+                                // Add the sphere as a child of the face node and keep a reference to it
+                                node!.addChildNode(sphere)
+                                landmarkNodes.append(sphere)
+                                
+                                let previewSphere = SCNNode(geometry: SCNSphere(radius: 0.005))
+                                let localCoordinatesPreview = previewFaceNode!.convertPosition(result.worldCoordinates, from: nil)
+                                previewSphere.position = localCoordinatesPreview
+                                
+                                // Add the sphere as a child of the preview face node and keep a reference to it
+                                previewFaceNode!.addChildNode(previewSphere)
+                                landmarkNodes.append(previewSphere)
+                            }
                             
                             break
                         }
