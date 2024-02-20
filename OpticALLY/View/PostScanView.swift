@@ -54,74 +54,76 @@ struct PostScanView: View {
                          fileURL: URL,
                          using boundary: String) -> Data {
         var data = Data()
-
+        
         data.append("--\(boundary)\r\n".data(using: .utf8)!)
         data.append("Content-Disposition: form-data; name=\"\(fieldName)\"; filename=\"\(fileName)\"\r\n".data(using: .utf8)!)
         data.append("Content-Type: \(mimeType)\r\n\r\n".data(using: .utf8)!)
-
+        
         if let fileData = try? Data(contentsOf: fileURL) {
             data.append(fileData)
         } else {
             print("Could not read file data")
         }
-
+        
         data.append("\r\n".data(using: .utf8)!)
-
+        
         return data
     }
     
     func uploadFiles(calibrationFileURL: URL, imageFilesZipURL: URL, depthFilesZipURL: URL, completion: @escaping (Bool, URL?) -> Void) {
-        let endpoint = "https://harolden-server.apps.johnseong.com/process3d/"
+        let endpoint = "https://harolden-server.apps.johnseong.com/process3d-to-obj/"
         guard let url = URL(string: endpoint) else {
             print("Invalid URL")
             completion(false, URL(string: ""))
             return
         }
-
+        
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-
+        
         let boundary = "Boundary-\(UUID().uuidString)"
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-
+        
         var data = Data()
-
+        
         // Append Calibration File
         data.append(convertFileData(fieldName: "calibration_file",
                                     fileName: calibrationFileURL.lastPathComponent,
                                     mimeType: "application/json",
                                     fileURL: calibrationFileURL,
                                     using: boundary))
-
+        
         // Append Image Files Zip
         data.append(convertFileData(fieldName: "image_files_zip",
                                     fileName: imageFilesZipURL.lastPathComponent,
                                     mimeType: "application/zip",
                                     fileURL: imageFilesZipURL,
                                     using: boundary))
-
+        
         // Append Depth Files Zip
         data.append(convertFileData(fieldName: "depth_files_zip",
                                     fileName: depthFilesZipURL.lastPathComponent,
                                     mimeType: "application/zip",
                                     fileURL: depthFilesZipURL,
                                     using: boundary))
-
+        
         data.append("--\(boundary)--".data(using: .utf8)!)
-
+        
         request.httpBody = data
-
+        
         // Create URLSessionUploadTask
         let task = URLSession.shared.uploadTask(with: request, from: data) { data, response, error in
             DispatchQueue.main.async {
                 self.isLoading = false  // Stop loading indicator
                 if let data = data, error == nil {
                     // Save the PLY file
-                    let fileURL = FileManager.default.temporaryDirectory.appendingPathComponent("output_from_server.ply")
+                    let fileURL = FileManager.default.temporaryDirectory.appendingPathComponent("output_from_server.obj")
                     do {
                         try data.write(to: fileURL)
-                        print("PLY file saved to: \(fileURL.path)")
+                        print("OBJ file saved to: \(fileURL.path)")
                         self.fileURLToShare = fileURL
+                        self.triggerUpdate = true
+                        ExternalData.isMeshView = true
                         completion(true, fileURL)  // Pass the file URL to the completion handler
                     } catch {
                         print("Failed to save PLY file: \(error.localizedDescription)")
@@ -133,7 +135,7 @@ struct PostScanView: View {
                 }
             }
         }
-
+        
         // Handle upload progress
         task.observe(\.countOfBytesSent) { task, _ in
             DispatchQueue.main.async {
@@ -141,7 +143,7 @@ struct PostScanView: View {
                 self.uploadProgress = progress
             }
         }
-
+        
         self.isLoading = true  // Start loading indicator
         task.resume()
     }
@@ -185,16 +187,15 @@ struct PostScanView: View {
                 .padding(.top)
                 
                 if triggerUpdate {
-                    if exportViewModel.fileURL != nil {
-//                        SceneKitMDLView(mdlAsset: MDLAsset(url: exportViewModel.fileURL!))
-//                            .onAppear(perform: {
-//                                print("File URL: \(exportViewModel.fileURL!)")
-//                            })
-                        
-                        if let node = scnNode {
-                            SceneKitSingleView(node: node)
-                                .frame(width: 300, height: 300)  // Adjust the size as needed
+                    if self.fileURLToShare != nil {
+                        if ExternalData.isMeshView {
+                            SceneKitMDLView(mdlAsset: MDLAsset(url: self.fileURLToShare!))
                         }
+                        
+                        //                        if let node = scnNode {
+                        //                            SceneKitSingleView(node: node)
+                        //                                .frame(width: 300, height: 300)  // Adjust the size as needed
+                        //                        }
                     } else {
                         EmptyView()
                             .onAppear() {
@@ -264,20 +265,20 @@ struct PostScanView: View {
                     .font(.title3)
                     .multilineTextAlignment(.center)
                 
-//                ZStack {
-//                   RoundedRectangle(cornerRadius: 10) // Rounded rectangle shape
-//                       .stroke(lineWidth: 2) // White border with a specified width
-//                       .foregroundColor(.white) // Sets the color of the border
-//                       .background(RoundedRectangle(cornerRadius: 10).fill(Color.white)) // Background color of the rectangle
-//                       .shadow(radius: 5) // Optional: Adds a shadow for a 3D effect
-//
-//                   VStack(alignment: .center, spacing: 10) { // Vertical stack for your text
-//                       Text("NOT APPLIED YET")
-//                           .bold() // Makes the text bold
-//                           .foregroundColor(.black) // Optional: Sets the color of the "NOT APPLIED YET" text
-//                   }
-//                   .padding() // Adds padding around the text inside the box
-//               }
+                //                ZStack {
+                //                   RoundedRectangle(cornerRadius: 10) // Rounded rectangle shape
+                //                       .stroke(lineWidth: 2) // White border with a specified width
+                //                       .foregroundColor(.white) // Sets the color of the border
+                //                       .background(RoundedRectangle(cornerRadius: 10).fill(Color.white)) // Background color of the rectangle
+                //                       .shadow(radius: 5) // Optional: Adds a shadow for a 3D effect
+                //
+                //                   VStack(alignment: .center, spacing: 10) { // Vertical stack for your text
+                //                       Text("NOT APPLIED YET")
+                //                           .bold() // Makes the text bold
+                //                           .foregroundColor(.black) // Optional: Sets the color of the "NOT APPLIED YET" text
+                //                   }
+                //                   .padding() // Adds padding around the text inside the box
+                //               }
                 
                 Spacer()
                 
@@ -291,33 +292,34 @@ struct PostScanView: View {
                         let baseFolder = ExternalData.getFaceScansFolder().path // Assuming ExternalData.getFaceScansFolder() gives the base directory for the files
                         
                         let calibrationFilePath = "\(baseFolder)/calibration.json" // Assuming calibration file is named 'calibration.json'
-
+                        
                         let videoZipPath = "\(baseFolder)/videos.zip"
                         let depthZipPath = "\(baseFolder)/depths.zip"
-
+                        
                         let videoFiles = fileManager.getFilePathsWithPrefix(baseFolder: baseFolder, prefix: "video")
                         let depthFiles = fileManager.getFilePathsWithPrefix(baseFolder: baseFolder, prefix: "depth")
-
+                        
                         SSZipArchive.createZipFile(atPath: videoZipPath, withFilesAtPaths: videoFiles)
                         SSZipArchive.createZipFile(atPath: depthZipPath, withFilesAtPaths: depthFiles)
-
+                        
                         
                         uploadFiles(calibrationFileURL: URL(fileURLWithPath: calibrationFilePath), imageFilesZipURL: URL(fileURLWithPath: videoZipPath), depthFilesZipURL: URL(fileURLWithPath: depthZipPath)) { success, fileURL in
                             if success, let fileURL = fileURL {
                                 DispatchQueue.main.async {
                                     self.fileURLToShare = fileURL  // Store the file URL for sharing
-                                    self.showShareSheet = true  // Trigger the share sheet to open
-
-                                       }
-                            
-                                } else {
-                                    // Handle errors
-                                    DispatchQueue.main.async {
-                                        self.showAlert = true
-                                    }
+                                    // self.showShareSheet = true  // Trigger the share sheet to open
+                                    ExternalData.isMeshView = true
+                                    
+                                }
+                                
+                            } else {
+                                // Handle errors
+                                DispatchQueue.main.async {
+                                    self.showAlert = true
                                 }
                             }
-                
+                        }
+                        
                         // let imageDepthInstance = imageDepth!.ImageDepth(calibrationFilePath, imageFilePath, depthFilePath)
                         
                         // Existing methods...
@@ -435,7 +437,7 @@ struct PostScanView: View {
                         }
                 }
             }
-
+            
         }
     }
 }
