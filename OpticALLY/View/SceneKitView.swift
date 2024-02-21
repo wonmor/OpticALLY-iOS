@@ -155,7 +155,8 @@ struct SceneKitMDLView: UIViewRepresentable {
     
     func makeUIView(context: Context) -> SCNView {
         let scnView = SCNView()
-        // scnView.colorPixelFormat = .bgra8Unorm -> immutable error! temp. fix: info.plist -> SCNDisableLinearSpaceRendering = YES
+        // VERY IMPORTANT LINE BELOW!
+        // scnView.colorPixelFormat = .bgra8Unorm -> immutable error! TEMPORARY FIX: Info.plist -> SCNDisableLinearSpaceRendering = YES
         
         // Configure the scene
         let scene = SCNScene()
