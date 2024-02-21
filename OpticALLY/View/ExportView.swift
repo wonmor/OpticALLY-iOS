@@ -45,7 +45,149 @@ struct FlashButtonView: View {
 }
 
 enum HeadTurnState {
+    case left, center, right
+}
+
+struct ExportView: View {
+    @State private var isViewLoaded: Bool = false
+    @State private var fingerOffset: CGFloat = -30.0
+    @State private var isAnimationActive: Bool = true
+    @State private var currentState: CurrentState = .prescan
+    @State private var showDropdown: Bool = false
+    @State private var showConsoleOutput: Bool = false
+    @State private var showAlert = false
+    @State private var showArrow = true
+    @State private var isFlashOn = false
+    @State private var isLeftHalf = true
+    @State private var headTurnState = HeadTurnState.center
+    @State private var headTurnMessage = ""
+    @State private var isRingAnimationStarted = false
+    @State private var startButtonPressed = false
+    @State private var showFaceTrackingView = true
+    @State private var stateChangeCount = 0
+    @State private var previousYaw: Double = 0
+    @State private var isButtonDisabled: Bool = false
     
+    // Target states for scanning
+    @State private var targetYaw: Double = 0
+    @State private var targetPitch: Double = 0
+    @State private var targetRoll: Double = 0
+    
+    @State private var isScanComplete: Bool = false
+
+    // Counter to keep track of the number of scans
+    @State private var scanCount = 0
+    
+    @ObservedObject var logManager = LogManager.shared
+    @EnvironmentObject var globalState: GlobalState
+    @StateObject private var exportViewModel = ExportViewModel()
+    
+    @StateObject var faceTrackingViewModel: FaceTrackingViewModel
+    
+    private let timer = Timer.publish(every: 4, on: .main, in: .common).autoconnect()
+    
+    let maxOffset: CGFloat = 30.0 // change this to control how much the finger moves
+    
+    private func captureFrame() {
+        ExternalData.isSavingFileAsPLY = true
+    }
+
+    var body: some View {
+        ZStack {
+            if showFaceTrackingView {
+                ZStack {
+                    ARFaceTrackingView()
+                        .opacity(0.5)
+                        .scaledToFit()
+                }
+                .padding()
+                .onAppear {
+                    previousYaw = faceTrackingViewModel.faceYawAngle
+                }
+                .onChange(of: faceTrackingViewModel.faceYawAngle) { yaw in
+                    if startButtonPressed {
+                        let pitch = faceTrackingViewModel.facePitchAngle
+                        let roll = faceTrackingViewModel.faceRollAngle
+                        
+                        // Rotate the USDZ model
+                        if yaw <= -30 {
+                            // Rotate model to face right and trigger haptic feedback
+                            captureFrame()
+                            
+                            HapticManager.playHapticFeedback(type: .success)
+                            exportViewModel.hasTurnedRight = true
+                            
+                            showArrow = true
+                            headTurnMessage = "TURN YOUR HEAD LEFT"
+                            headTurnState = .left
+                            
+                        } else if yaw >= 30 {
+                            // Rotate model to face left and trigger haptic feedback
+                            captureFrame()
+                            
+                            HapticManager.playHapticFeedback(type: .success)
+                            exportViewModel.hasTurnedLeft = true
+                            
+                            showArrow = true
+                            headTurnMessage = "TURN YOUR HEAD RIGHT"
+                            headTurnState = .right
+                        }
+                        
+                        // User has turned face left and right but not towards the center
+                        if exportViewModel.hasTurnedRight && exportViewModel.hasTurnedLeft && !exportViewModel.hasTurnedCenter {
+                            if yaw >= -10 && yaw <= 10 {
+                                // Rotate model to face center and trigger haptic feedback
+                                captureFrame()
+                                
+                                HapticManager.playHapticFeedback(type: .success)
+                                exportViewModel.hasTurnedCenter = true
+                            } else {
+                                showArrow = true
+                                headTurnMessage = "TURN YOUR HEAD CENTER"
+                                headTurnState = .center
+                            }
+                        }
+                        
+                        if exportViewModel.hasTurnedRight && exportViewModel.hasTurnedLeft && exportViewModel.hasTurnedCenter {
+                            headTurnMessage = "SCAN COMPLETE"
+                            HapticManager.playHapticFeedback(type: .success) // Play completion haptic
+                            showConsoleOutput = true
+                            showArrow = false
+                            isRingAnimationStarted = false
+                            isFlashOn = true
+                            startButtonPressed = false
+                            showFaceTrackingView = false
+                            isScanComplete = true
+                        }
+                    }
+                }
+            }
+            
+            Color(isFlashOn ? .white : .clear)
+                .edgesIgnoringSafeArea(.all)
+                .clipShape(RoundedRectangle(cornerRadius: 20)) // Clips the image as a rounded rectangle
+            
+            switch currentState {
+            case .postscan:
+                EmptyView()
+            case .scan:
+                EmptyView()
+            case .prescan:
+                VStack {
+                    if showFaceTrackingView {
+                        FlashButtonView(isFlashOn: $isFlashOn)
+                    }
+                    
+                    if showConsoleOutput {
+                        ScrollView {
+                            if let lastLog = logManager.latestLog {
+                                if showDropdown == false {
+                                    Text(lastLog)
+                                        .padding()
+                                        .frame(maxWidth: .infinity, alignment: .center)
+                                        .multilineTextAlignment(.center)
+                                        .monospaced()
+                                    
                                     if lastLog.contains("Converting") {
                                         LottieView(animationFileName: "face-id-2", loopMode: .loop)
                                             .frame(width: 60, height: 60)
@@ -86,6 +228,9 @@ enum HeadTurnState {
                                 .monospaced()
                         }
                     }
+                    
+                    FaceIDScanView(isScanComplete: $isScanComplete)
+                        .padding()
                     
                     if showArrow {
                         if headTurnState == .left {
