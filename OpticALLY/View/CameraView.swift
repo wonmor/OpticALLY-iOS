@@ -1,16 +1,18 @@
 import SwiftUI
 import UIKit
 
+var cameraViewController: CameraViewController!
+
 struct CameraView: UIViewControllerRepresentable {
     @EnvironmentObject var globalState: GlobalState
     
     func makeUIViewController(context: Context) -> CameraViewController {
         let sb = UIStoryboard(name: "Main", bundle: nil)
-        let viewController = sb.instantiateViewController(identifier: "CameraViewController") as! CameraViewController
+        cameraViewController = sb.instantiateViewController(identifier: "CameraViewController") as? CameraViewController
         
-        viewController.viewModel = faceTrackingViewModel  // Pass the ViewModel to the UIViewController
+        cameraViewController.viewModel = faceTrackingViewModel  // Pass the ViewModel to the UIViewController
         
-        return viewController
+        return cameraViewController
     }
 
     func updateUIViewController(_ uiViewController: CameraViewController, context: Context) {
