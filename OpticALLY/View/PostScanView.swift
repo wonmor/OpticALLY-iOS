@@ -315,6 +315,8 @@ struct PostScanView: View {
                                         .foregroundColor(.white)
                                         .background(Capsule().fill(Color(.black)))
                                 }
+                                .padding(.top)
+                                .padding(.horizontal)
                                 
                                 Button(action: {
                                     exportViewModel.exportFaceNodes(showShareSheet: true)
@@ -326,6 +328,7 @@ struct PostScanView: View {
                                         .foregroundColor(.white)
                                         .background(Capsule().fill(Color(.black)))
                                 }
+                                .padding(.horizontal)
                                 
                                 Text("FOR DEVELOPERS")
                                     .bold()
@@ -334,6 +337,7 @@ struct PostScanView: View {
                                     .padding(.top)
                                     .padding(.horizontal)
                                     .multilineTextAlignment(.center)
+                                    .foregroundStyle(.black)
                                 
                                 Button(action: {
                                     shareExportedData()
@@ -343,12 +347,13 @@ struct PostScanView: View {
                                         .bold()
                                         .padding()
                                         .foregroundColor(.white)
-                                        .frame(minWidth: 0, maxWidth: .infinity) // Allow button to expand
                                         .fixedSize(horizontal: false, vertical: true) // Allow height to adjust based on content
                                         .background(Capsule().fill(Color.black))
                                 }
                                 .padding() // Adjust padding as needed
                             }
+                            .background(.white)
+                            .clipShape(RoundedRectangle(cornerRadius: 20)) // Clips the image as a rounded rectangle
                             .padding(.top, 5)
                             .sheet(isPresented: $exportViewModel.showShareSheet, onDismiss: {
                                 exportViewModel.showShareSheet = false
@@ -386,6 +391,8 @@ struct PostScanView: View {
                     .padding(.horizontal, 30) // Adjust horizontal padding for wider background
                     .padding(.vertical, 15) // Adjust vertical padding for background height
                     .zIndex(1) // Ensure the spinner and text are above other content
+                    
+                    Spacer()
                 }
                 
                 // Display a loading spinner when isLoading is true

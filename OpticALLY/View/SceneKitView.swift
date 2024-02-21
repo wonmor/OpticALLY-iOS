@@ -153,37 +153,36 @@ struct SceneKitUSDZView: UIViewRepresentable {
 struct SceneKitMDLView: UIViewRepresentable {
     var mdlAsset: MDLAsset
     
-    // Function to increase the saturation of a color
-        private func increaseSaturation(color: Any) -> UIColor {
-            guard let uiColor = color as? UIColor else { return UIColor.white } // Default to white if conversion fails
-            var hue: CGFloat = 0
-            var saturation: CGFloat = 0
-            var brightness: CGFloat = 0
-            var alpha: CGFloat = 0
-            
-            if uiColor.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha) {
-                // Increase saturation by a certain factor, ensure it doesn't exceed 1.0
-                saturation = min(saturation * 1.5, 1.0) // Adjust the factor as needed
-                return UIColor(hue: hue, saturation: saturation, brightness: brightness, alpha: alpha)
-            } else {
-                return uiColor // Return the original color if hue/saturation/brightness cannot be extracted
-            }
-        }
-    
     func makeUIView(context: Context) -> SCNView {
         let scnView = SCNView()
+        // scnView.colorPixelFormat = .bgra8Unorm -> immutable error! temp. fix: info.plist ->
         
         // Configure the scene
         let scene = SCNScene()
         scnView.scene = scene
         
         if let object = mdlAsset.object(at: 0) as? MDLMesh, let geometry: SCNGeometry? = SCNGeometry(mdlMesh: object) {
-            // Modify each material to be double-sided and increase saturation
+            // Modify each material to be double-sided
             geometry!.materials.forEach { material in
+                material.lightingModel = .constant // Removes shading and shadows
                 material.isDoubleSided = true
-                if let diffuseContents = material.diffuse.contents {
-                    // Increase the saturation of the diffuse color
-                    material.diffuse.contents = increaseSaturation(color: diffuseContents)
+            }
+            
+            if let material = geometry?.firstMaterial {
+                if let texture = material.diffuse.contents as? MDLTexture {
+                    // Ensure the texture is treated in sRGB color space
+                    material.diffuse.contents = texture
+                    material.diffuse.mappingChannel = 0
+                    material.diffuse.contentsTransform = SCNMatrix4MakeScale(1, 1, 1)
+                    material.diffuse.intensity = 1.0
+                    material.diffuse.minificationFilter = .linear
+                    material.diffuse.magnificationFilter = .linear
+                    material.diffuse.mipFilter = .linear
+                    material.diffuse.wrapS = .repeat
+                    material.diffuse.wrapT = .repeat
+                    // Set the texture's color space to sRGB if it's not already
+                    material.diffuse.textureComponents = .all
+                    material.lightingModel = .phong // or another lighting model as needed
                 }
             }
             

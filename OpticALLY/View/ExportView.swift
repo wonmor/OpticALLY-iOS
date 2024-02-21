@@ -299,10 +299,6 @@ struct ExportView: View {
                                     .padding(.bottom)
                             }
                             
-                        } else if headTurnState == .center {
-                            LottieView(animationFileName: "face-id", loopMode: .loop)
-                                .frame(width: 50, height: 50)
-                                .padding()
                         }
                     }
 
