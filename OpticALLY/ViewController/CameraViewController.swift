@@ -279,7 +279,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         
         scnFaceGeometry.update(from: faceAnchor.geometry)
         faceUvGenerator.update(frame: frame, scene: self.arSCNView!.scene, headNode: node, geometry: scnFaceGeometry)
-        
+    
         self.previewFaceAnchor = faceAnchor
         self.previewFaceAnchors.append(faceAnchor)
         
@@ -669,7 +669,9 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             self.previewFaceGeometry.firstMaterial!.isDoubleSided = true
             self.previewFaceAnchor = faceAnchor
             
-            previewSceneView.scene!.rootNode.addChildNode(self.previewFaceNode!)
+            if showVisionLandmarkPoints {
+                previewSceneView.scene!.rootNode.addChildNode(self.previewFaceNode!)
+            }
         }
     }
     
@@ -741,27 +743,29 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         
         let hitTestResults = arSCNView?.hitTest(location, options: nil) ?? []
         
-        for result in hitTestResults {
-            if let node: SCNNode? = result.node, node!.geometry is ARSCNFaceGeometry {
-                let sphere = SCNNode(geometry: SCNSphere(radius: 0.005))
-                
-                // Convert hit test result to face node's local coordinate system
-                let localCoordinates = node!.convertPosition(result.worldCoordinates, from: nil)
-                sphere.position = localCoordinates
-                
-                // Add the sphere as a child of the face node
-                node!.addChildNode(sphere)
-                
-                let previewSphere = SCNNode(geometry: SCNSphere(radius: 0.005))
-                
-                // Convert hit test result to face node's local coordinate system
-                let localCoordinatesPreview = previewFaceNode!.convertPosition(result.worldCoordinates, from: nil)
-                previewSphere.position = localCoordinatesPreview
-                
-                // Add the sphere as a child of the face node
-                previewFaceNode!.addChildNode(previewSphere)
-                
-                break
+        if showVisionLandmarkPoints {
+            for result in hitTestResults {
+                if let node: SCNNode? = result.node, node!.geometry is ARSCNFaceGeometry {
+                    let sphere = SCNNode(geometry: SCNSphere(radius: 0.005))
+                    
+                    // Convert hit test result to face node's local coordinate system
+                    let localCoordinates = node!.convertPosition(result.worldCoordinates, from: nil)
+                    sphere.position = localCoordinates
+                    
+                    // Add the sphere as a child of the face node
+                    node!.addChildNode(sphere)
+                    
+                    let previewSphere = SCNNode(geometry: SCNSphere(radius: 0.005))
+                    
+                    // Convert hit test result to face node's local coordinate system
+                    let localCoordinatesPreview = previewFaceNode!.convertPosition(result.worldCoordinates, from: nil)
+                    previewSphere.position = localCoordinatesPreview
+                    
+                    // Add the sphere as a child of the face node
+                    previewFaceNode!.addChildNode(previewSphere)
+                    
+                    break
+                }
             }
         }
     }

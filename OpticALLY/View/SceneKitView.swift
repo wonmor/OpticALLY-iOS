@@ -192,8 +192,10 @@ struct SceneKitMDLView: UIViewRepresentable {
             ExternalData.verticesCount = object.vertexCount
             
             let node = SCNNode(geometry: geometry)
+            
             node.position = SCNVector3(x: 0, y: 0, z: 0)
-            node.eulerAngles.z = .pi / -2
+            node.eulerAngles.z = .pi / 2
+            node.eulerAngles.y = .pi
             
             scene.rootNode.addChildNode(node)
         }
