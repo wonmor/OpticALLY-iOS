@@ -10,6 +10,7 @@ import ARKit
 
 struct FaceIDScanView: View {
     @Binding var isScanComplete: Bool
+    @ObservedObject var cameraViewController: CameraViewController // Make sure this is an ObservableObject
     
     @State private var isAnimating = false
     @State private var isComplete = false // Temporary value...
@@ -17,21 +18,18 @@ struct FaceIDScanView: View {
 
     var body: some View {
         ZStack {
-            ARViewContainer(arSessionDelegate: cameraViewController)
-                .clipShape(Circle())
-                .frame(width: 200, height: 200)
-            
-            Circle()
-                .trim(from: 0, to: CGFloat(100))
-                .stroke(Color.green, lineWidth: 5)
-                .frame(width: 200, height: 200)
-                .rotationEffect(.degrees(isFaceDetected ? 360 : 0))
-                .onAppear {
-                    withAnimation(Animation.linear(duration: 2).repeatForever(autoreverses: false)) {
-                        isAnimating.toggle()
-                    }
-                }
-            
+            // Display the captured image
+            if let image = cameraViewController.currentImage {
+                Image(uiImage: image)
+                    .resizable()
+                    .clipShape(Circle())
+                    .frame(width: 200, height: 200)
+            } else {
+                ARViewContainer(arSessionDelegate: cameraViewController)
+                    .clipShape(Circle())
+                    .frame(width: 200, height: 200)
+            }
+
             if isComplete {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundColor(.green)
@@ -49,7 +47,10 @@ struct FaceIDScanView: View {
                     .font(.system(size: 75))
                     .background(Color.black.opacity(0.8).blur(radius: 20.0))
             }
-            
+        }
+        .onAppear {
+            cameraViewController.arSCNView = ARSCNView()
+            cameraViewController.arSCNView?.session.delegate = cameraViewController
         }
     }
 }
@@ -58,9 +59,9 @@ struct ARViewContainer: UIViewRepresentable {
     @ObservedObject var arSessionDelegate: CameraViewController
 
     func makeUIView(context: Context) -> ARSCNView {
-        let view = ARSCNView()
-        view.session.delegate = arSessionDelegate
-        return view
+        let view = arSessionDelegate.arSCNView
+        view!.session.delegate = arSessionDelegate
+        return view!
     }
 
     func updateUIView(_ uiView: ARSCNView, context: Context) { }

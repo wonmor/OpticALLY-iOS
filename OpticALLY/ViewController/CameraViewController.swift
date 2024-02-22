@@ -66,7 +66,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     var viewModel: FaceTrackingViewModel?
     
     // MARK: - Properties
-    private var arSCNView: ARSCNView?
+    @Published var arSCNView: ARSCNView?
     private var avCaptureSession: AVCaptureSession = AVCaptureSession()
     private var outputSynchronizer: AVCaptureDataOutputSynchronizer?
     private var videoDataOutput = AVCaptureVideoDataOutput()
@@ -93,7 +93,10 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     private var isUsingARSession: Bool = true
     
     private var synchronizedDepthData: AVDepthData?
+    
     private var synchronizedVideoPixelBuffer: CVPixelBuffer?
+    
+    @Published var currentImage: UIImage!
     
     private let faceDetectionRequest = VNDetectFaceLandmarksRequest()
     private let faceDetectionHandler = VNSequenceRequestHandler()
@@ -396,7 +399,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                 image: imageData,
                 depth: depthData,
                 faceNode: previewFaceNode,
-                faceAnchor: previewFaceAnchors.last!,
+                faceAnchor: previewFaceAnchors.last ?? nil,
                 faceTexture: textureToImage(self.faceUvGenerator.texture)!
             )
             
@@ -840,14 +843,8 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                     if let depthData = self.synchronizedDepthData,
                        let videoPixelBuffer = self.synchronizedVideoPixelBuffer {
                         self.detectFaceLandmarks(in: videoPixelBuffer, sceneView: arSCNView!, depthData: depthData)
+                        self.currentImage = convert(pixelBuffer: videoPixelBuffer)
                         // cloudView.setDepthFrame(depthData, withTexture: videoPixelBuffer)
-                        
-                        if let updatedPixelBuffer = drawEyePositionsOnPixelBuffer(pixelBuffer: frame.capturedImage, leftEyePosition: leftEyePosition, rightEyePosition: rightEyePosition),
-                           let image = convert(pixelBuffer: updatedPixelBuffer) {
-                            DispatchQueue.main.async {
-                                // imageView.image = image
-                            }
-                        }
                     }
                 }
             }

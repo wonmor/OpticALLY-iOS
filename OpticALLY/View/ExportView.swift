@@ -229,7 +229,7 @@ struct ExportView: View {
                         }
                     }
                     
-                    FaceIDScanView(isScanComplete: $isScanComplete)
+                    FaceIDScanView(isScanComplete: $isScanComplete, cameraViewController: cameraViewController)
                         .padding()
                     
                     if showArrow {
