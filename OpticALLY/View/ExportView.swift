@@ -231,7 +231,7 @@ struct ExportView: View {
                     
                     FaceIDScanView(isScanComplete: $isScanComplete, cameraViewController: cameraViewController)
                         .padding()
-                        .opacity(0) // temp value...
+              
                     
                     if showArrow {
                         if headTurnState == .left {

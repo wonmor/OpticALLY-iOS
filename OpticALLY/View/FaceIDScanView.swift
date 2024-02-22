@@ -24,6 +24,8 @@ struct FaceIDScanView: View {
                     .resizable()
                     .clipShape(Circle())
                     .frame(width: 200, height: 200)
+                    .rotationEffect(.degrees(90))
+                
             } else {
                 ARViewContainer(arSessionDelegate: cameraViewController)
                     .clipShape(Circle())

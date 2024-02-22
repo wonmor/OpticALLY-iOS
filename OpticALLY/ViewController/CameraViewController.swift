@@ -680,6 +680,9 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     
     private func startARSession() {
         let configuration = ARFaceTrackingConfiguration()
+              if ARFaceTrackingConfiguration.supportsFrameSemantics(.personSegmentation) {
+                    configuration.frameSemantics.insert(.personSegmentation)
+              }
         configuration.isLightEstimationEnabled = true
         arSCNView!.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
         print("ARSession Running")
@@ -694,7 +697,12 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
-        arSCNView!.session.run(ARFaceTrackingConfiguration(),
+        let configuration = ARFaceTrackingConfiguration()
+              if ARFaceTrackingConfiguration.supportsFrameSemantics(.personSegmentation) {
+                    configuration.frameSemantics.insert(.personSegmentation)
+              }
+        
+        arSCNView!.session.run(configuration,
                                options: [.removeExistingAnchors,
                                          .resetTracking,
                                          .resetSceneReconstruction,
@@ -879,6 +887,9 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     private func configureARSession() {
         // Setup ARSession configuration
         let configuration = ARFaceTrackingConfiguration()
+              if ARFaceTrackingConfiguration.supportsFrameSemantics(.personSegmentation) {
+                    configuration.frameSemantics.insert(.personSegmentation)
+              }
         configuration.isLightEstimationEnabled = true
         // Additional ARSession configuration
     }
