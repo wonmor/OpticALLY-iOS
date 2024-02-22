@@ -96,9 +96,9 @@ struct ExportView: View {
         ZStack {
             if showFaceTrackingView {
                 ZStack {
-                    ARFaceTrackingView()
-                        .opacity(0.5)
-                        .scaledToFit()
+//                    ARFaceTrackingView()
+//                        .opacity(0.5)
+//                        .scaledToFit()
                 }
                 .padding()
                 .onAppear {
@@ -175,7 +175,7 @@ struct ExportView: View {
             case .prescan:
                 VStack {
                     if showFaceTrackingView {
-                        FlashButtonView(isFlashOn: $isFlashOn)
+                        // FlashButtonView(isFlashOn: $isFlashOn)
                     }
                     
                     if showConsoleOutput {

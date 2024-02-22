@@ -22,6 +22,7 @@ struct FaceIDScanView: View {
             if let image = cameraViewController.currentImage {
                 Image(uiImage: image)
                     .resizable()
+                    .scaledToFill()
                     .clipShape(Circle())
                     .frame(width: 200, height: 200)
                     .rotationEffect(.degrees(90))
