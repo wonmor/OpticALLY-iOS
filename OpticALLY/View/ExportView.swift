@@ -221,7 +221,7 @@ struct ExportView: View {
                         
                     } else {
                         ScrollView {
-                            Text("PUPIL DISTANCE\n\(String(format: "%.1f", faceTrackingViewModel.pupilDistance)) mm")
+                            Text("SCREEN DISTANCE\n\(String(format: "%.1f", 10)) cm")
                                 .padding()
                                 .frame(maxWidth: .infinity, alignment: .center)
                                 .multilineTextAlignment(.center)
@@ -231,6 +231,7 @@ struct ExportView: View {
                     
                     FaceIDScanView(isScanComplete: $isScanComplete, cameraViewController: cameraViewController)
                         .padding()
+                        .opacity(0) // temp value...
                     
                     if showArrow {
                         if headTurnState == .left {
