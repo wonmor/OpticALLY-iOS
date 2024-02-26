@@ -12,12 +12,25 @@ struct FaceIDScanView: View {
     @Binding var isScanComplete: Bool
     @ObservedObject var cameraViewController: CameraViewController // Make sure this is an ObservableObject
     
-    @State private var isAnimating = false
-    @State private var isComplete = false // Temporary value...
-    @State private var isFaceDetected = true // Temporary value...
+    @Binding var showFaceIdLoading: Bool
+    @Binding var showFaceIdSuccessful: Bool
 
     var body: some View {
         ZStack {
+            if showFaceIdLoading {
+                LottieView(animationFileName: "face-id-2", loopMode: .loop)
+                    .frame(width: 60, height: 60)
+                    .opacity(0.5)
+                    .scaleEffect(0.5)
+                    .padding(.top)
+                
+            } else if showFaceIdSuccessful {
+                LottieView(animationFileName: "face-found-successfully", loopMode: .playOnce)
+                    .frame(width: 60, height: 60)
+                    .scaleEffect(0.5)
+                    .opacity(0.5)
+            }
+            
             // Display the captured image
             if let image = cameraViewController.currentImage {
                 Image(uiImage: image)
@@ -26,29 +39,13 @@ struct FaceIDScanView: View {
                     .clipShape(Circle())
                     .frame(width: 200, height: 200)
                     .rotationEffect(.degrees(90))
+                    .blur(radius: showFaceIdLoading || showFaceIdSuccessful ? 20 : 0)
                 
             } else {
                 ARViewContainer(arSessionDelegate: cameraViewController)
                     .clipShape(Circle())
                     .frame(width: 200, height: 200)
-            }
-
-            if isComplete {
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundColor(.green)
-                    .font(.system(size: 50))
-                    .background(Color.black.opacity(0.8).blur(radius: 20.0))
-                    .onAppear {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                            isScanComplete = true
-                        }
-                    }
-                    
-            } else if !isFaceDetected {
-                Image(systemName: "face.dashed")
-                    .foregroundColor(.white)
-                    .font(.system(size: 75))
-                    .background(Color.black.opacity(0.8).blur(radius: 20.0))
+                    .blur(radius: showFaceIdLoading || showFaceIdSuccessful ? 20 : 0)
             }
         }
         .onAppear {

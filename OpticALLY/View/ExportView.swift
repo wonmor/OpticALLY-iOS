@@ -74,6 +74,9 @@ struct ExportView: View {
     @State private var targetRoll: Double = 0
     
     @State private var isScanComplete: Bool = false
+    
+    @State private var showFaceIdLoading = false
+    @State private var showFaceIdSuccessful = false
 
     // Counter to keep track of the number of scans
     @State private var scanCount = 0
@@ -175,7 +178,8 @@ struct ExportView: View {
             case .prescan:
                 VStack {
                     if showFaceTrackingView {
-                        // FlashButtonView(isFlashOn: $isFlashOn)
+                        FlashButtonView(isFlashOn: $isFlashOn)
+                            .zIndex(20.0)
                     }
                     
                     if showConsoleOutput {
@@ -189,19 +193,17 @@ struct ExportView: View {
                                         .monospaced()
                                     
                                     if lastLog.contains("Converting") {
-                                        LottieView(animationFileName: "face-id-2", loopMode: .loop)
-                                            .frame(width: 60, height: 60)
-                                            .opacity(0.5)
-                                            .scaleEffect(0.5)
-                                            .padding(.top)
+                                        EmptyView()
+                                            .onAppear() {
+                                                self.showFaceIdLoading = true
+                                            }
                                     }
                                     
-                                    
                                     if lastLog.contains("Done") {
-                                        LottieView(animationFileName: "face-found-successfully", loopMode: .playOnce)
-                                            .frame(width: 60, height: 60)
-                                            .scaleEffect(0.5)
-                                            .opacity(0.5)
+                                        EmptyView()
+                                            .onAppear() {
+                                                self.showFaceIdSuccessful = true
+                                            }
                                     }
                                 }
                             }
@@ -229,7 +231,7 @@ struct ExportView: View {
                         }
                     }
                     
-                    FaceIDScanView(isScanComplete: $isScanComplete, cameraViewController: cameraViewController)
+                    FaceIDScanView(isScanComplete: $isScanComplete, cameraViewController: cameraViewController, showFaceIdLoading: $showFaceIdLoading, showFaceIdSuccessful: $showFaceIdSuccessful)
                         .padding()
               
                     
