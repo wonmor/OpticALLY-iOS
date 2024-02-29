@@ -47,7 +47,7 @@ struct ExportView: View {
                                 hideMoveOnButton = true
                             }
                         
-                        if lastLog.contains("Converting") {
+                        if lastLog.contains("Capturing") {
                             LottieView(animationFileName: "face-id-2", loopMode: .loop)
                                 .frame(width: 60, height: 60)
                                 .opacity(0.5)
@@ -81,13 +81,20 @@ struct ExportView: View {
                         .cornerRadius(12)
                 }
                 
-                FaceIDScanView(cameraViewController: cameraViewController)
-                    .frame(width: 200, height: 200)
-                    .clipShape(Circle())
-                    .padding()
-                    .onChange(of: faceTrackingViewModel.faceYawAngle) { newValue in
-                        handleFaceDirectionChange(yawAngle: newValue)
-                    }
+                ZStack {
+                    // Segmented circle behind the FaceIDScanView
+                    DirectionIndicatorView(scanDirection: $scanDirection, faceYawAngle: faceTrackingViewModel.faceYawAngle)
+                        .frame(width: 220, height: 220) // Adjust the size as needed
+                    
+                    // FaceIDScanView in the front
+                    FaceIDScanView(cameraViewController: cameraViewController)
+                        .frame(width: 200, height: 200)
+                        .clipShape(Circle())
+                        .padding()
+                        .onChange(of: faceTrackingViewModel.faceYawAngle) { newValue in
+                            handleFaceDirectionChange(yawAngle: newValue)
+                        }
+                }
                 
                 Spacer()
                 
@@ -98,7 +105,7 @@ struct ExportView: View {
                             .foregroundColor(.white)
                             .padding()
                             .frame(maxWidth: .infinity)
-                            .background(Capsule().fill(Color.blue))
+                            .background(Capsule().fill(Color.gray.opacity(0.4)))
                     }
                     .padding(.horizontal)
                 }
@@ -198,3 +205,34 @@ struct DistanceIndicator: View {
     }
 }
 
+struct DirectionIndicatorView: View {
+    @Binding var scanDirection: ExportView.ScanDirection
+    var faceYawAngle: Double
+    
+    var body: some View {
+        ZStack {
+            // Left half
+            Path { path in
+                path.addArc(center: CGPoint(x: 125, y: 125), radius: 125, startAngle: Angle(degrees: 90), endAngle: Angle(degrees: 270), clockwise: true)
+                path.addLine(to: CGPoint(x: 125, y: 125))
+                path.closeSubpath()
+            }
+            .fill(self.scanDirection == .left && faceYawAngle > 20 ? Color.green : Color.gray.opacity(0.5))
+            
+            // Right half
+            Path { path in
+                path.addArc(center: CGPoint(x: 125, y: 125), radius: 125, startAngle: Angle(degrees: 270), endAngle: Angle(degrees: 90), clockwise: true)
+                path.addLine(to: CGPoint(x: 125, y: 125))
+                path.closeSubpath()
+            }
+            .fill(self.scanDirection == .right && faceYawAngle < -20 ? Color.green : Color.gray.opacity(0.5))
+            
+            // Center indication - entire circle
+            if scanDirection == .front && abs(faceYawAngle) < 10 {
+                Circle()
+                    .fill(Color.green.opacity(0.5))
+                    .frame(width: 250, height: 250)
+            }
+        }
+    }
+}

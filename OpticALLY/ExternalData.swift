@@ -483,7 +483,7 @@ struct ExternalData {
                 let color = UIColor(red: CGFloat(rComponent), green: CGFloat(gComponent), blue: CGFloat(bComponent), alpha: CGFloat(aComponent))
                 colors.append(color)
                 
-                LogManager.shared.log("Converting \(counter)th point")
+                LogManager.shared.log("Capturing \(counter)th point")
                 
                 counter += 1
             }
