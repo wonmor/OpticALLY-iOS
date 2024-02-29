@@ -195,6 +195,7 @@ struct ExportView: View {
                                     if lastLog.contains("Converting") {
                                         EmptyView()
                                             .onAppear() {
+                                                print("showFaceIdLoading = true")
                                                 self.showFaceIdLoading = true
                                             }
                                     }
@@ -202,6 +203,7 @@ struct ExportView: View {
                                     if lastLog.contains("Done") {
                                         EmptyView()
                                             .onAppear() {
+                                                print("showFaceIdSuccessful = true")
                                                 self.showFaceIdSuccessful = true
                                             }
                                     }

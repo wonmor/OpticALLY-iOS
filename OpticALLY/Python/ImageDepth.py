@@ -141,14 +141,22 @@ class ImageDepth:
         self.pcd.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=self.normal_radius, max_nn=30))
         self.pcd.orient_normals_towards_camera_location()
 
-    def load_image(self, file):
-        print(f"Loading {file}")
-        self.img = np.fromfile(file, dtype='uint8')
-        self.img = self.img.reshape((self.height, self.width, 4))
-        self.img = self.img[:,:,0:3]
+    def process_image(self):
+        # Convert the image from sRGB to linear space
+        def srgb_to_linear(srgb):
+            threshold = 0.04045
+            below_threshold = srgb <= threshold
+            linear_below = srgb / 12.92
+            linear_above = ((srgb + 0.055) / 1.055) ** 2.4
+            return np.where(below_threshold, linear_below, linear_above)
 
-        # swap RB
-        self.img = self.img[:,:,[2,1,0]]
+        # Apply sRGB to Linear conversion
+        self.img_linear = srgb_to_linear(self.img.astype('float32') / 255.0)
+
+        # Now, the image is in linear space, you can continue with your processing
+        self.gray = cv.cvtColor((self.img_linear * 255).astype('uint8'), cv.COLOR_RGB2GRAY)
+        self.img_undistort = cv.remap((self.img_linear * 255).astype('uint8'), self.map_x, self.map_y, cv.INTER_LINEAR)
+        self.gray_undistort = cv.remap(self.gray, self.map_x, self.map_y, cv.INTER_LINEAR)
 
     def project3d(self, pts):
         # expect pts to be Nx2
