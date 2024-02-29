@@ -99,10 +99,23 @@ struct ExportView: View {
                 
                 Spacer()
                 
-                if let lastLog = logManager.latestLog {
-                    if lastLog.lowercased().contains("complete") {
-                        Button(action: viewResults) {
-                            Text("View Results")
+                if scanState != .scanning {
+                    if let lastLog = logManager.latestLog {
+                        if lastLog.lowercased().contains("complete") {
+                            Button(action: viewResults) {
+                                Text("View Results")
+                                    .font(.headline)
+                                    .foregroundColor(.white)
+                                    .padding()
+                                    .frame(maxWidth: .infinity)
+                                    .background(Capsule().fill(Color.gray.opacity(0.4)))
+                            }
+                            .padding(.horizontal)
+                        }
+                        
+                    } else {
+                        Button(action: startScanning) {
+                            Text("Start Scanning")
                                 .font(.headline)
                                 .foregroundColor(.white)
                                 .padding()
@@ -111,17 +124,6 @@ struct ExportView: View {
                         }
                         .padding(.horizontal)
                     }
-                    
-                } else if scanState != .scanning {
-                    Button(action: startScanning) {
-                        Text("Start Scanning")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                            .background(Capsule().fill(Color.gray.opacity(0.4)))
-                    }
-                    .padding(.horizontal)
                 }
             }
             .padding()
