@@ -25,6 +25,7 @@ struct ExportView: View {
     
     private func captureFrame() {
         ExternalData.isSavingFileAsPLY = true
+        HapticManager.playHapticFeedback(type: .warning)
     }
 
     var body: some View {
