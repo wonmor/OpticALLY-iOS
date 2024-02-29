@@ -4,7 +4,7 @@ import ARKit
 
 struct ExportView: View {
     @EnvironmentObject var globalState: GlobalState
-    @StateObject private var faceTrackingViewModel = FaceTrackingViewModel()
+    @StateObject var faceTrackingViewModel: FaceTrackingViewModel
     
     @State private var scanState: ScanState = .ready
     @State private var scanDirection: ScanDirection = .left
