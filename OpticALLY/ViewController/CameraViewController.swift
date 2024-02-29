@@ -59,6 +59,112 @@ private let faceTextureSize = 1024 //px
 /// Should the face mesh be filled in? (i.e. fill in the eye and mouth holes with geometry)
 private let fillMesh = true
 
+extension CameraViewController {
+    func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
+        //1. Setup The FaceNode & Add The Eyes
+        faceNode = node
+        faceNode!.addChildNode(leftEye)
+        faceNode!.addChildNode(rightEye)
+        faceNode!.transform = node.transform
+
+        //2. Get The Distance Of The Eyes From The Camera
+        trackDistance()
+    }
+
+    func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
+        guard let faceAnchor = anchor as? ARFaceAnchor else {
+            return
+        }
+        
+        guard let faceAnchor = anchor as? ARFaceAnchor,
+              let frame = arSCNView!.session.currentFrame
+        else {
+            return
+        }
+        
+        let leftEyeTransform = faceAnchor.leftEyeTransform
+        let rightEyeTransform = faceAnchor.rightEyeTransform
+        
+        // Convert the transform to an SCNVector3 for position
+        leftEyePosition3D = SCNVector3(leftEyeTransform.columns.3.x, leftEyeTransform.columns.3.y, leftEyeTransform.columns.3.z)
+        rightEyePosition3D = SCNVector3(rightEyeTransform.columns.3.x, rightEyeTransform.columns.3.y, rightEyeTransform.columns.3.z)
+        
+        DispatchQueue.main.async { [self] in
+            viewModel?.leftEyePosition3D = leftEyePosition3D
+            viewModel?.rightEyePosition3D = rightEyePosition3D
+            
+            updatePupillaryDistance()
+        }
+        
+        // Update face geometry
+        self.previewFaceGeometry.update(from: faceAnchor.geometry)
+        
+        // Extract the Euler angles from the viewModel
+        let yawAngle = viewModel?.faceYawAngle ?? 0.0
+        let pitchAngle = viewModel?.facePitchAngle ?? 0.0
+        let rollAngle = viewModel?.faceRollAngle ?? 0.0
+        
+        // Convert angles to radians and then to Float (the actual values used for vector transformations as they only accept radians, not degrees)
+        let yaw = Float(yawAngle * .pi / 180)
+        let pitch = Float(pitchAngle * .pi / 180)
+        let roll = Float(rollAngle * .pi / 180)
+        
+        // Create rotation matrices
+        let rotationY = SCNMatrix4MakeRotation(yaw, 0, 1, 0)
+        let rotationX = SCNMatrix4MakeRotation(pitch, 1, 0, 0)
+        let rotationZ = SCNMatrix4MakeRotation(roll, 0, 0, 1)
+        
+        // Combine rotations
+        let rotation = SCNMatrix4Mult(SCNMatrix4Mult(rotationZ, rotationX), rotationY)
+        
+        // Set the transform of the previewFaceNode
+        self.previewFaceNode.transform = rotation
+        
+        // Match the world position of the faceAnchor
+        let worldTransform = SCNMatrix4(faceAnchor.transform)// Convert simd_float4x4 to SCNMatrix4
+        self.previewFaceNode.worldPosition = SCNVector3(worldTransform.m41, worldTransform.m42, worldTransform.m43)
+        
+        scnFaceGeometry.update(from: faceAnchor.geometry)
+        faceUvGenerator.update(frame: frame, scene: self.arSCNView!.scene, headNode: node, geometry: scnFaceGeometry)
+    
+        self.previewFaceAnchor = faceAnchor
+        self.previewFaceAnchors.append(faceAnchor)
+        
+        self.previewYaws.append(yaw)
+        self.previewPitches.append(pitch)
+        self.previewRolls.append(roll)
+        
+        faceNode!.transform = node.transform
+
+        //2. Check We Have A Valid ARFaceAnchor
+        guard let faceAnchor = anchor as? ARFaceAnchor else { return }
+
+        //3. Update The Transform Of The Left & Right Eyes From The Anchor Transform
+        leftEye.simdTransform = faceAnchor.leftEyeTransform
+        rightEye.simdTransform = faceAnchor.rightEyeTransform
+
+        //4. Get The Distance Of The Eyes From The Camera
+        trackDistance()
+    }
+
+    /// Tracks The Distance Of The Eyes From The Camera
+    func trackDistance() {
+        DispatchQueue.main.async {
+            //4. Get The Distance Of The Eyes From The Camera
+            let leftEyeDistanceFromCamera = self.leftEye.worldPosition - SCNVector3Zero
+            let rightEyeDistanceFromCamera = self.rightEye.worldPosition - SCNVector3Zero
+
+            //5. Calculate The Average Distance Of The Eyes To The Camera
+            let averageDistance = (leftEyeDistanceFromCamera.length() + rightEyeDistanceFromCamera.length()) / 2
+            let averageDistanceCM = (Int(round(averageDistance * 100)))
+            
+            self.faceDistance = averageDistanceCM
+            
+            print("Approximate Distance Of Face From Camera = \(averageDistanceCM) cm")
+        }
+    }
+}
+
 class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelegate, AVCaptureDataOutputSynchronizerDelegate, ObservableObject {
     var contentNode: SCNNode?
     
@@ -67,6 +173,12 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     
     // MARK: - Properties
     @Published var arSCNView: ARSCNView?
+    @Published var currentImage: UIImage!
+    @Published var faceDistance: Int?
+    
+    var leftEye = SCNNode()
+    var rightEye = SCNNode()
+    
     private var avCaptureSession: AVCaptureSession = AVCaptureSession()
     private var outputSynchronizer: AVCaptureDataOutputSynchronizer?
     private var videoDataOutput = AVCaptureVideoDataOutput()
@@ -95,8 +207,6 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     private var synchronizedDepthData: AVDepthData?
     
     private var synchronizedVideoPixelBuffer: CVPixelBuffer?
-    
-    @Published var currentImage: UIImage!
     
     private let faceDetectionRequest = VNDetectFaceLandmarksRequest()
     private let faceDetectionHandler = VNSequenceRequestHandler()
@@ -225,70 +335,6 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         
         // Convert UIImage back to CVPixelBuffer
         return finalImage.toCVPixelBuffer()
-    }
-    
-    public func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
-        guard let faceAnchor = anchor as? ARFaceAnchor else {
-            return
-        }
-        
-        guard let faceAnchor = anchor as? ARFaceAnchor,
-              let frame = arSCNView!.session.currentFrame
-        else {
-            return
-        }
-        
-        let leftEyeTransform = faceAnchor.leftEyeTransform
-        let rightEyeTransform = faceAnchor.rightEyeTransform
-        
-        // Convert the transform to an SCNVector3 for position
-        leftEyePosition3D = SCNVector3(leftEyeTransform.columns.3.x, leftEyeTransform.columns.3.y, leftEyeTransform.columns.3.z)
-        rightEyePosition3D = SCNVector3(rightEyeTransform.columns.3.x, rightEyeTransform.columns.3.y, rightEyeTransform.columns.3.z)
-        
-        DispatchQueue.main.async { [self] in
-            viewModel?.leftEyePosition3D = leftEyePosition3D
-            viewModel?.rightEyePosition3D = rightEyePosition3D
-            
-            updatePupillaryDistance()
-        }
-        
-        // Update face geometry
-        self.previewFaceGeometry.update(from: faceAnchor.geometry)
-        
-        // Extract the Euler angles from the viewModel
-        let yawAngle = viewModel?.faceYawAngle ?? 0.0
-        let pitchAngle = viewModel?.facePitchAngle ?? 0.0
-        let rollAngle = viewModel?.faceRollAngle ?? 0.0
-        
-        // Convert angles to radians and then to Float (the actual values used for vector transformations as they only accept radians, not degrees)
-        let yaw = Float(yawAngle * .pi / 180)
-        let pitch = Float(pitchAngle * .pi / 180)
-        let roll = Float(rollAngle * .pi / 180)
-        
-        // Create rotation matrices
-        let rotationY = SCNMatrix4MakeRotation(yaw, 0, 1, 0)
-        let rotationX = SCNMatrix4MakeRotation(pitch, 1, 0, 0)
-        let rotationZ = SCNMatrix4MakeRotation(roll, 0, 0, 1)
-        
-        // Combine rotations
-        let rotation = SCNMatrix4Mult(SCNMatrix4Mult(rotationZ, rotationX), rotationY)
-        
-        // Set the transform of the previewFaceNode
-        self.previewFaceNode.transform = rotation
-        
-        // Match the world position of the faceAnchor
-        let worldTransform = SCNMatrix4(faceAnchor.transform)// Convert simd_float4x4 to SCNMatrix4
-        self.previewFaceNode.worldPosition = SCNVector3(worldTransform.m41, worldTransform.m42, worldTransform.m43)
-        
-        scnFaceGeometry.update(from: faceAnchor.geometry)
-        faceUvGenerator.update(frame: frame, scene: self.arSCNView!.scene, headNode: node, geometry: scnFaceGeometry)
-    
-        self.previewFaceAnchor = faceAnchor
-        self.previewFaceAnchors.append(faceAnchor)
-        
-        self.previewYaws.append(yaw)
-        self.previewPitches.append(pitch)
-        self.previewRolls.append(roll)
     }
     
     func convertToMatrix4(_ transform: CGAffineTransform) -> matrix_float4x4 {
@@ -729,6 +775,27 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         // self.view.bringSubviewToFront(arSCNView!)
         self.view.bringSubviewToFront(previewSceneView)
         // self.view.bringSubviewToFront(imageView)
+        
+        //2. Setup The Eye Nodes
+        setupEyeNode()
+    }
+    
+    /// Creates To SCNSpheres To Loosely Represent The Eyes
+        func setupEyeNode() {
+        //1. Create A Node To Represent The Eye
+        let eyeGeometry = SCNSphere(radius: 0.005)
+        eyeGeometry.materials.first?.diffuse.contents = UIColor.cyan
+        eyeGeometry.materials.first?.transparency = 1
+
+        //2. Create A Holder Node & Rotate It So The Gemoetry Points Towards The Device
+        let node = SCNNode()
+        node.geometry = eyeGeometry
+        node.eulerAngles.x = -.pi / 2
+        node.position.z = 0.1
+
+        //3. Create The Left & Right Eyes
+        leftEye = node.clone()
+        rightEye = node.clone()
     }
     
     func configureImageView() {

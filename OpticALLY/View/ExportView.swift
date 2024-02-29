@@ -223,7 +223,7 @@ struct ExportView: View {
                         
                     } else {
                         ScrollView {
-                            Text("SCREEN DISTANCE\n\(String(format: "%.1f", 10)) cm")
+                            Text("SCREEN DISTANCE\n\(cameraViewController.faceDistance ?? 0) cm")
                                 .padding()
                                 .frame(maxWidth: .infinity, alignment: .center)
                                 .multilineTextAlignment(.center)

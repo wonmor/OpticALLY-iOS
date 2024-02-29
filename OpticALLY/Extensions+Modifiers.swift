@@ -12,6 +12,11 @@ import ARKit
 import simd
 import Foundation
 
+extension SCNVector3{
+    ///Allow Us To Subtract Two SCNVector3's
+    static func - (l: SCNVector3, r: SCNVector3) -> SCNVector3 { return SCNVector3Make(l.x - r.x, l.y - r.y, l.z - r.z) }
+}
+
 extension FileManager {
     /// Searches the specified directory for files beginning with a given prefix.
     /// - Parameters:
