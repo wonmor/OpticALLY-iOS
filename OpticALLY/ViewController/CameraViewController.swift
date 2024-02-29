@@ -635,8 +635,6 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         // Calculate the average point in normalized Vision coordinates
         let viewSize = UIScreen.main.bounds.size
         
-        print("viewSize: \(viewSize)")
-        
         let sum = normalizedPoints.reduce(CGPoint.zero, { CGPoint(x: $0.x + $1.x, y: $0.y + $1.y) })
         let count = CGFloat(normalizedPoints.count)
         let averageNormalized = CGPoint(x: sum.x / count, y: sum.y / count)
@@ -658,8 +656,6 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         let scaleX = viewSize.width / width
         let scaleY = viewSize.height / height
         let finalPoint = CGPoint(x: averageUIKit.x * scaleX, y: transformedY * scaleY)
-        
-        print("finalPoint: \(finalPoint)")
         
         return finalPoint
     }
