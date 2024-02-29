@@ -182,23 +182,15 @@ struct DistanceIndicator: View {
         
         return (
             VStack {
-                Text(status.text)
+                Text("\(status.text)\(status.text.contains("FAR") || status.text.contains("CLOSE") ? "\n\(cameraViewController.faceDistance ?? 0) cm" : "")")
                     .bold()
                     .monospaced()
                     .padding()
                     .foregroundColor(.white)
-                    .background(status.color)
-                    .cornerRadius(20)
-                
-                if status.text.contains("FAR") || status.text.contains("CLOSE") {
-                    Text("\(cameraViewController.faceDistance ?? 0) cm")
-                        .monospaced()
-                        .padding()
-                        .foregroundColor(.white)
-                        .background(status.color)
-                        .cornerRadius(20)
-                }
+                    .multilineTextAlignment(.center)
             }
+                .background(status.color)
+                .cornerRadius(20)
         )
     }
     
