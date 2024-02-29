@@ -2,11 +2,7 @@ import SwiftUI
 import ARKit
 
 struct FaceIDScanView: View {
-    @Binding var isScanComplete: Bool
     @ObservedObject var cameraViewController: CameraViewController // Ensure this is an ObservableObject
-    
-    @Binding var showFaceIdLoading: Bool
-    @Binding var showFaceIdSuccessful: Bool
 
     var body: some View {
         ZStack {
@@ -14,22 +10,6 @@ struct FaceIDScanView: View {
             ARViewContainer(arSessionDelegate: cameraViewController)
                 .clipShape(Circle())
                 .frame(width: 200, height: 200)
-                // Conditionally apply blur if needed, or adjust as per requirements
-                .blur(radius: showFaceIdLoading || showFaceIdSuccessful ? 20 : 0)
-
-            // Conditionally display animations for loading or success
-            if showFaceIdLoading {
-                LottieView(animationFileName: "face-id-2", loopMode: .loop)
-                    .frame(width: 60, height: 60)
-                    .opacity(0.5)
-                    .scaleEffect(0.5)
-                    .padding(.top)
-            } else if showFaceIdSuccessful {
-                LottieView(animationFileName: "face-found-successfully", loopMode: .playOnce)
-                    .frame(width: 60, height: 60)
-                    .scaleEffect(0.5)
-                    .opacity(0.5)
-            }
         }
         .onAppear {
             // Initialize ARSCNView and set its session delegate

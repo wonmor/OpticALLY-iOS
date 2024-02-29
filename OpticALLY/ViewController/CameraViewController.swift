@@ -856,7 +856,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     }
     
     private func addAndConfigureSwiftUIView() {
-        let hostingController = UIHostingController(rootView: ExportView(faceTrackingViewModel: faceTrackingViewModel))
+        let hostingController = UIHostingController(rootView: ExportView())
         addChild(hostingController)
         hostingController.didMove(toParent: self)
         

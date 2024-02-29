@@ -14,6 +14,17 @@ import ZipArchive
 
 let debugMode = false
 
+struct ShareSheet: UIViewControllerRepresentable {
+    var fileURL: URL
+    
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        let controller = UIActivityViewController(activityItems: [fileURL], applicationActivities: nil)
+        return controller
+    }
+    
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
+}
+
 struct PostScanView: View {
     @EnvironmentObject var globalState: GlobalState
     
