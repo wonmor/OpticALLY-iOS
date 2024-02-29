@@ -99,9 +99,22 @@ struct ExportView: View {
                 
                 Spacer()
                 
-                if scanState != .scanning && !hideMoveOnButton {
+                if let lastLog = logManager.latestLog {
+                    if lastLog.lowercased().contains("complete") {
+                        Button(action: viewResults) {
+                            Text("View Results")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .padding()
+                                .frame(maxWidth: .infinity)
+                                .background(Capsule().fill(Color.gray.opacity(0.4)))
+                        }
+                        .padding(.horizontal)
+                    }
+                    
+                } else if scanState != .scanning {
                     Button(action: startScanning) {
-                        Text(scanState == .ready ? "Start Scanning" : "View Results")
+                        Text("Start Scanning")
                             .font(.headline)
                             .foregroundColor(.white)
                             .padding()
@@ -136,14 +149,13 @@ struct ExportView: View {
     }
     
     private func startScanning() {
-        if scanState == .ready {
-            withAnimation {
-                scanState = .scanning
-            }
-        } else {
-            // Move on to postScanning page...
-            globalState.currentView = .postScanning
+        withAnimation {
+            scanState = .scanning
         }
+    }
+    
+    private func viewResults() {
+        globalState.currentView = .postScanning
     }
     
     private func handleFaceDirectionChange(yawAngle: Double) {
