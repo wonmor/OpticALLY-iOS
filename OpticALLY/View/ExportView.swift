@@ -217,7 +217,7 @@ struct DirectionIndicatorView: View {
                 path.addLine(to: CGPoint(x: 110, y: 110))
                 path.closeSubpath()
             }
-            .fill(self.scanDirection == .left && faceYawAngle > 20 ? Color.green : Color.gray.opacity(0.5))
+            .fill(self.scanDirection == .right && faceYawAngle < -20 ? Color.green : Color.gray.opacity(0.5))
             
             // Right half
             Path { path in
@@ -225,7 +225,7 @@ struct DirectionIndicatorView: View {
                 path.addLine(to: CGPoint(x: 110, y: 110))
                 path.closeSubpath()
             }
-            .fill(self.scanDirection == .right && faceYawAngle < -20 ? Color.green : Color.gray.opacity(0.5))
+            .fill(self.scanDirection == .left && faceYawAngle > 20 ? Color.green : Color.gray.opacity(0.5))
             
             // Center indication - entire circle
             if scanDirection == .front && abs(faceYawAngle) < 10 {
