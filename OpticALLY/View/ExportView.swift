@@ -180,13 +180,26 @@ struct DistanceIndicator: View {
     var body: some View {
         let status = determineStatus()
         
-        return Text(status.text)
-            .bold()
-            .monospaced()
-            .padding()
-            .foregroundColor(.white)
-            .background(status.color)
-            .cornerRadius(20)
+        return (
+            VStack {
+                Text(status.text)
+                    .bold()
+                    .monospaced()
+                    .padding()
+                    .foregroundColor(.white)
+                    .background(status.color)
+                    .cornerRadius(20)
+                
+                if status.text.contains("FAR") || status.text.contains("CLOSE") {
+                    Text("\(cameraViewController.faceDistance ?? 0) cm")
+                        .monospaced()
+                        .padding()
+                        .foregroundColor(.white)
+                        .background(status.color)
+                        .cornerRadius(20)
+                }
+            }
+        )
     }
     
     private func determineStatus() -> (text: String, color: Color) {
