@@ -40,9 +40,18 @@ struct PostScanView: View {
     @State private var showShareSheet: Bool = false
     @State private var showDropdown: Bool = false
     
+    @State private var isProcessing = false {
+        didSet {
+            // Prevent the device from sleeping when processing starts, and allow it to sleep again when processing ends
+            UIApplication.shared.isIdleTimerDisabled = isProcessing
+        }
+    }
+    
     let fileManager = FileManager.default
     
     func initialize() {
+        isProcessing = true
+        
         // Construct the paths for the calibration, image, and depth files
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy_MM_dd"
@@ -67,7 +76,7 @@ struct PostScanView: View {
                 DispatchQueue.main.async {
                     self.fileURLToShare = fileURL  // Store the file URL for sharing
                     ExternalData.isMeshView = true
-                    
+                    self.isProcessing = false
                 }
                 
             } else {
@@ -190,6 +199,7 @@ struct PostScanView: View {
                         self.fileURLToShare = fileURL
                         self.triggerUpdate = true
                         ExternalData.isMeshView = true
+                        self.isProcessing = false
                         completion(true, fileURL)  // Pass the file URL to the completion handler
                     } catch {
                         print("Failed to save PLY file: \(error.localizedDescription)")
@@ -259,13 +269,9 @@ struct PostScanView: View {
                 if triggerUpdate {
                     if self.fileURLToShare != nil {
                         if ExternalData.isMeshView {
+                            // Face Model Preview...
                             SceneKitMDLView(mdlAsset: MDLAsset(url: self.fileURLToShare!))
                         }
-                        
-                        //                        if let node = scnNode {
-                        //                            SceneKitSingleView(node: node)
-                        //                                .frame(width: 300, height: 300)  // Adjust the size as needed
-                        //                        }
                     } else {
                         EmptyView()
                             .onAppear() {
