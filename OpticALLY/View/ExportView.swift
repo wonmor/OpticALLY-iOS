@@ -48,7 +48,7 @@ struct ExportView: View {
                 
                 if scanState != .scanning {
                     Button(action: startScanning) {
-                        Text(scanState == .ready ? "Start Scanning" : "Scan Completed")
+                        Text(scanState == .ready ? "Start Scanning" : "View Results")
                             .font(.headline)
                             .foregroundColor(.white)
                             .padding()
@@ -83,8 +83,10 @@ struct ExportView: View {
     }
     
     private func startScanning() {
-        withAnimation {
-            scanState = .scanning
+        if scanState == .ready {
+            withAnimation {
+                scanState = .scanning
+            }
         }
     }
     
@@ -92,7 +94,7 @@ struct ExportView: View {
         guard scanState == .scanning else { return }
         
         switch scanDirection {
-        case .left where yawAngle < -20:
+        case .left where yawAngle > 20:
             withAnimation {
                 scanDirection = .front
             }
@@ -100,10 +102,10 @@ struct ExportView: View {
             withAnimation {
                 scanDirection = .right
             }
-        case .right where yawAngle > 20:
+        case .right where yawAngle < -20:
             withAnimation {
                 scanState = .completed
-                globalState.currentView = .postScanning
+                // globalState.currentView = .postScanning
             }
         default:
             break
@@ -119,6 +121,7 @@ struct DistanceIndicator: View {
         
         return Text(status.text)
             .bold()
+            .monospaced()
             .padding()
             .foregroundColor(.white)
             .background(status.color)
