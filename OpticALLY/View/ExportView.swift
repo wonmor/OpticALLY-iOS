@@ -57,7 +57,7 @@ struct ExportView: View {
                         }
                         
                         
-                        if lastLog.contains("Done") {
+                        if lastLog.contains("Complete") {
                             LottieView(animationFileName: "face-found-successfully", loopMode: .playOnce)
                                 .frame(width: 60, height: 60)
                                 .scaleEffect(0.5)

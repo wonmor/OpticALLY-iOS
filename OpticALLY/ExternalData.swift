@@ -607,8 +607,8 @@ struct ExternalData {
             print("Error saving calibration data: \(error)")
         }
         
-        print("Done constructing the 3D object!")
-        LogManager.shared.log("Done constructing the 3D object!")
+        print("3D Mapping Complete!")
+        LogManager.shared.log("3D Mapping Complete!")
     }
     
     static func updateNodePivot(node: SCNNode, usingDepthData depthData: AVDepthData, withMetadata metadata: PointCloudMetadata) -> SCNNode {
