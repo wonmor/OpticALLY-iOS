@@ -213,16 +213,16 @@ struct DirectionIndicatorView: View {
         ZStack {
             // Left half
             Path { path in
-                path.addArc(center: CGPoint(x: 125, y: 125), radius: 125, startAngle: Angle(degrees: 90), endAngle: Angle(degrees: 270), clockwise: true)
-                path.addLine(to: CGPoint(x: 125, y: 125))
+                path.addArc(center: CGPoint(x: 110, y: 110), radius: 110, startAngle: Angle(degrees: 90), endAngle: Angle(degrees: 270), clockwise: true)
+                path.addLine(to: CGPoint(x: 110, y: 110))
                 path.closeSubpath()
             }
             .fill(self.scanDirection == .left && faceYawAngle > 20 ? Color.green : Color.gray.opacity(0.5))
             
             // Right half
             Path { path in
-                path.addArc(center: CGPoint(x: 125, y: 125), radius: 125, startAngle: Angle(degrees: 270), endAngle: Angle(degrees: 90), clockwise: true)
-                path.addLine(to: CGPoint(x: 125, y: 125))
+                path.addArc(center: CGPoint(x: 110, y: 110), radius: 110, startAngle: Angle(degrees: 270), endAngle: Angle(degrees: 90), clockwise: true)
+                path.addLine(to: CGPoint(x: 110, y: 110))
                 path.closeSubpath()
             }
             .fill(self.scanDirection == .right && faceYawAngle < -20 ? Color.green : Color.gray.opacity(0.5))
@@ -231,7 +231,7 @@ struct DirectionIndicatorView: View {
             if scanDirection == .front && abs(faceYawAngle) < 10 {
                 Circle()
                     .fill(Color.green.opacity(0.5))
-                    .frame(width: 250, height: 250)
+                    .frame(width: 220, height: 220)
             }
         }
     }
