@@ -6,9 +6,14 @@ struct ExportView: View {
     @EnvironmentObject var globalState: GlobalState
     @StateObject var faceTrackingViewModel: FaceTrackingViewModel
     
+    @ObservedObject var logManager = LogManager.shared
+    
     @State private var scanState: ScanState = .ready
     @State private var scanDirection: ScanDirection = .left
     @State private var showScanCompleteView: Bool = false
+    
+    @State private var showLog: Bool = false
+    @State private var hideMoveOnButton: Bool = false
     
     enum ScanState {
         case ready, scanning, completed
@@ -16,6 +21,10 @@ struct ExportView: View {
     
     enum ScanDirection {
         case left, front, right
+    }
+    
+    private func captureFrame() {
+        ExternalData.isSavingFileAsPLY = true
     }
 
     var body: some View {
@@ -27,14 +36,50 @@ struct ExportView: View {
                 
                 DistanceIndicator(cameraViewController: cameraViewController)
                 
-                Text(scanInstruction)
-                    .font(.title3)
-                    .fontWeight(.medium)
-                    .foregroundColor(.white)
-                    .multilineTextAlignment(.center)
-                    .padding()
-                    .background(Color.black.opacity(0.7))
-                    .cornerRadius(12)
+                if showLog {
+                    if let lastLog = logManager.latestLog {
+                        Text(lastLog)
+                            .padding()
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .multilineTextAlignment(.center)
+                            .monospaced()
+                            .onAppear {
+                                hideMoveOnButton = true
+                            }
+                        
+                        if lastLog.contains("Converting") {
+                            LottieView(animationFileName: "face-id-2", loopMode: .loop)
+                                .frame(width: 60, height: 60)
+                                .opacity(0.5)
+                                .scaleEffect(0.5)
+                                .padding(.vertical)
+                                .colorInvert()
+                        }
+                        
+                        
+                        if lastLog.contains("Done") {
+                            LottieView(animationFileName: "face-found-successfully", loopMode: .playOnce)
+                                .frame(width: 60, height: 60)
+                                .scaleEffect(0.5)
+                                .opacity(0.5)
+                                .padding(.vertical)
+                                .colorInvert()
+                                .onAppear() {
+                                    // Only do this for the LAST iteration of the 3 scans... (3rd scan) -> Because UI will be hidden until then, it's fine for now when it comes to logic
+                                    hideMoveOnButton = false
+                                }
+                        }
+                    }
+                } else {
+                    Text(scanInstruction)
+                        .font(.title3)
+                        .fontWeight(.medium)
+                        .foregroundColor(.white)
+                        .multilineTextAlignment(.center)
+                        .padding()
+                        .background(Color.black.opacity(0.7))
+                        .cornerRadius(12)
+                }
                 
                 FaceIDScanView(cameraViewController: cameraViewController)
                     .frame(width: 200, height: 200)
@@ -46,7 +91,7 @@ struct ExportView: View {
                 
                 Spacer()
                 
-                if scanState != .scanning {
+                if scanState != .scanning && !hideMoveOnButton {
                     Button(action: startScanning) {
                         Text(scanState == .ready ? "Start Scanning" : "View Results")
                             .font(.headline)
@@ -87,6 +132,9 @@ struct ExportView: View {
             withAnimation {
                 scanState = .scanning
             }
+        } else {
+            // Move on to postScanning page...
+            globalState.currentView = .postScanning
         }
     }
     
@@ -95,17 +143,23 @@ struct ExportView: View {
         
         switch scanDirection {
         case .left where yawAngle > 20:
+            captureFrame()
+            
             withAnimation {
                 scanDirection = .front
             }
         case .front where abs(yawAngle) < 10:
+            captureFrame()
+            
             withAnimation {
                 scanDirection = .right
             }
         case .right where yawAngle < -20:
+            captureFrame()
+            
             withAnimation {
                 scanState = .completed
-                // globalState.currentView = .postScanning
+                showLog = true
             }
         default:
             break
