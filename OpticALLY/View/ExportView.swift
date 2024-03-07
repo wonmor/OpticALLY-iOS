@@ -151,6 +151,9 @@ struct ExportView: View {
     }
     
     private func startScanning() {
+        // Temporary addition to prevent previous scans from showinwg up...
+        OpticALLYApp.clearDocumentsFolder()
+        
         withAnimation {
             scanState = .scanning
         }
