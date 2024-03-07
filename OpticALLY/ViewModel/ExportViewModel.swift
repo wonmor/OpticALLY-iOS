@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import Firebase
 import PythonKit
 import PythonSupport
 import LinkPython
@@ -56,22 +55,22 @@ class ExportViewModel: ObservableObject {
         completion()
     }
     
-    func fetchExportDurations() {
-        let db = Firestore.firestore()
-        db.collection("misc").document("render_time").getDocument { [weak self] (document, error) in
-            if let document = document, document.exists {
-                if let durations = document.data()?["obj_duration"] as? [Int], !durations.isEmpty {
-                    self?.estimatedExportTime = self?.calculateAverage(durations: durations)
-                } else {
-                    // Handle the case where array doesn't exist or is empty
-                    self?.estimatedExportTime = nil // No data available
-                }
-            } else {
-                // Handle the case where document doesn't exist
-                self?.estimatedExportTime = nil // No data available
-            }
-        }
-    }
+//    func fetchExportDurations() {
+//        let db = Firestore.firestore()
+//        db.collection("misc").document("render_time").getDocument { [weak self] (document, error) in
+//            if let document = document, document.exists {
+//                if let durations = document.data()?["obj_duration"] as? [Int], !durations.isEmpty {
+//                    self?.estimatedExportTime = self?.calculateAverage(durations: durations)
+//                } else {
+//                    // Handle the case where array doesn't exist or is empty
+//                    self?.estimatedExportTime = nil // No data available
+//                }
+//            } else {
+//                // Handle the case where document doesn't exist
+//                self?.estimatedExportTime = nil // No data available
+//            }
+//        }
+//    }
     
     private func calculateAverage(durations: [Int]) -> Int {
         return durations.reduce(0, +) / durations.count
@@ -87,29 +86,29 @@ class ExportViewModel: ObservableObject {
         return Int(duration)
     }
     
-    func updateExportDurationInFirestore(newDuration: Int) {
-        let db = Firestore.firestore()
-        let docRef = db.collection("misc").document("render_time")
-        
-        docRef.getDocument { (document, error) in
-            var durations: [Int]
-            
-            if let document = document, document.exists, let existingDurations = document.data()?["obj_duration"] as? [Int] {
-                durations = existingDurations
-                if durations.count >= 20 {
-                    durations.removeFirst() // Remove the oldest entry
-                }
-            } else {
-                // Document does not exist, start a new array
-                durations = []
-            }
-            
-            durations.append(newDuration) // Add the new duration
-            
-            // Set the new array to the document, creating it if necessary
-            docRef.setData(["obj_duration": durations], merge: true)
-        }
-    }
+//    func updateExportDurationInFirestore(newDuration: Int) {
+//        let db = Firestore.firestore()
+//        let docRef = db.collection("misc").document("render_time")
+//        
+//        docRef.getDocument { (document, error) in
+//            var durations: [Int]
+//            
+//            if let document = document, document.exists, let existingDurations = document.data()?["obj_duration"] as? [Int] {
+//                durations = existingDurations
+//                if durations.count >= 20 {
+//                    durations.removeFirst() // Remove the oldest entry
+//                }
+//            } else {
+//                // Document does not exist, start a new array
+//                durations = []
+//            }
+//            
+//            durations.append(newDuration) // Add the new duration
+//            
+//            // Set the new array to the document, creating it if necessary
+//            docRef.setData(["obj_duration": durations], merge: true)
+//        }
+//    }
     
     func exportPLY(showShareSheet: Bool) {
         // Determine a temporary file URL to save the PLY file
@@ -195,7 +194,7 @@ class ExportViewModel: ObservableObject {
     func exportOBJ() {
         if OpticALLYApp.isConnectedToNetwork() {
             // Fetch previous export durations to estimate the current export time
-            fetchExportDurations()
+            // fetchExportDurations()
             
             // Start the export timer to measure the duration of the export process
             startExportTimer()
@@ -239,7 +238,7 @@ class ExportViewModel: ObservableObject {
                         // Stop the export timer and record the duration of the export process
                         let exportDuration = self.stopExportTimer()
                         // Update the Firestore database with the new export duration
-                        self.updateExportDurationInFirestore(newDuration: exportDuration)
+                        // self.updateExportDurationInFirestore(newDuration: exportDuration)
                     }
                     
                     do {
