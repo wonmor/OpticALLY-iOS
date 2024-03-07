@@ -252,9 +252,9 @@ struct PostScanView: View {
             
             VStack {
                 HStack {
-                    Button(action: {
-                        // Only allow action if processing is not happening
-                        if !isProcessing {
+                    if !isProcessing {
+                        Button(action: {
+                            // Only allow action if processing is not happening
                             ExternalData.reset() {
                                 exportViewModel.reset() {
                                     reset()  // Reset position and rotation to default values
@@ -263,14 +263,13 @@ struct PostScanView: View {
                                     globalState.currentView = .scanning
                                 }
                             }
+                        }) {
+                            Image(systemName: "arrow.left") // Customize with your own back button image
+                                .foregroundStyle(.white)
+                                .font(.title)
+                                .padding()
                         }
-                    }) {
-                        Image(systemName: "arrow.left") // Customize with your own back button image
-                            .foregroundStyle(.white)
-                            .font(.title)
-                            .padding()
                     }
-                    .disabled(isProcessing)  // Disable the button when processing
 
                     Text("Your Scan")
                         .font(.system(.title))  // Using monospaced font
