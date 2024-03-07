@@ -93,6 +93,12 @@ struct OpticALLYApp: App {
             print("Python Version: \(sys!.version)")
             print("Python Encoding: \(sys!.getdefaultencoding().upper())")
             print("Open3D Version: \(o3d!.__version__)")
+
+            let json_string = "{}"  // Your JSON string here
+            let image_file = "path/to/image_file"
+            let depth_file = "path/to/depth_file"
+
+            // let imageDepthInstance = imageDepth!.ImageDepth(json_string, image_file, depth_file)
         }
         
         for family: String in UIFont.familyNames

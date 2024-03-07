@@ -45,6 +45,9 @@ class ImageDepth:
         # self.undistort_depth_map()
 
         # self.estimate_normals(idx, file, xy)
+        
+    def test_output2(self):
+        return "Hello inside ImageDepth"
 
     def load_calibration(self, json_string):
         data = json.loads(json_string)
