@@ -282,7 +282,6 @@ struct PostScanView: View {
                     self.initialize()
                 }
 
-                
                 if triggerUpdate {
                     if self.fileURLToShare != nil {
                         if ExternalData.isMeshView {
