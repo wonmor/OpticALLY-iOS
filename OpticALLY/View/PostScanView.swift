@@ -253,31 +253,35 @@ struct PostScanView: View {
             VStack {
                 HStack {
                     Button(action: {
-                        ExternalData.reset() {
-                            exportViewModel.reset() {
-                                // Reset position and rotation to default values
-                                reset()
-                                resetSceneKitView = true
-                                logManager.clearLogs()
-                                globalState.currentView = .scanning
+                        // Only allow action if processing is not happening
+                        if !isProcessing {
+                            ExternalData.reset() {
+                                exportViewModel.reset() {
+                                    reset()  // Reset position and rotation to default values
+                                    resetSceneKitView = true
+                                    logManager.clearLogs()
+                                    globalState.currentView = .scanning
+                                }
                             }
                         }
                     }) {
-                        Image(systemName: "arrow.left") // You can customize this with your own back button image
+                        Image(systemName: "arrow.left") // Customize with your own back button image
                             .foregroundStyle(.white)
                             .font(.title)
                             .padding()
                     }
-                    
+                    .disabled(isProcessing)  // Disable the button when processing
+
                     Text("Your Scan")
-                        .font(.system(.title)) // Using monospaced font
+                        .font(.system(.title))  // Using monospaced font
                     Spacer()
                 }
                 .padding(.top)
                 .onAppear() {
-                    // Basically onViewAppear...
+                    // onViewAppear...
                     self.initialize()
                 }
+
                 
                 if triggerUpdate {
                     if self.fileURLToShare != nil {
