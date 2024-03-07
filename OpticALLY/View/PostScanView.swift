@@ -29,6 +29,7 @@ struct PostScanView: View {
     @EnvironmentObject var globalState: GlobalState
     
     @ObservedObject private var exportViewModel = ExportViewModel()
+    @ObservedObject var logManager = LogManager.shared
     
     @State private var triggerUpdate: Bool = false
     @State private var showCompletionCheckmark = false
@@ -257,6 +258,7 @@ struct PostScanView: View {
                                 // Reset position and rotation to default values
                                 reset()
                                 resetSceneKitView = true
+                                logManager.clearLogs()
                                 globalState.currentView = .scanning
                             }
                         }
