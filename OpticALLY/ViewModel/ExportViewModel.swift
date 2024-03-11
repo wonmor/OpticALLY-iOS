@@ -34,6 +34,7 @@ import LinkPython
 
 class ExportViewModel: ObservableObject {
     @Published var fileURL: URL?
+    @Published var fileURLForViewer: URL?
     @Published var showShareSheet = false
     @Published var isLoading = false
     @Published var estimatedExportTime: Int? = nil
@@ -46,6 +47,7 @@ class ExportViewModel: ObservableObject {
     
     func reset(completion: @escaping () -> Void) {
         fileURL = nil
+        fileURLForViewer = nil
         showShareSheet = false
         isLoading = false
         estimatedExportTime = nil

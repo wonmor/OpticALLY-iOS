@@ -86,9 +86,10 @@ struct PostScanView: View {
         uploadFiles(calibrationFileURL: URL(fileURLWithPath: calibrationFilePath), imageFilesZipURL: URL(fileURLWithPath: videoZipPath), depthFilesZipURL: URL(fileURLWithPath: depthZipPath)) { success, fileURL in
             if success, let fileURL = fileURL {
                 DispatchQueue.main.async {
-                    self.fileURLToShare = fileURL  // Store the file URL for sharing
+                    exportViewModel.fileURLForViewer = fileURL  // Store the file URL for sharing
                     ExternalData.isMeshView = true
                     self.isProcessing = false
+                    print("Good luck")
                 }
                 
             } else {
@@ -280,13 +281,20 @@ struct PostScanView: View {
                 .onAppear() {
                     // onViewAppear...
                     self.initialize()
+                    
+                    print("안녕")
                 }
 
                 if triggerUpdate {
                     if self.fileURLToShare != nil {
                         if ExternalData.isMeshView {
-                            // Face Model Preview...
-                            SceneKitMDLView(mdlAsset: MDLAsset(url: self.fileURLToShare!))
+                            if let url = exportViewModel.fileURLForViewer {
+                                // Face Model Preview...
+                                SceneKitMDLView(url: url)
+                                    .onAppear() {
+                                        print("별다방 미스리")
+                                    }
+                            }
                         }
                     } else {
                         EmptyView()
@@ -388,7 +396,7 @@ struct PostScanView: View {
                         }
                     }
                     if !exportViewModel.isLoading {
-                        Text("PUPIL DISTANCE\n\(String(format: "%.1f", faceTrackingViewModel.pupilDistance)) mm")
+                        Text("PUPIL DISTANCE\n\(String(format: "%.1f", cameraViewController.pupilDistance)) mm")
                             .padding()
                             .frame(maxWidth: .infinity, alignment: .center)
                             .multilineTextAlignment(.center)

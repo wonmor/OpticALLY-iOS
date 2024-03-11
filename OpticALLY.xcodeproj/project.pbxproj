@@ -58,7 +58,7 @@
 		967EE0982AAEE2C7000C4D5F /* snippet-extract in Frameworks */ = {isa = PBXBuildFile; productRef = 967EE0972AAEE2C7000C4D5F /* snippet-extract */; };
 		9680F7DB2B2283B200F38A6F /* CapturedImageSampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9680F7DA2B2283B200F38A6F /* CapturedImageSampler.swift */; };
 		9680F7DD2B22D6FD00F38A6F /* ARFaceTrackingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9680F7DC2B22D6FD00F38A6F /* ARFaceTrackingView.swift */; };
-		9680F7DF2B22D93400F38A6F /* FaceTrackingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9680F7DE2B22D93400F38A6F /* FaceTrackingViewModel.swift */; };
+		968116012B9E862F00ABB8F7 /* output_from_server.obj in Resources */ = {isa = PBXBuildFile; fileRef = 968116002B9E862E00ABB8F7 /* output_from_server.obj */; };
 		969AC2802AB7550C0096892E /* IntroductionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 969AC27F2AB7550C0096892E /* IntroductionView.swift */; };
 		969AC2822AB7554C0096892E /* Extensions+Modifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 969AC2812AB7554C0096892E /* Extensions+Modifiers.swift */; };
 		969E42EE2ADC9D9E00E77BA7 /* promo.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 969E42ED2ADC9D9E00E77BA7 /* promo.mp4 */; };
@@ -160,7 +160,7 @@
 		967EE0812AAE06FE000C4D5F /* OpticALLYUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpticALLYUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		9680F7DA2B2283B200F38A6F /* CapturedImageSampler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapturedImageSampler.swift; sourceTree = "<group>"; };
 		9680F7DC2B22D6FD00F38A6F /* ARFaceTrackingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARFaceTrackingView.swift; sourceTree = "<group>"; };
-		9680F7DE2B22D93400F38A6F /* FaceTrackingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceTrackingViewModel.swift; sourceTree = "<group>"; };
+		968116002B9E862E00ABB8F7 /* output_from_server.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = output_from_server.obj; sourceTree = "<group>"; };
 		969AC27F2AB7550C0096892E /* IntroductionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroductionView.swift; sourceTree = "<group>"; };
 		969AC2812AB7554C0096892E /* Extensions+Modifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Extensions+Modifiers.swift"; sourceTree = "<group>"; };
 		969DF1C62B12916900FA9ABE /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
@@ -374,7 +374,6 @@
 			children = (
 				96F0CF192B12A39100417716 /* ExportViewModel.swift */,
 				96E856C12B7041E60037C3BB /* FilesViewModel.swift */,
-				9680F7DE2B22D93400F38A6F /* FaceTrackingViewModel.swift */,
 			);
 			path = ViewModel;
 			sourceTree = "<group>";
@@ -394,6 +393,7 @@
 				9671FED62B5B3B8A004DA4C2 /* rubicon-objc-0.4.0 */,
 				96B64F6C2B3D8FCA0003E06D /* faceTexture.metal */,
 				96B64F6A2B3D8AF70003E06D /* VideoTexturedFace.shader */,
+				968116002B9E862E00ABB8F7 /* output_from_server.obj */,
 				96FCF7312B1D65DE00F450A2 /* Male_Base_Head.usdz */,
 				9646DC6B2B1064F500092549 /* glasses.mp4 */,
 				969E42ED2ADC9D9E00E77BA7 /* promo.mp4 */,
@@ -547,6 +547,7 @@
 				967EE0692AAE06FE000C4D5F /* Assets.xcassets in Resources */,
 				966360602B6E03FF001D2119 /* face-found-successfully.json in Resources */,
 				9614F0AF2ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */,
+				968116012B9E862F00ABB8F7 /* output_from_server.obj in Resources */,
 				966360642B6E03FF001D2119 /* face-scan.json in Resources */,
 				96BDE6362B7EB4EF00CCEABA /* ImageDepth.py in Resources */,
 				966360612B6E03FF001D2119 /* face-id.json in Resources */,
@@ -606,7 +607,6 @@
 				963DF9B32AFEDAF700E6E589 /* PostScanView.swift in Sources */,
 				96B64F6D2B3D8FCA0003E06D /* faceTexture.metal in Sources */,
 				9679F8E12AD0907A00686F13 /* CameraView.swift in Sources */,
-				9680F7DF2B22D93400F38A6F /* FaceTrackingViewModel.swift in Sources */,
 				966360662B6E064B001D2119 /* LottieView.swift in Sources */,
 				96E856C22B7041E60037C3BB /* FilesViewModel.swift in Sources */,
 				9680F7DD2B22D6FD00F38A6F /* ARFaceTrackingView.swift in Sources */,

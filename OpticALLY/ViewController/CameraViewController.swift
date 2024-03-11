@@ -66,11 +66,11 @@ extension CameraViewController {
         faceNode!.addChildNode(leftEye)
         faceNode!.addChildNode(rightEye)
         faceNode!.transform = node.transform
-
+        
         //2. Get The Distance Of The Eyes From The Camera
         trackDistance()
     }
-
+    
     func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
         guard let faceAnchor = anchor as? ARFaceAnchor else {
             return
@@ -85,13 +85,10 @@ extension CameraViewController {
         let leftEyeTransform = faceAnchor.leftEyeTransform
         let rightEyeTransform = faceAnchor.rightEyeTransform
         
-        // Convert the transform to an SCNVector3 for position
-        leftEyePosition3D = SCNVector3(leftEyeTransform.columns.3.x, leftEyeTransform.columns.3.y, leftEyeTransform.columns.3.z)
-        rightEyePosition3D = SCNVector3(rightEyeTransform.columns.3.x, rightEyeTransform.columns.3.y, rightEyeTransform.columns.3.z)
-        
         DispatchQueue.main.async { [self] in
-            viewModel?.leftEyePosition3D = leftEyePosition3D
-            viewModel?.rightEyePosition3D = rightEyePosition3D
+            // Convert the transform to an SCNVector3 for position
+            leftEyePosition3D = SCNVector3(leftEyeTransform.columns.3.x, leftEyeTransform.columns.3.y, leftEyeTransform.columns.3.z)
+            rightEyePosition3D = SCNVector3(rightEyeTransform.columns.3.x, rightEyeTransform.columns.3.y, rightEyeTransform.columns.3.z)
             
             updatePupillaryDistance()
         }
@@ -100,9 +97,9 @@ extension CameraViewController {
         self.previewFaceGeometry.update(from: faceAnchor.geometry)
         
         // Extract the Euler angles from the viewModel
-        let yawAngle = viewModel?.faceYawAngle ?? 0.0
-        let pitchAngle = viewModel?.facePitchAngle ?? 0.0
-        let rollAngle = viewModel?.faceRollAngle ?? 0.0
+        let yawAngle = faceYawAngle
+        let pitchAngle = facePitchAngle
+        let rollAngle = faceRollAngle
         
         // Convert angles to radians and then to Float (the actual values used for vector transformations as they only accept radians, not degrees)
         let yaw = Float(yawAngle * .pi / 180)
@@ -126,7 +123,7 @@ extension CameraViewController {
         
         scnFaceGeometry.update(from: faceAnchor.geometry)
         faceUvGenerator.update(frame: frame, scene: self.arSCNView!.scene, headNode: node, geometry: scnFaceGeometry)
-    
+        
         self.previewFaceAnchor = faceAnchor
         self.previewFaceAnchors.append(faceAnchor)
         
@@ -135,25 +132,25 @@ extension CameraViewController {
         self.previewRolls.append(roll)
         
         faceNode!.transform = node.transform
-
+        
         //2. Check We Have A Valid ARFaceAnchor
         guard let faceAnchor = anchor as? ARFaceAnchor else { return }
-
+        
         //3. Update The Transform Of The Left & Right Eyes From The Anchor Transform
         leftEye.simdTransform = faceAnchor.leftEyeTransform
         rightEye.simdTransform = faceAnchor.rightEyeTransform
-
+        
         //4. Get The Distance Of The Eyes From The Camera
         trackDistance()
     }
-
+    
     /// Tracks The Distance Of The Eyes From The Camera
     func trackDistance() {
         DispatchQueue.main.async {
             //4. Get The Distance Of The Eyes From The Camera
             let leftEyeDistanceFromCamera = self.leftEye.worldPosition - SCNVector3Zero
             let rightEyeDistanceFromCamera = self.rightEye.worldPosition - SCNVector3Zero
-
+            
             //5. Calculate The Average Distance Of The Eyes To The Camera
             let averageDistance = (leftEyeDistanceFromCamera.length() + rightEyeDistanceFromCamera.length()) / 2
             let averageDistanceCM = (Int(round(averageDistance * 100)))
@@ -168,13 +165,24 @@ extension CameraViewController {
 class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelegate, AVCaptureDataOutputSynchronizerDelegate, ObservableObject {
     var contentNode: SCNNode?
     
-    // MARK: - Class Parameters
-    var viewModel: FaceTrackingViewModel?
-    
     // MARK: - Properties
     @Published var arSCNView: ARSCNView?
     @Published var currentImage: UIImage!
     @Published var faceDistance: Int?
+    @Published var faceAnchor: ARFaceAnchor?
+    
+    @Published var faceYawAngle: Double = 0.0
+    @Published var facePitchAngle: Double = 0.0
+    @Published var faceRollAngle: Double = 0.0
+    @Published var pupilDistance: Double = 0.0
+    
+    @Published var leftEyePosition = CGPoint(x: 0, y: 0)
+    @Published var rightEyePosition = CGPoint(x: 0, y: 0)
+    @Published var chinPosition = CGPoint(x: 0, y: 0)
+    
+    @Published var leftEyePosition3D = SCNVector3(0, 0, 0)
+    @Published var rightEyePosition3D = SCNVector3(0, 0, 0)
+    @Published var chinPosition3D = SCNVector3(0, 0, 0)
     
     var leftEye = SCNNode()
     var rightEye = SCNNode()
@@ -211,17 +219,8 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     private let faceDetectionRequest = VNDetectFaceLandmarksRequest()
     private let faceDetectionHandler = VNSequenceRequestHandler()
     
-    private var leftEyePosition = CGPoint(x: 0, y: 0)
-    private var rightEyePosition = CGPoint(x: 0, y: 0)
-    private var chinPosition = CGPoint(x: 0, y: 0)
-    
-    private var leftEyePosition3D = SCNVector3(0, 0, 0)
-    private var rightEyePosition3D = SCNVector3(0, 0, 0)
-    private var chinPosition3D = SCNVector3(0, 0, 0)
-    
     private var faceGeometry: ARSCNFaceGeometry?
     private var faceNode: SCNNode?
-    private var faceAnchor: ARFaceAnchor?
     
     private var scaleX: Float = 1.0
     private var scaleY: Float = 1.0
@@ -269,7 +268,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         let distanceInMillimeters = distanceInMeters * 1000
         
         // Step 4: Update ViewModel
-        viewModel?.pupilDistance = Double(distanceInMillimeters)
+        pupilDistance = Double(distanceInMillimeters)
     }
     
     func horizontallyMirroredPixelBuffer(from pixelBuffer: CVPixelBuffer) -> CVPixelBuffer? {
@@ -291,16 +290,16 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         // Adjust the transform for vertical flipping
         let transform = CGAffineTransform(scaleX: 1, y: -1).translatedBy(x: 0, y: -ciImage.extent.height)
         let mirroredImage = ciImage.transformed(by: transform)
-
+        
         let context = CIContext()
         var mirroredPixelBuffer: CVPixelBuffer?
         CVPixelBufferCreate(nil, Int(mirroredImage.extent.width), Int(mirroredImage.extent.height),
                             CVPixelBufferGetPixelFormatType(pixelBuffer), nil, &mirroredPixelBuffer)
-
+        
         context.render(mirroredImage, to: mirroredPixelBuffer!)
         return mirroredPixelBuffer
     }
-
+    
     
     func drawEyePositionsOnPixelBuffer(pixelBuffer: CVPixelBuffer, leftEyePosition: CGPoint, rightEyePosition: CGPoint) -> CVPixelBuffer? {
         let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
@@ -722,9 +721,9 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     
     private func startARSession() {
         let configuration = ARFaceTrackingConfiguration()
-              if ARFaceTrackingConfiguration.supportsFrameSemantics(.personSegmentation) {
-                    configuration.frameSemantics.insert(.personSegmentation)
-              }
+        if ARFaceTrackingConfiguration.supportsFrameSemantics(.personSegmentation) {
+            configuration.frameSemantics.insert(.personSegmentation)
+        }
         configuration.isLightEstimationEnabled = true
         arSCNView!.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
         print("ARSession Running")
@@ -740,9 +739,9 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         super.viewDidAppear(animated)
         
         let configuration = ARFaceTrackingConfiguration()
-              if ARFaceTrackingConfiguration.supportsFrameSemantics(.personSegmentation) {
-                    configuration.frameSemantics.insert(.personSegmentation)
-              }
+        if ARFaceTrackingConfiguration.supportsFrameSemantics(.personSegmentation) {
+            configuration.frameSemantics.insert(.personSegmentation)
+        }
         
         arSCNView!.session.run(configuration,
                                options: [.removeExistingAnchors,
@@ -777,18 +776,18 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     }
     
     /// Creates To SCNSpheres To Loosely Represent The Eyes
-        func setupEyeNode() {
+    func setupEyeNode() {
         //1. Create A Node To Represent The Eye
         let eyeGeometry = SCNSphere(radius: 0.005)
         eyeGeometry.materials.first?.diffuse.contents = UIColor.cyan
         eyeGeometry.materials.first?.transparency = 1
-
+        
         //2. Create A Holder Node & Rotate It So The Gemoetry Points Towards The Device
         let node = SCNNode()
         node.geometry = eyeGeometry
         node.eulerAngles.x = -.pi / 2
         node.position.z = 0.1
-
+        
         //3. Create The Left & Right Eyes
         leftEye = node.clone()
         rightEye = node.clone()
@@ -856,7 +855,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     }
     
     private func addAndConfigureSwiftUIView() {
-        let hostingController = UIHostingController(rootView: ExportView(faceTrackingViewModel: faceTrackingViewModel))
+        let hostingController = UIHostingController(rootView: ExportView())
         addChild(hostingController)
         hostingController.didMove(toParent: self)
         
@@ -892,22 +891,24 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                 self.synchronizedDepthData = frame.capturedDepthData
                 self.synchronizedVideoPixelBuffer = frame.capturedImage
                 
-                self.viewModel!.faceAnchor = faceAnchor
-                
-                // Extract the Euler angles from the faceAnchor's transform
-                let transform = faceAnchor.transform
-                let pitchRadians = atan2(transform.columns.1.z, transform.columns.1.y)
-                let yawRadians = atan2(transform.columns.0.z, sqrt(pow(transform.columns.1.z, 2) + pow(transform.columns.1.y, 2)))
-                let rollRadians = atan2(-transform.columns.2.x, transform.columns.2.z)
-                
-                // Convert radians to degrees
-                let pitchDegrees = pitchRadians * 180 / .pi
-                let yawDegrees = yawRadians * 180 / .pi
-                let rollDegrees = rollRadians * 180 / .pi
-                
-                viewModel!.faceYawAngle = Double(yawDegrees)
-                viewModel!.facePitchAngle = Double(pitchDegrees)
-                viewModel!.faceRollAngle = Double(rollDegrees)
+                DispatchQueue.main.async { [self] in
+                    self.faceAnchor = faceAnchor
+                    
+                    // Extract the Euler angles from the faceAnchor's transform
+                    let transform = faceAnchor.transform
+                    let pitchRadians = atan2(transform.columns.1.z, transform.columns.1.y)
+                    let yawRadians = atan2(transform.columns.0.z, sqrt(pow(transform.columns.1.z, 2) + pow(transform.columns.1.y, 2)))
+                    let rollRadians = atan2(-transform.columns.2.x, transform.columns.2.z)
+                    
+                    // Convert radians to degrees
+                    let pitchDegrees = pitchRadians * 180 / .pi
+                    let yawDegrees = yawRadians * 180 / .pi
+                    let rollDegrees = rollRadians * 180 / .pi
+                    
+                    self.faceYawAngle = Double(yawDegrees)
+                    self.facePitchAngle = Double(pitchDegrees)
+                    self.faceRollAngle = Double(rollDegrees)
+                }
                 
                 if self.synchronizedVideoPixelBuffer != nil {
                     // Perform processing if both depth and video data are available
@@ -937,7 +938,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         guard let faceAnchor = anchors.compactMap({ $0 as? ARFaceAnchor }).first else { return }
         
         DispatchQueue.main.async {
-            self.viewModel!.faceAnchor = faceAnchor
+            self.faceAnchor = faceAnchor
         }
         
         for anchor in anchors {
@@ -950,9 +951,9 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     private func configureARSession() {
         // Setup ARSession configuration
         let configuration = ARFaceTrackingConfiguration()
-              if ARFaceTrackingConfiguration.supportsFrameSemantics(.personSegmentation) {
-                    configuration.frameSemantics.insert(.personSegmentation)
-              }
+        if ARFaceTrackingConfiguration.supportsFrameSemantics(.personSegmentation) {
+            configuration.frameSemantics.insert(.personSegmentation)
+        }
         configuration.isLightEstimationEnabled = true
         // Additional ARSession configuration
     }

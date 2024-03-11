@@ -4,7 +4,8 @@ import ARKit
 
 struct ExportView: View {
     @EnvironmentObject var globalState: GlobalState
-    @StateObject var faceTrackingViewModel: FaceTrackingViewModel
+    
+    @StateObject private var exportViewModel = ExportViewModel()
     
     @ObservedObject var logManager = LogManager.shared
     
@@ -67,7 +68,13 @@ struct ExportView: View {
                                 .colorInvert()
                                 .onAppear() {
                                     // Only do this for the LAST iteration of the 3 scans... (3rd scan) -> Because UI will be hidden until then, it's fine for now when it comes to logic
+                                    exportViewModel.hasTurnedLeft = true
+                                    exportViewModel.hasTurnedRight = true
+                                    exportViewModel.hasTurnedCenter = true
+                                    
                                     hideMoveOnButton = false
+                                    
+                                    print("시험 전날")
                                 }
                         }
                     }
@@ -84,7 +91,7 @@ struct ExportView: View {
                 
                 ZStack {
                     // Segmented circle behind the FaceIDScanView
-                    DirectionIndicatorView(scanDirection: $scanDirection, faceYawAngle: faceTrackingViewModel.faceYawAngle)
+                    DirectionIndicatorView(scanDirection: $scanDirection, faceYawAngle: cameraViewController.faceYawAngle)
                         .frame(width: 220, height: 220) // Adjust the size as needed
                     
                     // FaceIDScanView in the front
@@ -92,9 +99,9 @@ struct ExportView: View {
                         .frame(width: 200, height: 200)
                         .clipShape(Circle())
                         .padding()
-                        .onChange(of: faceTrackingViewModel.faceYawAngle) { newValue in
-                            handleFaceDirectionChange(yawAngle: newValue)
-                        }
+                }
+                .onChange(of: cameraViewController.faceYawAngle) { newValue in
+                    handleFaceDirectionChange(yawAngle: newValue)
                 }
                 
                 Spacer()

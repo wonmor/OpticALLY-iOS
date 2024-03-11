@@ -33,8 +33,6 @@ import Accelerate
 
 /// Note: Due to the complex integration of Python and Swift, along with the use of external libraries for 3D data processing, it's crucial to manage resources wisely to ensure smooth performance and avoid memory leaks.
 
-let faceTrackingViewModel = FaceTrackingViewModel()
-
 let devicePPI: Double = {
     switch Ppi.get() {
     case .success(let ppi):

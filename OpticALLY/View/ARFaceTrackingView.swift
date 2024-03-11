@@ -11,7 +11,7 @@ import ARKit
 struct ARFaceTrackingView: View {
     var body: some View {
         ZStack {
-            SceneKitUSDZView(usdzFileName: "Male_Base_Head.usdz", viewModel: faceTrackingViewModel)
+            SceneKitUSDZView(usdzFileName: "Male_Base_Head.usdz")
         }
     }
 }

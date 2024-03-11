@@ -115,8 +115,6 @@ struct SceneKitSingleView: UIViewRepresentable {
 struct SceneKitUSDZView: UIViewRepresentable {
     var usdzFileName: String
     
-    @ObservedObject var viewModel: FaceTrackingViewModel
-    
     func makeUIView(context: Context) -> SCNView {
         let sceneView = SCNView()
         sceneView.autoenablesDefaultLighting = true
@@ -143,15 +141,57 @@ struct SceneKitUSDZView: UIViewRepresentable {
     }
     
     func updateUIView(_ uiView: SCNView, context: Context) {
-        guard let faceAnchor = viewModel.faceAnchor else { return }
+        guard let faceAnchor = cameraViewController.faceAnchor else { return }
         let faceTransform = SCNMatrix4(faceAnchor.transform)
         uiView.scene?.rootNode.childNodes.first?.transform = faceTransform
     }
 }
 
+struct SceneKitTEMPView: UIViewRepresentable {
+    func makeUIView(context: Context) -> SCNView {
+        let scnView = SCNView()
+        scnView.autoenablesDefaultLighting = true
+        scnView.backgroundColor = UIColor.black
+        scnView.scene = SCNScene()
+        
+        // Locate the 'output_from_server.obj' file within the app bundle
+        if let objUrl = Bundle.main.url(forResource: "output_from_server", withExtension: "obj") {
+            let mdlAsset = MDLAsset(url: objUrl)
+            
+            if let object = mdlAsset.object(at: 0) as? MDLMesh, let geometry: SCNGeometry? = SCNGeometry(mdlMesh: object) {
+                // Modify each material to be double-sided and other configurations
+                geometry!.materials.forEach { material in
+                    material.lightingModel = .constant // Example configuration
+                    material.isDoubleSided = true
+                }
+                
+                // Customize the geometry's material properties as needed
+                
+                let node = SCNNode(geometry: geometry)
+                node.position = SCNVector3(x: 0, y: 0, z: 0)
+                node.eulerAngles.z = .pi / 2
+                node.eulerAngles.y = .pi
+                
+                // Add the node to the scene
+                scnView.scene?.rootNode.addChildNode(node)
+            }
+        } else {
+            print("Failed to locate 'output_from_server.obj' in the app bundle.")
+        }
+        
+        scnView.allowsCameraControl = true
+        
+        return scnView
+    }
+    
+    func updateUIView(_ uiView: SCNView, context: Context) {
+        // Update the view if needed
+    }
+}
+
 
 struct SceneKitMDLView: UIViewRepresentable {
-    var mdlAsset: MDLAsset
+    var url: URL
     
     func makeUIView(context: Context) -> SCNView {
         let scnView = SCNView()
@@ -164,7 +204,7 @@ struct SceneKitMDLView: UIViewRepresentable {
         let scene = SCNScene()
         scnView.scene = scene
         
-        if let object = mdlAsset.object(at: 0) as? MDLMesh, let geometry: SCNGeometry? = SCNGeometry(mdlMesh: object) {
+        if let object = MDLAsset(url: url).object(at: 0) as? MDLMesh, let geometry: SCNGeometry? = SCNGeometry(mdlMesh: object) {
             // Modify each material to be double-sided
             geometry!.materials.forEach { material in
                 material.lightingModel = .constant // Removes shading and shadows

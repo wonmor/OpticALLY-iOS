@@ -10,8 +10,6 @@ struct CameraView: UIViewControllerRepresentable {
         let sb = UIStoryboard(name: "Main", bundle: nil)
         cameraViewController = sb.instantiateViewController(identifier: "CameraViewController") as? CameraViewController
         
-        cameraViewController.viewModel = faceTrackingViewModel  // Pass the ViewModel to the UIViewController
-        
         return cameraViewController
     }
 

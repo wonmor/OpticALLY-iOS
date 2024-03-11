@@ -21,18 +21,15 @@ struct ContentView: View {
             switch globalState.currentView {
             case .introduction:
                 IntroductionView()
-                    .id(uniqueID)  // Using a unique ID to recreate the view
                     .transition(.opacity)
                 
             case .scanning:
                 CameraView()
-                    .id(uniqueID)  // Using a unique ID to recreate the view
                     .transition(.opacity)
                     .ignoresSafeArea(.all)
                 
             case .postScanning:
                 PostScanView()
-                    .id(uniqueID)  // Using a unique ID to recreate the view
                     .transition(.opacity)
             }
         }
