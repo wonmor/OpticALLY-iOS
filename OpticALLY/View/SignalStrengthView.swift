@@ -8,80 +8,86 @@
 import SwiftUI
 
 struct SignalStrengthView: View {
+    @Binding var scanState: ScanState
     @Binding var scanDirection: ScanDirection
     
     @ObservedObject var cameraViewController: CameraViewController
     
     private func determineActive1() -> Int {
-        switch scanDirection {
-        case .left:
-            let delta = abs(20 - cameraViewController.faceYawAngle)
-            
-            if delta >= 16 {
-                return 3
+        if scanState == .scanning {
+            switch scanDirection {
+            case .left:
+                let delta = abs(20 - cameraViewController.faceYawAngle)
                 
-            } else if delta >= 12 {
-                return 2
+                if delta >= 14 {
+                    return 3
+                    
+                } else if delta >= 11 {
+                    return 2
+                    
+                } else if delta >= 9 {
+                    return 1
+                    
+                } else if delta >= 6 {
+                    return 0
+                }
                 
-            } else if delta >= 8 {
-                return 1
+            case .front where abs(cameraViewController.faceYawAngle) < 10:
+                return -1
                 
-            } else if delta >= 4 {
-                return 0
+            case .right where cameraViewController.faceYawAngle < -20:
+                return -1
+                
+            default:
+                return -1
             }
-            
-        case .front where abs(cameraViewController.faceYawAngle) < 10:
-            return -1
-            
-        case .right where cameraViewController.faceYawAngle < -20:
-            return -1
-            
-        default:
-            return -1
         }
         
         return -1
+            
     }
     
     private func determineActive2() -> Int {
-        switch scanDirection {
-        case .left where cameraViewController.faceYawAngle > 20:
-            return -1
-            
-        case .front where abs(cameraViewController.faceYawAngle) < 10:
-            let delta = abs(0 - cameraViewController.faceYawAngle)
-            
-            if delta >= 16 {
-                return 3
+        if scanState == .scanning {
+            switch scanDirection {
+            case .left where cameraViewController.faceYawAngle > 20:
+                return -1
                 
-            } else if delta >= 12 {
-                return 2
+            case .front where abs(cameraViewController.faceYawAngle) < 10:
+                let delta = abs(0 - cameraViewController.faceYawAngle)
                 
-            } else if delta >= 8 {
-                return 1
+                if delta >= 14 {
+                    return 3
+                    
+                } else if delta >= 11 {
+                    return 2
+                    
+                } else if delta >= 9 {
+                    return 1
+                    
+                } else if delta >= 6 {
+                    return 0
+                }
                 
-            } else if delta >= 4 {
-                return 0
+            case .right where cameraViewController.faceYawAngle < -20:
+                let delta = abs(20 - cameraViewController.faceYawAngle)
+                
+                if delta >= 14 {
+                    return 3
+                    
+                } else if delta >= 11 {
+                    return 2
+                    
+                } else if delta >= 9 {
+                    return 1
+                    
+                } else if delta >= 6 {
+                    return 0
+                }
+                
+            default:
+                return -1
             }
-            
-        case .right where cameraViewController.faceYawAngle < -20:
-            let delta = abs(20 - cameraViewController.faceYawAngle)
-            
-            if delta >= 16 {
-                return 3
-                
-            } else if delta >= 12 {
-                return 2
-                
-            } else if delta >= 8 {
-                return 1
-                
-            } else if delta >= 4 {
-                return 0
-            }
-            
-        default:
-            return -1
         }
         
         return -1

@@ -193,7 +193,7 @@ struct ExportView: View {
                 }
                 
                 ZStack {
-                    SignalStrengthView(scanDirection: $scanDirection, cameraViewController: cameraViewController)
+                    SignalStrengthView(scanState: $scanState, scanDirection: $scanDirection, cameraViewController: cameraViewController)
                         .frame(width: 300, height: 300)
                         .blur(radius: 5.0)
                     
