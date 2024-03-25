@@ -13,11 +13,13 @@ struct SignalStrengthView: View {
     
     @ObservedObject var cameraViewController: CameraViewController
     
-    private func determineActive1() -> Int {
+    private func determineActive1(scanState: ScanState, scanDirection: ScanDirection) -> Int {
         if scanState == .scanning {
             switch scanDirection {
             case .left:
                 let delta = abs(20 - cameraViewController.faceYawAngle)
+                
+                print("Delta left: \(delta)")
                 
                 if delta >= 14 {
                     return 3
@@ -47,7 +49,7 @@ struct SignalStrengthView: View {
             
     }
     
-    private func determineActive2() -> Int {
+    private func determineActive2(scanState: ScanState, scanDirection: ScanDirection) -> Int {
         if scanState == .scanning {
             switch scanDirection {
             case .left where cameraViewController.faceYawAngle > 20:
@@ -72,7 +74,7 @@ struct SignalStrengthView: View {
                 }
                 
             case .right where cameraViewController.faceYawAngle < -20:
-                let delta = abs(20 - abs(cameraViewController.faceYawAngle))
+                let delta = abs(cameraViewController.faceYawAngle - 20)
                 
                 print("Delta right: \(delta)")
                 
@@ -101,7 +103,7 @@ struct SignalStrengthView: View {
         ZStack {
             HStack(spacing: -225) {
                 ForEach(0..<5) { index in
-                    if index <= determineActive1() {
+                    if index <= determineActive1(scanState: scanState, scanDirection: scanDirection) {
                         SignalArc(index: index, isActive: true)
                         
                     } else {
@@ -113,7 +115,7 @@ struct SignalStrengthView: View {
             
             HStack(spacing: -225) {
                 ForEach(0..<5) { index in
-                    if index <= determineActive2() {
+                    if index <= determineActive2(scanState: scanState, scanDirection: scanDirection) {
                         SignalArc(index: index, isActive: true)
                         
                     } else {
