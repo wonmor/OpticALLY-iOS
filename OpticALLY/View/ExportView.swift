@@ -212,11 +212,13 @@ struct ExportView: View {
                     }
                 }
                 
-                Spacer()
-                
-                CompassView(viewModel: cameraViewController, scanState: $scanState, scanDirection: $scanDirection)
-                    .frame(height: 20)
-                    .padding()
+                if scanState == .scanning {
+                    Spacer()
+                    
+                    CompassView(viewModel: cameraViewController, scanState: $scanState, scanDirection: $scanDirection)
+                        .frame(height: 20)
+                        .padding()
+                }
             }
             .padding()
         }

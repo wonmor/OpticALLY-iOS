@@ -986,6 +986,16 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         }
     }
     
+    func pauseAllStreams() {
+        pauseARSession()
+        pauseAVCaptureSession()
+        // Add any other stream or session you might need to pause here.
+    }
+    
+    func resumeAllStreams() {
+        switchSession(toARSession: true)
+    }
+    
     // MARK: - ARSession and AVCaptureSession Management
     
     private func switchSession(toARSession useARSession: Bool) {
