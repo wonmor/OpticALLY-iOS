@@ -32,7 +32,7 @@ struct CompassView: View {
                 RoundedRectangle(cornerRadius: 10)
                     .fill(.white.opacity(0.2))
                     .frame(height: 30)
-
+ 
                 // Text displaying the degree
                 HStack {
                     Text("\(Int(viewModel.faceYawAngle))º")
@@ -114,9 +114,6 @@ struct ExportView: View {
         ZStack {
             Color.black.opacity(0.5).edgesIgnoringSafeArea(.all)
             
-            SignalStrengthView()
-                .frame(width: 300, height: 300)
-            
             VStack(spacing: 20) {
                 Spacer()
                 
@@ -171,6 +168,9 @@ struct ExportView: View {
                 }
                 
                 ZStack {
+                    SignalStrengthView()
+                        .frame(width: 300, height: 300)
+                    
                     // Segmented circle behind the FaceIDScanView
                     DirectionIndicatorView(scanDirection: $scanDirection, faceYawAngle: cameraViewController.faceYawAngle)
                         .frame(width: 220, height: 220) // Adjust the size as needed
