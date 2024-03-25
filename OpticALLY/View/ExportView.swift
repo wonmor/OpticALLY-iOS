@@ -27,6 +27,17 @@ struct CompassView: View {
         
         return position
     }
+    
+    private func getIndexForStick() -> Int {
+        switch scanDirection {
+        case .left:
+            return 2
+        case .front:
+            return 3
+        case .right:
+            return 4
+        }
+    }
 
     var body: some View {
         GeometryReader { geometry in
@@ -77,10 +88,17 @@ struct CompassView: View {
                let lineSpacing = geometry.size.width / CGFloat(numberOfLines + 1)
 
                ForEach(0..<numberOfLines, id: \.self) { index in
-                   Rectangle()
-                       .fill(Color.black)
-                       .frame(width: 2, height: 30)
-                       .offset(x: lineSpacing * CGFloat(index + 1) - 1, y: 0)
+                   if getIndexForStick() == index {
+                       Rectangle()
+                           .fill(Color.blue)
+                           .frame(width: 2, height: 30)
+                           .offset(x: lineSpacing * CGFloat(index + 1) - 1, y: 0)
+                   } else {
+                       Rectangle()
+                           .fill(Color.black)
+                           .frame(width: 2, height: 30)
+                           .offset(x: lineSpacing * CGFloat(index + 1) - 1, y: 0)
+                   }
                }
 
                // The active indicator line
