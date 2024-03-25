@@ -2,8 +2,19 @@ import SwiftUI
 import Lottie
 import ARKit
 
+enum ScanState {
+    case ready, scanning, completed
+}
+
+enum ScanDirection {
+    case left, front, right
+}
+
 struct CompassView: View {
     @ObservedObject var viewModel: CameraViewController
+    
+    @Binding var scanState: ScanState
+    @Binding var scanDirection: ScanDirection
 
     private var compassIndicatorPosition: CGFloat {
         // screenWidth represents the total width available for the compass view
@@ -34,7 +45,22 @@ struct CompassView: View {
                         .cornerRadius(5)
                         .padding(.leading, compassIndicatorPosition - 30) // Adjust this padding to align with the indicator position
                         .onChange(of: Int(viewModel.faceYawAngle)) { newFaceYawAngle in
-                            HapticManager.playHapticFeedback(style: .light)
+                            guard scanState == .scanning else { return }
+                            
+                            switch scanDirection {
+                            case .left where newFaceYawAngle > 20:
+                                HapticManager.playHapticFeedback(style: .heavy)
+                                
+                            case .front where abs(newFaceYawAngle) < 10:
+                                HapticManager.playHapticFeedback(style: .heavy)
+                                
+                            case .right where newFaceYawAngle < -20:
+                                HapticManager.playHapticFeedback(style: .heavy)
+                                
+                            default:
+                                HapticManager.playHapticFeedback(style: .light)
+                                break
+                            }
                         }
 
                     Spacer()
@@ -50,7 +76,6 @@ struct CompassView: View {
     }
 }
 
-
 struct ExportView: View {
     @EnvironmentObject var globalState: GlobalState
     
@@ -65,22 +90,13 @@ struct ExportView: View {
     @State private var showLog: Bool = false
     @State private var hideMoveOnButton: Bool = false
     
-    enum ScanState {
-        case ready, scanning, completed
-    }
-    
-    enum ScanDirection {
-        case left, front, right
-    }
-    
-    private let hapticInterval: TimeInterval = 0.1 // 100 milliseconds interval between haptic feedbacks
-    
     @State private var lastHapticTime: Date? = nil
     @State private var lastFeedbackAngle: Double? = nil
     
+    private let hapticInterval: TimeInterval = 0.1 // 100 milliseconds interval between haptic feedbacks
+    
     private func captureFrame() {
         ExternalData.isSavingFileAsPLY = true
-        HapticManager.playHapticFeedback(style: .heavy)
     }
 
     var body: some View {
@@ -90,7 +106,7 @@ struct ExportView: View {
             VStack(spacing: 20) {
                 Spacer()
 
-                CompassView(viewModel: cameraViewController)
+                CompassView(viewModel: cameraViewController, scanState: $scanState, scanDirection: $scanDirection)
                     .frame(height: 20)
                     .padding(.horizontal)
                 
@@ -292,7 +308,8 @@ struct DistanceIndicator: View {
 }
 
 struct DirectionIndicatorView: View {
-    @Binding var scanDirection: ExportView.ScanDirection
+    @Binding var scanDirection: ScanDirection
+    
     var faceYawAngle: Double
     
     var body: some View {
