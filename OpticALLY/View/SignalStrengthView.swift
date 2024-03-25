@@ -17,17 +17,17 @@ struct SignalStrengthView: View {
         case .left:
             let diff = abs(20 - cameraViewController.faceYawAngle)
             
-            if diff >= 15 {
-                return 0
+            if diff >= 16 {
+                return 3
                 
-            } else if diff >= 10 {
-                return 1
-                
-            } else if diff >= 5 {
+            } else if diff >= 12 {
                 return 2
                 
-            } else if diff >= 2.5 {
-                return 3
+            } else if diff >= 8 {
+                return 1
+                
+            } else if diff >= 4 {
+                return 0
             }
             
         case .front where abs(cameraViewController.faceYawAngle) < 10:
@@ -51,33 +51,33 @@ struct SignalStrengthView: View {
         case .front where abs(cameraViewController.faceYawAngle) < 10:
             let diff = abs(0 - cameraViewController.faceYawAngle)
             
-            if diff >= 15 {
-                return 0
+            if diff >= 16 {
+                return 3
                 
-            } else if diff >= 10 {
-                return 1
-                
-            } else if diff >= 5 {
+            } else if diff >= 12 {
                 return 2
                 
-            } else if diff >= 2.5 {
-                return 3
+            } else if diff >= 8 {
+                return 1
+                
+            } else if diff >= 4 {
+                return 0
             }
             
         case .right where cameraViewController.faceYawAngle < -20:
-            let diff = abs(-20 - cameraViewController.faceYawAngle)
+            let diff = abs(20 - cameraViewController.faceYawAngle)
             
-            if diff >= 15 {
-                return 0
+            if diff >= 16 {
+                return 3
                 
-            } else if diff >= 10 {
-                return 1
-                
-            } else if diff >= 5 {
+            } else if diff >= 12 {
                 return 2
                 
-            } else if diff >= 2.5 {
-                return 3
+            } else if diff >= 8 {
+                return 1
+                
+            } else if diff >= 4 {
+                return 0
             }
             
         default:
@@ -92,10 +92,10 @@ struct SignalStrengthView: View {
             HStack(spacing: -225) {
                 ForEach(0..<5) { index in
                     if index <= determineActive1() {
-                        SignalArc(index: index, isActive: true)
+                        SignalArc(index: index, isActive: false)
                         
                     } else {
-                        SignalArc(index: index, isActive: false)
+                        SignalArc(index: index, isActive: true)
                     }
                 }
                 
@@ -104,10 +104,10 @@ struct SignalStrengthView: View {
             HStack(spacing: -225) {
                 ForEach(0..<5) { index in
                     if index <= determineActive2() {
-                        SignalArc(index: index, isActive: true)
+                        SignalArc(index: index, isActive: false)
                         
                     } else {
-                        SignalArc(index: index, isActive: false)
+                        SignalArc(index: index, isActive: true)
                     }
                 }
             }
