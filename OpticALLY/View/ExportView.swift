@@ -108,7 +108,7 @@ struct ExportView: View {
 
                 CompassView(viewModel: cameraViewController, scanState: $scanState, scanDirection: $scanDirection)
                     .frame(height: 20)
-                    .padding(.horizontal)
+                    .padding()
                 
                 DistanceIndicator(cameraViewController: cameraViewController)
                 
