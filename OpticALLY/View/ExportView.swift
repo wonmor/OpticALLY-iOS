@@ -15,14 +15,13 @@ struct CompassView: View {
     
     @Binding var scanState: ScanState
     @Binding var scanDirection: ScanDirection
+    
+    // screenWidth represents the total width available for the compass view
+    let screenWidth = UIScreen.main.bounds.width - 40 // assuming 20 points padding on each side
 
     private var compassIndicatorPosition: CGFloat {
-        // screenWidth represents the total width available for the compass view
-        let screenWidth = UIScreen.main.bounds.width - 40 // assuming 20 points padding on each side
-        let halfScreenWidth = screenWidth / 2
-
         // Mapping yawAngle to screen width
-        let position = ((viewModel.faceYawAngle + 180) / 360) * screenWidth
+        let position = ((-viewModel.faceYawAngle + 90) / 360) * screenWidth
         
         return position
     }
@@ -30,20 +29,20 @@ struct CompassView: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                // Background with rounded corners and a green gradient
                 RoundedRectangle(cornerRadius: 10)
-                    .fill(LinearGradient(gradient: Gradient(colors: [Color.green.opacity(0.8), Color.green]), startPoint: .leading, endPoint: .trailing))
+                    .fill(.white.opacity(0.2))
                     .frame(height: 30)
 
-                // Text displaying the degree and the cardinal direction
+                // Text displaying the degree
                 HStack {
                     Text("\(Int(viewModel.faceYawAngle))º")
                         .font(.system(size: 16))
+                        .monospaced()
                         .foregroundColor(.white)
                         .padding(5)
                         .background(Color.black.opacity(0.5))
                         .cornerRadius(5)
-                        .padding(.leading, compassIndicatorPosition - 30) // Adjust this padding to align with the indicator position
+                        .padding(.leading, compassIndicatorPosition - 30)
                         .onChange(of: Int(viewModel.faceYawAngle)) { newFaceYawAngle in
                             guard scanState == .scanning else { return }
                             
@@ -66,12 +65,24 @@ struct CompassView: View {
                     Spacer()
                 }
                 
-                // Vertical line for the compass indicator
-                Rectangle()
-                    .fill(Color.black)
-                    .frame(width: 2, height: 30)
-                    .offset(x: compassIndicatorPosition - 1, y: 0) // Adjust to align with the degree text
+                // Multiple vertical lines for the compass indicator
+               let numberOfLines = 10 // Number of lines you want
+               let lineSpacing = geometry.size.width / CGFloat(numberOfLines + 1)
+
+               ForEach(0..<numberOfLines, id: \.self) { index in
+                   Rectangle()
+                       .fill(Color.black)
+                       .frame(width: 2, height: 30)
+                       .offset(x: lineSpacing * CGFloat(index + 1) - 1, y: 0)
+               }
+
+               // The active indicator line
+               Rectangle()
+                    .fill(Color.white.opacity(0.5)) // Use a distinct color to highlight the active indicator
+                   .frame(width: 2, height: 30)
+                   .offset(x: compassIndicatorPosition - 1, y: 0)
             }
+
         }
     }
 }
@@ -105,10 +116,6 @@ struct ExportView: View {
             
             VStack(spacing: 20) {
                 Spacer()
-
-                CompassView(viewModel: cameraViewController, scanState: $scanState, scanDirection: $scanDirection)
-                    .frame(height: 20)
-                    .padding()
                 
                 DistanceIndicator(cameraViewController: cameraViewController)
                 
@@ -204,6 +211,12 @@ struct ExportView: View {
                         .padding(.horizontal)
                     }
                 }
+                
+                Spacer()
+                
+                CompassView(viewModel: cameraViewController, scanState: $scanState, scanDirection: $scanDirection)
+                    .frame(height: 20)
+                    .padding()
             }
             .padding()
         }
