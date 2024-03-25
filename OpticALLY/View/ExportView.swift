@@ -59,8 +59,8 @@ struct CompassView: View {
                                 HapticManager.playHapticFeedback(style: .heavy)
                                 
                             default:
-                                // Trigger every 3 degree turn...
-                                if abs(newFaceYawAngle - previousYawAngle) >= 3 {
+                                // Trigger every 4 degree turn...
+                                if abs(newFaceYawAngle - previousYawAngle) >= 4 {
                                     HapticManager.playHapticFeedback(style: .light)
                                     previousYawAngle = newFaceYawAngle
                                 }
