@@ -2,6 +2,55 @@ import SwiftUI
 import Lottie
 import ARKit
 
+struct CompassView: View {
+    @ObservedObject var viewModel: CameraViewController
+
+    private var compassIndicatorPosition: CGFloat {
+        // screenWidth represents the total width available for the compass view
+        let screenWidth = UIScreen.main.bounds.width - 40 // assuming 20 points padding on each side
+        let halfScreenWidth = screenWidth / 2
+
+        // Mapping yawAngle to screen width
+        let position = ((viewModel.faceYawAngle + 180) / 360) * screenWidth
+        
+        return position
+    }
+
+    var body: some View {
+        GeometryReader { geometry in
+            ZStack {
+                // Background with rounded corners and a green gradient
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(LinearGradient(gradient: Gradient(colors: [Color.green.opacity(0.8), Color.green]), startPoint: .leading, endPoint: .trailing))
+                    .frame(height: 30)
+
+                // Text displaying the degree and the cardinal direction
+                HStack {
+                    Text("\(Int(viewModel.faceYawAngle))º")
+                        .font(.system(size: 16))
+                        .foregroundColor(.white)
+                        .padding(5)
+                        .background(Color.black.opacity(0.5))
+                        .cornerRadius(5)
+                        .padding(.leading, compassIndicatorPosition - 30) // Adjust this padding to align with the indicator position
+                        .onChange(of: Int(viewModel.faceYawAngle)) { newFaceYawAngle in
+                            HapticManager.playHapticFeedback(style: .light)
+                        }
+
+                    Spacer()
+                }
+                
+                // Vertical line for the compass indicator
+                Rectangle()
+                    .fill(Color.black)
+                    .frame(width: 2, height: 30)
+                    .offset(x: compassIndicatorPosition - 1, y: 0) // Adjust to align with the degree text
+            }
+        }
+    }
+}
+
+
 struct ExportView: View {
     @EnvironmentObject var globalState: GlobalState
     
@@ -24,9 +73,14 @@ struct ExportView: View {
         case left, front, right
     }
     
+    private let hapticInterval: TimeInterval = 0.1 // 100 milliseconds interval between haptic feedbacks
+    
+    @State private var lastHapticTime: Date? = nil
+    @State private var lastFeedbackAngle: Double? = nil
+    
     private func captureFrame() {
         ExternalData.isSavingFileAsPLY = true
-        HapticManager.playHapticFeedback(type: .warning)
+        HapticManager.playHapticFeedback(style: .heavy)
     }
 
     var body: some View {
@@ -35,6 +89,10 @@ struct ExportView: View {
             
             VStack(spacing: 20) {
                 Spacer()
+
+                CompassView(viewModel: cameraViewController)
+                    .frame(height: 20)
+                    .padding(.horizontal)
                 
                 DistanceIndicator(cameraViewController: cameraViewController)
                 
@@ -73,8 +131,6 @@ struct ExportView: View {
                                     exportViewModel.hasTurnedCenter = true
                                     
                                     hideMoveOnButton = false
-                                    
-                                    print("시험 전날")
                                 }
                         }
                     }
