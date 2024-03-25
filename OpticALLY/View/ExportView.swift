@@ -90,7 +90,7 @@ struct CompassView: View {
                ForEach(0..<numberOfLines, id: \.self) { index in
                    if getIndexForStick() == index {
                        Rectangle()
-                           .fill(Color.blue)
+                           .fill(Color.green)
                            .frame(width: 2, height: 30)
                            .offset(x: lineSpacing * CGFloat(index + 1) - 1, y: 0)
                    } else {
@@ -195,6 +195,7 @@ struct ExportView: View {
                 ZStack {
                     SignalStrengthView(scanDirection: $scanDirection, cameraViewController: cameraViewController)
                         .frame(width: 300, height: 300)
+                        .blur(radius: 5.0)
                     
                     // Segmented circle behind the FaceIDScanView
                     DirectionIndicatorView(scanDirection: $scanDirection, cameraViewController: cameraViewController)
