@@ -168,11 +168,11 @@ struct ExportView: View {
                 }
                 
                 ZStack {
-                    SignalStrengthView()
+                    SignalStrengthView(scanDirection: $scanDirection, cameraViewController: cameraViewController)
                         .frame(width: 300, height: 300)
                     
                     // Segmented circle behind the FaceIDScanView
-                    DirectionIndicatorView(scanDirection: $scanDirection, faceYawAngle: cameraViewController.faceYawAngle)
+                    DirectionIndicatorView(scanDirection: $scanDirection, cameraViewController: cameraViewController)
                         .frame(width: 220, height: 220) // Adjust the size as needed
                     
                     // FaceIDScanView in the front
@@ -327,7 +327,7 @@ struct DistanceIndicator: View {
 struct DirectionIndicatorView: View {
     @Binding var scanDirection: ScanDirection
     
-    var faceYawAngle: Double
+    @ObservedObject var cameraViewController: CameraViewController
     
     var body: some View {
         ZStack {
@@ -337,7 +337,7 @@ struct DirectionIndicatorView: View {
                 path.addLine(to: CGPoint(x: 110, y: 110))
                 path.closeSubpath()
             }
-            .fill(self.scanDirection == .right && faceYawAngle < -20 ? Color.green : Color.gray.opacity(0.5))
+            .fill(self.scanDirection == .right && cameraViewController.faceYawAngle < -20 ? Color.green : Color.gray.opacity(0.5))
             
             // Right half
             Path { path in
@@ -345,10 +345,10 @@ struct DirectionIndicatorView: View {
                 path.addLine(to: CGPoint(x: 110, y: 110))
                 path.closeSubpath()
             }
-            .fill(self.scanDirection == .left && faceYawAngle > 20 ? Color.green : Color.gray.opacity(0.5))
+            .fill(self.scanDirection == .left && cameraViewController.faceYawAngle > 20 ? Color.green : Color.gray.opacity(0.5))
             
             // Center indication - entire circle
-            if scanDirection == .front && abs(faceYawAngle) < 10 {
+            if scanDirection == .front && abs(cameraViewController.faceYawAngle) < 10 {
                 Circle()
                     .fill(Color.green.opacity(0.5))
                     .frame(width: 220, height: 220)

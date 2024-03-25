@@ -8,6 +8,10 @@
 import SwiftUI
 
 struct SignalStrengthView: View {
+    @Binding var scanDirection: ScanDirection
+    
+    @ObservedObject var cameraViewController: CameraViewController
+    
     var body: some View {
         ZStack {
             HStack(spacing: -225) {
