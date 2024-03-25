@@ -16,6 +16,8 @@ struct CompassView: View {
     @Binding var scanState: ScanState
     @Binding var scanDirection: ScanDirection
     
+    @State private var previousYawAngle: Int = 0
+    
     // screenWidth represents the total width available for the compass view
     let screenWidth = UIScreen.main.bounds.width - 40 // assuming 20 points padding on each side
 
@@ -57,7 +59,12 @@ struct CompassView: View {
                                 HapticManager.playHapticFeedback(style: .heavy)
                                 
                             default:
-                                HapticManager.playHapticFeedback(style: .light)
+                                // Trigger every 3 degree turn...
+                                if abs(newFaceYawAngle - previousYawAngle) >= 3 {
+                                    HapticManager.playHapticFeedback(style: .light)
+                                    previousYawAngle = newFaceYawAngle
+                                }
+                                
                                 break
                             }
                         }
