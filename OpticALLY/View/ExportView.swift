@@ -114,6 +114,9 @@ struct ExportView: View {
         ZStack {
             Color.black.opacity(0.5).edgesIgnoringSafeArea(.all)
             
+            SignalStrengthView()
+                .frame(width: 300, height: 300)
+            
             VStack(spacing: 20) {
                 Spacer()
                 
@@ -164,7 +167,6 @@ struct ExportView: View {
                         .foregroundColor(.white)
                         .multilineTextAlignment(.center)
                         .padding()
-                        .background(Color.black.opacity(0.7))
                         .cornerRadius(12)
                 }
                 

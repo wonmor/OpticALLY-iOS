@@ -12,6 +12,7 @@
 		9614F0B12ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */; };
 		961D67E32B12BDFC00DBB883 /* SceneKitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 961D67E22B12BDFC00DBB883 /* SceneKitView.swift */; };
 		961D67E52B12C64A00DBB883 /* CreditsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 961D67E42B12C64A00DBB883 /* CreditsView.swift */; };
+		962058102BB2209F00F9084F /* SignalStrengthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9620580F2BB2209F00F9084F /* SignalStrengthView.swift */; };
 		963966192B76B7A900EB435B /* opencv2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 963966182B76B7A900EB435B /* opencv2.framework */; };
 		9639661C2B76B82B00EB435B /* OpenCVWrapper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9639661B2B76B82B00EB435B /* OpenCVWrapper.mm */; };
 		963DF9B32AFEDAF700E6E589 /* PostScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 963DF9B22AFEDAF600E6E589 /* PostScanView.swift */; };
@@ -108,6 +109,7 @@
 		9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = RobotoSlab.ttf; sourceTree = "<group>"; };
 		961D67E22B12BDFC00DBB883 /* SceneKitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneKitView.swift; sourceTree = "<group>"; };
 		961D67E42B12C64A00DBB883 /* CreditsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditsView.swift; sourceTree = "<group>"; };
+		9620580F2BB2209F00F9084F /* SignalStrengthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalStrengthView.swift; sourceTree = "<group>"; };
 		963966182B76B7A900EB435B /* opencv2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = opencv2.framework; sourceTree = "<group>"; };
 		9639661A2B76B82B00EB435B /* OpenCVWrapper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OpenCVWrapper.h; sourceTree = "<group>"; };
 		9639661B2B76B82B00EB435B /* OpenCVWrapper.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = OpenCVWrapper.mm; sourceTree = "<group>"; };
@@ -352,6 +354,7 @@
 				9679F8BB2AD0907900686F13 /* PreviewMetalView.swift */,
 				96F0CF1B2B12A3D500417716 /* ExportView.swift */,
 				966360652B6E064B001D2119 /* LottieView.swift */,
+				9620580F2BB2209F00F9084F /* SignalStrengthView.swift */,
 				96E3E0032B867684004374D1 /* FaceIDScanView.swift */,
 				9680F7DC2B22D6FD00F38A6F /* ARFaceTrackingView.swift */,
 				96E856C32B70421F0037C3BB /* FilesListView.swift */,
@@ -616,6 +619,7 @@
 				96795D6E2B7FE786003A5192 /* ParsePLY.swift in Sources */,
 				96E856BB2B6EFFE00037C3BB /* PreviousScanView.swift in Sources */,
 				9679F8D92AD0907A00686F13 /* PointCloud.metal in Sources */,
+				962058102BB2209F00F9084F /* SignalStrengthView.swift in Sources */,
 				9679F8CE2AD0907A00686F13 /* AppDelegate.swift in Sources */,
 				96F0CF182B12A34400417716 /* ExternalData.swift in Sources */,
 				9680F7DB2B2283B200F38A6F /* CapturedImageSampler.swift in Sources */,
