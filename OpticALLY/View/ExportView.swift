@@ -183,13 +183,24 @@ struct ExportView: View {
                         }
                     }
                 } else {
-                    Text(scanInstruction)
-                        .font(.title3)
-                        .fontWeight(.medium)
-                        .foregroundColor(.white)
-                        .multilineTextAlignment(.center)
-                        .padding()
-                        .cornerRadius(12)
+                    VStack {
+                        Text(scanInstruction)
+                            .font(.title3)
+                            .fontWeight(.medium)
+                            .foregroundColor(.white)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                            .cornerRadius(12)
+                        
+                        Text(scanInstruction2)
+                            .monospaced()
+                            .font(.title)
+                            .fontWeight(.medium)
+                            .foregroundColor(.white)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                            .cornerRadius(12)
+                    }
                 }
                 
                 ZStack {
@@ -257,18 +268,36 @@ struct ExportView: View {
     private var scanInstruction: String {
         switch scanState {
         case .ready:
-            return "Align your face within the frame and ensure good lighting."
+            return "Align your face within the frame."
         case .scanning:
             switch scanDirection {
             case .left:
-                return "Turn your head to the left."
+                return "Turn your head"
             case .front:
-                return "Now, face the front."
+                return "Now, face the"
             case .right:
-                return "Turn your head to the right."
+                return "Turn your head"
             }
         case .completed:
-            return "Scanning complete!"
+            return "Scanning"
+        }
+    }
+    
+    private var scanInstruction2: String {
+        switch scanState {
+        case .ready:
+            return ""
+        case .scanning:
+            switch scanDirection {
+            case .left:
+                return "LEFT"
+            case .front:
+                return "FRONT"
+            case .right:
+                return "RIGHT"
+            }
+        case .completed:
+            return "COMPLETE"
         }
     }
     
