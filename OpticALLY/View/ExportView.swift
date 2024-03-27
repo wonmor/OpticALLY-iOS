@@ -60,21 +60,22 @@ struct CompassView: View {
                             guard scanState == .scanning else { return }
                             
                             switch scanDirection {
-                            case .left where newFaceYawAngle > 20:
-                                HapticManager.playHapticFeedback(style: .heavy)
+                            case .left where newFaceYawAngle > 30:
+                                let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
+                                impactGenerator.impactOccurred(intensity: 0.75)
                                 
                             case .front where abs(newFaceYawAngle) < 10:
-                                HapticManager.playHapticFeedback(style: .heavy)
+                                let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
+                                impactGenerator.impactOccurred(intensity: 0.75)
                                 
-                            case .right where newFaceYawAngle < -20:
-                                HapticManager.playHapticFeedback(style: .heavy)
+                            case .right where newFaceYawAngle < -30:
+                                let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
+                                impactGenerator.impactOccurred(intensity: 0.75)
                                 
                             default:
-                                // Trigger every 4 degree turn...
-                                if abs(newFaceYawAngle - previousYawAngle) >= 4 {
-                                    HapticManager.playHapticFeedback(style: .light)
-                                    previousYawAngle = newFaceYawAngle
-                                }
+                                let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
+                                impactGenerator.impactOccurred(intensity: 0.25)
+                                previousYawAngle = newFaceYawAngle
                                 
                                 break
                             }
@@ -120,7 +121,7 @@ struct ExportView: View {
     @ObservedObject var logManager = LogManager.shared
     
     @State private var scanState: ScanState = .ready
-    @State private var scanDirection: ScanDirection = .left
+    @State private var scanDirection: ScanDirection = .front
     @State private var showScanCompleteView: Bool = false
     
     @State private var showLog: Bool = false
@@ -318,19 +319,19 @@ struct ExportView: View {
         guard scanState == .scanning else { return }
         
         switch scanDirection {
-        case .left where yawAngle > 20:
+        case .front where abs(yawAngle) < 10:
             captureFrame()
             
             withAnimation {
-                scanDirection = .front
+                scanDirection = .left
             }
-        case .front where abs(yawAngle) < 10:
+        case .left where yawAngle > 30:
             captureFrame()
             
             withAnimation {
                 scanDirection = .right
             }
-        case .right where yawAngle < -20:
+        case .right where yawAngle < -30:
             captureFrame()
             
             withAnimation {

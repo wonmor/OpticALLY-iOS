@@ -17,7 +17,7 @@ struct SignalStrengthView: View {
         if scanState == .scanning {
             switch scanDirection {
             case .left:
-                let delta = abs(20 - cameraViewController.faceYawAngle)
+                let delta = abs(30 - cameraViewController.faceYawAngle)
                 
                 print("Delta left: \(delta)")
                 
@@ -37,7 +37,7 @@ struct SignalStrengthView: View {
             case .front where abs(cameraViewController.faceYawAngle) < 10:
                 return -1
                 
-            case .right where cameraViewController.faceYawAngle < -20:
+            case .right where cameraViewController.faceYawAngle < -30:
                 return -1
                 
             default:
@@ -52,7 +52,7 @@ struct SignalStrengthView: View {
     private func determineActive2(scanState: ScanState, scanDirection: ScanDirection) -> Int {
         if scanState == .scanning {
             switch scanDirection {
-            case .left where cameraViewController.faceYawAngle > 20:
+            case .left where cameraViewController.faceYawAngle > 30:
                 return -1
                 
             case .front where abs(cameraViewController.faceYawAngle) < 10:
@@ -73,8 +73,8 @@ struct SignalStrengthView: View {
                     return 0
                 }
                 
-            case .right where cameraViewController.faceYawAngle < -20:
-                let delta = abs(cameraViewController.faceYawAngle - 20)
+            case .right where cameraViewController.faceYawAngle < -30:
+                let delta = abs(cameraViewController.faceYawAngle - 30)
                 
                 print("Delta right: \(delta)")
                 
