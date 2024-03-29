@@ -65,24 +65,26 @@ struct CompassView: View {
                                 let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
                                 impactGenerator.impactOccurred(intensity: 1.00)
                                 
-                                barColor = .green
+                                barColor = .green.opacity(0.75)
                                 
                             case .front where abs(newFaceYawAngle) < 10:
                                 let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
                                 impactGenerator.impactOccurred(intensity: 1.00)
                                 
-                                barColor = .green
+                                barColor = .green.opacity(0.75)
                                 
                             case .right where newFaceYawAngle < -30:
                                 let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
                                 impactGenerator.impactOccurred(intensity: 1.00)
                                 
-                                barColor = .green
+                                barColor = .green.opacity(0.75)
                                 
                             default:
                                 let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
                                 impactGenerator.impactOccurred(intensity: 0.25)
                                 previousYawAngle = newFaceYawAngle
+                                
+                                barColor = .white.opacity(0.2)
                                 
                                 break
                             }
