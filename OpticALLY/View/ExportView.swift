@@ -17,6 +17,7 @@ struct CompassView: View {
     @Binding var scanDirection: ScanDirection
     
     @State private var previousYawAngle: Int = 0
+    @State private var barColor = Color.white.opacity(0.2)
     
     // screenWidth represents the total width available for the compass view
     let screenWidth = UIScreen.main.bounds.width - 40 // assuming 20 points padding on each side
@@ -43,7 +44,7 @@ struct CompassView: View {
         GeometryReader { geometry in
             ZStack {
                 RoundedRectangle(cornerRadius: 10)
-                    .fill(.white.opacity(0.2))
+                    .fill(barColor)
                     .frame(height: 30)
  
                 // Text displaying the degree
@@ -64,13 +65,19 @@ struct CompassView: View {
                                 let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
                                 impactGenerator.impactOccurred(intensity: 1.00)
                                 
+                                barColor = .green
+                                
                             case .front where abs(newFaceYawAngle) < 10:
                                 let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
                                 impactGenerator.impactOccurred(intensity: 1.00)
                                 
+                                barColor = .green
+                                
                             case .right where newFaceYawAngle < -30:
                                 let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
                                 impactGenerator.impactOccurred(intensity: 1.00)
+                                
+                                barColor = .green
                                 
                             default:
                                 let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
