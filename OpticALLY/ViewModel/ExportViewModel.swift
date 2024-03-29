@@ -88,30 +88,6 @@ class ExportViewModel: ObservableObject {
         return Int(duration)
     }
     
-//    func updateExportDurationInFirestore(newDuration: Int) {
-//        let db = Firestore.firestore()
-//        let docRef = db.collection("misc").document("render_time")
-//        
-//        docRef.getDocument { (document, error) in
-//            var durations: [Int]
-//            
-//            if let document = document, document.exists, let existingDurations = document.data()?["obj_duration"] as? [Int] {
-//                durations = existingDurations
-//                if durations.count >= 20 {
-//                    durations.removeFirst() // Remove the oldest entry
-//                }
-//            } else {
-//                // Document does not exist, start a new array
-//                durations = []
-//            }
-//            
-//            durations.append(newDuration) // Add the new duration
-//            
-//            // Set the new array to the document, creating it if necessary
-//            docRef.setData(["obj_duration": durations], merge: true)
-//        }
-//    }
-    
     func exportPLY(showShareSheet: Bool) {
         // Determine a temporary file URL to save the PLY file
         let tempDirectory = FileManager.default.temporaryDirectory

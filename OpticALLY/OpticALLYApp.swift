@@ -322,6 +322,40 @@ struct OpticALLYApp: App {
         return poseGraph
     }
     
+    // VVIP: STILL WORK IN PROGRESS... (ON-DEVICE MESHING)
+    static func poissonReconstruction_PLYtoOBJ(json_string: String, image_file: String, depth_file: String) throws -> URL {
+        let fileManager = FileManager.default
+        let tempDir = fileManager.temporaryDirectory.appendingPathComponent("temp", isDirectory: true)
+
+        // Ensure the temporary directory exists
+        try fileManager.createDirectory(at: tempDir, withIntermediateDirectories: true, attributes: nil)
+
+        // Get the list of files in the temporary directory
+        let directoryContents = try fileManager.contentsOfDirectory(at: tempDir, includingPropertiesForKeys: nil)
+        
+        // Filter out non-files and map to their names, focusing on .obj files
+        let fileNames = directoryContents.filter { $0.pathExtension == "obj" }.map { $0.deletingPathExtension().lastPathComponent }
+        
+        // Extract the numeric parts of the filenames and find the maximum
+        let fileIndices = fileNames.compactMap { Int($0) }
+        let maxIndex = fileIndices.max() ?? 0 // Start from 0 if no files are found
+        
+        // Define the new filename using the next number in the sequence
+        let newFileName = "\(maxIndex + 1)"
+
+        // Define the output file path using the new file name
+        let outputFilePath = tempDir.appendingPathComponent(newFileName).appendingPathExtension("obj")
+
+        // Your existing logic to use imageDepthInstance, etc.
+        // This is where you'd presumably convert the input file at inputFilePath to an OBJ file at outputFilePath
+        do {
+            let imageDepthInstance = imageDepth!.ImageDepth(json_string, image_file, depth_file)
+        }
+
+        // Return the output file path, assuming the rest of the process creates or updates the OBJ file at this path
+        return outputFilePath
+    }
+
     static func ballPivotingSurfaceReconstruction_PLYtoOBJ(fileURL: URL) throws -> URL {
         let fileManager = FileManager.default
         let tempDir = fileManager.temporaryDirectory.appendingPathComponent("temp", isDirectory: true)
