@@ -382,6 +382,8 @@ struct OpticALLYApp: App {
                     // Use the pointers with your function
                     // Ensure your function can accept UnsafeMutablePointer<Float>
                     OpenCVWrapper.processImage(image, withMapX: mapXPointer, mapY: mapYPointer)
+                    
+                    
                 }
             }
         }

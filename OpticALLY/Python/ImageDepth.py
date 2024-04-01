@@ -172,6 +172,18 @@ class ImageDepth:
         self.gray = cv.cvtColor((self.img_linear * 255).astype('uint8'), cv.COLOR_RGB2GRAY)
         self.img_undistort = cv.remap((self.img_linear * 255).astype('uint8'), self.map_x, self.map_y, cv.INTER_LINEAR)
         self.gray_undistort = cv.remap(self.gray, self.map_x, self.map_y, cv.INTER_LINEAR)
+        
+    def set_img_linear(self, img_linear):
+        self.img_linear = img_linear
+        
+    def set_gray(self, gray):
+        self.gray = gray
+        
+    def set_img_undistort(self, img_undistort):
+        self.img_undistort = img_undistort
+        
+    def set_gray_undistort(self, gray_undistort):
+        self.gray_undistort = gray_undistort
 
     def project3d(self, pts):
         # expect pts to be Nx2
