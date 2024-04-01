@@ -350,32 +350,38 @@ struct OpticALLYApp: App {
         // Define the output file path using the new file name
         let outputFilePath = tempDir.appendingPathComponent(newFileName).appendingPathExtension("obj")
 
-        // Your existing logic to use imageDepthInstance, etc.
-        // This is where you'd presumably convert the input file at inputFilePath to an OBJ file at outputFilePath
         do {
             let imageDepthInstance = imageDepth!.ImageDepth(json_string, image_file, depth_file)
-            // Assuming get_map_x and get_map_y return a base64 encoded string in Python and are correctly bridged to Swift
-            if let mapXBase64: String? = String(imageDepthInstance.get_map_x()),  // Cast Python return value to String
-               let mapYBase64: String? = String(imageDepthInstance.get_map_y()),  // Cast Python return value to String
-               let mapXData = Data(base64Encoded: mapXBase64!),  // Initialize Data with base64 String
-               let mapYData = Data(base64Encoded: mapYBase64!) {  // Initialize Data with base64 String
+            if let mapXBase64 = String(imageDepthInstance.get_map_x()),
+               let mapYBase64 = String(imageDepthInstance.get_map_y()),
+               let mapXData = Data(base64Encoded: mapXBase64),
+               let mapYData = Data(base64Encoded: mapYBase64) {
 
                 if let imageBase64 = String(imageDepthInstance.get_image()),
-                   let imageData = Data(base64Encoded: imageBase64) {
-                    let image = UIImage(data: imageData)
-                    // Use 'image' where you need an UIImage
-                    
-                    // Use the Data objects
-                    mapXData.withUnsafeBytes { rawPtr in
-                        let mapXPointer = rawPtr.bindMemory(to: Float.self).baseAddress!
-                        mapYData.withUnsafeBytes { rawPtr in
-                            let mapYPointer = rawPtr.bindMemory(to: Float.self).baseAddress!
-                            
-                            // Now you can use mapXPointer and mapYPointer with your OpenCV functions
-                            // Update your OpenCVWrapper processImage function to work with UnsafeMutablePointer<Float> if necessary
-                            OpenCVWrapper.processImage(image!, withMapX: mapXPointer, mapY: mapYPointer)
-                        }
+                   let imageData = Data(base64Encoded: imageBase64),
+                   let image = UIImage(data: imageData) {
+
+                    // Allocate mutable memory for mapX and mapY
+                    let mapXSize = mapXData.count / MemoryLayout<Float>.size
+                    let mapXPointer = UnsafeMutablePointer<Float>.allocate(capacity: mapXSize)
+                    defer { mapXPointer.deallocate() }
+
+                    let mapYSize = mapYData.count / MemoryLayout<Float>.size
+                    let mapYPointer = UnsafeMutablePointer<Float>.allocate(capacity: mapYSize)
+                    defer { mapYPointer.deallocate() }
+
+                    // Reinterpret and copy bytes
+                    mapXData.withUnsafeBytes { bytes in
+                        mapXPointer.initialize(from: bytes.bindMemory(to: Float.self).baseAddress!, count: mapXSize)
                     }
+
+                    mapYData.withUnsafeBytes { bytes in
+                        mapYPointer.initialize(from: bytes.bindMemory(to: Float.self).baseAddress!, count: mapYSize)
+                    }
+
+                    // Use the pointers with your function
+                    // Ensure your function can accept UnsafeMutablePointer<Float>
+                    OpenCVWrapper.processImage(image, withMapX: mapXPointer, mapY: mapYPointer)
                 }
             }
         }
