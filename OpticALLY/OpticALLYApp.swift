@@ -389,8 +389,6 @@ struct OpticALLYApp: App {
         // Return the output file path, assuming the rest of the process creates or updates the OBJ file at this path
         return outputFilePath
     }
-    
-    
 
     static func ballPivotingSurfaceReconstruction_PLYtoOBJ(fileURL: URL) throws -> URL {
         let fileManager = FileManager.default
