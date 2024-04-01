@@ -143,6 +143,18 @@ class ImageDepth:
         # calc normal, required for ICP point-to-plane
         self.pcd.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=self.normal_radius, max_nn=30))
         self.pcd.orient_normals_towards_camera_location()
+        
+    def numpy_array_to_base64(array):
+        return base64.b64encode(array).decode('utf-8')
+        
+    def get_image(self):
+        return numpy_array_to_base64(self.img)
+        
+    def get_map_x(self):
+        return numpy_array_to_base64(self.map_x)
+        
+    def get_map_y(self):
+        return numpy_array_to_base64(self.map_y)
 
     def process_image(self):
         # Convert the image from sRGB to linear space

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 import SystemConfiguration
 import DevicePpi
 import PythonSupport
@@ -91,12 +92,6 @@ struct OpticALLYApp: App {
             print("Python Version: \(sys!.version)")
             print("Python Encoding: \(sys!.getdefaultencoding().upper())")
             print("Open3D Version: \(o3d!.__version__)")
-
-            let json_string = "{}"  // Your JSON string here
-            let image_file = "path/to/image_file"
-            let depth_file = "path/to/depth_file"
-
-            // let imageDepthInstance = imageDepth!.ImageDepth(json_string, image_file, depth_file)
         }
         
         for family: String in UIFont.familyNames
@@ -322,7 +317,16 @@ struct OpticALLYApp: App {
         return poseGraph
     }
     
-    // VVIP: STILL WORK IN PROGRESS... (ON-DEVICE MESHING)
+    func base64ToImage(_ base64String: String) -> UIImage? {
+        guard let imageData = Data(base64Encoded: base64String) else { return nil }
+        return UIImage(data: imageData)
+    }
+    
+    func base64ToData(_ base64String: String) -> Data? {
+        return Data(base64Encoded: base64String)
+    }
+    
+    // Fully on-device meshing...
     static func poissonReconstruction_PLYtoOBJ(json_string: String, image_file: String, depth_file: String) throws -> URL {
         let fileManager = FileManager.default
         let tempDir = fileManager.temporaryDirectory.appendingPathComponent("temp", isDirectory: true)
@@ -350,11 +354,37 @@ struct OpticALLYApp: App {
         // This is where you'd presumably convert the input file at inputFilePath to an OBJ file at outputFilePath
         do {
             let imageDepthInstance = imageDepth!.ImageDepth(json_string, image_file, depth_file)
+            // Assuming get_map_x and get_map_y return a base64 encoded string in Python and are correctly bridged to Swift
+            if let mapXBase64: String? = String(imageDepthInstance.get_map_x()),  // Cast Python return value to String
+               let mapYBase64: String? = String(imageDepthInstance.get_map_y()),  // Cast Python return value to String
+               let mapXData = Data(base64Encoded: mapXBase64!),  // Initialize Data with base64 String
+               let mapYData = Data(base64Encoded: mapYBase64!) {  // Initialize Data with base64 String
+
+                if let imageBase64 = String(imageDepthInstance.get_image()),
+                   let imageData = Data(base64Encoded: imageBase64) {
+                    let image = UIImage(data: imageData)
+                    // Use 'image' where you need an UIImage
+                    
+                    // Use the Data objects
+                    mapXData.withUnsafeBytes { rawPtr in
+                        let mapXPointer = rawPtr.bindMemory(to: Float.self).baseAddress!
+                        mapYData.withUnsafeBytes { rawPtr in
+                            let mapYPointer = rawPtr.bindMemory(to: Float.self).baseAddress!
+                            
+                            // Now you can use mapXPointer and mapYPointer with your OpenCV functions
+                            // Update your OpenCVWrapper processImage function to work with UnsafeMutablePointer<Float> if necessary
+                            OpenCVWrapper.processImage(image!, withMapX: mapXPointer, mapY: mapYPointer)
+                        }
+                    }
+                }
+            }
         }
 
         // Return the output file path, assuming the rest of the process creates or updates the OBJ file at this path
         return outputFilePath
     }
+    
+    
 
     static func ballPivotingSurfaceReconstruction_PLYtoOBJ(fileURL: URL) throws -> URL {
         let fileManager = FileManager.default

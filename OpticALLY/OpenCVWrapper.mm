@@ -9,6 +9,8 @@
 #import <opencv2/imgcodecs/ios.h>
 #import "OpenCVWrapper.h"
 
+using namespace cv;
+
 /*
  * add a method convertToMat to UIImage class
  */
@@ -16,7 +18,41 @@
 - (void)convertToMat: (cv::Mat *)pMat: (bool)alphaExists;
 @end
 
+// Helper function to convert sRGB to Linear
+Mat srgbToLinear(const Mat &srgbImg) {
+    Mat linearImg = Mat::zeros(srgbImg.size(), srgbImg.type());
+    for (int y = 0; y < srgbImg.rows; y++) {
+        for (int x = 0; x < srgbImg.cols; x++) {
+            Vec3b pixel = srgbImg.at<Vec3b>(y, x);
+            for (int c = 0; c < 3; c++) {
+                float srgb = pixel[c] / 255.0f;
+                float linear = srgb <= 0.04045 ? srgb / 12.92 : pow((srgb + 0.055) / 1.055, 2.4);
+                linearImg.at<Vec3b>(y, x)[c] = static_cast<uchar>(linear * 255.0);
+            }
+        }
+    }
+    return linearImg;
+}
+
 @implementation UIImage (OpenCVWrapper)
+
++ (UIImage *)processImage:(UIImage *)image withMapX:(cv::Mat)mapX mapY:(cv::Mat)mapY {
+    cv::Mat src;
+    [image convertToMat:&src :false]; // Convert UIImage to cv::Mat without alpha
+
+    // Convert from sRGB to Linear
+    cv::Mat linearImg = srgbToLinear(src);
+
+    // Convert to grayscale
+    cv::Mat gray;
+    cv::cvtColor(linearImg, gray, cv::COLOR_RGB2GRAY);
+
+    // Undistort the grayscale image
+    cv::Mat undistortedGray;
+    cv::remap(gray, undistortedGray, mapX, mapY, cv::INTER_LINEAR);
+
+    return MatToUIImage(undistortedGray);
+}
 
 - (void)convertToMat: (cv::Mat *)pMat: (bool)alphaExists {
     if (self.imageOrientation == UIImageOrientationRight) {
@@ -63,6 +99,12 @@
     cv::remap(depthMap, undistortedDepthMap, mapX, mapY, cv::INTER_LINEAR);
 
     return MatToUIImage(undistortedDepthMap);
+}
+
++ (cv::Mat)dataToMat:(NSData *)data width:(int)width height:(int)height {
+    cv::Mat mat(height, width, CV_32F); // Assuming the data is of type float and you know the dimensions
+    memcpy(mat.data, data.bytes, data.length);
+    return mat;
 }
 
 + (UIImage *)processImage:(UIImage *)image withMapX:(cv::Mat)mapX mapY:(cv::Mat)mapY {
