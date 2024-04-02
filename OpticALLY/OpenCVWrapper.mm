@@ -34,24 +34,52 @@ Mat srgbToLinear(const Mat &srgbImg) {
     return linearImg;
 }
 
+// Helper function to convert UIImage to base64 string
+NSString* UIImageToBase64(UIImage* image) {
+    NSData *imageData = UIImageJPEGRepresentation(image, 1.0);
+    NSString *base64String = [imageData base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
+    return base64String;
+}
+
 @implementation UIImage (OpenCVWrapper)
 
-+ (UIImage *)processImage:(UIImage *)image withMapX:(cv::Mat)mapX mapY:(cv::Mat)mapY {
++ (NSString *)processToImgLinearBase64:(UIImage *)image {
     cv::Mat src;
-    [image convertToMat:&src :false]; // Convert UIImage to cv::Mat without alpha
+    [image convertToMat:&src :false]; // Convert UIImage to cv::Mat
 
-    // Convert from sRGB to Linear
+    // Convert from sRGB to Linear color space
     cv::Mat linearImg = srgbToLinear(src);
 
-    // Convert to grayscale
-    cv::Mat gray;
-    cv::cvtColor(linearImg, gray, cv::COLOR_RGB2GRAY);
+    // Convert the linear cv::Mat back to UIImage
+    UIImage *imgLinear = MatToUIImage(linearImg);
 
-    // Undistort the grayscale image
-    cv::Mat undistortedGray;
-    cv::remap(gray, undistortedGray, mapX, mapY, cv::INTER_LINEAR);
+    // Convert UIImage to base64 string
+    return UIImageToBase64(imgLinear);
+}
 
-    return MatToUIImage(undistortedGray);
++ (NSString *)processToGrayBase64:(UIImage *)image {
+    cv::Mat src, gray;
+    [image convertToMat:&src :false];
+    cv::cvtColor(src, gray, cv::COLOR_RGB2GRAY);
+    UIImage *grayImage = MatToUIImage(gray);
+    return UIImageToBase64(grayImage);
+}
+
++ (NSString *)processToImgUndistortBase64:(UIImage *)image withMapX:(cv::Mat)mapX mapY:(cv::Mat)mapY {
+    cv::Mat src, imgUndistorted;
+    [image convertToMat:&src :false];
+    cv::remap(src, imgUndistorted, mapX, mapY, cv::INTER_LINEAR);
+    UIImage *imgUndistort = MatToUIImage(imgUndistorted);
+    return UIImageToBase64(imgUndistort);
+}
+
++ (NSString *)processToGrayUndistortBase64:(UIImage *)image withMapX:(cv::Mat)mapX mapY:(cv::Mat)mapY {
+    cv::Mat src, gray, grayUndistorted;
+    [image convertToMat:&src :false];
+    cv::cvtColor(src, gray, cv::COLOR_RGB2GRAY);
+    cv::remap(gray, grayUndistorted, mapX, mapY, cv::INTER_LINEAR);
+    UIImage *grayUndistort = MatToUIImage(grayUndistorted);
+    return UIImageToBase64(grayUndistort);
 }
 
 - (void)convertToMat: (cv::Mat *)pMat: (bool)alphaExists {

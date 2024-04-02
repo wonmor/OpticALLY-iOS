@@ -45,6 +45,11 @@ let devicePPI: Double = {
     }
 }()
 
+func convertImageToBase64String(img: UIImage) -> String? {
+    guard let imageData = img.jpegData(compressionQuality: 1.0) else { return nil }
+    return imageData.base64EncodedString(options: .lineLength64Characters)
+}
+
 enum ViewState {
     case introduction
     case scanning
