@@ -27,9 +27,6 @@ NS_ASSUME_NONNULL_BEGIN
 // Undistorts an image using the specified camera matrix and distortion coefficients
 + (UIImage *)undistortImage:(UIImage *)image withCameraMatrix:(NSArray<NSNumber *> *)cameraMatrix distortionCoefficients:(NSArray<NSNumber *> *)distCoeffs;
 
-// For converting NSData to cv::Mat type
-+ (cv::Mat)dataToMat:(NSData *)data width:(int)width height:(int)height;
-
 @end
 
 NS_ASSUME_NONNULL_END
