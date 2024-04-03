@@ -14,6 +14,7 @@ import PythonKit
 import Open3DSupport
 import NumPySupport
 import Accelerate
+import opencv2
 
 /// OpticALLYApp is the main entry point for the OpticALLY application, which is designed to use advanced computer vision and 3D reconstruction techniques to analyze and manipulate spatial data. This SwiftUI application integrates various technologies, including Python libraries for computational geometry and machine learning, to provide functionalities such as face tracking, 3D scanning, and object recognition.
 
@@ -322,13 +323,48 @@ struct OpticALLYApp: App {
         return poseGraph
     }
     
-    func base64ToImage(_ base64String: String) -> UIImage? {
-        guard let imageData = Data(base64Encoded: base64String) else { return nil }
-        return UIImage(data: imageData)
-    }
-    
-    func base64ToData(_ base64String: String) -> Data? {
-        return Data(base64Encoded: base64String)
+    static func base64StringToUIImage(base64String: String) -> UIImage? {
+        // Decode the base64 string to Data
+        guard let imageData = Data(base64Encoded: base64String) else {
+            print("Error: Could not decode base64 string to Data")
+            return nil
+        }
+        
+        // Assuming the image data is in RGBA format, create a CGImage from the data
+        let imageWidth = 640  // Set the width of your image
+        let imageHeight = 480  // Set the height of your image
+        let bitsPerComponent = 8
+        let bytesPerPixel = 4  // 4 bytes per pixel for RGBA
+        let bytesPerRow = bytesPerPixel * imageWidth
+        let colorSpace = CGColorSpaceCreateDeviceRGB()
+
+        // Bitmap info: alpha info and byte order
+        let bitmapInfo = CGImageAlphaInfo.premultipliedLast.rawValue | CGBitmapInfo.byteOrder32Big.rawValue
+
+        guard let providerRef = CGDataProvider(data: imageData as CFData) else {
+            print("Error: Could not create CGDataProvider from image data")
+            return nil
+        }
+
+        guard let cgImage = CGImage(
+            width: imageWidth,
+            height: imageHeight,
+            bitsPerComponent: bitsPerComponent,
+            bitsPerPixel: bytesPerPixel * bitsPerComponent,
+            bytesPerRow: bytesPerRow,
+            space: colorSpace,
+            bitmapInfo: CGBitmapInfo(rawValue: bitmapInfo),
+            provider: providerRef,
+            decode: nil,
+            shouldInterpolate: true,
+            intent: .defaultIntent
+        ) else {
+            print("Error: Could not create CGImage from provider")
+            return nil
+        }
+
+        // Create UIImage from CGImage
+        return UIImage(cgImage: cgImage)
     }
     
     // Fully on-device meshing...
@@ -357,40 +393,19 @@ struct OpticALLYApp: App {
 
         do {
             let imageDepthInstance = imageDepth!.ImageDepth(json_string, image_file, depth_file)
-            if let mapXBase64 = String(imageDepthInstance.get_map_x()),
-               let mapYBase64 = String(imageDepthInstance.get_map_y()),
-               let mapXData = Data(base64Encoded: mapXBase64),
-               let mapYData = Data(base64Encoded: mapYBase64) {
-
-                if let imageBase64 = String(imageDepthInstance.get_image()),
-                   let imageData = Data(base64Encoded: imageBase64),
-                   let image = UIImage(data: imageData) {
-
-                    // Allocate mutable memory for mapX and mapY
-                    let mapXSize = mapXData.count / MemoryLayout<Float>.size
-                    let mapXPointer = UnsafeMutablePointer<Float>.allocate(capacity: mapXSize)
-                    defer { mapXPointer.deallocate() }
-
-                    let mapYSize = mapYData.count / MemoryLayout<Float>.size
-                    let mapYPointer = UnsafeMutablePointer<Float>.allocate(capacity: mapYSize)
-                    defer { mapYPointer.deallocate() }
-
-                    // Reinterpret and copy bytes
-                    mapXData.withUnsafeBytes { bytes in
-                        mapXPointer.initialize(from: bytes.bindMemory(to: Float.self).baseAddress!, count: mapXSize)
-                    }
-
-                    mapYData.withUnsafeBytes { bytes in
-                        mapYPointer.initialize(from: bytes.bindMemory(to: Float.self).baseAddress!, count: mapYSize)
-                    }
-
-                    // Use the pointers with your function
-                    // Ensure your function can accept UnsafeMutablePointer<Float>
-                    OpenCVWrapper.processImage(image, withMapX: mapXPointer, mapY: mapYPointer)
-                    
-                    
-                }
-            }
+            
+            // Decode Base64 string to Data
+            let imageLinear = base64StringToUIImage(base64String: String(imageDepthInstance.get_image_linear())!)
+            
+            let src = Mat(uiImage: imageLinear!)
+            
+            let gray: Mat
+            gray = Mat()
+            
+            Imgproc.cvtColor(src: src, dst: gray, code: .COLOR_RGB2GRAY)
+            
+            imageDepthInstance.gray =
+            
         }
 
         // Return the output file path, assuming the rest of the process creates or updates the OBJ file at this path

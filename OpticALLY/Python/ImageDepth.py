@@ -5,6 +5,9 @@ import json
 import struct
 import base64
 
+import pickle
+import codecs
+
 def test_output():
     return "Hello from ImageDepth"
 
@@ -37,7 +40,7 @@ class ImageDepth:
         # Should be the entry point from Swift side...
         
         # Below line requires OpenCV...
-        # self.process_image()
+        self.process_image()
         
         # self.load_depth(depth_file)
         
@@ -144,17 +147,39 @@ class ImageDepth:
         self.pcd.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=self.normal_radius, max_nn=30))
         self.pcd.orient_normals_towards_camera_location()
         
-    def numpy_array_to_base64(array):
-        return base64.b64encode(array).decode('utf-8')
+    def numpy_array_to_base64(self, array):
+        return codecs.encode(pickle.dumps(array, protocol=pickle.HIGHEST_PROTOCOL), "base64").decode('latin1')
         
-    def get_image(self):
-        return numpy_array_to_base64(self.img)
+    def base64_to_numpy_array(self, array_base64string):
+        return pickle.loads(codecs.decode(array_base64string.encode('latin1'), "base64"))
+        
+    def convert_rgb_image_to_base64(self, img):
+         # Ensure the array is of type uint8
+        assert numpy_array.dtype == np.uint8, "The input array should be of type np.uint8"
+
+        # Encode the image as a JPEG (or choose PNG, etc.)
+        success, encoded_image = cv2.imencode('.jpg', numpy_array)
+
+        # Ensure the image was successfully encoded
+        if not success:
+            raise Exception("Could not encode the image")
+
+        # Convert the encoded image to a bytes object
+        image_bytes = encoded_image.tobytes()
+
+        # Convert the bytes object to a Base64 string
+        base64_string = base64.b64encode(image_bytes).decode('utf-8')
+
+        return base64_string
+        
+    def get_image_linear(self):
+        return self.convert_rgb_image_to_base64(self.img_linear * 255.astype('uint8'))
         
     def get_map_x(self):
-        return numpy_array_to_base64(self.map_x)
+        return self.numpy_array_to_base64(self.map_x)
         
     def get_map_y(self):
-        return numpy_array_to_base64(self.map_y)
+        return self.numpy_array_to_base64(self.map_y)
 
     def process_image(self):
         # Convert the image from sRGB to linear space
@@ -169,21 +194,21 @@ class ImageDepth:
         self.img_linear = srgb_to_linear(self.img.astype('float32') / 255.0)
 
         # Now, the image is in linear space, you can continue with your processing
-        self.gray = cv.cvtColor((self.img_linear * 255).astype('uint8'), cv.COLOR_RGB2GRAY)
-        self.img_undistort = cv.remap((self.img_linear * 255).astype('uint8'), self.map_x, self.map_y, cv.INTER_LINEAR)
-        self.gray_undistort = cv.remap(self.gray, self.map_x, self.map_y, cv.INTER_LINEAR)
+        # self.gray = cv.cvtColor((self.img_linear * 255).astype('uint8'), cv.COLOR_RGB2GRAY)
+        # self.img_undistort = cv.remap((self.img_linear * 255).astype('uint8'), self.map_x, self.map_y, cv.INTER_LINEAR)
+        # self.gray_undistort = cv.remap(self.gray, self.map_x, self.map_y, cv.INTER_LINEAR)
         
     def set_img_linear(self, img_linear):
-        self.img_linear = img_linear
+        self.img_linear = self.base64_to_numpy_array(img_linear)
         
     def set_gray(self, gray):
-        self.gray = gray
+        self.gray = self.base64_to_numpy_array(gray)
         
     def set_img_undistort(self, img_undistort):
-        self.img_undistort = img_undistort
+        self.img_undistort = self.base64_to_numpy_array(img_undistort)
         
     def set_gray_undistort(self, gray_undistort):
-        self.gray_undistort = gray_undistort
+        self.gray_undistort = self.base64_to_numpy_array(gray_undistort)
 
     def project3d(self, pts):
         # expect pts to be Nx2

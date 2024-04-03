@@ -1,5 +1,5 @@
 {
-  "originHash" : "4d6a78b42fbec028e0e37daa7bb28b8991b0ba057986d6c18ce763dee85a80c9",
+  "originHash" : "90c032e907370e6a2ec6005edba57be6b267e1362d9b85e61bc3170985616dc1",
   "pins" : [
     {
       "identity" : "blas-lapack-appstore-workaround",
@@ -52,6 +52,15 @@
       "state" : {
         "branch" : "main",
         "revision" : "24c1801f0a465463f8be51aac3b027988246270c"
+      }
+    },
+    {
+      "identity" : "opencv-spm",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/yeatse/opencv-spm.git",
+      "state" : {
+        "revision" : "bd995856c7ec48f68247943b7892b005377e0e53",
+        "version" : "4.9.0"
       }
     },
     {
