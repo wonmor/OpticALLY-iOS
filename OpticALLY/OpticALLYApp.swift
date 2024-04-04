@@ -399,17 +399,66 @@ struct OpticALLYApp: App {
             
             let src = Mat(uiImage: imageLinear!)
             
-            let gray: Mat
-            gray = Mat()
+            let imgUndistort: Mat
+            imgUndistort = Mat()
             
-            Imgproc.cvtColor(src: src, dst: gray, code: .COLOR_RGB2GRAY)
+            // Assuming pythonInstance is your Python object
+            let mapsAndDimensionsBase64 = String(imageDepthInstance.get_maps_with_dimensions())!
             
-            imageDepthInstance.gray =
+            guard let jsonData = Data(base64Encoded: mapsAndDimensionsBase64),
+                  let jsonString = String(data: jsonData, encoding: .utf8),
+                  let json = try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any],
+                  let mapXBase64 = json["map_x"] as? String,
+                  let mapYBase64 = json["map_y"] as? String,
+                  let height = json["height"] as? Int,
+                  let width = json["width"] as? Int else {
+                fatalError("Failed to decode and parse JSON")
+            }
             
+            guard let mapXData = Data(base64Encoded: mapXBase64),
+                  let mapYData = Data(base64Encoded: mapYBase64) else {
+                fatalError("Failed to decode base64 strings for mapX and mapY")
+            }
+
+            // Convert the decoded Data to cv::Mat
+            let mapXMat = createMat(from: mapXData, height: height, width: width)
+            let mapYMat = createMat(from: mapYData, height: height, width: width)
+
+                // Use remap to undistort the source image
+            Imgproc.remap(src: src, dst: imgUndistort, map1: mapXMat, map2: mapYMat, interpolation: InterpolationFlags.INTER_LINEAR.rawValue)
+            
+            let imgUndistortBase64 = convertImageToBase64String(img: imgUndistort.toUIImage())
+            
+            imageDepthInstance.set_image_undistort(imgUndistortBase64)
         }
 
         // Return the output file path, assuming the rest of the process creates or updates the OBJ file at this path
         return outputFilePath
+    }
+    
+    static func createMat(from data: Data, height: Int, width: Int) -> Mat {
+        let size = Size(width: Int32(width), height: Int32(height))
+        let mat = Mat(size: size, type: CvType.CV_32FC1, scalar: Scalar(0))
+
+        // Access the bytes of the Data object
+        data.withUnsafeBytes { (bytes: UnsafeRawBufferPointer) in
+            if let baseAddress = bytes.baseAddress {
+                let floatBuffer = baseAddress.assumingMemoryBound(to: Float.self)
+                for y in 0..<height {
+                    for x in 0..<width {
+                        let value = floatBuffer[y * width + x]
+                        do {
+                            try mat.put(row: Int32(y), col: Int32(x), data: [value])
+                        } catch {
+                            print("Error putting data into Mat: \(error)")
+                            return
+                        }
+                    }
+                }
+            }
+        }
+
+        return mat
     }
 
     static func ballPivotingSurfaceReconstruction_PLYtoOBJ(fileURL: URL) throws -> URL {

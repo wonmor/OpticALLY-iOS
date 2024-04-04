@@ -49,6 +49,9 @@ class ImageDepth:
 
         # self.estimate_normals(idx, file, xy)
         
+    def undistort_depth_map(self):
+        self.depth_map_undistort = cv.remap(self.depth_map, self.map_x, self.map_y, cv.INTER_LINEAR)
+        
     def test_output2(self):
         return "Hello inside ImageDepth"
 
@@ -147,12 +150,6 @@ class ImageDepth:
         self.pcd.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=self.normal_radius, max_nn=30))
         self.pcd.orient_normals_towards_camera_location()
         
-    def numpy_array_to_base64(self, array):
-        return codecs.encode(pickle.dumps(array, protocol=pickle.HIGHEST_PROTOCOL), "base64").decode('latin1')
-        
-    def base64_to_numpy_array(self, array_base64string):
-        return pickle.loads(codecs.decode(array_base64string.encode('latin1'), "base64"))
-        
     def convert_rgb_image_to_base64(self, img):
          # Ensure the array is of type uint8
         assert numpy_array.dtype == np.uint8, "The input array should be of type np.uint8"
@@ -174,12 +171,6 @@ class ImageDepth:
         
     def get_image_linear(self):
         return self.convert_rgb_image_to_base64(self.img_linear * 255.astype('uint8'))
-        
-    def get_map_x(self):
-        return self.numpy_array_to_base64(self.map_x)
-        
-    def get_map_y(self):
-        return self.numpy_array_to_base64(self.map_y)
 
     def process_image(self):
         # Convert the image from sRGB to linear space
@@ -193,23 +184,24 @@ class ImageDepth:
         # Apply sRGB to Linear conversion
         self.img_linear = srgb_to_linear(self.img.astype('float32') / 255.0)
 
-        # Now, the image is in linear space, you can continue with your processing
-        # self.gray = cv.cvtColor((self.img_linear * 255).astype('uint8'), cv.COLOR_RGB2GRAY)
+
+
+        # Now, the image is in linear space, you can continue with your proceassing
         # self.img_undistort = cv.remap((self.img_linear * 255).astype('uint8'), self.map_x, self.map_y, cv.INTER_LINEAR)
-        # self.gray_undistort = cv.remap(self.gray, self.map_x, self.map_y, cv.INTER_LINEAR)
         
-    def set_img_linear(self, img_linear):
-        self.img_linear = self.base64_to_numpy_array(img_linear)
-        
-    def set_gray(self, gray):
-        self.gray = self.base64_to_numpy_array(gray)
-        
+    def get_maps_with_dimensions(self):
+        data = {
+            'map_x': self.numpy_array_to_base64(self.map_x),
+            'map_y': self.numpy_array_to_base64(self.map_y),
+            'height': self.height,
+            'width': self.width
+        }
+        json_string = json.dumps(data)
+        return base64.b64encode(json_string.encode()).decode()
+
     def set_img_undistort(self, img_undistort):
         self.img_undistort = self.base64_to_numpy_array(img_undistort)
         
-    def set_gray_undistort(self, gray_undistort):
-        self.gray_undistort = self.base64_to_numpy_array(gray_undistort)
-
     def project3d(self, pts):
         # expect pts to be Nx2
 
