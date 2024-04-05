@@ -115,7 +115,6 @@ struct PostScanView: View {
                 } catch {
                     print(error.localizedDescription)
                 }
-                
             }
             
             let process3D = Python.import("Process3D")
