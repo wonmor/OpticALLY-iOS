@@ -39,8 +39,16 @@ class ImageDepth:
         self.process_image()
 
         # self.estimate_normals(idx, file, xy)
-    
         
+    def load_image(self, file):
+        print(f"Loading {file}")
+        self.img = np.fromfile(file, dtype='uint8')
+        self.img = self.img.reshape((self.height, self.width, 4))
+        self.img = self.img[:,:,0:3]
+
+        # swap RB
+        self.img = self.img[:,:,[2,1,0]]
+
     def test_output2(self):
         return "Hello inside ImageDepth"
 
