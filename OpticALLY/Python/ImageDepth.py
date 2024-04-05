@@ -214,8 +214,8 @@ class ImageDepth:
         # Decode the base64 string
         img_bytes = base64.b64decode(base64_string)
         
-        # Convert the bytes to a NumPy array
-        return np.frombuffer(img_bytes, dtype=np.float32)
+        # Convert the bytes to a NumPy array (convert uint8 to float32 which occured during transfer process from Swift, as conversion to UIImage was necessary which forces uint8 format)
+        return np.frombuffer(img_bytes, dtype=np.uint8).astype(np.float32)
         
     def project3d(self, pts):
         # expect pts to be Nx2
