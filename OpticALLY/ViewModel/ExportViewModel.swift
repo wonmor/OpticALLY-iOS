@@ -44,6 +44,7 @@ class ExportViewModel: ObservableObject {
     @Published var hasTurnedCenter = false
     
     private var exportStartTime: Date?
+    private var tstate: UnsafeMutableRawPointer?
     
     func reset(completion: @escaping () -> Void) {
         fileURL = nil
@@ -166,8 +167,6 @@ class ExportViewModel: ObservableObject {
         
         tstate = PyEval_SaveThread()
     }
-    
-    var tstate: UnsafeMutableRawPointer?
     
     func exportOBJ() {
         if OpticALLYApp.isConnectedToNetwork() {

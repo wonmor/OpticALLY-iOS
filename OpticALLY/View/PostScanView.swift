@@ -11,6 +11,7 @@ import ModelIO
 import SceneKit.ModelIO
 import PythonKit
 import ZipArchive
+import LinkPython
 
 let debugMode = false
 
@@ -26,6 +27,8 @@ struct ShareSheet: UIViewControllerRepresentable {
 }
 
 struct PostScanView: View {
+    private var tstate: UnsafeMutableRawPointer?
+    
     @EnvironmentObject var globalState: GlobalState
     
     @ObservedObject private var exportViewModel = ExportViewModel()
@@ -61,7 +64,7 @@ struct PostScanView: View {
     
     let fileManager = FileManager.default
     
-    func initialize() {
+    mutating func initialize() {
         isProcessing = true
         
         // Construct the paths for the calibration, image, and depth files
@@ -81,6 +84,30 @@ struct PostScanView: View {
         
         SSZipArchive.createZipFile(atPath: videoZipPath, withFilesAtPaths: videoFiles)
         SSZipArchive.createZipFile(atPath: depthZipPath, withFilesAtPaths: depthFiles)
+        
+        DispatchQueue.global(qos: .userInitiated).async {
+            let gstate = PyGILState_Ensure()
+            
+          defer {
+              DispatchQueue.main.async {
+                  guard let tstate = self.tstate else { fatalError() }
+                  PyEval_RestoreThread(tstate)
+                  self.tstate = nil
+              }
+              PyGILState_Release(gstate)
+          }
+    
+            let objFileURL = OpticALLYApp.poissonReconstruction_PLYtoOBJ(json_string: calibrationFilePath, image_file: <#T##String#>, depth_file: <#T##String#>)
+            
+            // Update the state to indicate that there's a file to share
+            DispatchQueue.main.async {
+                // self.fileURL = zipFileURL
+                self.fileURL = objFileURL
+                self.showShareSheet = showShareSheet
+            }
+        }
+        
+        tstate = PyEval_SaveThread()
         
         
         uploadFiles(calibrationFileURL: URL(fileURLWithPath: calibrationFilePath), imageFilesZipURL: URL(fileURLWithPath: videoZipPath), depthFilesZipURL: URL(fileURLWithPath: depthZipPath)) { success, fileURL in

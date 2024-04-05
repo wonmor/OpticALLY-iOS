@@ -369,6 +369,7 @@ struct OpticALLYApp: App {
     
     // Fully on-device meshing...
     static func poissonReconstruction_PLYtoOBJ(json_string: String, image_file: String, depth_file: String) throws -> URL {
+        
         let fileManager = FileManager.default
         let tempDir = fileManager.temporaryDirectory.appendingPathComponent("temp", isDirectory: true)
 
