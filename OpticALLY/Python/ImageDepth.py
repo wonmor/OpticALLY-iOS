@@ -8,8 +8,6 @@ import base64
 import pickle
 import codecs
 
-from PIL import Image
-
 def test_output():
     return "Hello from ImageDepth"
 
@@ -150,23 +148,16 @@ class ImageDepth:
         # calc normal, required for ICP point-to-plane
         self.pcd.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=self.normal_radius, max_nn=30))
         self.pcd.orient_normals_towards_camera_location()
-
+        
     def convert_rgb_image_to_base64(numpy_array):
         # Ensure the array is of type uint8
         assert numpy_array.dtype == np.uint8, "The input array should be of type np.uint8"
 
-        # Convert numpy array to PIL Image
-        image = Image.fromarray(numpy_array)
+        # Convert the numpy array to bytes
+        img_bytes = numpy_array.tobytes()
 
-        # Save the image to a bytes buffer
-        buffer = io.BytesIO()
-        image.save(buffer, format="JPEG")  # You can change JPEG to PNG if you prefer
-
-        # Get the buffer's content as bytes
-        image_bytes = buffer.getvalue()
-
-        # Convert the bytes content to a Base64 string
-        base64_string = base64.b64encode(image_bytes).decode('utf-8')
+        # Encode the bytes to Base64
+        base64_string = base64.b64encode(img_bytes).decode('utf-8')
 
         return base64_string
         
