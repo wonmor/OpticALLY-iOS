@@ -27,8 +27,6 @@ struct ShareSheet: UIViewControllerRepresentable {
 }
 
 struct PostScanView: View {
-    private var tstate: UnsafeMutableRawPointer?
-    
     @EnvironmentObject var globalState: GlobalState
     
     @ObservedObject private var exportViewModel = ExportViewModel()
@@ -40,6 +38,7 @@ struct PostScanView: View {
     @State private var isInteractionDisabled = false
     @State private var showTimeoutAlert = false
     @State private var resetSceneKitView: Bool = false
+    @State private var tstate: UnsafeMutableRawPointer?
     
     @State private var selectedNodeIndex: Int?
     @State private var position = SCNVector3(0, 0, 0)
@@ -64,7 +63,7 @@ struct PostScanView: View {
     
     let fileManager = FileManager.default
     
-    mutating func initialize() {
+    func initialize() {
         isProcessing = true
         
         // Construct the paths for the calibration, image, and depth files
@@ -84,6 +83,14 @@ struct PostScanView: View {
         
         SSZipArchive.createZipFile(atPath: videoZipPath, withFilesAtPaths: videoFiles)
         SSZipArchive.createZipFile(atPath: depthZipPath, withFilesAtPaths: depthFiles)
+    
+        let outputFilePath = URL(fileURLWithPath: baseFolder).appendingPathComponent("output.obj")
+        
+        // Delete if already exists...
+        let fileManager = FileManager.default
+        if fileManager.fileExists(atPath: outputFilePath.path) {
+            try? fileManager.removeItem(at: outputFilePath)
+        }
         
         DispatchQueue.global(qos: .userInitiated).async {
             let gstate = PyGILState_Ensure()
@@ -94,38 +101,56 @@ struct PostScanView: View {
                   PyEval_RestoreThread(tstate)
                   self.tstate = nil
               }
+              
               PyGILState_Release(gstate)
           }
+            var pointClouds: [PythonObject] = []
     
-            let objFileURL = OpticALLYApp.poissonReconstruction_PLYtoOBJ(json_string: calibrationFilePath, image_file: <#T##String#>, depth_file: <#T##String#>)
+            for (index, videoFile) in videoFiles.enumerated() {
+                do {
+                    let objFileURL = try OpticALLYApp.poissonReconstruction_PLYtoOBJ(json_string: calibrationFilePath, image_file: videoFile, depth_file: depthFiles[index])
+                    
+                    pointClouds.append(objFileURL)
+                    
+                } catch {
+                    print(error.localizedDescription)
+                }
+                
+            }
             
+            let process3D = Python.import("Process3D")
+            let meshOutput = process3D.process3D(pointClouds)
+            
+            o3d!.io.write_triangle_mesh(outputFilePath.path, meshOutput)
+           
             // Update the state to indicate that there's a file to share
             DispatchQueue.main.async {
                 // self.fileURL = zipFileURL
-                self.fileURL = objFileURL
-                self.showShareSheet = showShareSheet
+                exportViewModel.fileURLForViewer = outputFilePath  // Store the file URL for sharing
+                ExternalData.isMeshView = true
+                self.isProcessing = false
             }
         }
         
         tstate = PyEval_SaveThread()
         
         
-        uploadFiles(calibrationFileURL: URL(fileURLWithPath: calibrationFilePath), imageFilesZipURL: URL(fileURLWithPath: videoZipPath), depthFilesZipURL: URL(fileURLWithPath: depthZipPath)) { success, fileURL in
-            if success, let fileURL = fileURL {
-                DispatchQueue.main.async {
-                    exportViewModel.fileURLForViewer = fileURL  // Store the file URL for sharing
-                    ExternalData.isMeshView = true
-                    self.isProcessing = false
-                    print("Good luck")
-                }
-                
-            } else {
-                // Handle errors
-                DispatchQueue.main.async {
-                    self.showAlert = true
-                }
-            }
-        }
+//        uploadFiles(calibrationFileURL: URL(fileURLWithPath: calibrationFilePath), imageFilesZipURL: URL(fileURLWithPath: videoZipPath), depthFilesZipURL: URL(fileURLWithPath: depthZipPath)) { success, fileURL in
+//            if success, let fileURL = fileURL {
+//                DispatchQueue.main.async {
+//                    exportViewModel.fileURLForViewer = fileURL  // Store the file URL for sharing
+//                    ExternalData.isMeshView = true
+//                    self.isProcessing = false
+//                    print("Good luck")
+//                }
+//                
+//            } else {
+//                // Handle errors
+//                DispatchQueue.main.async {
+//                    self.showAlert = true
+//                }
+//            }
+//        }
     }
     
     func reset() {

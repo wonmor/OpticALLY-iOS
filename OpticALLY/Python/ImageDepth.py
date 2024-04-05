@@ -20,7 +20,7 @@ class ImageDepth:
         height=480,
         min_depth=0.1,
         max_depth=0.5,
-        normal_radius=0.1) :
+        normal_radius=0.01) :
 
         self.image_file = image_file
         self.json_string = json_string

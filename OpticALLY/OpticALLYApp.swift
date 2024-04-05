@@ -368,7 +368,8 @@ struct OpticALLYApp: App {
     }
     
     // Fully on-device meshing...
-    static func poissonReconstruction_PLYtoOBJ(json_string: String, image_file: String, depth_file: String) throws -> URL {
+    static func poissonReconstruction_PLYtoOBJ(json_string: String, image_file: String, depth_file: String) throws -> PythonObject {
+        var imageDepthInstance: PythonObject?
         
         let fileManager = FileManager.default
         let tempDir = fileManager.temporaryDirectory.appendingPathComponent("temp", isDirectory: true)
@@ -393,17 +394,17 @@ struct OpticALLYApp: App {
         let outputFilePath = tempDir.appendingPathComponent(newFileName).appendingPathExtension("obj")
 
         do {
-            let imageDepthInstance = imageDepth!.ImageDepth(json_string, image_file, depth_file)
+            imageDepthInstance = imageDepth!.ImageDepth(json_string, image_file, depth_file)
             
             // Decode Base64 string to Data
-            let imageLinear = base64StringToUIImage(base64String: String(imageDepthInstance.get_image_linear())!)
+            let imageLinear = base64StringToUIImage(base64String: String(imageDepthInstance!.get_image_linear())!)
             
             let src = Mat(uiImage: imageLinear!)
             
             let imgUndistort: Mat
             imgUndistort = Mat()
         
-            let mapsAndDimensionsBase64 = String(imageDepthInstance.get_maps_with_dimensions())!
+            let mapsAndDimensionsBase64 = String(imageDepthInstance!.get_maps_with_dimensions())!
             
             guard let jsonData = Data(base64Encoded: mapsAndDimensionsBase64),
                   let jsonString = String(data: jsonData, encoding: .utf8),
@@ -429,11 +430,11 @@ struct OpticALLYApp: App {
             
             let imgUndistortBase64 = convertImageToBase64String(img: imgUndistort.toUIImage())
             
-            imageDepthInstance.set_image_undistort(imgUndistortBase64)
+            imageDepthInstance!.set_image_undistort(imgUndistortBase64)
             
-            imageDepthInstance.load_depth()
+            imageDepthInstance!.load_depth()
             
-            let depthMapAndDimensionsBase64 = String(imageDepthInstance.get_depth_map_with_dimensions())!
+            let depthMapAndDimensionsBase64 = String(imageDepthInstance!.get_depth_map_with_dimensions())!
             
             guard let jsonData = Data(base64Encoded: depthMapAndDimensionsBase64),
                   let jsonString = String(data: jsonData, encoding: .utf8),
@@ -459,13 +460,13 @@ struct OpticALLYApp: App {
             
             let depthMapUndistortBase64 = convertImageToBase64String(img: depthMapUndistort.toUIImage())
             
-            imageDepthInstance.set_depth_undistort(depthMapUndistortBase64)
+            imageDepthInstance!.set_depth_undistort(depthMapUndistortBase64)
             
-            imageDepthInstance.estimate_normals()
+            imageDepthInstance!.estimate_normals()
         }
 
         // Return the output file path, assuming the rest of the process creates or updates the OBJ file at this path
-        return outputFilePath
+        return imageDepthInstance!
     }
     
     static func createMat(from data: Data, height: Int, width: Int) -> Mat {
