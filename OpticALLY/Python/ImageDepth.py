@@ -37,14 +37,9 @@ class ImageDepth:
         
         self.load_image(image_file)
         self.process_image()
-        
-        # Below line requires OpenCV...
-        # self.undistort_depth_map()
 
         # self.estimate_normals(idx, file, xy)
-        
-    def undistort_depth_map(self):
-        self.depth_map_undistort = cv.remap(self.depth_map, self.map_x, self.map_y, cv.INTER_LINEAR)
+    
         
     def test_output2(self):
         return "Hello inside ImageDepth"
@@ -98,6 +93,8 @@ class ImageDepth:
         self.map_y = new_xy[:,1].reshape((self.height, self.width)).astype(np.float32)
 
     def load_depth(self):
+        global idx, xy
+        
         depth = np.fromfile(depth_file, dtype='float32').astype(np.float32)
 
         # vectorize version, faster
@@ -125,9 +122,9 @@ class ImageDepth:
         self.depth_map[np.where(idx == False)] = -1000
         self.depth_map = self.depth_map.reshape((self.height, self.width, 1))
 
-    def estimate_normals(self, idx, file, xy):
+    def estimate_normals(self):
         per = float(np.sum(idx==True))/len(depth)
-        print(f"Processing {file}, keeping={np.sum(idx==True)}/{len(depth)} ({per:.3f}) points")
+        print(f"Processing {depth_file}, keeping={np.sum(idx==True)}/{len(depth)} ({per:.3f}) points")
 
         depth = np.expand_dims(self.depth_map_undistort.flatten()[np.where(idx)],1)
 
@@ -220,14 +217,14 @@ class ImageDepth:
     def project3d(self, pts):
         # expect pts to be Nx2
 
-        xy = np.round(pts).astype(int)
+        local_xy = np.round(pts).astype(int)
 
         fx = self.intrinsic[0,0]
         fy = self.intrinsic[1,1]
         cx = self.intrinsic[0,2]
         cy = self.intrinsic[1,2]
 
-        depths = self.depth_map_undistort[xy[:,1], xy[:,0]]
+        depths = self.depth_map_undistort[local_xy[:,1], local_xy[:,0]]
         depths = np.expand_dims(depths, 1)
         good_idx = np.where((depths > self.min_depth) & (depths < self.max_depth))[0]
 
@@ -236,4 +233,4 @@ class ImageDepth:
         pts *= depths
         pts = np.hstack((pts, depths))
 
-        return pts, xy, good_idx
+        return pts, local_xy, good_idx
