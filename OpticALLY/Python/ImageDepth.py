@@ -36,13 +36,7 @@ class ImageDepth:
         self.create_undistortion_lookup()
         
         self.load_image(image_file)
-        
-        # Should be the entry point from Swift side...
-        
-        # Below line requires OpenCV...
         self.process_image()
-        
-        # self.load_depth(depth_file)
         
         # Below line requires OpenCV...
         # self.undistort_depth_map()
@@ -103,8 +97,8 @@ class ImageDepth:
         self.map_x = new_xy[:,0].reshape((self.height, self.width)).astype(np.float32)
         self.map_y = new_xy[:,1].reshape((self.height, self.width)).astype(np.float32)
 
-    def load_depth(self, file,):
-        depth = np.fromfile(file, dtype='float32').astype(np.float32)
+    def load_depth(self):
+        depth = np.fromfile(depth_file, dtype='float32').astype(np.float32)
 
         # vectorize version, faster
         # all possible (x,y) position
@@ -183,11 +177,6 @@ class ImageDepth:
 
         # Apply sRGB to Linear conversion
         self.img_linear = srgb_to_linear(self.img.astype('float32') / 255.0)
-
-
-
-        # Now, the image is in linear space, you can continue with your proceassing
-        # self.img_undistort = cv.remap((self.img_linear * 255).astype('uint8'), self.map_x, self.map_y, cv.INTER_LINEAR)
         
     def get_maps_with_dimensions(self):
         data = {
@@ -198,9 +187,35 @@ class ImageDepth:
         }
         json_string = json.dumps(data)
         return base64.b64encode(json_string.encode()).decode()
+        
+    def get_depth_map_with_dimensions(self):
+        data = {
+            'depth_map': self.numpy_array_to_base64(self.depth_map),
+            'height': self.height,
+            'width': self.width
+        }
+        json_string = json.dumps(data)
+        return base64.b64encode(json_string.encode()).decode()
 
     def set_img_undistort(self, img_undistort):
         self.img_undistort = self.base64_to_numpy_array(img_undistort)
+        
+    def set_depth_undistort(self, img_undistort):
+        self.img_undistort = self.base64_to_numpy_array_float32(img_undistort)
+        
+    def base64_to_numpy_array(self, base64_string):
+        # Decode the base64 string
+        img_bytes = base64.b64decode(base64_string)
+        
+        # Convert the bytes to a NumPy array
+        return np.frombuffer(img_bytes, dtype=np.uint8)
+        
+    def base64_to_numpy_array_float32(self, base64_string):
+        # Decode the base64 string
+        img_bytes = base64.b64decode(base64_string)
+        
+        # Convert the bytes to a NumPy array
+        return np.frombuffer(img_bytes, dtype=np.float32)
         
     def project3d(self, pts):
         # expect pts to be Nx2

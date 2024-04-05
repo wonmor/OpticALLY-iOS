@@ -401,8 +401,7 @@ struct OpticALLYApp: App {
             
             let imgUndistort: Mat
             imgUndistort = Mat()
-            
-            // Assuming pythonInstance is your Python object
+        
             let mapsAndDimensionsBase64 = String(imageDepthInstance.get_maps_with_dimensions())!
             
             guard let jsonData = Data(base64Encoded: mapsAndDimensionsBase64),
@@ -424,12 +423,42 @@ struct OpticALLYApp: App {
             let mapXMat = createMat(from: mapXData, height: height, width: width)
             let mapYMat = createMat(from: mapYData, height: height, width: width)
 
-                // Use remap to undistort the source image
+            // Use remap to undistort the source image
             Imgproc.remap(src: src, dst: imgUndistort, map1: mapXMat, map2: mapYMat, interpolation: InterpolationFlags.INTER_LINEAR.rawValue)
             
             let imgUndistortBase64 = convertImageToBase64String(img: imgUndistort.toUIImage())
             
             imageDepthInstance.set_image_undistort(imgUndistortBase64)
+            
+            imageDepthInstance.load_depth()
+            
+            let depthMapAndDimensionsBase64 = String(imageDepthInstance.get_depth_map_with_dimensions())!
+            
+            guard let jsonData = Data(base64Encoded: depthMapAndDimensionsBase64),
+                  let jsonString = String(data: jsonData, encoding: .utf8),
+                  let json = try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any],
+                  let depthMapBase64 = json["depth_map"] as? String,
+                  let height = json["height"] as? Int,
+                  let width = json["width"] as? Int else {
+                fatalError("Failed to decode and parse JSON")
+            }
+            
+            guard let depthMapData = Data(base64Encoded: depthMapBase64) else {
+                fatalError("Failed to decode base64 strings for mapX and mapY")
+            }
+
+            // Convert the decoded Data to cv::Mat
+            let depthMapMat = createMat(from: depthMapData, height: height, width: width)
+            
+            let depthMapUndistort: Mat
+            depthMapUndistort = Mat()
+            
+            // Use remap to undistort the depth map
+            Imgproc.remap(src: depthMapMat, dst: depthMapUndistort, map1: mapXMat, map2: mapYMat, interpolation: InterpolationFlags.INTER_LINEAR.rawValue)
+            
+            let depthMapUndistortBase64 = convertImageToBase64String(img: depthMapUndistort.toUIImage())
+            
+            imageDepthInstance.set_depth_undistort(depthMapUndistortBase64)
         }
 
         // Return the output file path, assuming the rest of the process creates or updates the OBJ file at this path
