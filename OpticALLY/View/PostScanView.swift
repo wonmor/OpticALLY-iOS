@@ -133,7 +133,7 @@ struct PostScanView: View {
         
         tstate = PyEval_SaveThread()
         
-        
+// Using cloud services... (server)
 //        uploadFiles(calibrationFileURL: URL(fileURLWithPath: calibrationFilePath), imageFilesZipURL: URL(fileURLWithPath: videoZipPath), depthFilesZipURL: URL(fileURLWithPath: depthZipPath)) { success, fileURL in
 //            if success, let fileURL = fileURL {
 //                DispatchQueue.main.async {
