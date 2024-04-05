@@ -201,7 +201,7 @@ class ImageDepth:
         self.img_undistort = self.base64_to_numpy_array(img_undistort)
         
     def set_depth_undistort(self, img_undistort):
-        self.img_undistort = self.base64_to_numpy_array_float32(img_undistort)
+        self.depth_undistort = self.base64_to_numpy_array_float32(img_undistort)
         
     def base64_to_numpy_array(self, base64_string):
         # Decode the base64 string
