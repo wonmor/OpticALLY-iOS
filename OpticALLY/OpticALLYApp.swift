@@ -460,7 +460,7 @@ struct OpticALLYApp: App {
             
             imageDepthInstance.set_depth_undistort(depthMapUndistortBase64)
             
-            imageDepthInstance.estimate_normals()            
+            imageDepthInstance.estimate_normals()
         }
 
         // Return the output file path, assuming the rest of the process creates or updates the OBJ file at this path

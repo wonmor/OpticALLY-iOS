@@ -161,7 +161,7 @@ class ImageDepth:
         return base64_string
         
     def get_image_linear(self):
-        return self.convert_rgb_image_to_base64(self.img_linear * 255.astype('uint8'))
+        return self.convert_rgb_image_to_base64((self.img_linear * 255)).astype('uint8')
 
     def process_image(self):
         # Convert the image from sRGB to linear space
