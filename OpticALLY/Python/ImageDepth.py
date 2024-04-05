@@ -149,7 +149,7 @@ class ImageDepth:
         self.pcd.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=self.normal_radius, max_nn=30))
         self.pcd.orient_normals_towards_camera_location()
         
-    def convert_rgb_image_to_base64(numpy_array):
+    def convert_rgb_image_to_base64(self, numpy_array):
         # Ensure the array is of type uint8
         assert numpy_array.dtype == np.uint8, "The input array should be of type np.uint8"
 
