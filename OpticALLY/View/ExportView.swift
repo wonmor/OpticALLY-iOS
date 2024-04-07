@@ -61,7 +61,7 @@ struct CompassView: View {
                             guard scanState == .scanning else { return }
                             
                             switch scanDirection {
-                            case .left where newFaceYawAngle > 30:
+                            case .left where newFaceYawAngle > 20:
                                 let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
                                 impactGenerator.impactOccurred(intensity: 1.00)
                                 
@@ -73,7 +73,7 @@ struct CompassView: View {
                                 
                                 barColor = .green.opacity(0.5)
                                 
-                            case .right where newFaceYawAngle < -30:
+                            case .right where newFaceYawAngle < -20:
                                 let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
                                 impactGenerator.impactOccurred(intensity: 1.00)
                                 
@@ -334,13 +334,13 @@ struct ExportView: View {
             withAnimation {
                 scanDirection = .left
             }
-        case .left where yawAngle > 30:
+        case .left where yawAngle > 20:
             captureFrame()
             
             withAnimation {
                 scanDirection = .right
             }
-        case .right where yawAngle < -30:
+        case .right where yawAngle < -20:
             captureFrame()
             
             withAnimation {

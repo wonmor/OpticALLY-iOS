@@ -330,16 +330,16 @@ struct OpticALLYApp: App {
             return nil
         }
         
-        // Assuming the image data is in RGBA format, create a CGImage from the data
+        // Assuming the image data is in RGB format, create a CGImage from the data
         let imageWidth = 640  // Set the width of your image
         let imageHeight = 480  // Set the height of your image
         let bitsPerComponent = 8
-        let bytesPerPixel = 4  // 4 bytes per pixel for RGBA
+        let bytesPerPixel = 3  // 3 bytes per pixel for RGB
         let bytesPerRow = bytesPerPixel * imageWidth
         let colorSpace = CGColorSpaceCreateDeviceRGB()
 
-        // Bitmap info: alpha info and byte order
-        let bitmapInfo = CGImageAlphaInfo.premultipliedLast.rawValue | CGBitmapInfo.byteOrder32Big.rawValue
+        // Bitmap info: just the byte order, no alpha
+        let bitmapInfo = CGBitmapInfo.byteOrder32Big.rawValue
 
         guard let providerRef = CGDataProvider(data: imageData as CFData) else {
             print("Error: Could not create CGDataProvider from image data")
