@@ -451,7 +451,7 @@ struct OpticALLYApp: App {
             
             let imgUndistortBase64 = convertImageToBase64String(img: imgUndistort.toUIImage())
             
-            imageDepthInstance!.set_image_undistort(imgUndistortBase64)
+            imageDepthInstance!.set_img_undistort(imgUndistortBase64)
             
             imageDepthInstance!.load_depth()
             
