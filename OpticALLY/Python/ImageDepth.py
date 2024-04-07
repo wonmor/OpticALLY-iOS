@@ -176,6 +176,28 @@ class ImageDepth:
         # Apply sRGB to Linear conversion
         self.img_linear = srgb_to_linear(self.img.astype('float32') / 255.0)
         
+    def numpy_array_to_base64(self, numpy_array):
+        # Convert the NumPy array to bytes. For uint8 arrays, this is straightforward.
+        # For float32 arrays, you need to ensure that the byte representation is preserved.
+        # This is because the direct conversion of float32 to bytes and then to base64
+        # can be decoded in Swift using Data(base64Encoded:) and then converted to the desired format.
+        if numpy_array.dtype == np.uint8:
+            # Directly convert uint8 numpy array to bytes
+            array_bytes = numpy_array.tobytes()
+        elif numpy_array.dtype == np.float32:
+            # For float32 arrays, ensure that the byte representation is exact.
+            # This might require flattening the array if it's multidimensional.
+            flat_array = numpy_array.ravel()
+            # Convert the flattened array to bytes
+            array_bytes = flat_array.tobytes()
+        else:
+            raise ValueError("Unsupported numpy array data type. Expected uint8 or float32.")
+
+        # Encode the bytes to Base64. The result is a Base64 encoded string that represents your numpy array.
+        base64_string = base64.b64encode(array_bytes).decode('utf-8')
+
+        return base64_string
+        
     def get_maps_with_dimensions(self):
         data = {
             'map_x': self.numpy_array_to_base64(self.map_x),

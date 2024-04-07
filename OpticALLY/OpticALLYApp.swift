@@ -330,19 +330,40 @@ struct OpticALLYApp: App {
             return nil
         }
         
-        // Assuming the image data is in RGB format, create a CGImage from the data
+        // Assuming the image data is in RGB format, we need to pad it to RGBA for CGImage
         let imageWidth = 640  // Set the width of your image
         let imageHeight = 480  // Set the height of your image
         let bitsPerComponent = 8
-        let bytesPerPixel = 3  // 3 bytes per pixel for RGB
-        let bytesPerRow = bytesPerPixel * imageWidth
+        let rgbBytesPerPixel = 3  // 3 bytes per pixel for RGB
+        let rgbaBytesPerPixel = 4  // 4 bytes per pixel for RGBA (padded RGB)
+        let rgbBytesPerRow = rgbBytesPerPixel * imageWidth
+        let rgbaBytesPerRow = rgbaBytesPerPixel * imageWidth
         let colorSpace = CGColorSpaceCreateDeviceRGB()
 
-        // Bitmap info: just the byte order, no alpha
-        let bitmapInfo = CGBitmapInfo.byteOrder32Big.rawValue
+        // Create a new data buffer to hold the padded RGBA data
+        var rgbaImageData = Data(count: imageHeight * rgbaBytesPerRow)
+        
+        // Populate the new data buffer with RGB data padded to RGBA
+        for y in 0..<imageHeight {
+            for x in 0..<imageWidth {
+                let rgbIndex = y * rgbBytesPerRow + x * rgbBytesPerPixel
+                let rgbaIndex = y * rgbaBytesPerRow + x * rgbaBytesPerPixel
+                
+                // Copy RGB components
+                rgbaImageData[rgbaIndex] = imageData[rgbIndex]       // Red
+                rgbaImageData[rgbaIndex + 1] = imageData[rgbIndex + 1] // Green
+                rgbaImageData[rgbaIndex + 2] = imageData[rgbIndex + 2] // Blue
+                
+                // Set Alpha to 255 (opaque)
+                rgbaImageData[rgbaIndex + 3] = 255
+            }
+        }
 
-        guard let providerRef = CGDataProvider(data: imageData as CFData) else {
-            print("Error: Could not create CGDataProvider from image data")
+        // Bitmap info: now we include alpha, because we've padded the data to RGBA
+        let bitmapInfo = CGImageAlphaInfo.premultipliedLast.rawValue | CGBitmapInfo.byteOrder32Big.rawValue
+
+        guard let providerRef = CGDataProvider(data: rgbaImageData as CFData) else {
+            print("Error: Could not create CGDataProvider from padded image data")
             return nil
         }
 
@@ -350,8 +371,8 @@ struct OpticALLYApp: App {
             width: imageWidth,
             height: imageHeight,
             bitsPerComponent: bitsPerComponent,
-            bitsPerPixel: bytesPerPixel * bitsPerComponent,
-            bytesPerRow: bytesPerRow,
+            bitsPerPixel: rgbaBytesPerPixel * bitsPerComponent,
+            bytesPerRow: rgbaBytesPerRow,
             space: colorSpace,
             bitmapInfo: CGBitmapInfo(rawValue: bitmapInfo),
             provider: providerRef,
