@@ -103,7 +103,7 @@ class ImageDepth:
     def load_depth(self):
         global idx, xy
         
-        depth = np.fromfile(depth_file, dtype='float32').astype(np.float32)
+        depth = np.fromfile(self.depth_file, dtype='float32').astype(np.float32)
 
         # vectorize version, faster
         # all possible (x,y) position
@@ -132,7 +132,7 @@ class ImageDepth:
 
     def estimate_normals(self):
         per = float(np.sum(idx==True))/len(depth)
-        print(f"Processing {depth_file}, keeping={np.sum(idx==True)}/{len(depth)} ({per:.3f}) points")
+        print(f"Processing {self.depth_file}, keeping={np.sum(idx==True)}/{len(depth)} ({per:.3f}) points")
 
         depth = np.expand_dims(self.depth_map_undistort.flatten()[np.where(idx)],1)
 
