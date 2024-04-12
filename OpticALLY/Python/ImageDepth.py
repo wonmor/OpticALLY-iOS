@@ -102,24 +102,27 @@ class ImageDepth:
 
     def load_depth(self):
         global idx, xy
-        
+
         depth = np.fromfile(self.depth_file, dtype='float32').astype(np.float32)
 
-        # vectorize version, faster
-        # all possible (x,y) position
         idx = np.arange(0, self.width*self.height)
         xy = np.zeros((self.width*self.height, 2), dtype=np.float32)
 
         xy[:,0] = np.mod(idx, self.width)
         xy[:,1] = idx // self.width
 
-        # remove bad values
+        # Remove bad values
         no_nan = np.invert(np.isnan(depth))
         depth1 = depth > self.min_depth
         depth2 = depth < self.max_depth
         idx = no_nan & depth1 & depth2
-        xy = xy[np.where(idx)]
-        rgb = self.img_undistort.reshape(-1, 3)[np.where(idx)] / 255.0
+
+        if self.img_undistort.size == self.width * self.height * 3:
+            # Ensure the image undistort is reshaped correctly
+            self.img_undistort = self.img_undistort.reshape((self.height, self.width, 3))
+            rgb = self.img_undistort.reshape(-1, 3)[idx] / 255.0
+        else:
+            print("Error: img_undistort size mismatch or incorrect reshaping parameters.")
 
         self.mask = np.ones(self.height*self.width, dtype=np.uint8)*255
         self.mask[np.where(idx == False)] = 0
@@ -231,9 +234,12 @@ class ImageDepth:
         return np.frombuffer(img_bytes, dtype=np.uint8)
         
     def base64_to_numpy_array_float32(self, base64_string):
+        if base64_string is None or not isinstance(base64_string, str):
+            raise ValueError("Invalid input: base64_string must be a non-empty string")
+
         # Decode the base64 string
         img_bytes = base64.b64decode(base64_string)
-        
+
         # Convert the bytes to a NumPy array (convert uint8 to float32 which occured during transfer process from Swift, as conversion to UIImage was necessary which forces uint8 format)
         return np.frombuffer(img_bytes, dtype=np.uint8).astype(np.float32)
         

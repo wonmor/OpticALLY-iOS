@@ -46,11 +46,6 @@ let devicePPI: Double = {
     }
 }()
 
-func convertImageToBase64String(img: UIImage) -> String? {
-    guard let imageData = img.jpegData(compressionQuality: 1.0) else { return nil }
-    return imageData.base64EncodedString(options: .lineLength64Characters)
-}
-
 enum ViewState {
     case introduction
     case scanning
@@ -488,6 +483,16 @@ struct OpticALLYApp: App {
 
         // Return the output file path, assuming the rest of the process creates or updates the OBJ file at this path
         return imageDepthInstance!
+    }
+    
+    static func convertImageToBase64String (img: UIImage) -> String {
+        return img.jpegData(compressionQuality: 1)?.base64EncodedString() ?? ""
+    }
+    
+    static func convertBase64StringToImage (imageBase64String:String) -> UIImage {
+        let imageData = Data(base64Encoded: imageBase64String)
+        let image = UIImage(data: imageData!)
+        return image!
     }
     
     static func createMat(from data: Data, height: Int, width: Int) -> Mat {

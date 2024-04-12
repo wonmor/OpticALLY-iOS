@@ -7,7 +7,6 @@ from pathlib import Path
 import numpy as np
 import open3d as o3d
 import matplotlib.pyplot as plt
-import cv2 as cv
 
 def process3d(point_clouds):
     # Process each point cloud
