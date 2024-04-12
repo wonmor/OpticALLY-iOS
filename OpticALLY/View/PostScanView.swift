@@ -350,33 +350,11 @@ struct PostScanView: View {
                     print("안녕")
                 }
 
-                if triggerUpdate {
-                    if self.fileURLToShare != nil {
-                        if ExternalData.isMeshView {
-                            if let url = exportViewModel.fileURLForViewer {
-                                // Face Model Preview...
-                                TabView {
-                                    ForEach(exportViewModel.objURLs, id: \.self) { url in
-                                       SceneKitMDLView(url: url)
-                                           .tabItem {
-                                               Label("Model \(exportViewModel.objURLs.firstIndex(of: url)! + 1)", systemImage: "\(exportViewModel.objURLs.firstIndex(of: url)! + 1).circle")
-                                           }
-                                   }
-                               }
-                            }
-                        }
-                    } else {
-                        EmptyView()
-                            .onAppear() {
-                                self.showTimeoutAlert = true
-                                
-                            }
-                            .alert(isPresented: $showTimeoutAlert) {
-                                Alert(
-                                    title: Text("Network Timeout"),
-                                    message: Text("Unable to connect to the server. Please check your internet connection and try again."),
-                                    dismissButton: .default(Text("OK"))
-                                )
+                TabView {
+                    ForEach(exportViewModel.objURLs, id: \.self) { url in
+                        SceneKitMDLView(url: url)
+                            .tabItem {
+                                Label("Model \(exportViewModel.objURLs.firstIndex(of: url)! + 1)", systemImage: "\(exportViewModel.objURLs.firstIndex(of: url)! + 1).circle")
                             }
                     }
                 }
