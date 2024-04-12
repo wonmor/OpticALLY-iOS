@@ -13,7 +13,6 @@
 		961D67E32B12BDFC00DBB883 /* SceneKitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 961D67E22B12BDFC00DBB883 /* SceneKitView.swift */; };
 		961D67E52B12C64A00DBB883 /* CreditsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 961D67E42B12C64A00DBB883 /* CreditsView.swift */; };
 		962058102BB2209F00F9084F /* SignalStrengthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9620580F2BB2209F00F9084F /* SignalStrengthView.swift */; };
-		963671252BBDC24A003EC38C /* OpenCV in Frameworks */ = {isa = PBXBuildFile; productRef = 963671242BBDC24A003EC38C /* OpenCV */; };
 		963671292BC09312003EC38C /* Process3D.py in Resources */ = {isa = PBXBuildFile; fileRef = 963671282BC09312003EC38C /* Process3D.py */; };
 		963DF9B32AFEDAF700E6E589 /* PostScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 963DF9B22AFEDAF600E6E589 /* PostScanView.swift */; };
 		963FF2802B62FE9000B89019 /* Open3D-iOS in Frameworks */ = {isa = PBXBuildFile; productRef = 963FF27F2B62FE9000B89019 /* Open3D-iOS */; };
@@ -191,7 +190,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				96BC2ABE2AC5E9D60081550B /* DevicePpi in Frameworks */,
-				963671252BBDC24A003EC38C /* OpenCV in Frameworks */,
 				9671FDB92B5B0E67004DA4C2 /* Python-iOS in Frameworks */,
 				967EE0982AAEE2C7000C4D5F /* snippet-extract in Frameworks */,
 				9671FDC32B5B1230004DA4C2 /* PythonKit in Frameworks */,
@@ -429,7 +427,6 @@
 				9671FDC22B5B1230004DA4C2 /* PythonKit */,
 				963FF27F2B62FE9000B89019 /* Open3D-iOS */,
 				966360592B6E0200001D2119 /* Lottie */,
-				963671242BBDC24A003EC38C /* OpenCV */,
 			);
 			productName = OpticALLY;
 			productReference = 967EE0612AAE06FB000C4D5F /* OpticALLY.app */;
@@ -512,7 +509,6 @@
 				9671FDC12B5B1230004DA4C2 /* XCRemoteSwiftPackageReference "PythonKit" */,
 				963FF27E2B62FE9000B89019 /* XCRemoteSwiftPackageReference "Open3D-iOS" */,
 				966360582B6E0200001D2119 /* XCRemoteSwiftPackageReference "lottie-spm" */,
-				963671232BBDC24A003EC38C /* XCRemoteSwiftPackageReference "opencv-spm" */,
 			);
 			productRefGroup = 967EE0622AAE06FB000C4D5F /* Products */;
 			projectDirPath = "";
@@ -1006,14 +1002,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		963671232BBDC24A003EC38C /* XCRemoteSwiftPackageReference "opencv-spm" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/yeatse/opencv-spm.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 4.9.0;
-			};
-		};
 		963FF27E2B62FE9000B89019 /* XCRemoteSwiftPackageReference "Open3D-iOS" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/wonmor/Open3D-iOS";
@@ -1073,11 +1061,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		963671242BBDC24A003EC38C /* OpenCV */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 963671232BBDC24A003EC38C /* XCRemoteSwiftPackageReference "opencv-spm" */;
-			productName = OpenCV;
-		};
 		963FF27F2B62FE9000B89019 /* Open3D-iOS */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 963FF27E2B62FE9000B89019 /* XCRemoteSwiftPackageReference "Open3D-iOS" */;
