@@ -143,10 +143,10 @@ struct PostScanView: View {
 //        tstate = PyEval_SaveThread()
         
         // Using cloud services... (server)
-        uploadFiles(calibrationFileURL: URL(fileURLWithPath: calibrationFilePath), imageFilesZipURL: URL(fileURLWithPath: videoZipPath), depthFilesZipURL: URL(fileURLWithPath: depthZipPath)) { success, fileURL in
-            if success, let fileURL = fileURL {
+        uploadFiles(calibrationFileURL: URL(fileURLWithPath: calibrationFilePath), imageFilesZipURL: URL(fileURLWithPath: videoZipPath), depthFilesZipURL: URL(fileURLWithPath: depthZipPath)) { success, objURLs in
+            if success, let objURLs = objURLs {
                 DispatchQueue.main.async {
-                    exportViewModel.fileURLForViewer = fileURL  // Store the file URL for sharing
+                    exportViewModel.objURLs = objURLs
                     ExternalData.isMeshView = true
                     self.isProcessing = false
                 }
@@ -217,11 +217,11 @@ struct PostScanView: View {
         return data
     }
     
-    func uploadFiles(calibrationFileURL: URL, imageFilesZipURL: URL, depthFilesZipURL: URL, completion: @escaping (Bool, URL?) -> Void) {
-        let endpoint = "https://harolden-server.apps.johnseong.com/process3d-to-obj/"
+    func uploadFiles(calibrationFileURL: URL, imageFilesZipURL: URL, depthFilesZipURL: URL, completion: @escaping (Bool, [URL]?) -> Void) {
+        let endpoint = "https://harolden-server.apps.johnseong.com/process3d-to-multiple-obj/"
         guard let url = URL(string: endpoint) else {
             print("Invalid URL")
-            completion(false, URL(string: ""))
+            completion(false, [])
             return
         }
         
@@ -263,18 +263,23 @@ struct PostScanView: View {
             DispatchQueue.main.async {
                 self.isLoading = false  // Stop loading indicator
                 if let data = data, error == nil {
-                    // Save the PLY file
-                    let fileURL = FileManager.default.temporaryDirectory.appendingPathComponent("output_from_server.obj")
+                    let tempDir = FileManager.default.temporaryDirectory
+                    let zipFileURL = tempDir.appendingPathComponent("output_objs.zip")
+                    
                     do {
-                        try data.write(to: fileURL)
-                        print("OBJ file saved to: \(fileURL.path)")
-                        self.fileURLToShare = fileURL
-                        self.triggerUpdate = true
-                        ExternalData.isMeshView = true
-                        self.isProcessing = false
-                        completion(true, fileURL)  // Pass the file URL to the completion handler
+                        try data.write(to: zipFileURL)
+                        var objURLs: [URL] = []
+                        let fileManager = FileManager.default
+                        let unzipDirectory = tempDir.appendingPathComponent("unzipped_objs", isDirectory: true)
+                        try fileManager.createDirectory(at: unzipDirectory, withIntermediateDirectories: true, attributes: nil)
+                        SSZipArchive.unzipFile(atPath: zipFileURL.path, toDestination: unzipDirectory.path)
+                        
+                        let objFiles = try fileManager.contentsOfDirectory(at: unzipDirectory, includingPropertiesForKeys: nil)
+                        objURLs = objFiles.filter { $0.pathExtension == "obj" }
+                        
+                        completion(true, objURLs)  // Pass the array of URLs to the completion handler
                     } catch {
-                        print("Failed to save PLY file: \(error.localizedDescription)")
+                        print("Failed to handle ZIP file: \(error.localizedDescription)")
                         completion(false, nil)
                     }
                 } else {
@@ -295,6 +300,7 @@ struct PostScanView: View {
         self.isLoading = true  // Start loading indicator
         task.resume()
     }
+
     
     var body: some View {
         ZStack {
@@ -349,10 +355,14 @@ struct PostScanView: View {
                         if ExternalData.isMeshView {
                             if let url = exportViewModel.fileURLForViewer {
                                 // Face Model Preview...
-                                SceneKitMDLView(url: url)
-                                    .onAppear() {
-                                        print("별다방 미스리")
-                                    }
+                                TabView {
+                                    ForEach(exportViewModel.objURLs, id: \.self) { url in
+                                       SceneKitMDLView(url: url)
+                                           .tabItem {
+                                               Label("Model \(exportViewModel.objURLs.firstIndex(of: url)! + 1)", systemImage: "\(exportViewModel.objURLs.firstIndex(of: url)! + 1).circle")
+                                           }
+                                   }
+                               }
                             }
                         }
                     } else {

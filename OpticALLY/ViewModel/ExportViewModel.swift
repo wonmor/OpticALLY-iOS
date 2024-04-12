@@ -43,6 +43,8 @@ class ExportViewModel: ObservableObject {
     @Published var hasTurnedLeft = false
     @Published var hasTurnedCenter = false
     
+    @Published var objURLs: [URL] = []
+    
     private var exportStartTime: Date?
     private var tstate: UnsafeMutableRawPointer?
     
