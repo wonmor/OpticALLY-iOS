@@ -14,6 +14,7 @@
 		961D67E52B12C64A00DBB883 /* CreditsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 961D67E42B12C64A00DBB883 /* CreditsView.swift */; };
 		962058102BB2209F00F9084F /* SignalStrengthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9620580F2BB2209F00F9084F /* SignalStrengthView.swift */; };
 		963671292BC09312003EC38C /* Process3D.py in Resources */ = {isa = PBXBuildFile; fileRef = 963671282BC09312003EC38C /* Process3D.py */; };
+		9636CBEF2BD06EB5003EC38C /* opencv-python-4.9.0.80 in Resources */ = {isa = PBXBuildFile; fileRef = 9636CBEE2BD06EB5003EC38C /* opencv-python-4.9.0.80 */; };
 		963DF9B32AFEDAF700E6E589 /* PostScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 963DF9B22AFEDAF600E6E589 /* PostScanView.swift */; };
 		963FF2802B62FE9000B89019 /* Open3D-iOS in Frameworks */ = {isa = PBXBuildFile; productRef = 963FF27F2B62FE9000B89019 /* Open3D-iOS */; };
 		9646DC6C2B1064F500092549 /* glasses.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 9646DC6B2B1064F500092549 /* glasses.mp4 */; };
@@ -31,7 +32,6 @@
 		9671FDB92B5B0E67004DA4C2 /* Python-iOS in Frameworks */ = {isa = PBXBuildFile; productRef = 9671FDB82B5B0E67004DA4C2 /* Python-iOS */; };
 		9671FDC02B5B106C004DA4C2 /* ZipArchive in Frameworks */ = {isa = PBXBuildFile; productRef = 9671FDBF2B5B106C004DA4C2 /* ZipArchive */; };
 		9671FDC32B5B1230004DA4C2 /* PythonKit in Frameworks */ = {isa = PBXBuildFile; productRef = 9671FDC22B5B1230004DA4C2 /* PythonKit */; };
-		9671FED72B5B3B8A004DA4C2 /* rubicon-objc-0.4.0 in Resources */ = {isa = PBXBuildFile; fileRef = 9671FED62B5B3B8A004DA4C2 /* rubicon-objc-0.4.0 */; };
 		9671FED82B5B3BCA004DA4C2 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 969DF1C62B12916900FA9ABE /* GoogleService-Info.plist */; };
 		96795D6E2B7FE786003A5192 /* ParsePLY.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96795D6D2B7FE786003A5192 /* ParsePLY.swift */; };
 		9679F8CE2AD0907A00686F13 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8B32AD0907900686F13 /* AppDelegate.swift */; };
@@ -110,6 +110,7 @@
 		961D67E42B12C64A00DBB883 /* CreditsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditsView.swift; sourceTree = "<group>"; };
 		9620580F2BB2209F00F9084F /* SignalStrengthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalStrengthView.swift; sourceTree = "<group>"; };
 		963671282BC09312003EC38C /* Process3D.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = Process3D.py; sourceTree = "<group>"; };
+		9636CBEE2BD06EB5003EC38C /* opencv-python-4.9.0.80 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "opencv-python-4.9.0.80"; path = "../../../../Downloads/opencv-python-4.9.0.80"; sourceTree = "<group>"; };
 		9639661D2B76B87300EB435B /* PrefixHeader.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PrefixHeader.pch; sourceTree = "<group>"; };
 		963DF9B22AFEDAF600E6E589 /* PostScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostScanView.swift; sourceTree = "<group>"; };
 		963FF2822B6316F700B89019 /* OpticALLY.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = OpticALLY.entitlements; sourceTree = "<group>"; };
@@ -125,7 +126,6 @@
 		966360692B6E0BD7001D2119 /* left-arrow-2.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "left-arrow-2.json"; sourceTree = "<group>"; };
 		9663606A2B6E0BD7001D2119 /* right-arrow-2.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "right-arrow-2.json"; sourceTree = "<group>"; };
 		9671FDC52B5B14F2004DA4C2 /* ObjCBridge.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = ObjCBridge.py; sourceTree = "<group>"; };
-		9671FED62B5B3B8A004DA4C2 /* rubicon-objc-0.4.0 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "rubicon-objc-0.4.0"; sourceTree = "<group>"; };
 		96795D6D2B7FE786003A5192 /* ParsePLY.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParsePLY.swift; sourceTree = "<group>"; };
 		9679F8B12AD0907800686F13 /* OpticALLY-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "OpticALLY-Bridging-Header.h"; sourceTree = "<group>"; };
 		9679F8B32AD0907900686F13 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -284,6 +284,7 @@
 		967EE0632AAE06FB000C4D5F /* OpticALLY */ = {
 			isa = PBXGroup;
 			children = (
+				9636CBEE2BD06EB5003EC38C /* opencv-python-4.9.0.80 */,
 				96E856BE2B7041BE0037C3BB /* Model */,
 				9671FDC42B5B14F2004DA4C2 /* Python */,
 				969DF1C62B12916900FA9ABE /* GoogleService-Info.plist */,
@@ -385,7 +386,6 @@
 				9663605E2B6E03FF001D2119 /* face-scan-2.json */,
 				966360672B6E0AAC001D2119 /* face-id-2.json */,
 				9663605F2B6E03FF001D2119 /* face-scan.json */,
-				9671FED62B5B3B8A004DA4C2 /* rubicon-objc-0.4.0 */,
 				96B64F6C2B3D8FCA0003E06D /* faceTexture.metal */,
 				96B64F6A2B3D8AF70003E06D /* VideoTexturedFace.shader */,
 				96FCF7312B1D65DE00F450A2 /* Male_Base_Head.usdz */,
@@ -526,6 +526,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9636CBEF2BD06EB5003EC38C /* opencv-python-4.9.0.80 in Resources */,
 				96B2A6232B5C5F320031952C /* ObjCBridge.py in Resources */,
 				963671292BC09312003EC38C /* Process3D.py in Resources */,
 				9671FED82B5B3BCA004DA4C2 /* GoogleService-Info.plist in Resources */,
@@ -536,7 +537,6 @@
 				967EE06C2AAE06FE000C4D5F /* Preview Assets.xcassets in Resources */,
 				9679F8D82AD0907A00686F13 /* Main.storyboard in Resources */,
 				966360682B6E0AAC001D2119 /* face-id-2.json in Resources */,
-				9671FED72B5B3B8A004DA4C2 /* rubicon-objc-0.4.0 in Resources */,
 				9679F8D72AD0907A00686F13 /* LaunchScreen.storyboard in Resources */,
 				966360632B6E03FF001D2119 /* face-scan-2.json in Resources */,
 				967EE0692AAE06FE000C4D5F /* Assets.xcassets in Resources */,

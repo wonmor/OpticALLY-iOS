@@ -1,29 +1,26 @@
 import open3d as o3d
 import numpy as np
-
+import cv2 as cv
 import json
 import struct
 import base64
-
-import pickle
-import codecs
 
 def test_output():
     return "Hello from ImageDepth"
 
 class ImageDepth:
     def __init__(self,
-        json_string,
+        calibration_file,
         image_file,
         depth_file,
         width=640,
         height=480,
         min_depth=0.1,
         max_depth=0.5,
-        normal_radius=0.01) :
+        normal_radius=0.1) :
 
         self.image_file = image_file
-        self.json_string = json_string
+        self.calibration_file = calibration_file
         self.depth_file = depth_file
         self.width = width
         self.height = height
@@ -32,48 +29,35 @@ class ImageDepth:
         self.normal_radius = normal_radius
         self.pose = np.eye(4, 4)
 
-        self.load_calibration(json_string)
+        self.load_calibration(calibration_file)
         self.create_undistortion_lookup()
-        
+
         self.load_image(image_file)
-        self.process_image()
+        self.load_depth(depth_file)
 
-        # self.estimate_normals(idx, file, xy)
-        
-    def load_image(self, file):
-        print(f"Loading {file}")
-        self.img = np.fromfile(file, dtype='uint8')
-        self.img = self.img.reshape((self.height, self.width, 4))
-        self.img = self.img[:,:,0:3]
+    def load_calibration(self, file):
+        with open(file) as f:
+            data = json.load(f)
 
-        # swap RB
-        self.img = self.img[:,:,[2,1,0]]
+            lensDistortionLookupBase64 = data["lensDistortionLookup"]
+            inverseLensDistortionLookupBase64 = data["inverseLensDistortionLookup"]
+            lensDistortionLookupByte = base64.decodebytes(lensDistortionLookupBase64.encode("ascii"))
+            inverseLensDistortionLookupByte = base64.decodebytes(inverseLensDistortionLookupBase64.encode("ascii"))
 
-    def test_output2(self):
-        return "Hello inside ImageDepth"
+            lensDistortionLookup = struct.unpack(f"<{len(lensDistortionLookupByte)//4}f",lensDistortionLookupByte)
+            inverseLensDistortionLookup = struct.unpack(f"<{len(inverseLensDistortionLookupByte)//4}f",inverseLensDistortionLookupByte)
 
-    def load_calibration(self, json_string):
-        data = json.loads(json_string)
+            self.lensDistortionLookup = lensDistortionLookup
+            self.inverseLensDistortionLookup = inverseLensDistortionLookup
 
-        lensDistortionLookupBase64 = data["lensDistortionLookup"]
-        inverseLensDistortionLookupBase64 = data["inverseLensDistortionLookup"]
-        lensDistortionLookupByte = base64.decodebytes(lensDistortionLookupBase64.encode("ascii"))
-        inverseLensDistortionLookupByte = base64.decodebytes(inverseLensDistortionLookupBase64.encode("ascii"))
+            self.intrinsic = np.array(data["intrinsic"]).reshape((3,3))
+            self.intrinsic = self.intrinsic.transpose()
 
-        lensDistortionLookup = struct.unpack(f"<{len(lensDistortionLookupByte)//4}f", lensDistortionLookupByte)
-        inverseLensDistortionLookup = struct.unpack(f"<{len(inverseLensDistortionLookupByte)//4}f", inverseLensDistortionLookupByte)
-
-        self.lensDistortionLookup = lensDistortionLookup
-        self.inverseLensDistortionLookup = inverseLensDistortionLookup
-
-        self.intrinsic = np.array(data["intrinsic"]).reshape((3,3))
-        self.intrinsic = self.intrinsic.transpose()
-
-        self.scale = float(self.width) / data["intrinsicReferenceDimensionWidth"]
-        self.intrinsic[0,0] *= self.scale
-        self.intrinsic[1,1] *= self.scale
-        self.intrinsic[0,2] *= self.scale
-        self.intrinsic[1,2] *= self.scale
+            self.scale = float(self.width) / data["intrinsicReferenceDimensionWidth"]
+            self.intrinsic[0,0] *= self.scale
+            self.intrinsic[1,1] *= self.scale
+            self.intrinsic[0,2] *= self.scale
+            self.intrinsic[1,2] *= self.scale
 
     def create_undistortion_lookup(self):
         xy_pos = [(x,y) for y in range(0, self.height) for x in range(0, self.width)]
@@ -100,29 +84,24 @@ class ImageDepth:
         self.map_x = new_xy[:,0].reshape((self.height, self.width)).astype(np.float32)
         self.map_y = new_xy[:,1].reshape((self.height, self.width)).astype(np.float32)
 
-    def load_depth(self):
-        global idx, xy
+    def load_depth(self, file,):
+        depth = np.fromfile(file, dtype='float32').astype(np.float32)
 
-        depth = np.fromfile(self.depth_file, dtype='float32').astype(np.float32)
-
+        # vectorize version, faster
+        # all possible (x,y) position
         idx = np.arange(0, self.width*self.height)
         xy = np.zeros((self.width*self.height, 2), dtype=np.float32)
 
         xy[:,0] = np.mod(idx, self.width)
         xy[:,1] = idx // self.width
 
-        # Remove bad values
+        # remove bad values
         no_nan = np.invert(np.isnan(depth))
         depth1 = depth > self.min_depth
         depth2 = depth < self.max_depth
         idx = no_nan & depth1 & depth2
-
-        if self.img_undistort.size == self.width * self.height * 3:
-            # Ensure the image undistort is reshaped correctly
-            self.img_undistort = self.img_undistort.reshape((self.height, self.width, 3))
-            rgb = self.img_undistort.reshape(-1, 3)[idx] / 255.0
-        else:
-            print("Error: img_undistort size mismatch or incorrect reshaping parameters.")
+        xy = xy[np.where(idx)]
+        rgb = self.img_undistort.reshape(-1, 3)[np.where(idx)] / 255.0
 
         self.mask = np.ones(self.height*self.width, dtype=np.uint8)*255
         self.mask[np.where(idx == False)] = 0
@@ -132,10 +111,11 @@ class ImageDepth:
         self.depth_map = depth
         self.depth_map[np.where(idx == False)] = -1000
         self.depth_map = self.depth_map.reshape((self.height, self.width, 1))
+        
+        self.undistort_depth_map()
 
-    def estimate_normals(self):
         per = float(np.sum(idx==True))/len(depth)
-        print(f"Processing {self.depth_file}, keeping={np.sum(idx==True)}/{len(depth)} ({per:.3f}) points")
+        print(f"Processing {file}, keeping={np.sum(idx==True)}/{len(depth)} ({per:.3f}) points")
 
         depth = np.expand_dims(self.depth_map_undistort.flatten()[np.where(idx)],1)
 
@@ -151,21 +131,20 @@ class ImageDepth:
         # calc normal, required for ICP point-to-plane
         self.pcd.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=self.normal_radius, max_nn=30))
         self.pcd.orient_normals_towards_camera_location()
+
+    def undistort_depth_map(self):
+        self.depth_map_undistort = cv.remap(self.depth_map, self.map_x, self.map_y, cv.INTER_LINEAR)
+
+    def load_image(self, file):
+        print(f"Loading {file}")
+        self.img = np.fromfile(file, dtype='uint8')
+        self.img = self.img.reshape((self.height, self.width, 4))
+        self.img = self.img[:,:,0:3]
+
+        # swap RB
+        self.img = self.img[:,:,[2,1,0]]
         
-    def convert_rgb_image_to_base64(self, numpy_array):
-        # Ensure the array is of type uint8
-        assert numpy_array.dtype == np.uint8, "The input array should be of type np.uint8"
-
-        # Convert the numpy array to bytes
-        img_bytes = numpy_array.tobytes()
-
-        # Encode the bytes to Base64
-        base64_string = base64.b64encode(img_bytes).decode('utf-8')
-
-        return base64_string
-        
-    def get_image_linear(self):
-        return self.convert_rgb_image_to_base64((self.img_linear * 255).astype('uint8'))
+        self.process_image()
 
     def process_image(self):
         # Convert the image from sRGB to linear space
@@ -178,88 +157,29 @@ class ImageDepth:
 
         # Apply sRGB to Linear conversion
         self.img_linear = srgb_to_linear(self.img.astype('float32') / 255.0)
-        
-    def numpy_array_to_base64(self, numpy_array):
-        # Convert the NumPy array to bytes. For uint8 arrays, this is straightforward.
-        # For float32 arrays, you need to ensure that the byte representation is preserved.
-        # This is because the direct conversion of float32 to bytes and then to base64
-        # can be decoded in Swift using Data(base64Encoded:) and then converted to the desired format.
-        if numpy_array.dtype == np.uint8:
-            # Directly convert uint8 numpy array to bytes
-            array_bytes = numpy_array.tobytes()
-        elif numpy_array.dtype == np.float32:
-            # For float32 arrays, ensure that the byte representation is exact.
-            # This might require flattening the array if it's multidimensional.
-            flat_array = numpy_array.ravel()
-            # Convert the flattened array to bytes
-            array_bytes = flat_array.tobytes()
-        else:
-            raise ValueError("Unsupported numpy array data type. Expected uint8 or float32.")
 
-        # Encode the bytes to Base64. The result is a Base64 encoded string that represents your numpy array.
-        base64_string = base64.b64encode(array_bytes).decode('utf-8')
+        # Now, the image is in linear space, you can continue with your processing
+        self.gray = cv.cvtColor((self.img_linear * 255).astype('uint8'), cv.COLOR_RGB2GRAY)
+        self.img_undistort = cv.remap((self.img_linear * 255).astype('uint8'), self.map_x, self.map_y, cv.INTER_LINEAR)
+        self.gray_undistort = cv.remap(self.gray, self.map_x, self.map_y, cv.INTER_LINEAR)
 
-        return base64_string
-        
-    def get_maps_with_dimensions(self):
-        data = {
-            'map_x': self.numpy_array_to_base64(self.map_x),
-            'map_y': self.numpy_array_to_base64(self.map_y),
-            'height': self.height,
-            'width': self.width
-        }
-        json_string = json.dumps(data)
-        return base64.b64encode(json_string.encode()).decode()
-        
-    def get_depth_map_with_dimensions(self):
-        data = {
-            'depth_map': self.numpy_array_to_base64(self.depth_map),
-            'height': self.height,
-            'width': self.width
-        }
-        json_string = json.dumps(data)
-        return base64.b64encode(json_string.encode()).decode()
-
-    def set_img_undistort(self, img_undistort):
-        self.img_undistort = self.base64_to_numpy_array(img_undistort)
-        
-    def set_depth_undistort(self, img_undistort):
-        self.depth_undistort = self.base64_to_numpy_array_float32(img_undistort)
-        
-    def base64_to_numpy_array(self, base64_string):
-        # Decode the base64 string
-        img_bytes = base64.b64decode(base64_string)
-        
-        # Convert the bytes to a NumPy array
-        return np.frombuffer(img_bytes, dtype=np.uint8)
-        
-    def base64_to_numpy_array_float32(self, base64_string):
-        if base64_string is None or not isinstance(base64_string, str):
-            raise ValueError("Invalid input: base64_string must be a non-empty string")
-
-        # Decode the base64 string
-        img_bytes = base64.b64decode(base64_string)
-
-        # Convert the bytes to a NumPy array (convert uint8 to float32 which occured during transfer process from Swift, as conversion to UIImage was necessary which forces uint8 format)
-        return np.frombuffer(img_bytes, dtype=np.uint8).astype(np.float32)
-        
     def project3d(self, pts):
         # expect pts to be Nx2
 
-        local_xy = np.round(pts).astype(int)
+        xy = np.round(pts).astype(int)
 
         fx = self.intrinsic[0,0]
         fy = self.intrinsic[1,1]
         cx = self.intrinsic[0,2]
         cy = self.intrinsic[1,2]
 
-        depths = self.depth_map_undistort[local_xy[:,1], local_xy[:,0]]
+        depths = self.depth_map_undistort[xy[:,1], xy[:,0]]
         depths = np.expand_dims(depths, 1)
         good_idx = np.where((depths > self.min_depth) & (depths < self.max_depth))[0]
 
-        pts -= np.array([cx, cy]) 
+        pts -= np.array([cx, cy])
         pts /= np.array([fx, fy])
         pts *= depths
         pts = np.hstack((pts, depths))
 
-        return pts, local_xy, good_idx
+        return pts, xy, good_idx

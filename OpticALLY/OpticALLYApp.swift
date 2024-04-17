@@ -83,6 +83,12 @@ struct OpticALLYApp: App {
             
             standardOutReader = StandardOutReader(STDOUT_FILENO: Int32(sys!.stdout.fileno())!, STDERR_FILENO: Int32(sys!.stderr.fileno())!)
             
+           guard let openCvPath = Bundle.main.url(forResource: "opencv-python-4.9.0.80", withExtension: nil)?.path else {
+               return
+           }
+            
+           sys!.path.insert(1, openCvPath)
+            
             sys!.path.insert(1, Bundle.main.bundlePath)
             
             imageDepth = Python.import("ImageDepth")
@@ -383,106 +389,34 @@ struct OpticALLYApp: App {
     }
     
     // Fully on-device meshing...
-//    static func poissonReconstruction_PLYtoOBJ(json_string: String, image_file: String, depth_file: String) throws -> PythonObject {
-//        var imageDepthInstance: PythonObject?
-//        
-//        let fileManager = FileManager.default
-//        let tempDir = fileManager.temporaryDirectory.appendingPathComponent("temp", isDirectory: true)
-//
-//        // Ensure the temporary directory exists
-//        try fileManager.createDirectory(at: tempDir, withIntermediateDirectories: true, attributes: nil)
-//
-//        // Get the list of files in the temporary directory
-//        let directoryContents = try fileManager.contentsOfDirectory(at: tempDir, includingPropertiesForKeys: nil)
-//        
-//        // Filter out non-files and map to their names, focusing on .obj files
-//        let fileNames = directoryContents.filter { $0.pathExtension == "obj" }.map { $0.deletingPathExtension().lastPathComponent }
-//        
-//        // Extract the numeric parts of the filenames and find the maximum
-//        let fileIndices = fileNames.compactMap { Int($0) }
-//        let maxIndex = fileIndices.max() ?? 0 // Start from 0 if no files are found
-//        
-//        // Define the new filename using the next number in the sequence
-//        let newFileName = "\(maxIndex + 1)"
-//
-//        // Define the output file path using the new file name
-//        let outputFilePath = tempDir.appendingPathComponent(newFileName).appendingPathExtension("obj")
-//
-//        do {
-//            imageDepthInstance = imageDepth!.ImageDepth(json_string, image_file, depth_file)
-//            
-//            // Decode Base64 string to Data
-//            let imageLinear = base64StringToUIImage(base64String: String(imageDepthInstance!.get_image_linear())!)
-//            
-//            let src = Mat(uiImage: imageLinear!)
-//            
-//            let imgUndistort: Mat
-//            imgUndistort = Mat()
-//        
-//            let mapsAndDimensionsBase64 = String(imageDepthInstance!.get_maps_with_dimensions())!
-//            
-//            guard let jsonData = Data(base64Encoded: mapsAndDimensionsBase64),
-//                  let jsonString = String(data: jsonData, encoding: .utf8),
-//                  let json = try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any],
-//                  let mapXBase64 = json["map_x"] as? String,
-//                  let mapYBase64 = json["map_y"] as? String,
-//                  let height = json["height"] as? Int,
-//                  let width = json["width"] as? Int else {
-//                fatalError("Failed to decode and parse JSON")
-//            }
-//            
-//            guard let mapXData = Data(base64Encoded: mapXBase64),
-//                  let mapYData = Data(base64Encoded: mapYBase64) else {
-//                fatalError("Failed to decode base64 strings for mapX and mapY")
-//            }
-//
-//            // Convert the decoded Data to cv::Mat
-//            let mapXMat = createMat(from: mapXData, height: height, width: width)
-//            let mapYMat = createMat(from: mapYData, height: height, width: width)
-//
-//            // Use remap to undistort the source image
-//            Imgproc.remap(src: src, dst: imgUndistort, map1: mapXMat, map2: mapYMat, interpolation: InterpolationFlags.INTER_LINEAR.rawValue)
-//            
-//            let imgUndistortBase64 = convertImageToBase64String(img: imgUndistort.toUIImage())
-//            
-//            imageDepthInstance!.set_img_undistort(imgUndistortBase64)
-//            
-//            imageDepthInstance!.load_depth()
-//            
-//            let depthMapAndDimensionsBase64 = String(imageDepthInstance!.get_depth_map_with_dimensions())!
-//            
-//            guard let jsonData = Data(base64Encoded: depthMapAndDimensionsBase64),
-//                  let jsonString = String(data: jsonData, encoding: .utf8),
-//                  let json = try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any],
-//                  let depthMapBase64 = json["depth_map"] as? String,
-//                  let height = json["height"] as? Int,
-//                  let width = json["width"] as? Int else {
-//                fatalError("Failed to decode and parse JSON")
-//            }
-//            
-//            guard let depthMapData = Data(base64Encoded: depthMapBase64) else {
-//                fatalError("Failed to decode base64 strings for mapX and mapY")
-//            }
-//
-//            // Convert the decoded Data to cv::Mat
-//            let depthMapMat = createMat(from: depthMapData, height: height, width: width)
-//            
-//            let depthMapUndistort: Mat
-//            depthMapUndistort = Mat()
-//            
-//            // Use remap to undistort the depth map
-//            Imgproc.remap(src: depthMapMat, dst: depthMapUndistort, map1: mapXMat, map2: mapYMat, interpolation: InterpolationFlags.INTER_LINEAR.rawValue)
-//            
-//            let depthMapUndistortBase64 = convertImageToBase64String(img: depthMapUndistort.toUIImage())
-//            
-//            imageDepthInstance!.set_depth_undistort(depthMapUndistortBase64)
-//            
-//            imageDepthInstance!.estimate_normals()
-//        }
-//
-//        // Return the output file path, assuming the rest of the process creates or updates the OBJ file at this path
-//        return imageDepthInstance!
-//    }
+    static func poissonReconstruction_PLYtoOBJ(json_string: String, image_file: String, depth_file: String) throws -> PythonObject {
+        var imageDepthInstance: PythonObject?
+        
+        let fileManager = FileManager.default
+        let tempDir = fileManager.temporaryDirectory.appendingPathComponent("temp", isDirectory: true)
+
+        // Ensure the temporary directory exists
+        try fileManager.createDirectory(at: tempDir, withIntermediateDirectories: true, attributes: nil)
+
+        // Get the list of files in the temporary directory
+        let directoryContents = try fileManager.contentsOfDirectory(at: tempDir, includingPropertiesForKeys: nil)
+        
+        // Filter out non-files and map to their names, focusing on .obj files
+        let fileNames = directoryContents.filter { $0.pathExtension == "obj" }.map { $0.deletingPathExtension().lastPathComponent }
+        
+        // Extract the numeric parts of the filenames and find the maximum
+        let fileIndices = fileNames.compactMap { Int($0) }
+        let maxIndex = fileIndices.max() ?? 0 // Start from 0 if no files are found
+        
+        // Define the new filename using the next number in the sequence
+        let newFileName = "\(maxIndex + 1)"
+
+        // Define the output file path using the new file name
+        let outputFilePath = tempDir.appendingPathComponent(newFileName).appendingPathExtension("obj")
+
+        // Return the output file path, assuming the rest of the process creates or updates the OBJ file at this path
+        return imageDepth!.ImageDepth(json_string, image_file, depth_file)
+    }
     
     static func convertImageToBase64String (img: UIImage) -> String {
         return img.jpegData(compressionQuality: 1)?.base64EncodedString() ?? ""
@@ -493,31 +427,6 @@ struct OpticALLYApp: App {
         let image = UIImage(data: imageData!)
         return image!
     }
-    
-//    static func createMat(from data: Data, height: Int, width: Int) -> Mat {
-//        let size = Size(width: Int32(width), height: Int32(height))
-//        let mat = Mat(size: size, type: CvType.CV_32FC1, scalar: Scalar(0))
-//
-//        // Access the bytes of the Data object
-//        data.withUnsafeBytes { (bytes: UnsafeRawBufferPointer) in
-//            if let baseAddress = bytes.baseAddress {
-//                let floatBuffer = baseAddress.assumingMemoryBound(to: Float.self)
-//                for y in 0..<height {
-//                    for x in 0..<width {
-//                        let value = floatBuffer[y * width + x]
-//                        do {
-//                            try mat.put(row: Int32(y), col: Int32(x), data: [value])
-//                        } catch {
-//                            print("Error putting data into Mat: \(error)")
-//                            return
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//
-//        return mat
-//    }
 
     static func ballPivotingSurfaceReconstruction_PLYtoOBJ(fileURL: URL) throws -> URL {
         let fileManager = FileManager.default
