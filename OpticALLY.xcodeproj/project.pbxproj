@@ -13,8 +13,8 @@
 		961D67E32B12BDFC00DBB883 /* SceneKitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 961D67E22B12BDFC00DBB883 /* SceneKitView.swift */; };
 		961D67E52B12C64A00DBB883 /* CreditsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 961D67E42B12C64A00DBB883 /* CreditsView.swift */; };
 		962058102BB2209F00F9084F /* SignalStrengthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9620580F2BB2209F00F9084F /* SignalStrengthView.swift */; };
+		9636042F2BD06FB1003EC38C /* opencv-python-4.9.0.80 in Resources */ = {isa = PBXBuildFile; fileRef = 9636042E2BD06FB1003EC38C /* opencv-python-4.9.0.80 */; };
 		963671292BC09312003EC38C /* Process3D.py in Resources */ = {isa = PBXBuildFile; fileRef = 963671282BC09312003EC38C /* Process3D.py */; };
-		9636CBEF2BD06EB5003EC38C /* opencv-python-4.9.0.80 in Resources */ = {isa = PBXBuildFile; fileRef = 9636CBEE2BD06EB5003EC38C /* opencv-python-4.9.0.80 */; };
 		963DF9B32AFEDAF700E6E589 /* PostScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 963DF9B22AFEDAF600E6E589 /* PostScanView.swift */; };
 		963FF2802B62FE9000B89019 /* Open3D-iOS in Frameworks */ = {isa = PBXBuildFile; productRef = 963FF27F2B62FE9000B89019 /* Open3D-iOS */; };
 		9646DC6C2B1064F500092549 /* glasses.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 9646DC6B2B1064F500092549 /* glasses.mp4 */; };
@@ -109,8 +109,8 @@
 		961D67E22B12BDFC00DBB883 /* SceneKitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneKitView.swift; sourceTree = "<group>"; };
 		961D67E42B12C64A00DBB883 /* CreditsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditsView.swift; sourceTree = "<group>"; };
 		9620580F2BB2209F00F9084F /* SignalStrengthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalStrengthView.swift; sourceTree = "<group>"; };
+		9636042E2BD06FB1003EC38C /* opencv-python-4.9.0.80 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "opencv-python-4.9.0.80"; path = "../../../../../Downloads/opencv-python-4.9.0.80"; sourceTree = "<group>"; };
 		963671282BC09312003EC38C /* Process3D.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = Process3D.py; sourceTree = "<group>"; };
-		9636CBEE2BD06EB5003EC38C /* opencv-python-4.9.0.80 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "opencv-python-4.9.0.80"; path = "../../../../Downloads/opencv-python-4.9.0.80"; sourceTree = "<group>"; };
 		9639661D2B76B87300EB435B /* PrefixHeader.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PrefixHeader.pch; sourceTree = "<group>"; };
 		963DF9B22AFEDAF600E6E589 /* PostScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostScanView.swift; sourceTree = "<group>"; };
 		963FF2822B6316F700B89019 /* OpticALLY.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = OpticALLY.entitlements; sourceTree = "<group>"; };
@@ -284,7 +284,6 @@
 		967EE0632AAE06FB000C4D5F /* OpticALLY */ = {
 			isa = PBXGroup;
 			children = (
-				9636CBEE2BD06EB5003EC38C /* opencv-python-4.9.0.80 */,
 				96E856BE2B7041BE0037C3BB /* Model */,
 				9671FDC42B5B14F2004DA4C2 /* Python */,
 				969DF1C62B12916900FA9ABE /* GoogleService-Info.plist */,
@@ -377,6 +376,7 @@
 		969E42E82ADC9ABD00E77BA7 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				9636042E2BD06FB1003EC38C /* opencv-python-4.9.0.80 */,
 				9663605D2B6E03FF001D2119 /* face-detection.json */,
 				96E856BC2B6F0CF90037C3BB /* cargo-loading.json */,
 				9663605B2B6E03FF001D2119 /* face-found-successfully.json */,
@@ -526,7 +526,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9636CBEF2BD06EB5003EC38C /* opencv-python-4.9.0.80 in Resources */,
+				9636042F2BD06FB1003EC38C /* opencv-python-4.9.0.80 in Resources */,
 				96B2A6232B5C5F320031952C /* ObjCBridge.py in Resources */,
 				963671292BC09312003EC38C /* Process3D.py in Resources */,
 				9671FED82B5B3BCA004DA4C2 /* GoogleService-Info.plist in Resources */,
