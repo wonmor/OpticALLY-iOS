@@ -7251,11 +7251,11 @@ opencv/samples/wp8/OpenCVXaml/OpenCVXaml/Properties/AssemblyInfo.cs
 opencv/samples/wp8/OpenCVXaml/OpenCVXaml/Properties/WMAppManifest.xml
 opencv/samples/wp8/OpenCVXaml/OpenCVXaml/Resources/AppResources.Designer.cs
 opencv/samples/wp8/OpenCVXaml/OpenCVXaml/Resources/AppResources.resx
-opencv_python.egg-info/PKG-INFO
-opencv_python.egg-info/SOURCES.txt
-opencv_python.egg-info/dependency_links.txt
-opencv_python.egg-info/requires.txt
-opencv_python.egg-info/top_level.txt
+opencv_python_headless.egg-info/PKG-INFO
+opencv_python_headless.egg-info/SOURCES.txt
+opencv_python_headless.egg-info/dependency_links.txt
+opencv_python_headless.egg-info/requires.txt
+opencv_python_headless.egg-info/top_level.txt
 patches/patchOpenEXR
 patches/patchQtPlugins
 scripts/__init__.py

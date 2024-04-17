@@ -58,6 +58,7 @@ class GlobalState: ObservableObject {
 var sys: PythonObject?
 var o3d: PythonObject?
 var np: PythonObject?
+var cv: PythonObject?
 var imageDepth: PythonObject?
 
 var standardOutReader: StandardOutReader?
@@ -83,14 +84,15 @@ struct OpticALLYApp: App {
             
             standardOutReader = StandardOutReader(STDOUT_FILENO: Int32(sys!.stdout.fileno())!, STDERR_FILENO: Int32(sys!.stderr.fileno())!)
             
-           guard let openCvPath = Bundle.main.url(forResource: "opencv-python-4.9.0.80", withExtension: nil)?.path else {
-               return
-           }
+            guard let openCvPath = Bundle.main.url(forResource: "opencv-python-headless-4.9.0.80", withExtension: nil)?.path else {
+                return
+            }
             
-           sys!.path.insert(1, openCvPath)
+            sys!.path.insert(1, openCvPath)
             
             sys!.path.insert(1, Bundle.main.bundlePath)
             
+            cv = Python.import("cv2")
             imageDepth = Python.import("ImageDepth")
             
             print("Importing Python Code... \(imageDepth!.test_output())")
@@ -121,7 +123,7 @@ struct OpticALLYApp: App {
     static func clearDocumentsFolder() {
         let fileManager = FileManager.default
         guard let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else { return }
-
+        
         do {
             let fileURLs = try fileManager.contentsOfDirectory(at: documentsURL, includingPropertiesForKeys: nil, options: [])
             for fileURL in fileURLs {
@@ -138,7 +140,7 @@ struct OpticALLYApp: App {
         let length = Double(matrix.first!.count)
         return matrix.map { $0.reduce(0, +) / length }
     }
-
+    
     static func subtractMean(from matrix: [[Double]], using mean: [Double]) -> [[Double]] {
         return matrix.enumerated().map { index, row in
             row.map { $0 - mean[index] } // Use row.map instead of row.enumerated().map
@@ -151,7 +153,7 @@ struct OpticALLYApp: App {
             matrix.map { $0[index] }
         }
     }
-
+    
     static func matrixMultiply(_ A: [[Double]], _ B: [[Double]]) -> [[Double]] {
         let m = A.count
         let n = B[0].count
@@ -160,7 +162,7 @@ struct OpticALLYApp: App {
         var flattenedA = A.flatMap { $0 }
         var flattenedB = B.flatMap { $0 }
         var flattenedResult = Array(repeating: 0.0, count: m*n)
-
+        
         flattenedResult.withUnsafeMutableBufferPointer { resultPtr in
             flattenedA.withUnsafeBufferPointer { aPtr in
                 flattenedB.withUnsafeBufferPointer { bPtr in
@@ -171,17 +173,17 @@ struct OpticALLYApp: App {
                 }
             }
         }
-
+        
         // Reconstruct the 2D result matrix from the flattened result array
         for i in 0..<m {
             for j in 0..<n {
                 result[i][j] = flattenedResult[i*n + j]
             }
         }
-
+        
         return result
     }
-
+    
     static func svd(_ matrix: [[Double]]) -> (U: [[Double]], S: [Double], Vt: [[Double]]) {
         var jobu: Int8 = 65 // 'A' All M columns of U are returned in array U
         var jobvt: Int8 = 65 // 'A' All N rows of Vt are returned in the array Vt
@@ -194,27 +196,27 @@ struct OpticALLYApp: App {
         var wkOpt = 0.0
         var lwork = __CLPK_integer(-1)
         var info = __CLPK_integer(0)
-
+        
         var s = [Double](repeating: 0.0, count: Int(min(m, n)))
         var u = [Double](repeating: 0.0, count: Int(m * m))
         var vt = [Double](repeating: 0.0, count: Int(n * n))
         var iwork = [__CLPK_integer](repeating: 0, count: 8 * Int(min(m, n)))
-
+        
         // Query optimal workspace size
         dgesdd_(&jobu, &m, &n, &a, &lda, &s, &u, &ldu, &vt, &ldvt, &wkOpt, &lwork, &iwork, &info)
-
+        
         lwork = __CLPK_integer(wkOpt)
         var work = [Double](repeating: 0.0, count: Int(lwork))
-
+        
         // Compute SVD
         dgesdd_(&jobu, &m, &n, &a, &lda, &s, &u, &ldu, &vt, &ldvt, &work, &lwork, &iwork, &info)
-
+        
         let U = Array(u).chunked(into: Int(m))
         let Vt = Array(vt).chunked(into: Int(n))
-
+        
         return (U, s, Vt)
     }
-
+    
     
     static func determinant(_ matrix: [[Double]]) -> Double {
         guard matrix.count == 3 && matrix[0].count == 3 else {
@@ -225,7 +227,7 @@ struct OpticALLYApp: App {
         let g = matrix[2][0], h = matrix[2][1], i = matrix[2][2]
         return a * (e * i - f * h) - b * (d * i - f * g) + c * (d * h - e * g)
     }
-
+    
     
     static func matrixMultiplyVector(_ matrix: [[Double]], _ vector: [Double]) -> [Double] {
         var result = [Double](repeating: 0.0, count: matrix.count)
@@ -234,7 +236,7 @@ struct OpticALLYApp: App {
         }
         return result
     }
-
+    
     static func subtractVectors(_ A: [Double], _ B: [Double]) -> [Double] {
         return zip(A, B).map(-)
     }
@@ -246,17 +248,17 @@ struct OpticALLYApp: App {
         guard A.count == 3, B.count == 3 else {
             fatalError("Input matrices A and B must be 3xN.")
         }
-
+        
         // Compute centroids and subtract mean
         let centroidA = centroid(of: A)
         let centroidB = centroid(of: B)
         let Am = subtractMean(from: A, using: centroidA)
         let Bm = subtractMean(from: B, using: centroidB)
-
+        
         // Compute matrix H and perform SVD
         let H = matrixMultiply(Am, transpose(Bm))
         let (U, _, Vt) = svd(H)
-
+        
         // Compute rotation matrix R
         var R = matrixMultiply(Vt, transpose(U))
         if determinant(R) < 0 {
@@ -264,10 +266,10 @@ struct OpticALLYApp: App {
             R[2] = R[2].map { $0 * -1 }
             R = matrixMultiply(Vt, transpose(U))
         }
-
+        
         // Compute translation vector t
         let t = subtractVectors(centroidB, matrixMultiplyVector(R, centroidA))
-
+        
         return (R, t)
     }
     
@@ -339,7 +341,7 @@ struct OpticALLYApp: App {
         let rgbBytesPerRow = rgbBytesPerPixel * imageWidth
         let rgbaBytesPerRow = rgbaBytesPerPixel * imageWidth
         let colorSpace = CGColorSpaceCreateDeviceRGB()
-
+        
         // Create a new data buffer to hold the padded RGBA data
         var rgbaImageData = Data(count: imageHeight * rgbaBytesPerRow)
         
@@ -358,15 +360,15 @@ struct OpticALLYApp: App {
                 rgbaImageData[rgbaIndex + 3] = 255
             }
         }
-
+        
         // Bitmap info: now we include alpha, because we've padded the data to RGBA
         let bitmapInfo = CGImageAlphaInfo.premultipliedLast.rawValue | CGBitmapInfo.byteOrder32Big.rawValue
-
+        
         guard let providerRef = CGDataProvider(data: rgbaImageData as CFData) else {
             print("Error: Could not create CGDataProvider from padded image data")
             return nil
         }
-
+        
         guard let cgImage = CGImage(
             width: imageWidth,
             height: imageHeight,
@@ -383,7 +385,7 @@ struct OpticALLYApp: App {
             print("Error: Could not create CGImage from provider")
             return nil
         }
-
+        
         // Create UIImage from CGImage
         return UIImage(cgImage: cgImage)
     }
@@ -394,10 +396,10 @@ struct OpticALLYApp: App {
         
         let fileManager = FileManager.default
         let tempDir = fileManager.temporaryDirectory.appendingPathComponent("temp", isDirectory: true)
-
+        
         // Ensure the temporary directory exists
         try fileManager.createDirectory(at: tempDir, withIntermediateDirectories: true, attributes: nil)
-
+        
         // Get the list of files in the temporary directory
         let directoryContents = try fileManager.contentsOfDirectory(at: tempDir, includingPropertiesForKeys: nil)
         
@@ -410,10 +412,10 @@ struct OpticALLYApp: App {
         
         // Define the new filename using the next number in the sequence
         let newFileName = "\(maxIndex + 1)"
-
+        
         // Define the output file path using the new file name
         let outputFilePath = tempDir.appendingPathComponent(newFileName).appendingPathExtension("obj")
-
+        
         // Return the output file path, assuming the rest of the process creates or updates the OBJ file at this path
         return imageDepth!.ImageDepth(json_string, image_file, depth_file)
     }
@@ -427,7 +429,7 @@ struct OpticALLYApp: App {
         let image = UIImage(data: imageData!)
         return image!
     }
-
+    
     static func ballPivotingSurfaceReconstruction_PLYtoOBJ(fileURL: URL) throws -> URL {
         let fileManager = FileManager.default
         let tempDir = fileManager.temporaryDirectory.appendingPathComponent("temp", isDirectory: true)

@@ -6,7 +6,7 @@ import struct
 import base64
 
 def test_output():
-    return "Hello from ImageDepth"
+    return f"OpenCV Version: {cv.__version__}"
 
 class ImageDepth:
     def __init__(self,
