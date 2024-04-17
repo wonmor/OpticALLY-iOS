@@ -63,7 +63,6 @@
 		969E42EE2ADC9D9E00E77BA7 /* promo.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 969E42ED2ADC9D9E00E77BA7 /* promo.mp4 */; };
 		969E42EF2ADC9D9E00E77BA7 /* promo.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 969E42ED2ADC9D9E00E77BA7 /* promo.mp4 */; };
 		969E42F02ADC9D9E00E77BA7 /* promo.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 969E42ED2ADC9D9E00E77BA7 /* promo.mp4 */; };
-		96B2A6232B5C5F320031952C /* ObjCBridge.py in Resources */ = {isa = PBXBuildFile; fileRef = 9671FDC52B5B14F2004DA4C2 /* ObjCBridge.py */; };
 		96B64F6B2B3D8AF70003E06D /* VideoTexturedFace.shader in Resources */ = {isa = PBXBuildFile; fileRef = 96B64F6A2B3D8AF70003E06D /* VideoTexturedFace.shader */; };
 		96B64F6D2B3D8FCA0003E06D /* faceTexture.metal in Sources */ = {isa = PBXBuildFile; fileRef = 96B64F6C2B3D8FCA0003E06D /* faceTexture.metal */; };
 		96B64F702B3D90410003E06D /* TextureToImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96B64F6E2B3D90410003E06D /* TextureToImage.swift */; };
@@ -125,7 +124,6 @@
 		966360672B6E0AAC001D2119 /* face-id-2.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "face-id-2.json"; sourceTree = "<group>"; };
 		966360692B6E0BD7001D2119 /* left-arrow-2.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "left-arrow-2.json"; sourceTree = "<group>"; };
 		9663606A2B6E0BD7001D2119 /* right-arrow-2.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "right-arrow-2.json"; sourceTree = "<group>"; };
-		9671FDC52B5B14F2004DA4C2 /* ObjCBridge.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = ObjCBridge.py; sourceTree = "<group>"; };
 		96795D6D2B7FE786003A5192 /* ParsePLY.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParsePLY.swift; sourceTree = "<group>"; };
 		9679F8B12AD0907800686F13 /* OpticALLY-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "OpticALLY-Bridging-Header.h"; sourceTree = "<group>"; };
 		9679F8B32AD0907900686F13 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -221,7 +219,6 @@
 			children = (
 				96BDE6352B7EB4EF00CCEABA /* ImageDepth.py */,
 				963671282BC09312003EC38C /* Process3D.py */,
-				9671FDC52B5B14F2004DA4C2 /* ObjCBridge.py */,
 			);
 			path = Python;
 			sourceTree = "<group>";
@@ -527,7 +524,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				963604332BD07057003EC38C /* opencv-python-4.9.0.80 in Resources */,
-				96B2A6232B5C5F320031952C /* ObjCBridge.py in Resources */,
 				963671292BC09312003EC38C /* Process3D.py in Resources */,
 				9671FED82B5B3BCA004DA4C2 /* GoogleService-Info.plist in Resources */,
 				96B64F6B2B3D8AF70003E06D /* VideoTexturedFace.shader in Resources */,
