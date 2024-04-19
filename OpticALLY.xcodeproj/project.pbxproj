@@ -13,7 +13,6 @@
 		961D67E32B12BDFC00DBB883 /* SceneKitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 961D67E22B12BDFC00DBB883 /* SceneKitView.swift */; };
 		961D67E52B12C64A00DBB883 /* CreditsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 961D67E42B12C64A00DBB883 /* CreditsView.swift */; };
 		962058102BB2209F00F9084F /* SignalStrengthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9620580F2BB2209F00F9084F /* SignalStrengthView.swift */; };
-		963604352BD073D3003EC38C /* opencv-python-headless-4.9.0.80 in Resources */ = {isa = PBXBuildFile; fileRef = 963604342BD073D2003EC38C /* opencv-python-headless-4.9.0.80 */; };
 		9636043F2BD07EF3003EC38C /* opencv2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9636043E2BD07EF3003EC38C /* opencv2.framework */; };
 		963671292BC09312003EC38C /* Process3D.py in Resources */ = {isa = PBXBuildFile; fileRef = 963671282BC09312003EC38C /* Process3D.py */; };
 		963DF9B32AFEDAF700E6E589 /* PostScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 963DF9B22AFEDAF600E6E589 /* PostScanView.swift */; };
@@ -109,7 +108,6 @@
 		961D67E22B12BDFC00DBB883 /* SceneKitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneKitView.swift; sourceTree = "<group>"; };
 		961D67E42B12C64A00DBB883 /* CreditsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditsView.swift; sourceTree = "<group>"; };
 		9620580F2BB2209F00F9084F /* SignalStrengthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalStrengthView.swift; sourceTree = "<group>"; };
-		963604342BD073D2003EC38C /* opencv-python-headless-4.9.0.80 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "opencv-python-headless-4.9.0.80"; sourceTree = "<group>"; };
 		9636043E2BD07EF3003EC38C /* opencv2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = opencv2.framework; sourceTree = "<group>"; };
 		963671282BC09312003EC38C /* Process3D.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = Process3D.py; sourceTree = "<group>"; };
 		9639661D2B76B87300EB435B /* PrefixHeader.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PrefixHeader.pch; sourceTree = "<group>"; };
@@ -265,7 +263,6 @@
 			isa = PBXGroup;
 			children = (
 				9636043E2BD07EF3003EC38C /* opencv2.framework */,
-				963604342BD073D2003EC38C /* opencv-python-headless-4.9.0.80 */,
 				967EE0632AAE06FB000C4D5F /* OpticALLY */,
 				967EE0742AAE06FE000C4D5F /* OpticALLYTests */,
 				967EE07E2AAE06FE000C4D5F /* OpticALLYUITests */,
@@ -544,7 +541,6 @@
 				966360642B6E03FF001D2119 /* face-scan.json in Resources */,
 				96BDE6362B7EB4EF00CCEABA /* ImageDepth.py in Resources */,
 				966360612B6E03FF001D2119 /* face-id.json in Resources */,
-				963604352BD073D3003EC38C /* opencv-python-headless-4.9.0.80 in Resources */,
 				9646DC6C2B1064F500092549 /* glasses.mp4 in Resources */,
 				9663606B2B6E0BD7001D2119 /* left-arrow-2.json in Resources */,
 				96FCF7322B1D65DE00F450A2 /* Male_Base_Head.usdz in Resources */,
@@ -785,7 +781,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = "/Users/johnseong/Documents/GitHub/Project-Lightbulb/OpticALLY/OpticALLY.entitlements";
+				CODE_SIGN_ENTITLEMENTS = "/Users/johnseong/Documents/GitHub/OpticALLY-iOS/OpticALLY/OpticALLY.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"OpticALLY/Preview Content\"";
@@ -796,6 +792,7 @@
 					"$(PROJECT_DIR)/OpticALLY",
 					"$(PROJECT_DIR)",
 				);
+				GCC_PREFIX_HEADER = "/Users/johnseong/Documents/GitHub/OpticALLY-iOS/OpticALLY/PrefixHeader.pch";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = OpticALLY/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = OpticALLY;
@@ -839,7 +836,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = "/Users/johnseong/Documents/GitHub/Project-Lightbulb/OpticALLY/OpticALLY.entitlements";
+				CODE_SIGN_ENTITLEMENTS = "/Users/johnseong/Documents/GitHub/OpticALLY-iOS/OpticALLY/OpticALLY.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"OpticALLY/Preview Content\"";
@@ -850,6 +847,7 @@
 					"$(PROJECT_DIR)/OpticALLY",
 					"$(PROJECT_DIR)",
 				);
+				GCC_PREFIX_HEADER = "/Users/johnseong/Documents/GitHub/OpticALLY-iOS/OpticALLY/PrefixHeader.pch";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = OpticALLY/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = OpticALLY;
