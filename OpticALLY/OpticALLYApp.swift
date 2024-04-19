@@ -86,15 +86,15 @@ struct OpticALLYApp: App {
             
             sys!.path.insert(1, Bundle.main.bundlePath)
             
-            cv = Python.import("cv2")
+            cv = Python.import("opencv-python")
             imageDepth = Python.import("ImageDepth")
             
-            print("Importing Python Code... \(imageDepth!.test_output())")
+            // print("Importing Python Code... \(imageDepth!.test_output())")
             print("Python \(sys!.version_info.major).\(sys!.version_info.minor)")
             print("Python Version: \(sys!.version)")
             print("Python Encoding: \(sys!.getdefaultencoding().upper())")
             print("Open3D Version: \(o3d!.__version__)")
-            print("OpenCV Version: \(cv!.__version__)")
+            // print("OpenCV Version: \(cv!.__version__)")
         }
         
         for family: String in UIFont.familyNames

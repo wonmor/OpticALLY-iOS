@@ -67,7 +67,8 @@
 		96B64F732B3D90490003E06D /* ScnMatrix.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96B64F722B3D90490003E06D /* ScnMatrix.swift */; };
 		96BC2ABE2AC5E9D60081550B /* DevicePpi in Frameworks */ = {isa = PBXBuildFile; productRef = 96BC2ABD2AC5E9D60081550B /* DevicePpi */; };
 		96BDE6362B7EB4EF00CCEABA /* ImageDepth.py in Resources */ = {isa = PBXBuildFile; fileRef = 96BDE6352B7EB4EF00CCEABA /* ImageDepth.py */; };
-		96C0550C2BD2EF1F003981FC /* Open3D-iOS in Frameworks */ = {isa = PBXBuildFile; productRef = 96C0550B2BD2EF1F003981FC /* Open3D-iOS */; };
+		96C0550F2BD2F298003981FC /* Python-iOS in Frameworks */ = {isa = PBXBuildFile; productRef = 96C0550E2BD2F298003981FC /* Python-iOS */; };
+		96C055122BD2F323003981FC /* Open3D-iOS in Frameworks */ = {isa = PBXBuildFile; productRef = 96C055112BD2F323003981FC /* Open3D-iOS */; };
 		96E3E0042B867684004374D1 /* FaceIDScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E3E0032B867684004374D1 /* FaceIDScanView.swift */; };
 		96E856BB2B6EFFE00037C3BB /* PreviousScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E856BA2B6EFFE00037C3BB /* PreviousScanView.swift */; };
 		96E856BD2B6F0CF90037C3BB /* cargo-loading.json in Resources */ = {isa = PBXBuildFile; fileRef = 96E856BC2B6F0CF90037C3BB /* cargo-loading.json */; };
@@ -188,8 +189,9 @@
 				967EE0982AAEE2C7000C4D5F /* snippet-extract in Frameworks */,
 				9671FDC32B5B1230004DA4C2 /* PythonKit in Frameworks */,
 				9663605A2B6E0200001D2119 /* Lottie in Frameworks */,
+				96C0550F2BD2F298003981FC /* Python-iOS in Frameworks */,
+				96C055122BD2F323003981FC /* Open3D-iOS in Frameworks */,
 				9671FDC02B5B106C004DA4C2 /* ZipArchive in Frameworks */,
-				96C0550C2BD2EF1F003981FC /* Open3D-iOS in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -417,7 +419,8 @@
 				9671FDBF2B5B106C004DA4C2 /* ZipArchive */,
 				9671FDC22B5B1230004DA4C2 /* PythonKit */,
 				966360592B6E0200001D2119 /* Lottie */,
-				96C0550B2BD2EF1F003981FC /* Open3D-iOS */,
+				96C0550E2BD2F298003981FC /* Python-iOS */,
+				96C055112BD2F323003981FC /* Open3D-iOS */,
 			);
 			productName = OpticALLY;
 			productReference = 967EE0612AAE06FB000C4D5F /* OpticALLY.app */;
@@ -498,7 +501,8 @@
 				9671FDBE2B5B106C004DA4C2 /* XCRemoteSwiftPackageReference "ZipArchive" */,
 				9671FDC12B5B1230004DA4C2 /* XCRemoteSwiftPackageReference "PythonKit" */,
 				966360582B6E0200001D2119 /* XCRemoteSwiftPackageReference "lottie-spm" */,
-				96C0550A2BD2EF1F003981FC /* XCRemoteSwiftPackageReference "Open3D-iOS" */,
+				96C0550D2BD2F298003981FC /* XCRemoteSwiftPackageReference "Python-iOS" */,
+				96C055102BD2F323003981FC /* XCRemoteSwiftPackageReference "Open3D-iOS" */,
 			);
 			productRefGroup = 967EE0622AAE06FB000C4D5F /* Products */;
 			projectDirPath = "";
@@ -1034,7 +1038,15 @@
 				minimumVersion = 1.2.18;
 			};
 		};
-		96C0550A2BD2EF1F003981FC /* XCRemoteSwiftPackageReference "Open3D-iOS" */ = {
+		96C0550D2BD2F298003981FC /* XCRemoteSwiftPackageReference "Python-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/kewlbear/Python-iOS.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.0.20211030092316;
+			};
+		};
+		96C055102BD2F323003981FC /* XCRemoteSwiftPackageReference "Open3D-iOS" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/wonmor/Open3D-iOS";
 			requirement = {
@@ -1070,9 +1082,14 @@
 			package = 96BC2ABC2AC5E9D60081550B /* XCRemoteSwiftPackageReference "DevicePpi" */;
 			productName = DevicePpi;
 		};
-		96C0550B2BD2EF1F003981FC /* Open3D-iOS */ = {
+		96C0550E2BD2F298003981FC /* Python-iOS */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 96C0550A2BD2EF1F003981FC /* XCRemoteSwiftPackageReference "Open3D-iOS" */;
+			package = 96C0550D2BD2F298003981FC /* XCRemoteSwiftPackageReference "Python-iOS" */;
+			productName = "Python-iOS";
+		};
+		96C055112BD2F323003981FC /* Open3D-iOS */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 96C055102BD2F323003981FC /* XCRemoteSwiftPackageReference "Open3D-iOS" */;
 			productName = "Open3D-iOS";
 		};
 /* End XCSwiftPackageProductDependency section */

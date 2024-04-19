@@ -1,5 +1,5 @@
 {
-  "originHash" : "0fd05243f4975f1e31c483391d9ae3a0954d0aa4ad75fe274cfebbcf77e3882b",
+  "originHash" : "93b0f630684d19d219aca7e6cf45bf4a2bc39e7551a804deca22a0ef670b2cc1",
   "pins" : [
     {
       "identity" : "blas-lapack-appstore-workaround",
@@ -43,7 +43,7 @@
       "location" : "https://github.com/wonmor/Numpy-OpenCV-iOS.git",
       "state" : {
         "branch" : "main",
-        "revision" : "54da578478c7e8e5c7f3ee9f609061c59ab188b4"
+        "revision" : "e100ddf482ce3ed506f9bdf609fcb2bd7a6dc9d4"
       }
     },
     {
