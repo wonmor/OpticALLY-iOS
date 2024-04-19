@@ -84,7 +84,7 @@ struct OpticALLYApp: App {
             
             standardOutReader = StandardOutReader(STDOUT_FILENO: Int32(sys!.stdout.fileno())!, STDERR_FILENO: Int32(sys!.stderr.fileno())!)
             
-            guard let openCvPath = Bundle.main.url(forResource: "opencv-python-headless-4.9.0.80", withExtension: nil)?.path else {
+            guard let openCvPath = Bundle.main.url(forResource: "opencv2", withExtension: ".framework")?.path else {
                 return
             }
             
