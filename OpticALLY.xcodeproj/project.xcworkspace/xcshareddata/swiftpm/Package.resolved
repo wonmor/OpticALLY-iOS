@@ -1,5 +1,5 @@
 {
-  "originHash" : "4d6a78b42fbec028e0e37daa7bb28b8991b0ba057986d6c18ce763dee85a80c9",
+  "originHash" : "0fd05243f4975f1e31c483391d9ae3a0954d0aa4ad75fe274cfebbcf77e3882b",
   "pins" : [
     {
       "identity" : "blas-lapack-appstore-workaround",
@@ -38,11 +38,12 @@
       }
     },
     {
-      "identity" : "numpy-ios",
+      "identity" : "numpy-opencv-ios",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/kewlbear/NumPy-iOS.git",
+      "location" : "https://github.com/wonmor/Numpy-OpenCV-iOS.git",
       "state" : {
-        "revision" : "c27e79ea5485f5b727aaaf330635f7d423513100"
+        "branch" : "main",
+        "revision" : "54da578478c7e8e5c7f3ee9f609061c59ab188b4"
       }
     },
     {
@@ -51,7 +52,7 @@
       "location" : "https://github.com/wonmor/Open3D-iOS",
       "state" : {
         "branch" : "main",
-        "revision" : "24c1801f0a465463f8be51aac3b027988246270c"
+        "revision" : "fc5465cb0bd1878eb6975691eca6790f3cc404f5"
       }
     },
     {
@@ -59,8 +60,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/kewlbear/Python-iOS.git",
       "state" : {
-        "branch" : "3.8_kivy-ios",
-        "revision" : "f5333228b625560a90c17d9e2d3a9b2aac6967a9"
+        "revision" : "4f3ca2bc0cff1ef2511555eb6114f9eb12e50412",
+        "version" : "0.1.1-b20230423-090254"
       }
     },
     {

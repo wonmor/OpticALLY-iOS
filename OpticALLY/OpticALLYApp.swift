@@ -84,12 +84,6 @@ struct OpticALLYApp: App {
             
             standardOutReader = StandardOutReader(STDOUT_FILENO: Int32(sys!.stdout.fileno())!, STDERR_FILENO: Int32(sys!.stderr.fileno())!)
             
-            guard let openCvPath = Bundle.main.url(forResource: "opencv2", withExtension: ".framework")?.path else {
-                return
-            }
-            
-            sys!.path.insert(1, openCvPath)
-            
             sys!.path.insert(1, Bundle.main.bundlePath)
             
             cv = Python.import("cv2")
@@ -100,6 +94,7 @@ struct OpticALLYApp: App {
             print("Python Version: \(sys!.version)")
             print("Python Encoding: \(sys!.getdefaultencoding().upper())")
             print("Open3D Version: \(o3d!.__version__)")
+            print("OpenCV Version: \(cv!.__version__)")
         }
         
         for family: String in UIFont.familyNames

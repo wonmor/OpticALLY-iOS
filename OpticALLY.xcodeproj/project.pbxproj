@@ -13,10 +13,8 @@
 		961D67E32B12BDFC00DBB883 /* SceneKitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 961D67E22B12BDFC00DBB883 /* SceneKitView.swift */; };
 		961D67E52B12C64A00DBB883 /* CreditsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 961D67E42B12C64A00DBB883 /* CreditsView.swift */; };
 		962058102BB2209F00F9084F /* SignalStrengthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9620580F2BB2209F00F9084F /* SignalStrengthView.swift */; };
-		9636043F2BD07EF3003EC38C /* opencv2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9636043E2BD07EF3003EC38C /* opencv2.framework */; };
 		963671292BC09312003EC38C /* Process3D.py in Resources */ = {isa = PBXBuildFile; fileRef = 963671282BC09312003EC38C /* Process3D.py */; };
 		963DF9B32AFEDAF700E6E589 /* PostScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 963DF9B22AFEDAF600E6E589 /* PostScanView.swift */; };
-		963FF2802B62FE9000B89019 /* Open3D-iOS in Frameworks */ = {isa = PBXBuildFile; productRef = 963FF27F2B62FE9000B89019 /* Open3D-iOS */; };
 		9646DC6C2B1064F500092549 /* glasses.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 9646DC6B2B1064F500092549 /* glasses.mp4 */; };
 		96491C5F2AFD746300FD3666 /* ConsoleOutputCatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96491C5E2AFD746300FD3666 /* ConsoleOutputCatcher.swift */; };
 		9663605A2B6E0200001D2119 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 966360592B6E0200001D2119 /* Lottie */; };
@@ -29,7 +27,6 @@
 		966360682B6E0AAC001D2119 /* face-id-2.json in Resources */ = {isa = PBXBuildFile; fileRef = 966360672B6E0AAC001D2119 /* face-id-2.json */; };
 		9663606B2B6E0BD7001D2119 /* left-arrow-2.json in Resources */ = {isa = PBXBuildFile; fileRef = 966360692B6E0BD7001D2119 /* left-arrow-2.json */; };
 		9663606C2B6E0BD7001D2119 /* right-arrow-2.json in Resources */ = {isa = PBXBuildFile; fileRef = 9663606A2B6E0BD7001D2119 /* right-arrow-2.json */; };
-		9671FDB92B5B0E67004DA4C2 /* Python-iOS in Frameworks */ = {isa = PBXBuildFile; productRef = 9671FDB82B5B0E67004DA4C2 /* Python-iOS */; };
 		9671FDC02B5B106C004DA4C2 /* ZipArchive in Frameworks */ = {isa = PBXBuildFile; productRef = 9671FDBF2B5B106C004DA4C2 /* ZipArchive */; };
 		9671FDC32B5B1230004DA4C2 /* PythonKit in Frameworks */ = {isa = PBXBuildFile; productRef = 9671FDC22B5B1230004DA4C2 /* PythonKit */; };
 		9671FED82B5B3BCA004DA4C2 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 969DF1C62B12916900FA9ABE /* GoogleService-Info.plist */; };
@@ -70,6 +67,7 @@
 		96B64F732B3D90490003E06D /* ScnMatrix.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96B64F722B3D90490003E06D /* ScnMatrix.swift */; };
 		96BC2ABE2AC5E9D60081550B /* DevicePpi in Frameworks */ = {isa = PBXBuildFile; productRef = 96BC2ABD2AC5E9D60081550B /* DevicePpi */; };
 		96BDE6362B7EB4EF00CCEABA /* ImageDepth.py in Resources */ = {isa = PBXBuildFile; fileRef = 96BDE6352B7EB4EF00CCEABA /* ImageDepth.py */; };
+		96C0550C2BD2EF1F003981FC /* Open3D-iOS in Frameworks */ = {isa = PBXBuildFile; productRef = 96C0550B2BD2EF1F003981FC /* Open3D-iOS */; };
 		96E3E0042B867684004374D1 /* FaceIDScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E3E0032B867684004374D1 /* FaceIDScanView.swift */; };
 		96E856BB2B6EFFE00037C3BB /* PreviousScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E856BA2B6EFFE00037C3BB /* PreviousScanView.swift */; };
 		96E856BD2B6F0CF90037C3BB /* cargo-loading.json in Resources */ = {isa = PBXBuildFile; fileRef = 96E856BC2B6F0CF90037C3BB /* cargo-loading.json */; };
@@ -108,7 +106,6 @@
 		961D67E22B12BDFC00DBB883 /* SceneKitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneKitView.swift; sourceTree = "<group>"; };
 		961D67E42B12C64A00DBB883 /* CreditsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditsView.swift; sourceTree = "<group>"; };
 		9620580F2BB2209F00F9084F /* SignalStrengthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalStrengthView.swift; sourceTree = "<group>"; };
-		9636043E2BD07EF3003EC38C /* opencv2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = opencv2.framework; sourceTree = "<group>"; };
 		963671282BC09312003EC38C /* Process3D.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = Process3D.py; sourceTree = "<group>"; };
 		9639661D2B76B87300EB435B /* PrefixHeader.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PrefixHeader.pch; sourceTree = "<group>"; };
 		963DF9B22AFEDAF600E6E589 /* PostScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostScanView.swift; sourceTree = "<group>"; };
@@ -188,13 +185,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				96BC2ABE2AC5E9D60081550B /* DevicePpi in Frameworks */,
-				9671FDB92B5B0E67004DA4C2 /* Python-iOS in Frameworks */,
-				9636043F2BD07EF3003EC38C /* opencv2.framework in Frameworks */,
 				967EE0982AAEE2C7000C4D5F /* snippet-extract in Frameworks */,
 				9671FDC32B5B1230004DA4C2 /* PythonKit in Frameworks */,
 				9663605A2B6E0200001D2119 /* Lottie in Frameworks */,
 				9671FDC02B5B106C004DA4C2 /* ZipArchive in Frameworks */,
-				963FF2802B62FE9000B89019 /* Open3D-iOS in Frameworks */,
+				96C0550C2BD2EF1F003981FC /* Open3D-iOS in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -262,7 +257,6 @@
 		967EE0582AAE06FB000C4D5F = {
 			isa = PBXGroup;
 			children = (
-				9636043E2BD07EF3003EC38C /* opencv2.framework */,
 				967EE0632AAE06FB000C4D5F /* OpticALLY */,
 				967EE0742AAE06FE000C4D5F /* OpticALLYTests */,
 				967EE07E2AAE06FE000C4D5F /* OpticALLYUITests */,
@@ -420,11 +414,10 @@
 			packageProductDependencies = (
 				967EE0972AAEE2C7000C4D5F /* snippet-extract */,
 				96BC2ABD2AC5E9D60081550B /* DevicePpi */,
-				9671FDB82B5B0E67004DA4C2 /* Python-iOS */,
 				9671FDBF2B5B106C004DA4C2 /* ZipArchive */,
 				9671FDC22B5B1230004DA4C2 /* PythonKit */,
-				963FF27F2B62FE9000B89019 /* Open3D-iOS */,
 				966360592B6E0200001D2119 /* Lottie */,
+				96C0550B2BD2EF1F003981FC /* Open3D-iOS */,
 			);
 			productName = OpticALLY;
 			productReference = 967EE0612AAE06FB000C4D5F /* OpticALLY.app */;
@@ -502,11 +495,10 @@
 			packageReferences = (
 				967EE0962AAEE2C7000C4D5F /* XCRemoteSwiftPackageReference "swift-docc-plugin" */,
 				96BC2ABC2AC5E9D60081550B /* XCRemoteSwiftPackageReference "DevicePpi" */,
-				9671FDB72B5B0E67004DA4C2 /* XCRemoteSwiftPackageReference "Python-iOS" */,
 				9671FDBE2B5B106C004DA4C2 /* XCRemoteSwiftPackageReference "ZipArchive" */,
 				9671FDC12B5B1230004DA4C2 /* XCRemoteSwiftPackageReference "PythonKit" */,
-				963FF27E2B62FE9000B89019 /* XCRemoteSwiftPackageReference "Open3D-iOS" */,
 				966360582B6E0200001D2119 /* XCRemoteSwiftPackageReference "lottie-spm" */,
+				96C0550A2BD2EF1F003981FC /* XCRemoteSwiftPackageReference "Open3D-iOS" */,
 			);
 			productRefGroup = 967EE0622AAE06FB000C4D5F /* Products */;
 			projectDirPath = "";
@@ -1002,28 +994,12 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		963FF27E2B62FE9000B89019 /* XCRemoteSwiftPackageReference "Open3D-iOS" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/wonmor/Open3D-iOS";
-			requirement = {
-				branch = main;
-				kind = branch;
-			};
-		};
 		966360582B6E0200001D2119 /* XCRemoteSwiftPackageReference "lottie-spm" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/airbnb/lottie-spm.git";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 4.4.0;
-			};
-		};
-		9671FDB72B5B0E67004DA4C2 /* XCRemoteSwiftPackageReference "Python-iOS" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/kewlbear/Python-iOS.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.0.20211030092316;
 			};
 		};
 		9671FDBE2B5B106C004DA4C2 /* XCRemoteSwiftPackageReference "ZipArchive" */ = {
@@ -1058,23 +1034,21 @@
 				minimumVersion = 1.2.18;
 			};
 		};
+		96C0550A2BD2EF1F003981FC /* XCRemoteSwiftPackageReference "Open3D-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/wonmor/Open3D-iOS";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		963FF27F2B62FE9000B89019 /* Open3D-iOS */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 963FF27E2B62FE9000B89019 /* XCRemoteSwiftPackageReference "Open3D-iOS" */;
-			productName = "Open3D-iOS";
-		};
 		966360592B6E0200001D2119 /* Lottie */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 966360582B6E0200001D2119 /* XCRemoteSwiftPackageReference "lottie-spm" */;
 			productName = Lottie;
-		};
-		9671FDB82B5B0E67004DA4C2 /* Python-iOS */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 9671FDB72B5B0E67004DA4C2 /* XCRemoteSwiftPackageReference "Python-iOS" */;
-			productName = "Python-iOS";
 		};
 		9671FDBF2B5B106C004DA4C2 /* ZipArchive */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -1095,6 +1069,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 96BC2ABC2AC5E9D60081550B /* XCRemoteSwiftPackageReference "DevicePpi" */;
 			productName = DevicePpi;
+		};
+		96C0550B2BD2EF1F003981FC /* Open3D-iOS */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 96C0550A2BD2EF1F003981FC /* XCRemoteSwiftPackageReference "Open3D-iOS" */;
+			productName = "Open3D-iOS";
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
