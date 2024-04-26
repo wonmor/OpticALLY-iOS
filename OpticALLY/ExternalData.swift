@@ -67,6 +67,8 @@ struct PointCloudMetadata {
 /// - Care should be taken to manage memory efficiently, as 3D geometry processing can be resource-intensive.
 
 struct ExternalData {
+    static var totalRenderCount = 0
+    
     static var renderingEnabled = true
     static var isSavingFileAsPLY = false
     static var isMeshView = false
@@ -600,6 +602,7 @@ struct ExternalData {
         
         // Save the calibration JSON data
         let jsonFileURL = folderURL.appendingPathComponent("calibration.json")
+        
         do {
             try jsonData.write(to: jsonFileURL)
             print("Calibration data saved successfully to \(jsonFileURL.path)")
@@ -607,8 +610,12 @@ struct ExternalData {
             print("Error saving calibration data: \(error)")
         }
         
-        print("3D Mapping Complete!")
-        LogManager.shared.log("3D Mapping Complete!")
+        totalRenderCount += 1
+        
+        if totalRenderCount >= 3 {
+            print("3D Mapping Complete!")
+            LogManager.shared.log("3D Mapping Complete!")
+        }
     }
     
     static func updateNodePivot(node: SCNNode, usingDepthData depthData: AVDepthData, withMetadata metadata: PointCloudMetadata) -> SCNNode {
@@ -733,6 +740,76 @@ struct ExternalData {
         } catch {
             print("Failed to write PLY file: \(error)")
         }
+    }
+    
+    static func exportFaceNodesToFolderPath(to folderURL: URL) {
+        let fileManager = FileManager.default
+        var fileURLs = [URL]()
+
+        // Export PLY files
+        for (index, geometry) in pointCloudGeometries.enumerated() {
+            let plyString = createPLYString(for: geometry)
+            let plyFileName = "geometry_\(index).ply"
+            let plyFileURL = folderURL.appendingPathComponent(plyFileName)
+
+            do {
+                try plyString.write(to: plyFileURL, atomically: true, encoding: .ascii)
+                fileURLs.append(plyFileURL)
+            } catch {
+                print("Failed to write PLY file: \(error)")
+            }
+        }
+
+        // Export OBJ files for faceNodes using MDLAsset
+        for (index, metadata) in pointCloudDataArray.enumerated() {
+            let objFileName = "faceNode_\(index).obj"
+            let objFileURL = folderURL.appendingPathComponent(objFileName)
+
+            if let device = MTLCreateSystemDefaultDevice(),
+               let mesh: MDLMesh? = MDLMesh(scnGeometry: metadata.faceNode.geometry!, bufferAllocator: MTKMeshBufferAllocator(device: device)) {
+                let asset = MDLAsset()
+                asset.add(mesh!)
+                do {
+                    try asset.export(to: objFileURL)
+                    fileURLs.append(objFileURL)
+
+                    // Append the MTL reference to the OBJ file
+                    let mtlFileName = "material_\(index).mtl"
+                    let mtlReference = "mtllib \(mtlFileName)\n"
+                    if var objContent = try? String(contentsOf: objFileURL) {
+                        objContent = mtlReference + objContent
+                        try objContent.write(to: objFileURL, atomically: true, encoding: .utf8)
+                    }
+                } catch {
+                    print("Failed to write OBJ file: \(error)")
+                }
+            }
+
+            // Export the texture image
+            let textureFileName = "texture_\(index).png"
+            let textureFileURL = folderURL.appendingPathComponent(textureFileName)
+            if let textureData = metadata.faceTexture.pngData() {
+                do {
+                    try textureData.write(to: textureFileURL)
+                    fileURLs.append(textureFileURL)
+                } catch {
+                    print("Failed to write texture file: \(error)")
+                }
+            }
+
+            // Create and export the MTL file
+            let mtlFileName = "material_\(index).mtl"
+            let mtlFileURL = folderURL.appendingPathComponent(mtlFileName)
+            let mtlContent = createMTLString(textureFileName: textureFileName)
+            do {
+                try mtlContent.write(to: mtlFileURL, atomically: true, encoding: .utf8)
+                fileURLs.append(mtlFileURL)
+            } catch {
+                print("Failed to write MTL file: \(error)")
+            }
+        }
+
+        print("All files were successfully exported to: \(folderURL.path)")
     }
     
     static func exportFaceNodesAsZIP(to url: URL) {

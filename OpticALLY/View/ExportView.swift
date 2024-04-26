@@ -189,6 +189,11 @@ struct ExportView: View {
                                     exportViewModel.hasTurnedCenter = true
                                     
                                     hideMoveOnButton = false
+                                    
+                                    // Important part!
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.25) { // Assuming animation duration is 2 seconds
+                                        viewResults()
+                                    }
                                 }
                         }
                     }
@@ -237,8 +242,13 @@ struct ExportView: View {
                 if scanState != .scanning {
                     if let lastLog = logManager.latestLog {
                         if lastLog.lowercased().contains("complete") {
-                            Button(action: viewResults) {
-                                Text("View Results")
+                            // Empty...
+                        }
+                        
+                    } else {
+                        if determineStatus().text.contains("OPTIMAL") {
+                            Button(action: startScanning) {
+                                Text("Start Scanning")
                                     .font(.headline)
                                     .foregroundColor(.white)
                                     .padding()
@@ -246,18 +256,17 @@ struct ExportView: View {
                                     .background(Capsule().fill(Color.gray.opacity(0.4)))
                             }
                             .padding(.horizontal)
-                        }
-                        
-                    } else {
-                        Button(action: startScanning) {
-                            Text("Start Scanning")
-                                .font(.headline)
+                            
+                        } else {
+                            Text("MOVE WITHIN RANGE")
+                                .monospaced()
+                                .font(.title3)
+                                .fontWeight(.medium)
                                 .foregroundColor(.white)
-                                .padding()
-                                .frame(maxWidth: .infinity)
-                                .background(Capsule().fill(Color.gray.opacity(0.4)))
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal)
+                                .cornerRadius(12)
                         }
-                        .padding(.horizontal)
                     }
                 }
                 
@@ -278,7 +287,11 @@ struct ExportView: View {
     private var scanInstruction: String {
         switch scanState {
         case .ready:
-            return "Align your face within the frame."
+            if determineStatus().text.contains("OPTIMAL") {
+                return "Let's do this!"
+            } else {
+                return "Align your face within the frame."
+            }
         case .scanning:
             switch scanDirection {
             case .left:
@@ -321,7 +334,9 @@ struct ExportView: View {
     }
     
     private func viewResults() {
-        globalState.currentView = .postScanning
+        withAnimation {
+            globalState.currentView = .postScanning
+        }
     }
     
     private func handleFaceDirectionChange(yawAngle: Double) {
@@ -372,20 +387,20 @@ struct DistanceIndicator: View {
                 .cornerRadius(20)
         )
     }
+}
+
+func determineStatus() -> (text: String, color: Color) {
+    guard let distance = cameraViewController.faceDistance else { return ("Position Yourself", Color(.white).opacity(0.2)) }
     
-    private func determineStatus() -> (text: String, color: Color) {
-        guard let distance = cameraViewController.faceDistance else { return ("Position Yourself", Color(.white).opacity(0.2)) }
-        
-        switch distance {
-        case ..<30: // Assuming distance is measured in some unit where 30 is too close
-            return ("TOO CLOSE", .red.opacity(0.3))
-        case 30..<40: // Assuming 30 to 40 is the optimal range
-            return ("OPTIMAL", .green.opacity(0.3))
-        case 40...: // Assuming distance more than 40 is too far
-            return ("TOO FAR", .yellow.opacity(0.3))
-        default:
-            return ("Position Yourself", Color(.white).opacity(0.2))
-        }
+    switch distance {
+    case ..<40: // Assuming distance is measured in some unit where 30 is too close
+        return ("TOO CLOSE", .red.opacity(0.3))
+    case 40..<50: // Assuming 30 to 40 is the optimal range
+        return ("OPTIMAL", .green.opacity(0.3))
+    case 50...: // Assuming distance more than 40 is too far
+        return ("TOO FAR", .yellow.opacity(0.3))
+    default:
+        return ("Position Yourself", Color(.white).opacity(0.2))
     }
 }
 

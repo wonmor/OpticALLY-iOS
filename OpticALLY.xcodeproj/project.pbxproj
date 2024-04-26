@@ -27,8 +27,10 @@
 		966360682B6E0AAC001D2119 /* face-id-2.json in Resources */ = {isa = PBXBuildFile; fileRef = 966360672B6E0AAC001D2119 /* face-id-2.json */; };
 		9663606B2B6E0BD7001D2119 /* left-arrow-2.json in Resources */ = {isa = PBXBuildFile; fileRef = 966360692B6E0BD7001D2119 /* left-arrow-2.json */; };
 		9663606C2B6E0BD7001D2119 /* right-arrow-2.json in Resources */ = {isa = PBXBuildFile; fileRef = 9663606A2B6E0BD7001D2119 /* right-arrow-2.json */; };
+		9671FDB92B5B0E67004DA4C2 /* Python-iOS in Frameworks */ = {isa = PBXBuildFile; productRef = 9671FDB82B5B0E67004DA4C2 /* Python-iOS */; };
 		9671FDC02B5B106C004DA4C2 /* ZipArchive in Frameworks */ = {isa = PBXBuildFile; productRef = 9671FDBF2B5B106C004DA4C2 /* ZipArchive */; };
 		9671FDC32B5B1230004DA4C2 /* PythonKit in Frameworks */ = {isa = PBXBuildFile; productRef = 9671FDC22B5B1230004DA4C2 /* PythonKit */; };
+		9671FED72B5B3B8A004DA4C2 /* rubicon-objc-0.4.0 in Resources */ = {isa = PBXBuildFile; fileRef = 9671FED62B5B3B8A004DA4C2 /* rubicon-objc-0.4.0 */; };
 		9671FED82B5B3BCA004DA4C2 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 969DF1C62B12916900FA9ABE /* GoogleService-Info.plist */; };
 		96795D6E2B7FE786003A5192 /* ParsePLY.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96795D6D2B7FE786003A5192 /* ParsePLY.swift */; };
 		9679F8CE2AD0907A00686F13 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9679F8B32AD0907900686F13 /* AppDelegate.swift */; };
@@ -60,6 +62,7 @@
 		969E42EE2ADC9D9E00E77BA7 /* promo.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 969E42ED2ADC9D9E00E77BA7 /* promo.mp4 */; };
 		969E42EF2ADC9D9E00E77BA7 /* promo.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 969E42ED2ADC9D9E00E77BA7 /* promo.mp4 */; };
 		969E42F02ADC9D9E00E77BA7 /* promo.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 969E42ED2ADC9D9E00E77BA7 /* promo.mp4 */; };
+		96B2A6232B5C5F320031952C /* ObjCBridge.py in Resources */ = {isa = PBXBuildFile; fileRef = 9671FDC52B5B14F2004DA4C2 /* ObjCBridge.py */; };
 		96B64F6B2B3D8AF70003E06D /* VideoTexturedFace.shader in Resources */ = {isa = PBXBuildFile; fileRef = 96B64F6A2B3D8AF70003E06D /* VideoTexturedFace.shader */; };
 		96B64F6D2B3D8FCA0003E06D /* faceTexture.metal in Sources */ = {isa = PBXBuildFile; fileRef = 96B64F6C2B3D8FCA0003E06D /* faceTexture.metal */; };
 		96B64F702B3D90410003E06D /* TextureToImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96B64F6E2B3D90410003E06D /* TextureToImage.swift */; };
@@ -67,8 +70,9 @@
 		96B64F732B3D90490003E06D /* ScnMatrix.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96B64F722B3D90490003E06D /* ScnMatrix.swift */; };
 		96BC2ABE2AC5E9D60081550B /* DevicePpi in Frameworks */ = {isa = PBXBuildFile; productRef = 96BC2ABD2AC5E9D60081550B /* DevicePpi */; };
 		96BDE6362B7EB4EF00CCEABA /* ImageDepth.py in Resources */ = {isa = PBXBuildFile; fileRef = 96BDE6352B7EB4EF00CCEABA /* ImageDepth.py */; };
-		96C0550F2BD2F298003981FC /* Python-iOS in Frameworks */ = {isa = PBXBuildFile; productRef = 96C0550E2BD2F298003981FC /* Python-iOS */; };
-		96C055122BD2F323003981FC /* Open3D-iOS in Frameworks */ = {isa = PBXBuildFile; productRef = 96C055112BD2F323003981FC /* Open3D-iOS */; };
+		96C055152BD2F544003981FC /* Open3D-iOS in Frameworks */ = {isa = PBXBuildFile; productRef = 96C055142BD2F544003981FC /* Open3D-iOS */; };
+		96C055172BD2F5EF003981FC /* opencv2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96C055162BD2F5EF003981FC /* opencv2.framework */; };
+		96C055192BD2F729003981FC /* CountdownTimerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96C055182BD2F729003981FC /* CountdownTimerView.swift */; };
 		96E3E0042B867684004374D1 /* FaceIDScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E3E0032B867684004374D1 /* FaceIDScanView.swift */; };
 		96E856BB2B6EFFE00037C3BB /* PreviousScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E856BA2B6EFFE00037C3BB /* PreviousScanView.swift */; };
 		96E856BD2B6F0CF90037C3BB /* cargo-loading.json in Resources */ = {isa = PBXBuildFile; fileRef = 96E856BC2B6F0CF90037C3BB /* cargo-loading.json */; };
@@ -122,6 +126,8 @@
 		966360672B6E0AAC001D2119 /* face-id-2.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "face-id-2.json"; sourceTree = "<group>"; };
 		966360692B6E0BD7001D2119 /* left-arrow-2.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "left-arrow-2.json"; sourceTree = "<group>"; };
 		9663606A2B6E0BD7001D2119 /* right-arrow-2.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "right-arrow-2.json"; sourceTree = "<group>"; };
+		9671FDC52B5B14F2004DA4C2 /* ObjCBridge.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = ObjCBridge.py; sourceTree = "<group>"; };
+		9671FED62B5B3B8A004DA4C2 /* rubicon-objc-0.4.0 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "rubicon-objc-0.4.0"; sourceTree = "<group>"; };
 		96795D6D2B7FE786003A5192 /* ParsePLY.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParsePLY.swift; sourceTree = "<group>"; };
 		9679F8B12AD0907800686F13 /* OpticALLY-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "OpticALLY-Bridging-Header.h"; sourceTree = "<group>"; };
 		9679F8B32AD0907900686F13 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -164,6 +170,8 @@
 		96B64F6F2B3D90410003E06D /* FaceTextureGenerator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FaceTextureGenerator.swift; sourceTree = "<group>"; };
 		96B64F722B3D90490003E06D /* ScnMatrix.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScnMatrix.swift; sourceTree = "<group>"; };
 		96BDE6352B7EB4EF00CCEABA /* ImageDepth.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = ImageDepth.py; sourceTree = "<group>"; };
+		96C055162BD2F5EF003981FC /* opencv2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = opencv2.framework; sourceTree = "<group>"; };
+		96C055182BD2F729003981FC /* CountdownTimerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountdownTimerView.swift; sourceTree = "<group>"; };
 		96E3E0032B867684004374D1 /* FaceIDScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceIDScanView.swift; sourceTree = "<group>"; };
 		96E856BA2B6EFFE00037C3BB /* PreviousScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviousScanView.swift; sourceTree = "<group>"; };
 		96E856BC2B6F0CF90037C3BB /* cargo-loading.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "cargo-loading.json"; sourceTree = "<group>"; };
@@ -186,11 +194,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				96BC2ABE2AC5E9D60081550B /* DevicePpi in Frameworks */,
+				9671FDB92B5B0E67004DA4C2 /* Python-iOS in Frameworks */,
+				96C055172BD2F5EF003981FC /* opencv2.framework in Frameworks */,
 				967EE0982AAEE2C7000C4D5F /* snippet-extract in Frameworks */,
 				9671FDC32B5B1230004DA4C2 /* PythonKit in Frameworks */,
 				9663605A2B6E0200001D2119 /* Lottie in Frameworks */,
-				96C0550F2BD2F298003981FC /* Python-iOS in Frameworks */,
-				96C055122BD2F323003981FC /* Open3D-iOS in Frameworks */,
+				96C055152BD2F544003981FC /* Open3D-iOS in Frameworks */,
 				9671FDC02B5B106C004DA4C2 /* ZipArchive in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -217,6 +226,7 @@
 			children = (
 				96BDE6352B7EB4EF00CCEABA /* ImageDepth.py */,
 				963671282BC09312003EC38C /* Process3D.py */,
+				9671FDC52B5B14F2004DA4C2 /* ObjCBridge.py */,
 			);
 			path = Python;
 			sourceTree = "<group>";
@@ -279,6 +289,7 @@
 		967EE0632AAE06FB000C4D5F /* OpticALLY */ = {
 			isa = PBXGroup;
 			children = (
+				96C055162BD2F5EF003981FC /* opencv2.framework */,
 				96E856BE2B7041BE0037C3BB /* Model */,
 				9671FDC42B5B14F2004DA4C2 /* Python */,
 				969DF1C62B12916900FA9ABE /* GoogleService-Info.plist */,
@@ -350,6 +361,7 @@
 				96E856C52B70441C0037C3BB /* FolderDetailView.swift */,
 				967EE0662AAE06FB000C4D5F /* ContentView.swift */,
 				961D67E22B12BDFC00DBB883 /* SceneKitView.swift */,
+				96C055182BD2F729003981FC /* CountdownTimerView.swift */,
 				963DF9B22AFEDAF600E6E589 /* PostScanView.swift */,
 				9679F8CC2AD0907A00686F13 /* CameraView.swift */,
 				96E856BA2B6EFFE00037C3BB /* PreviousScanView.swift */,
@@ -380,6 +392,7 @@
 				9663605E2B6E03FF001D2119 /* face-scan-2.json */,
 				966360672B6E0AAC001D2119 /* face-id-2.json */,
 				9663605F2B6E03FF001D2119 /* face-scan.json */,
+				9671FED62B5B3B8A004DA4C2 /* rubicon-objc-0.4.0 */,
 				96B64F6C2B3D8FCA0003E06D /* faceTexture.metal */,
 				96B64F6A2B3D8AF70003E06D /* VideoTexturedFace.shader */,
 				96FCF7312B1D65DE00F450A2 /* Male_Base_Head.usdz */,
@@ -416,11 +429,11 @@
 			packageProductDependencies = (
 				967EE0972AAEE2C7000C4D5F /* snippet-extract */,
 				96BC2ABD2AC5E9D60081550B /* DevicePpi */,
+				9671FDB82B5B0E67004DA4C2 /* Python-iOS */,
 				9671FDBF2B5B106C004DA4C2 /* ZipArchive */,
 				9671FDC22B5B1230004DA4C2 /* PythonKit */,
 				966360592B6E0200001D2119 /* Lottie */,
-				96C0550E2BD2F298003981FC /* Python-iOS */,
-				96C055112BD2F323003981FC /* Open3D-iOS */,
+				96C055142BD2F544003981FC /* Open3D-iOS */,
 			);
 			productName = OpticALLY;
 			productReference = 967EE0612AAE06FB000C4D5F /* OpticALLY.app */;
@@ -498,11 +511,11 @@
 			packageReferences = (
 				967EE0962AAEE2C7000C4D5F /* XCRemoteSwiftPackageReference "swift-docc-plugin" */,
 				96BC2ABC2AC5E9D60081550B /* XCRemoteSwiftPackageReference "DevicePpi" */,
+				9671FDB72B5B0E67004DA4C2 /* XCRemoteSwiftPackageReference "Python-iOS" */,
 				9671FDBE2B5B106C004DA4C2 /* XCRemoteSwiftPackageReference "ZipArchive" */,
 				9671FDC12B5B1230004DA4C2 /* XCRemoteSwiftPackageReference "PythonKit" */,
 				966360582B6E0200001D2119 /* XCRemoteSwiftPackageReference "lottie-spm" */,
-				96C0550D2BD2F298003981FC /* XCRemoteSwiftPackageReference "Python-iOS" */,
-				96C055102BD2F323003981FC /* XCRemoteSwiftPackageReference "Open3D-iOS" */,
+				96C055132BD2F544003981FC /* XCRemoteSwiftPackageReference "Open3D-iOS" */,
 			);
 			productRefGroup = 967EE0622AAE06FB000C4D5F /* Products */;
 			projectDirPath = "";
@@ -520,6 +533,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				96B2A6232B5C5F320031952C /* ObjCBridge.py in Resources */,
 				963671292BC09312003EC38C /* Process3D.py in Resources */,
 				9671FED82B5B3BCA004DA4C2 /* GoogleService-Info.plist in Resources */,
 				96B64F6B2B3D8AF70003E06D /* VideoTexturedFace.shader in Resources */,
@@ -529,6 +543,7 @@
 				967EE06C2AAE06FE000C4D5F /* Preview Assets.xcassets in Resources */,
 				9679F8D82AD0907A00686F13 /* Main.storyboard in Resources */,
 				966360682B6E0AAC001D2119 /* face-id-2.json in Resources */,
+				9671FED72B5B3B8A004DA4C2 /* rubicon-objc-0.4.0 in Resources */,
 				9679F8D72AD0907A00686F13 /* LaunchScreen.storyboard in Resources */,
 				966360632B6E03FF001D2119 /* face-scan-2.json in Resources */,
 				967EE0692AAE06FE000C4D5F /* Assets.xcassets in Resources */,
@@ -569,6 +584,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				96C055192BD2F729003981FC /* CountdownTimerView.swift in Sources */,
 				96F0CF222B12A51700417716 /* LogManager.swift in Sources */,
 				961D67E52B12C64A00DBB883 /* CreditsView.swift in Sources */,
 				96FC61592B146D3A00ACC840 /* HapticManager.swift in Sources */,
@@ -786,7 +802,6 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/OpticALLY",
-					"$(PROJECT_DIR)",
 				);
 				GCC_PREFIX_HEADER = "/Users/johnseong/Documents/GitHub/OpticALLY-iOS/OpticALLY/PrefixHeader.pch";
 				GENERATE_INFOPLIST_FILE = YES;
@@ -841,7 +856,6 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/OpticALLY",
-					"$(PROJECT_DIR)",
 				);
 				GCC_PREFIX_HEADER = "/Users/johnseong/Documents/GitHub/OpticALLY-iOS/OpticALLY/PrefixHeader.pch";
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1006,6 +1020,14 @@
 				minimumVersion = 4.4.0;
 			};
 		};
+		9671FDB72B5B0E67004DA4C2 /* XCRemoteSwiftPackageReference "Python-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/kewlbear/Python-iOS.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.0.20211030092316;
+			};
+		};
 		9671FDBE2B5B106C004DA4C2 /* XCRemoteSwiftPackageReference "ZipArchive" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/ZipArchive/ZipArchive.git";
@@ -1038,17 +1060,9 @@
 				minimumVersion = 1.2.18;
 			};
 		};
-		96C0550D2BD2F298003981FC /* XCRemoteSwiftPackageReference "Python-iOS" */ = {
+		96C055132BD2F544003981FC /* XCRemoteSwiftPackageReference "Open3D-iOS" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/kewlbear/Python-iOS.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.0.20211030092316;
-			};
-		};
-		96C055102BD2F323003981FC /* XCRemoteSwiftPackageReference "Open3D-iOS" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/wonmor/Open3D-iOS";
+			repositoryURL = "https://github.com/angel-sotabytes/Open3D-iOS";
 			requirement = {
 				branch = main;
 				kind = branch;
@@ -1061,6 +1075,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 966360582B6E0200001D2119 /* XCRemoteSwiftPackageReference "lottie-spm" */;
 			productName = Lottie;
+		};
+		9671FDB82B5B0E67004DA4C2 /* Python-iOS */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9671FDB72B5B0E67004DA4C2 /* XCRemoteSwiftPackageReference "Python-iOS" */;
+			productName = "Python-iOS";
 		};
 		9671FDBF2B5B106C004DA4C2 /* ZipArchive */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -1082,14 +1101,9 @@
 			package = 96BC2ABC2AC5E9D60081550B /* XCRemoteSwiftPackageReference "DevicePpi" */;
 			productName = DevicePpi;
 		};
-		96C0550E2BD2F298003981FC /* Python-iOS */ = {
+		96C055142BD2F544003981FC /* Open3D-iOS */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 96C0550D2BD2F298003981FC /* XCRemoteSwiftPackageReference "Python-iOS" */;
-			productName = "Python-iOS";
-		};
-		96C055112BD2F323003981FC /* Open3D-iOS */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 96C055102BD2F323003981FC /* XCRemoteSwiftPackageReference "Open3D-iOS" */;
+			package = 96C055132BD2F544003981FC /* XCRemoteSwiftPackageReference "Open3D-iOS" */;
 			productName = "Open3D-iOS";
 		};
 /* End XCSwiftPackageProductDependency section */

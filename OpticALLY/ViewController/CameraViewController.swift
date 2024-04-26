@@ -164,7 +164,7 @@ extension CameraViewController {
 
 class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelegate, AVCaptureDataOutputSynchronizerDelegate, ObservableObject {
     var contentNode: SCNNode?
-    
+
     // MARK: - Properties
     @Published var arSCNView: ARSCNView?
     @Published var currentImage: UIImage!

@@ -100,17 +100,27 @@ struct SceneKitSingleView: UIViewRepresentable {
 
     func makeUIView(context: Context) -> SCNView {
         let scnView = SCNView()
-        scnView.scene = SCNScene()
+        scnView.backgroundColor = UIColor.black // Set the background color to black
+        
+        let scene = SCNScene()
+        scnView.scene = scene
         scnView.scene?.rootNode.addChildNode(node)
-        scnView.allowsCameraControl = true  // Optional: Allow user to control the camera
-        scnView.autoenablesDefaultLighting = true  // Optional: Add default lighting
+        
+        // Rotate the entire scene 90 degrees clockwise around the Y-axis
+        scnView.scene?.rootNode.eulerAngles.y = -Float.pi / 2
+
+        scnView.autoenablesDefaultLighting = true
+        scnView.allowsCameraControl = true
+        
         return scnView
     }
 
     func updateUIView(_ scnView: SCNView, context: Context) {
-        // Update the view if needed
+        // Reapply the rotation to ensure it persists through updates
+        scnView.scene?.rootNode.eulerAngles.y = -Float.pi / 2
     }
 }
+
 
 struct SceneKitUSDZView: UIViewRepresentable {
     var usdzFileName: String
@@ -191,6 +201,8 @@ struct SceneKitTEMPView: UIViewRepresentable {
 
 
 struct SceneKitMDLView: UIViewRepresentable {
+    @Binding var snapshot: UIImage?
+    
     var url: URL
     
     func makeUIView(context: Context) -> SCNView {
@@ -247,5 +259,15 @@ struct SceneKitMDLView: UIViewRepresentable {
         return scnView
     }
     
-    func updateUIView(_ uiView: SCNView, context: Context) {}
+    func updateUIView(_ uiView: SCNView, context: Context) {
+//        func captureSnapshot(from view: SCNView) -> UIImage? {
+//            UIGraphicsBeginImageContextWithOptions(view.bounds.size, false, view.contentScaleFactor)
+//            view.drawHierarchy(in: view.bounds, afterScreenUpdates: true)
+//            let image = UIGraphicsGetImageFromCurrentImageContext()
+//            UIGraphicsEndImageContext()
+//            return image
+//        }
+//
+//        snapshot = captureSnapshot(from: uiView)!
+    }
 }

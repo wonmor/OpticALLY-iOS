@@ -12,8 +12,46 @@ import SceneKit.ModelIO
 import PythonKit
 import ZipArchive
 import LinkPython
+import UIKit
+import Vision
 
 let debugMode = false
+
+import CoreGraphics
+
+struct PointWrapper: Hashable {
+    let point: CGPoint
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(point.x)
+        hasher.combine(point.y)
+    }
+
+    static func ==(lhs: PointWrapper, rhs: PointWrapper) -> Bool {
+        return lhs.point == rhs.point
+    }
+}
+
+
+struct EyeOverlayView: View {
+    var observations: [VNFaceObservation]
+
+    var body: some View {
+        GeometryReader { geometry in
+            ForEach(observations, id: \.self) { observation in
+                // Convert each CGPoint to PointWrapper before using it in ForEach
+                ForEach(observation.landmarks?.allPoints?.pointsInImage(imageSize: geometry.size).map { PointWrapper(point: $0) } ?? [], id: \.self) { pointWrapper in
+                    Circle()
+                        .fill(Color.red)
+                        .frame(width: 10, height: 10)
+                        .position(x: pointWrapper.point.x, y: pointWrapper.point.y)
+                }
+            }
+        }
+    }
+}
+
+
 
 struct ShareSheet: UIViewControllerRepresentable {
     var fileURL: URL
@@ -31,6 +69,12 @@ struct PostScanView: View {
     
     @ObservedObject private var exportViewModel = ExportViewModel()
     @ObservedObject var logManager = LogManager.shared
+    
+    @State private var currentDirection: ScanDirection = .front
+    
+    @State private var frameNeedsUpdate = false
+    @State private var scnView: SCNView?
+    @State private var observations: [VNFaceObservation] = []
     
     @State private var triggerUpdate: Bool = false
     @State private var showCompletionCheckmark = false
@@ -53,6 +97,8 @@ struct PostScanView: View {
     @State private var fileURLToShare: URL? = nil
     @State private var showShareSheet: Bool = false
     @State private var showDropdown: Bool = false
+    
+    @State private var snapshot: UIImage?
     
     @State private var isProcessing = false {
         didSet {
@@ -100,64 +146,67 @@ struct PostScanView: View {
             try? fileManager.removeItem(at: outputFilePath)
         }
 
-      // ON-DEVICE MESHING... (CURRENTLY FACING ISSUES REGARDING BASE64 UIIMAGE TRANSFER BETWEEN PYTHON AND SWIFT! NEEDS FIX!
-        DispatchQueue.global(qos: .userInitiated).async {
-            let gstate = PyGILState_Ensure()
-            
-          defer {
-              DispatchQueue.main.async {
-                  guard let tstate = self.tstate else { fatalError() }
-                  PyEval_RestoreThread(tstate)
-                  self.tstate = nil
-              }
-              
-              PyGILState_Release(gstate)
-          }
-            var pointClouds: [PythonObject] = []
-    
-            for (index, videoFile) in videoFiles.enumerated() {
-                do {
-                    let objFileURL = try OpticALLYApp.poissonReconstruction_PLYtoOBJ(json_string: calibrationFileContent, image_file: videoFile, depth_file: depthFiles[index])
-                    
-                    pointClouds.append(objFileURL)
-                    
-                } catch {
-                    print(error.localizedDescription)
-                }
-            }
-            
-            let process3D = Python.import("Process3D")
-            let meshOutput = process3D.process3D(pointClouds)
-            
-            o3d!.io.write_triangle_mesh(outputFilePath.path, meshOutput)
-           
-            // Update the state to indicate that there's a file to share
-            DispatchQueue.main.async {
-                // self.fileURL = zipFileURL
-                exportViewModel.fileURLForViewer = outputFilePath  // Store the file URL for sharing
-                ExternalData.isMeshView = true
-                self.isProcessing = false
-            }
-        }
-        
-        tstate = PyEval_SaveThread()
-        
-        // Using cloud services... (server)
-//        uploadFiles(calibrationFileURL: URL(fileURLWithPath: calibrationFilePath), imageFilesZipURL: URL(fileURLWithPath: videoZipPath), depthFilesZipURL: URL(fileURLWithPath: depthZipPath)) { success, objURLs in
-//            if success, let objURLs = objURLs {
-//                DispatchQueue.main.async {
-//                    exportViewModel.objURLs = objURLs
-//                    ExternalData.isMeshView = true
-//                    self.isProcessing = false
-//                }
-//                
-//            } else {
-//                // Handle errors
-//                DispatchQueue.main.async {
-//                    self.showAlert = true
+//      ON-DEVICE MESHING... (CURRENTLY FACING ISSUES REGARDING BASE64 UIIMAGE TRANSFER BETWEEN PYTHON AND SWIFT! NEEDS FIX!
+//        DispatchQueue.global(qos: .userInitiated).async {
+//            let gstate = PyGILState_Ensure()
+//            
+//          defer {
+//              DispatchQueue.main.async {
+//                  guard let tstate = self.tstate else { fatalError() }
+//                  PyEval_RestoreThread(tstate)
+//                  self.tstate = nil
+//              }
+//              
+//              PyGILState_Release(gstate)
+//          }
+//            var pointClouds: [PythonObject] = []
+//    
+//            for (index, videoFile) in videoFiles.enumerated() {
+//                do {
+//                    let objFileURL = try OpticALLYApp.poissonReconstruction_PLYtoOBJ(json_string: calibrationFileContent, image_file: videoFile, depth_file: depthFiles[index])
+//                    
+//                    pointClouds.append(objFileURL)
+//                    
+//                } catch {
+//                    print(error.localizedDescription)
 //                }
 //            }
+//            
+//            let process3D = Python.import("Process3D")
+//            let meshOutput = process3D.process3D(pointClouds)
+//            
+//            o3d!.io.write_triangle_mesh(outputFilePath.path, meshOutput)
+//           
+//            // Update the state to indicate that there's a file to share
+//            DispatchQueue.main.async {
+//                // self.fileURL = zipFileURL
+//                exportViewModel.fileURLForViewer = outputFilePath  // Store the file URL for sharing
+//                ExternalData.isMeshView = true
+//                self.isProcessing = false
+//            }
 //        }
+//        
+//        tstate = PyEval_SaveThread()
+        
+        // Using cloud services... (server)
+        uploadFiles(calibrationFileURL: URL(fileURLWithPath: calibrationFilePath), imageFilesZipURL: URL(fileURLWithPath: videoZipPath), depthFilesZipURL: URL(fileURLWithPath: depthZipPath)) { success, objURLs in
+            if success, let objURLs = objURLs {
+                DispatchQueue.main.async {
+                    exportViewModel.objURLs = objURLs
+                    
+                    print("objURLs: \(objURLs)")
+                    
+                    ExternalData.isMeshView = true
+                    self.isProcessing = false
+                }
+                
+            } else {
+                // Handle errors
+                DispatchQueue.main.async {
+                    self.showAlert = true
+                }
+            }
+        }
     }
     
     func reset() {
@@ -195,6 +244,32 @@ struct PostScanView: View {
         rootViewController.present(activityViewController, animated: true, completion: nil)
     }
     
+
+    func detectEyes(in image: UIImage, completion: @escaping ([VNFaceObservation]?) -> Void) {
+        guard let cgImage = image.cgImage else {
+            completion(nil)
+            return
+        }
+        // Correct way to handle conversion of orientation
+        let orientation = CGImagePropertyOrientation(rawValue: UInt32(image.imageOrientation.rawValue))!
+
+        let request = VNDetectFaceLandmarksRequest { request, error in
+            guard error == nil else {
+                print("Face detection error: \(error!.localizedDescription)")
+                completion(nil)
+                return
+            }
+
+            completion(request.results as? [VNFaceObservation])
+        }
+
+        let handler = VNImageRequestHandler(cgImage: cgImage, orientation: orientation)
+        DispatchQueue.global(qos: .userInitiated).async {
+            try? handler.perform([request])
+        }
+    }
+
+    
     func convertFileData(fieldName: String,
                          fileName: String,
                          mimeType: String,
@@ -217,88 +292,102 @@ struct PostScanView: View {
         return data
     }
     
-    func uploadFiles(calibrationFileURL: URL, imageFilesZipURL: URL, depthFilesZipURL: URL, completion: @escaping (Bool, [URL]?) -> Void) {
-        let endpoint = "https://harolden-server.apps.johnseong.com/process3d-to-multiple-obj/"
-        guard let url = URL(string: endpoint) else {
-            print("Invalid URL")
-            completion(false, [])
-            return
+    func uploadFiles(calibrationFileURL: URL, imageFilesZipURL: URL, depthFilesZipURL: URL, completion: @escaping (Bool, URL?) -> Void) {
+           let endpoint = "https://harolden-server.apps.johnseong.com/process3d-to-obj/"
+           guard let url = URL(string: endpoint) else {
+               print("Invalid URL")
+               completion(false, URL(string: ""))
+               return
+           }
+           
+           var request = URLRequest(url: url)
+           request.httpMethod = "POST"
+           
+           let boundary = "Boundary-\(UUID().uuidString)"
+           request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+           
+           var data = Data()
+           
+           // Append Calibration File
+           data.append(convertFileData(fieldName: "calibration_file",
+                                       fileName: calibrationFileURL.lastPathComponent,
+                                       mimeType: "application/json",
+                                       fileURL: calibrationFileURL,
+                                       using: boundary))
+           
+           // Append Image Files Zip
+           data.append(convertFileData(fieldName: "image_files_zip",
+                                       fileName: imageFilesZipURL.lastPathComponent,
+                                       mimeType: "application/zip",
+                                       fileURL: imageFilesZipURL,
+                                       using: boundary))
+           
+           // Append Depth Files Zip
+           data.append(convertFileData(fieldName: "depth_files_zip",
+                                       fileName: depthFilesZipURL.lastPathComponent,
+                                       mimeType: "application/zip",
+                                       fileURL: depthFilesZipURL,
+                                       using: boundary))
+           
+           data.append("--\(boundary)--".data(using: .utf8)!)
+           
+           request.httpBody = data
+           
+           // Create URLSessionUploadTask
+           let task = URLSession.shared.uploadTask(with: request, from: data) { data, response, error in
+               DispatchQueue.main.async {
+                   self.isLoading = false  // Stop loading indicator
+                   if let data = data, error == nil {
+                       // Save the PLY file
+                       let fileURL = FileManager.default.temporaryDirectory.appendingPathComponent("output_from_server.obj")
+                       do {
+                           try data.write(to: fileURL)
+                           print("OBJ file saved to: \(fileURL.path)")
+                           self.fileURLToShare = fileURL
+                           self.triggerUpdate = true
+                           ExternalData.isMeshView = true
+                           self.isProcessing = false
+                           completion(true, fileURL)  // Pass the file URL to the completion handler
+                       } catch {
+                           print("Failed to save PLY file: \(error.localizedDescription)")
+                           completion(false, nil)
+                       }
+                   } else {
+                       print("Network error: \(error?.localizedDescription ?? "Unknown error")")
+                       completion(false, nil)
+                   }
+               }
+           }
+           
+           // Handle upload progress
+           task.observe(\.countOfBytesSent) { task, _ in
+               DispatchQueue.main.async {
+                   let progress = Double(task.countOfBytesSent) / Double(task.countOfBytesExpectedToSend)
+                   self.uploadProgress = progress
+               }
+           }
+           
+           self.isLoading = true  // Start loading indicator
+           task.resume()
+       }
+    
+    private var currentDirectionString: String {
+        switch currentDirection {
+        case .left:
+            return "LEFT"
+        case .front:
+            return "YOUR SCAN"
+        case .right:
+            return "RIGHT"
         }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        
-        let boundary = "Boundary-\(UUID().uuidString)"
-        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-        
-        var data = Data()
-        
-        // Append Calibration File
-        data.append(convertFileData(fieldName: "calibration_file",
-                                    fileName: calibrationFileURL.lastPathComponent,
-                                    mimeType: "application/json",
-                                    fileURL: calibrationFileURL,
-                                    using: boundary))
-        
-        // Append Image Files Zip
-        data.append(convertFileData(fieldName: "image_files_zip",
-                                    fileName: imageFilesZipURL.lastPathComponent,
-                                    mimeType: "application/zip",
-                                    fileURL: imageFilesZipURL,
-                                    using: boundary))
-        
-        // Append Depth Files Zip
-        data.append(convertFileData(fieldName: "depth_files_zip",
-                                    fileName: depthFilesZipURL.lastPathComponent,
-                                    mimeType: "application/zip",
-                                    fileURL: depthFilesZipURL,
-                                    using: boundary))
-        
-        data.append("--\(boundary)--".data(using: .utf8)!)
-        
-        request.httpBody = data
-        
-        // Create URLSessionUploadTask
-        let task = URLSession.shared.uploadTask(with: request, from: data) { data, response, error in
-            DispatchQueue.main.async {
-                self.isLoading = false  // Stop loading indicator
-                if let data = data, error == nil {
-                    let tempDir = FileManager.default.temporaryDirectory
-                    let zipFileURL = tempDir.appendingPathComponent("output_objs.zip")
-                    
-                    do {
-                        try data.write(to: zipFileURL)
-                        var objURLs: [URL] = []
-                        let fileManager = FileManager.default
-                        let unzipDirectory = tempDir.appendingPathComponent("unzipped_objs", isDirectory: true)
-                        try fileManager.createDirectory(at: unzipDirectory, withIntermediateDirectories: true, attributes: nil)
-                        SSZipArchive.unzipFile(atPath: zipFileURL.path, toDestination: unzipDirectory.path)
-                        
-                        let objFiles = try fileManager.contentsOfDirectory(at: unzipDirectory, includingPropertiesForKeys: nil)
-                        objURLs = objFiles.filter { $0.pathExtension == "obj" }
-                        
-                        completion(true, objURLs)  // Pass the array of URLs to the completion handler
-                    } catch {
-                        print("Failed to handle ZIP file: \(error.localizedDescription)")
-                        completion(false, nil)
-                    }
-                } else {
-                    print("Network error: \(error?.localizedDescription ?? "Unknown error")")
-                    completion(false, nil)
-                }
-            }
-        }
-        
-        // Handle upload progress
-        task.observe(\.countOfBytesSent) { task, _ in
-            DispatchQueue.main.async {
-                let progress = Double(task.countOfBytesSent) / Double(task.countOfBytesExpectedToSend)
-                self.uploadProgress = progress
-            }
-        }
-        
-        self.isLoading = true  // Start loading indicator
-        task.resume()
+    }
+    
+    func captureSnapshot(from scnView: SCNView) -> UIImage? {
+        let renderer = SCNRenderer(device: MTLCreateSystemDefaultDevice(), options: nil)
+        renderer.scene = scnView.scene
+        renderer.pointOfView = scnView.pointOfView
+        let image = renderer.snapshot(atTime: 0, with: scnView.bounds.size, antialiasingMode: .none)
+        return image
     }
 
     
@@ -338,8 +427,15 @@ struct PostScanView: View {
                     }
                     .disabled(isProcessing)  // Disable the button when processing
 
-                    Text("Your Scan")
-                        .font(.system(.title))  // Using monospaced font
+                    Text(currentDirectionString)
+                        .monospaced()
+                        .font(.title)
+                        .fontWeight(.medium)
+                        .foregroundColor(.white)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                        .cornerRadius(12)
+                    
                     Spacer()
                 }
                 .padding(.top)
@@ -350,13 +446,47 @@ struct PostScanView: View {
                     print("안녕")
                 }
 
-                TabView {
-                    ForEach(exportViewModel.objURLs, id: \.self) { url in
-                        SceneKitMDLView(url: url)
+                if let url = exportViewModel.objURLs {
+                    TabView {
+                            SceneKitMDLView(snapshot: $snapshot, url: url)
+                                .tabItem {
+                                    Label("FRONT", systemImage: "0.circle")
+                                }
+                                .onAppear() {
+                                    currentDirection = .front
+                                }
+//                                .onChange(of: frameNeedsUpdate) { _ in
+//                                    if let scnView = scnView { // Make sure scnView is properly referenced
+//                                        if let image: UIImage? = snapshot {
+//                                               detectEyes(in: image!) { [self] detected in
+//                                                   DispatchQueue.main.async {
+//                                                       self.observations = detected ?? []
+//                                                   }
+//                                               }
+//                                           }
+//                                       }
+//                                }
+//                            
+//                            EyeOverlayView(observations: observations)
+                
+                        
+                        SceneKitSingleView(node: ExternalData.pointCloudNodes[1])
                             .tabItem {
-                                Label("Model \(exportViewModel.objURLs.firstIndex(of: url)! + 1)", systemImage: "\(exportViewModel.objURLs.firstIndex(of: url)! + 1).circle")
+                                Label("LEFT", systemImage: "1.circle")
+                            }
+                            .onAppear() {
+                                currentDirection = .left
+                            }
+                        
+                        SceneKitSingleView(node: ExternalData.pointCloudNodes[2])
+                            .tabItem {
+                                Label("RIGHT", systemImage: "2.circle")
+                            }
+                            .onAppear() {
+                                currentDirection = .right
                             }
                     }
+                    .padding()
                 }
                 
                 Spacer()
@@ -395,17 +525,17 @@ struct PostScanView: View {
                                 .padding(.top)
                                 .padding(.horizontal)
                                 
-                                Button(action: {
-                                    exportViewModel.exportFaceNodes(showShareSheet: true)
-                                }) {
-                                    Text("LANDMARK 3DMM")
-                                        .font(.caption)
-                                        .bold()
-                                        .padding()
-                                        .foregroundColor(.white)
-                                        .background(Capsule().fill(Color(.black)))
-                                }
-                                .padding(.horizontal)
+//                                Button(action: {
+//                                    exportViewModel.exportFaceNodes(showShareSheet: true)
+//                                }) {
+//                                    Text("LANDMARK 3DMM")
+//                                        .font(.caption)
+//                                        .bold()
+//                                        .padding()
+//                                        .foregroundColor(.white)
+//                                        .background(Capsule().fill(Color(.black)))
+//                                }
+//                                .padding(.horizontal)
                                 
                                 Text("FOR DEVELOPERS")
                                     .bold()
@@ -459,7 +589,7 @@ struct PostScanView: View {
                             .padding()
                             .colorInvert()
                         
-                        Text("PROCESSING POINT CLOUD")
+                        Text("PROCESSING\n3D POINT CLOUD")
                             .bold()
                             .monospaced()
                             .foregroundColor(.white)
