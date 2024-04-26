@@ -581,6 +581,7 @@ struct PostScanView: View {
                     }
                 }
                 
+                // TO DO: ADD BACKGROUND PROCESSING - https://developer.apple.com/documentation/uikit/app_and_environment/scenes/preparing_your_ui_to_run_in_the_background/using_background_tasks_to_update_your_app
                 if isLoading {
                     VStack(spacing: 10) { // Adjust spacing as needed
                         LottieView(animationFileName: "cargo-loading", loopMode: .loop)
