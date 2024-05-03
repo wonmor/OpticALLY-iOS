@@ -133,27 +133,21 @@ struct ExternalData {
     }
     
     static func getFaceScansFolder() -> URL {
-        // Get the current date
-        let date = Date()
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy_MM_dd"
-        let dateString = dateFormatter.string(from: date)
-        
-        let folderName = "bin_json_\(dateString)"
-        let folderURL = getDocumentsDirectory().appendingPathComponent(folderName)
+       let baseFolderName = "bin_json_"
+       let folderURL = getDocumentsDirectory().appendingPathComponent("\(baseFolderName)\(totalRenderCount)")
 
-        let fileManager = FileManager.default
-        if !fileManager.fileExists(atPath: folderURL.path) {
-            do {
-                try fileManager.createDirectory(at: folderURL, withIntermediateDirectories: true, attributes: nil)
-            } catch {
-                print("Error creating \(folderName) directory: \(error)")
-            }
-        }
+       let fileManager = FileManager.default
+       if !fileManager.fileExists(atPath: folderURL.path) {
+           do {
+               try fileManager.createDirectory(at: folderURL, withIntermediateDirectories: true, attributes: nil)
+           } catch {
+               print("Error creating \(folderURL.path) directory: \(error)")
+           }
+       }
 
-        return folderURL
-    }
-    
+       return folderURL
+   }
+
     // Static counters for depth and color files
     private static var depthFileIndex: Int = 1
     private static var colorFileIndex: Int = 1

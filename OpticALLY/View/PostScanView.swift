@@ -14,6 +14,7 @@ import ZipArchive
 import LinkPython
 import UIKit
 import Vision
+import Combine
 
 let debugMode = false
 
@@ -88,8 +89,7 @@ struct PostScanView: View {
     @State private var position = SCNVector3(0, 0, 0)
     @State private var rotation = SCNVector3(0, 0, 0)
     @State private var nodeCount = ExternalData.pointCloudGeometries.suffix(3).count
-    
-    @State private var uploadProgress: Double = 0.0
+
     @State private var isLoading: Bool = false
     
     @State private var scnNode: SCNNode?
@@ -100,6 +100,11 @@ struct PostScanView: View {
     
     @State private var snapshot: UIImage?
     
+    @State private var uploadProgress = [Double](repeating: 0.0, count: 3)
+    @State private var uploadResults = [Bool](repeating: false, count: 3)
+    
+    @State private var uploadIndex = 0  // Track the current index of uploads
+    
     @State private var isProcessing = false {
         didSet {
             // Prevent the device from sleeping when processing starts, and allow it to sleep again when processing ends
@@ -109,42 +114,46 @@ struct PostScanView: View {
     
     let fileManager = FileManager.default
     
+    private func processUploads() {
+        let baseFolderName = "bin_json_"
+        let documentsDirectory = ExternalData.getDocumentsDirectory()
+        
+       if uploadIndex < 3 {
+           let folderURL = documentsDirectory.appendingPathComponent("\(baseFolderName)\(uploadIndex)")
+           let calibrationFileURL = folderURL.appendingPathComponent("calibration.json")
+           let videoZipPath = folderURL.appendingPathComponent("videos.zip")
+           let depthZipPath = folderURL.appendingPathComponent("depths.zip")
+           
+           let videoFiles = fileManager.getFilePathsWithPrefix(baseFolder: folderURL.path, prefix: "video")
+           let depthFiles = fileManager.getFilePathsWithPrefix(baseFolder: folderURL.path, prefix: "depth")
+           
+           SSZipArchive.createZipFile(atPath: videoZipPath.path, withFilesAtPaths: videoFiles)
+           SSZipArchive.createZipFile(atPath: depthZipPath.path, withFilesAtPaths: depthFiles)
+
+           uploadFiles(calibrationFileURL: calibrationFileURL, imageFilesZipURL: videoZipPath, depthFilesZipURL: depthZipPath) { success, url in
+               if success {
+//                   self.uploadIndex += 1
+//                   exportViewModel.objURLs!.append(url!)
+//
+//                   print("objURLs: \(exportViewModel.objURLs!)")
+//                   
+//                   self.processUploads()  // Recursively process the next upload
+               } else {
+                   self.isProcessing = false
+                   self.showAlert = true
+               }
+           }
+       } else {
+           self.isProcessing = false
+           ExternalData.isMeshView = true  // All uploads are complete, allow viewing of the mesh
+       }
+   }
+    
     func initialize() {
         isProcessing = true
-        
-        // Construct the paths for the calibration, image, and depth files
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy_MM_dd"
-        let dateString = dateFormatter.string(from: Date())
-        
-        let baseFolder = ExternalData.getFaceScansFolder().path // Assuming ExternalData.getFaceScansFolder() gives the base directory for the files
-        
-        let calibrationFilePath = "\(baseFolder)/calibration.json"
-        
-        // Read the content of the JSON file
-        var calibrationFileContent = ""
-        do {
-            calibrationFileContent = try String(contentsOfFile: calibrationFilePath, encoding: .utf8)
-        } catch {
-            print("Failed to read calibration file: \(error)")
-        }
-        
-        let videoZipPath = "\(baseFolder)/videos.zip"
-        let depthZipPath = "\(baseFolder)/depths.zip"
-        
-        let videoFiles = fileManager.getFilePathsWithPrefix(baseFolder: baseFolder, prefix: "video")
-        let depthFiles = fileManager.getFilePathsWithPrefix(baseFolder: baseFolder, prefix: "depth")
-        
-        SSZipArchive.createZipFile(atPath: videoZipPath, withFilesAtPaths: videoFiles)
-        SSZipArchive.createZipFile(atPath: depthZipPath, withFilesAtPaths: depthFiles)
-    
-        let outputFilePath = URL(fileURLWithPath: baseFolder).appendingPathComponent("output.obj")
-        
-        // Delete if already exists...
-        let fileManager = FileManager.default
-        if fileManager.fileExists(atPath: outputFilePath.path) {
-            try? fileManager.removeItem(at: outputFilePath)
-        }
+        uploadIndex = 0
+        processUploads()
+    }
 
 //      ON-DEVICE MESHING... (CURRENTLY FACING ISSUES REGARDING BASE64 UIIMAGE TRANSFER BETWEEN PYTHON AND SWIFT! NEEDS FIX!
 //        DispatchQueue.global(qos: .userInitiated).async {
@@ -189,25 +198,25 @@ struct PostScanView: View {
 //        tstate = PyEval_SaveThread()
         
         // Using cloud services... (server)
-        uploadFiles(calibrationFileURL: URL(fileURLWithPath: calibrationFilePath), imageFilesZipURL: URL(fileURLWithPath: videoZipPath), depthFilesZipURL: URL(fileURLWithPath: depthZipPath)) { success, objURLs in
-            if success, let objURLs = objURLs {
-                DispatchQueue.main.async {
-                    exportViewModel.objURLs = objURLs
-                    
-                    print("objURLs: \(objURLs)")
-                    
-                    ExternalData.isMeshView = true
-                    self.isProcessing = false
-                }
-                
-            } else {
-                // Handle errors
-                DispatchQueue.main.async {
-                    self.showAlert = true
-                }
-            }
-        }
-    }
+//        uploadFiles(calibrationFileURL: URL(fileURLWithPath: calibrationFilePath), imageFilesZipURL: URL(fileURLWithPath: videoZipPath), depthFilesZipURL: URL(fileURLWithPath: depthZipPath)) { success, objURLs in
+//            if success, let objURLs = objURLs {
+//                DispatchQueue.main.async {
+//                    exportViewModel.objURLs = objURLs
+//                    
+//                    print("objURLs: \(objURLs)")
+//                    
+//                    ExternalData.isMeshView = true
+//                    self.isProcessing = false
+//                }
+//                
+//            } else {
+//                // Handle errors
+//                DispatchQueue.main.async {
+//                    self.showAlert = true
+//                }
+//            }
+//        }
+//    }
     
     func reset() {
         position = SCNVector3(0, 0, 0)
@@ -339,14 +348,22 @@ struct PostScanView: View {
                    self.isLoading = false  // Stop loading indicator
                    if let data = data, error == nil {
                        // Save the PLY file
-                       let fileURL = FileManager.default.temporaryDirectory.appendingPathComponent("output_from_server.obj")
+                       let fileURL =  ExternalData.getDocumentsDirectory().appendingPathComponent("output_from_server.obj")
                        do {
+                           exportViewModel.objURLs!.append(fileURL.path)
+                           
                            try data.write(to: fileURL)
                            print("OBJ file saved to: \(fileURL.path)")
-                           self.fileURLToShare = fileURL
-                           self.triggerUpdate = true
-                           ExternalData.isMeshView = true
-                           self.isProcessing = false
+                           // self.fileURLToShare = fileURL --> VVIP
+                           // self.triggerUpdate = true
+                           // ExternalData.isMeshView = true
+                           // self.isProcessing = false
+
+                           print("objURLs: \(exportViewModel.objURLs!)")
+                           
+                           self.uploadIndex += 1
+                           self.processUploads()  // Recursively process the next upload
+                           
                            completion(true, fileURL)  // Pass the file URL to the completion handler
                        } catch {
                            print("Failed to save PLY file: \(error.localizedDescription)")
@@ -363,7 +380,7 @@ struct PostScanView: View {
            task.observe(\.countOfBytesSent) { task, _ in
                DispatchQueue.main.async {
                    let progress = Double(task.countOfBytesSent) / Double(task.countOfBytesExpectedToSend)
-                   self.uploadProgress = progress
+                   // self.uploadProgress = progress
                }
            }
            
@@ -389,7 +406,10 @@ struct PostScanView: View {
         let image = renderer.snapshot(atTime: 0, with: scnView.bounds.size, antialiasingMode: .none)
         return image
     }
-
+    
+    private func currentScanIndex() -> Int {
+           uploadResults.firstIndex(where: { !$0 }) ?? uploadResults.count
+    }
     
     var body: some View {
         ZStack {
@@ -448,7 +468,7 @@ struct PostScanView: View {
 
                 if let url = exportViewModel.objURLs {
                     TabView {
-                            SceneKitMDLView(snapshot: $snapshot, url: url)
+                        SceneKitMDLView(snapshot: $snapshot, url: URL(string: url[0])!)
                                 .tabItem {
                                     Label("FRONT", systemImage: "0.circle")
                                 }
@@ -470,7 +490,7 @@ struct PostScanView: View {
 //                            EyeOverlayView(observations: observations)
                 
                         
-                        SceneKitSingleView(node: ExternalData.pointCloudNodes[1])
+                        SceneKitMDLView(snapshot: $snapshot, url: URL(string: url[1])!)
                             .tabItem {
                                 Label("LEFT", systemImage: "1.circle")
                             }
@@ -478,7 +498,7 @@ struct PostScanView: View {
                                 currentDirection = .left
                             }
                         
-                        SceneKitSingleView(node: ExternalData.pointCloudNodes[2])
+                        SceneKitMDLView(snapshot: $snapshot, url: URL(string: url[2])!)
                             .tabItem {
                                 Label("RIGHT", systemImage: "2.circle")
                             }
@@ -590,7 +610,7 @@ struct PostScanView: View {
                             .padding()
                             .colorInvert()
                         
-                        Text("PROCESSING\n3D POINT CLOUD")
+                        Text("PROCESSING SCANS (\(uploadIndex + 1)/\(uploadResults.count))")
                             .bold()
                             .monospaced()
                             .foregroundColor(.white)

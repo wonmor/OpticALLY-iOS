@@ -70,8 +70,18 @@
 		96B64F732B3D90490003E06D /* ScnMatrix.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96B64F722B3D90490003E06D /* ScnMatrix.swift */; };
 		96BC2ABE2AC5E9D60081550B /* DevicePpi in Frameworks */ = {isa = PBXBuildFile; productRef = 96BC2ABD2AC5E9D60081550B /* DevicePpi */; };
 		96BDE6362B7EB4EF00CCEABA /* ImageDepth.py in Resources */ = {isa = PBXBuildFile; fileRef = 96BDE6352B7EB4EF00CCEABA /* ImageDepth.py */; };
+		96BE3D8F2BE578F40021EBED /* AssetsLibrary.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96BE3D8E2BE578F40021EBED /* AssetsLibrary.framework */; };
+		96BE3D912BE579050021EBED /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96BE3D902BE579050021EBED /* CoreGraphics.framework */; };
+		96BE3D932BE579140021EBED /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96BE3D922BE579140021EBED /* CoreMedia.framework */; };
+		96BE3D952BE5791B0021EBED /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96BE3D942BE5791B0021EBED /* CoreFoundation.framework */; };
+		96BE3D972BE579230021EBED /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96BE3D962BE579230021EBED /* Accelerate.framework */; };
+		96BE3D992BE579330021EBED /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96BE3D982BE579330021EBED /* UIKit.framework */; };
+		96BE3D9B2BE5793B0021EBED /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96BE3D9A2BE5793B0021EBED /* Foundation.framework */; };
+		96BE3D9D2BE579400021EBED /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96BE3D9C2BE579400021EBED /* CoreVideo.framework */; };
+		96BE3D9F2BE579450021EBED /* CoreImage.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96BE3D9E2BE579450021EBED /* CoreImage.framework */; };
+		96BE3DA22BE579950021EBED /* OpenCVWrapper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 96BE3DA12BE579950021EBED /* OpenCVWrapper.mm */; };
+		96BE3DA82BE57C830021EBED /* opencv2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96BE3DA72BE57C830021EBED /* opencv2.framework */; };
 		96C055152BD2F544003981FC /* Open3D-iOS in Frameworks */ = {isa = PBXBuildFile; productRef = 96C055142BD2F544003981FC /* Open3D-iOS */; };
-		96C055172BD2F5EF003981FC /* opencv2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96C055162BD2F5EF003981FC /* opencv2.framework */; };
 		96C055192BD2F729003981FC /* CountdownTimerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96C055182BD2F729003981FC /* CountdownTimerView.swift */; };
 		96E3E0042B867684004374D1 /* FaceIDScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E3E0032B867684004374D1 /* FaceIDScanView.swift */; };
 		96E856BB2B6EFFE00037C3BB /* PreviousScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E856BA2B6EFFE00037C3BB /* PreviousScanView.swift */; };
@@ -170,7 +180,18 @@
 		96B64F6F2B3D90410003E06D /* FaceTextureGenerator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FaceTextureGenerator.swift; sourceTree = "<group>"; };
 		96B64F722B3D90490003E06D /* ScnMatrix.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScnMatrix.swift; sourceTree = "<group>"; };
 		96BDE6352B7EB4EF00CCEABA /* ImageDepth.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = ImageDepth.py; sourceTree = "<group>"; };
-		96C055162BD2F5EF003981FC /* opencv2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = opencv2.framework; sourceTree = "<group>"; };
+		96BE3D8E2BE578F40021EBED /* AssetsLibrary.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AssetsLibrary.framework; path = System/Library/Frameworks/AssetsLibrary.framework; sourceTree = SDKROOT; };
+		96BE3D902BE579050021EBED /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		96BE3D922BE579140021EBED /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
+		96BE3D942BE5791B0021EBED /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
+		96BE3D962BE579230021EBED /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
+		96BE3D982BE579330021EBED /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		96BE3D9A2BE5793B0021EBED /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		96BE3D9C2BE579400021EBED /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
+		96BE3D9E2BE579450021EBED /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = System/Library/Frameworks/CoreImage.framework; sourceTree = SDKROOT; };
+		96BE3DA02BE579950021EBED /* OpenCVWrapper.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; path = OpenCVWrapper.h; sourceTree = "<group>"; };
+		96BE3DA12BE579950021EBED /* OpenCVWrapper.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = OpenCVWrapper.mm; sourceTree = "<group>"; };
+		96BE3DA72BE57C830021EBED /* opencv2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = opencv2.framework; sourceTree = "<group>"; };
 		96C055182BD2F729003981FC /* CountdownTimerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountdownTimerView.swift; sourceTree = "<group>"; };
 		96E3E0032B867684004374D1 /* FaceIDScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceIDScanView.swift; sourceTree = "<group>"; };
 		96E856BA2B6EFFE00037C3BB /* PreviousScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviousScanView.swift; sourceTree = "<group>"; };
@@ -193,9 +214,18 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				96BE3DA82BE57C830021EBED /* opencv2.framework in Frameworks */,
+				96BE3D9F2BE579450021EBED /* CoreImage.framework in Frameworks */,
+				96BE3D9D2BE579400021EBED /* CoreVideo.framework in Frameworks */,
+				96BE3D9B2BE5793B0021EBED /* Foundation.framework in Frameworks */,
+				96BE3D992BE579330021EBED /* UIKit.framework in Frameworks */,
+				96BE3D972BE579230021EBED /* Accelerate.framework in Frameworks */,
+				96BE3D952BE5791B0021EBED /* CoreFoundation.framework in Frameworks */,
+				96BE3D932BE579140021EBED /* CoreMedia.framework in Frameworks */,
+				96BE3D912BE579050021EBED /* CoreGraphics.framework in Frameworks */,
+				96BE3D8F2BE578F40021EBED /* AssetsLibrary.framework in Frameworks */,
 				96BC2ABE2AC5E9D60081550B /* DevicePpi in Frameworks */,
 				9671FDB92B5B0E67004DA4C2 /* Python-iOS in Frameworks */,
-				96C055172BD2F5EF003981FC /* opencv2.framework in Frameworks */,
 				967EE0982AAEE2C7000C4D5F /* snippet-extract in Frameworks */,
 				9671FDC32B5B1230004DA4C2 /* PythonKit in Frameworks */,
 				9663605A2B6E0200001D2119 /* Lottie in Frameworks */,
@@ -269,10 +299,12 @@
 		967EE0582AAE06FB000C4D5F = {
 			isa = PBXGroup;
 			children = (
+				96BE3DA72BE57C830021EBED /* opencv2.framework */,
 				967EE0632AAE06FB000C4D5F /* OpticALLY */,
 				967EE0742AAE06FE000C4D5F /* OpticALLYTests */,
 				967EE07E2AAE06FE000C4D5F /* OpticALLYUITests */,
 				967EE0622AAE06FB000C4D5F /* Products */,
+				96BE3D8D2BE578F40021EBED /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -289,7 +321,6 @@
 		967EE0632AAE06FB000C4D5F /* OpticALLY */ = {
 			isa = PBXGroup;
 			children = (
-				96C055162BD2F5EF003981FC /* opencv2.framework */,
 				96E856BE2B7041BE0037C3BB /* Model */,
 				9671FDC42B5B14F2004DA4C2 /* Python */,
 				969DF1C62B12916900FA9ABE /* GoogleService-Info.plist */,
@@ -319,6 +350,8 @@
 				9679F8B12AD0907800686F13 /* OpticALLY-Bridging-Header.h */,
 				963FF2822B6316F700B89019 /* OpticALLY.entitlements */,
 				9639661D2B76B87300EB435B /* PrefixHeader.pch */,
+				96BE3DA02BE579950021EBED /* OpenCVWrapper.h */,
+				96BE3DA12BE579950021EBED /* OpenCVWrapper.mm */,
 			);
 			path = OpticALLY;
 			sourceTree = "<group>";
@@ -400,6 +433,22 @@
 				969E42ED2ADC9D9E00E77BA7 /* promo.mp4 */,
 			);
 			path = Resources;
+			sourceTree = "<group>";
+		};
+		96BE3D8D2BE578F40021EBED /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				96BE3D9E2BE579450021EBED /* CoreImage.framework */,
+				96BE3D9C2BE579400021EBED /* CoreVideo.framework */,
+				96BE3D9A2BE5793B0021EBED /* Foundation.framework */,
+				96BE3D982BE579330021EBED /* UIKit.framework */,
+				96BE3D962BE579230021EBED /* Accelerate.framework */,
+				96BE3D942BE5791B0021EBED /* CoreFoundation.framework */,
+				96BE3D922BE579140021EBED /* CoreMedia.framework */,
+				96BE3D902BE579050021EBED /* CoreGraphics.framework */,
+				96BE3D8E2BE578F40021EBED /* AssetsLibrary.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		96E856BE2B7041BE0037C3BB /* Model */ = {
@@ -585,6 +634,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				96C055192BD2F729003981FC /* CountdownTimerView.swift in Sources */,
+				96BE3DA22BE579950021EBED /* OpenCVWrapper.mm in Sources */,
 				96F0CF222B12A51700417716 /* LogManager.swift in Sources */,
 				961D67E52B12C64A00DBB883 /* CreditsView.swift in Sources */,
 				96FC61592B146D3A00ACC840 /* HapticManager.swift in Sources */,
@@ -802,6 +852,8 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/OpticALLY",
+					"/Users/johnseong/Documents/GitHub/OpticALLY-iOS/opencv2.framework",
+					"$(PROJECT_DIR)",
 				);
 				GCC_PREFIX_HEADER = "/Users/johnseong/Documents/GitHub/OpticALLY-iOS/OpticALLY/PrefixHeader.pch";
 				GENERATE_INFOPLIST_FILE = YES;
@@ -856,6 +908,8 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/OpticALLY",
+					"/Users/johnseong/Documents/GitHub/OpticALLY-iOS/opencv2.framework",
+					"$(PROJECT_DIR)",
 				);
 				GCC_PREFIX_HEADER = "/Users/johnseong/Documents/GitHub/OpticALLY-iOS/OpticALLY/PrefixHeader.pch";
 				GENERATE_INFOPLIST_FILE = YES;
