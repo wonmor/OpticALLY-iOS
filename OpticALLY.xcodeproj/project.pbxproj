@@ -91,6 +91,8 @@
 		96E856C42B70421F0037C3BB /* FilesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E856C32B70421F0037C3BB /* FilesListView.swift */; };
 		96E856C62B70441C0037C3BB /* FolderDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E856C52B70441C0037C3BB /* FolderDetailView.swift */; };
 		96E856CA2B7045510037C3BB /* SceneKitPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E856C92B7045510037C3BB /* SceneKitPreview.swift */; };
+		96E899B02BEAAA5000CCBC18 /* PointCloudProcessing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 96E899AE2BEAAA5000CCBC18 /* PointCloudProcessing.cpp */; };
+		96E899B22BEAB9D200CCBC18 /* ios.toolchain.cmake in Resources */ = {isa = PBXBuildFile; fileRef = 96E899B12BEAB9D200CCBC18 /* ios.toolchain.cmake */; };
 		96F0CF182B12A34400417716 /* ExternalData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF172B12A34400417716 /* ExternalData.swift */; };
 		96F0CF1A2B12A39100417716 /* ExportViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF192B12A39100417716 /* ExportViewModel.swift */; };
 		96F0CF1C2B12A3D500417716 /* ExportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF1B2B12A3D500417716 /* ExportView.swift */; };
@@ -201,6 +203,9 @@
 		96E856C32B70421F0037C3BB /* FilesListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilesListView.swift; sourceTree = "<group>"; };
 		96E856C52B70441C0037C3BB /* FolderDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderDetailView.swift; sourceTree = "<group>"; };
 		96E856C92B7045510037C3BB /* SceneKitPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneKitPreview.swift; sourceTree = "<group>"; };
+		96E899AE2BEAAA5000CCBC18 /* PointCloudProcessing.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = PointCloudProcessing.cpp; sourceTree = "<group>"; };
+		96E899AF2BEAAA5000CCBC18 /* PointCloudProcessing.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = PointCloudProcessing.hpp; sourceTree = "<group>"; };
+		96E899B12BEAB9D200CCBC18 /* ios.toolchain.cmake */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ios.toolchain.cmake; sourceTree = "<group>"; };
 		96F0CF172B12A34400417716 /* ExternalData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalData.swift; sourceTree = "<group>"; };
 		96F0CF192B12A39100417716 /* ExportViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportViewModel.swift; sourceTree = "<group>"; };
 		96F0CF1B2B12A3D500417716 /* ExportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportView.swift; sourceTree = "<group>"; };
@@ -300,6 +305,7 @@
 			isa = PBXGroup;
 			children = (
 				96BE3DA72BE57C830021EBED /* opencv2.framework */,
+				96E899B12BEAB9D200CCBC18 /* ios.toolchain.cmake */,
 				967EE0632AAE06FB000C4D5F /* OpticALLY */,
 				967EE0742AAE06FE000C4D5F /* OpticALLYTests */,
 				967EE07E2AAE06FE000C4D5F /* OpticALLYUITests */,
@@ -352,6 +358,8 @@
 				9639661D2B76B87300EB435B /* PrefixHeader.pch */,
 				96BE3DA02BE579950021EBED /* OpenCVWrapper.h */,
 				96BE3DA12BE579950021EBED /* OpenCVWrapper.mm */,
+				96E899AE2BEAAA5000CCBC18 /* PointCloudProcessing.cpp */,
+				96E899AF2BEAAA5000CCBC18 /* PointCloudProcessing.hpp */,
 			);
 			path = OpticALLY;
 			sourceTree = "<group>";
@@ -594,6 +602,7 @@
 				966360682B6E0AAC001D2119 /* face-id-2.json in Resources */,
 				9671FED72B5B3B8A004DA4C2 /* rubicon-objc-0.4.0 in Resources */,
 				9679F8D72AD0907A00686F13 /* LaunchScreen.storyboard in Resources */,
+				96E899B22BEAB9D200CCBC18 /* ios.toolchain.cmake in Resources */,
 				966360632B6E03FF001D2119 /* face-scan-2.json in Resources */,
 				967EE0692AAE06FE000C4D5F /* Assets.xcassets in Resources */,
 				966360602B6E03FF001D2119 /* face-found-successfully.json in Resources */,
@@ -660,6 +669,7 @@
 				9679F8E12AD0907A00686F13 /* CameraView.swift in Sources */,
 				966360662B6E064B001D2119 /* LottieView.swift in Sources */,
 				96E856C22B7041E60037C3BB /* FilesViewModel.swift in Sources */,
+				96E899B02BEAAA5000CCBC18 /* PointCloudProcessing.cpp in Sources */,
 				9680F7DD2B22D6FD00F38A6F /* ARFaceTrackingView.swift in Sources */,
 				96E856C62B70441C0037C3BB /* FolderDetailView.swift in Sources */,
 				9679F8D52AD0907A00686F13 /* HistogramCalculator.m in Sources */,

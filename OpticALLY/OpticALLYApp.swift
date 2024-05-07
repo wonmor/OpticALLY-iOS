@@ -87,11 +87,16 @@ struct OpticALLYApp: App {
             
             imageDepth = Python.import("ImageDepth")
             
+            let bridge = Python.import("ObjCBridge")
+            let code = Python.import("code")
+           code.interact(readfunc: bridge.input, exitmsg: "Bye.")
+            
             print("Importing Python Code... \(imageDepth!.test_output())")
             print("Python \(sys!.version_info.major).\(sys!.version_info.minor)")
             print("Python Version: \(sys!.version)")
             print("Python Encoding: \(sys!.getdefaultencoding().upper())")
             print("Open3D Version: \(o3d!.__version__)")
+            print("Open3D Version: \(OpenCVWrapper.getOpenCVVersion())")
         }
         
         for family: String in UIFont.familyNames
@@ -611,6 +616,7 @@ class PythonBridge: NSObject {
         return Buffer.shared.read()
     }
 }
+
 
 class Buffer: ObservableObject {
     static let shared = Buffer()

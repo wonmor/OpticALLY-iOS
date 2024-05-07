@@ -4,3 +4,4 @@
 
 #import "HistogramCalculator.h"
 #import "PointCloudMetalView.h"
+#import "OpenCVWrapper.h"
