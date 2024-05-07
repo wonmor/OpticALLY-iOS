@@ -83,6 +83,12 @@ struct OpticALLYApp: App {
             
             standardOutReader = StandardOutReader(STDOUT_FILENO: Int32(sys!.stdout.fileno())!, STDERR_FILENO: Int32(sys!.stderr.fileno())!)
             
+            guard let rubiconPath = Bundle.main.url(forResource: "rubicon-objc-0.4.0", withExtension: nil)?.path else {
+               return
+           }
+
+           sys!.path.insert(1, rubiconPath)
+            
             sys!.path.insert(1, Bundle.main.bundlePath)
             
             imageDepth = Python.import("ImageDepth")
