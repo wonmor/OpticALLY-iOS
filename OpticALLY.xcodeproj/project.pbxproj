@@ -93,6 +93,9 @@
 		96E856CA2B7045510037C3BB /* SceneKitPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E856C92B7045510037C3BB /* SceneKitPreview.swift */; };
 		96E899B02BEAAA5000CCBC18 /* PointCloudProcessing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 96E899AE2BEAAA5000CCBC18 /* PointCloudProcessing.cpp */; };
 		96E899B22BEAB9D200CCBC18 /* ios.toolchain.cmake in Resources */ = {isa = PBXBuildFile; fileRef = 96E899B12BEAB9D200CCBC18 /* ios.toolchain.cmake */; };
+		96E89A352BEC469A00CCBC18 /* ImageDepth.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 96E89A332BEC469A00CCBC18 /* ImageDepth.cpp */; };
+		96E8A65C2BEC480500CCBC18 /* EigenWrapper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 96E8A65B2BEC480500CCBC18 /* EigenWrapper.mm */; };
+		96E8A6622BEC4DF100CCBC18 /* eigen-3.4.0 in Resources */ = {isa = PBXBuildFile; fileRef = 96E8A6612BEC4DF100CCBC18 /* eigen-3.4.0 */; };
 		96F0CF182B12A34400417716 /* ExternalData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF172B12A34400417716 /* ExternalData.swift */; };
 		96F0CF1A2B12A39100417716 /* ExportViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF192B12A39100417716 /* ExportViewModel.swift */; };
 		96F0CF1C2B12A3D500417716 /* ExportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF1B2B12A3D500417716 /* ExportView.swift */; };
@@ -206,6 +209,11 @@
 		96E899AE2BEAAA5000CCBC18 /* PointCloudProcessing.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = PointCloudProcessing.cpp; sourceTree = "<group>"; };
 		96E899AF2BEAAA5000CCBC18 /* PointCloudProcessing.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = PointCloudProcessing.hpp; sourceTree = "<group>"; };
 		96E899B12BEAB9D200CCBC18 /* ios.toolchain.cmake */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ios.toolchain.cmake; sourceTree = "<group>"; };
+		96E89A332BEC469A00CCBC18 /* ImageDepth.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ImageDepth.cpp; sourceTree = "<group>"; };
+		96E89A342BEC469A00CCBC18 /* ImageDepth.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ImageDepth.hpp; sourceTree = "<group>"; };
+		96E8A65A2BEC480500CCBC18 /* EigenWrapper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = EigenWrapper.h; sourceTree = "<group>"; };
+		96E8A65B2BEC480500CCBC18 /* EigenWrapper.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = EigenWrapper.mm; sourceTree = "<group>"; };
+		96E8A6612BEC4DF100CCBC18 /* eigen-3.4.0 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "eigen-3.4.0"; sourceTree = "<group>"; };
 		96F0CF172B12A34400417716 /* ExternalData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalData.swift; sourceTree = "<group>"; };
 		96F0CF192B12A39100417716 /* ExportViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportViewModel.swift; sourceTree = "<group>"; };
 		96F0CF1B2B12A3D500417716 /* ExportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportView.swift; sourceTree = "<group>"; };
@@ -305,6 +313,7 @@
 			isa = PBXGroup;
 			children = (
 				96BE3DA72BE57C830021EBED /* opencv2.framework */,
+				96E8A6612BEC4DF100CCBC18 /* eigen-3.4.0 */,
 				96E899B12BEAB9D200CCBC18 /* ios.toolchain.cmake */,
 				967EE0632AAE06FB000C4D5F /* OpticALLY */,
 				967EE0742AAE06FE000C4D5F /* OpticALLYTests */,
@@ -358,7 +367,11 @@
 				9639661D2B76B87300EB435B /* PrefixHeader.pch */,
 				96BE3DA02BE579950021EBED /* OpenCVWrapper.h */,
 				96BE3DA12BE579950021EBED /* OpenCVWrapper.mm */,
+				96E8A65A2BEC480500CCBC18 /* EigenWrapper.h */,
+				96E8A65B2BEC480500CCBC18 /* EigenWrapper.mm */,
 				96E899AE2BEAAA5000CCBC18 /* PointCloudProcessing.cpp */,
+				96E89A332BEC469A00CCBC18 /* ImageDepth.cpp */,
+				96E89A342BEC469A00CCBC18 /* ImageDepth.hpp */,
 				96E899AF2BEAAA5000CCBC18 /* PointCloudProcessing.hpp */,
 			);
 			path = OpticALLY;
@@ -610,6 +623,7 @@
 				966360642B6E03FF001D2119 /* face-scan.json in Resources */,
 				96BDE6362B7EB4EF00CCEABA /* ImageDepth.py in Resources */,
 				966360612B6E03FF001D2119 /* face-id.json in Resources */,
+				96E8A6622BEC4DF100CCBC18 /* eigen-3.4.0 in Resources */,
 				9646DC6C2B1064F500092549 /* glasses.mp4 in Resources */,
 				9663606B2B6E0BD7001D2119 /* left-arrow-2.json in Resources */,
 				96FCF7322B1D65DE00F450A2 /* Male_Base_Head.usdz in Resources */,
@@ -652,6 +666,7 @@
 				961D67E32B12BDFC00DBB883 /* SceneKitView.swift in Sources */,
 				9679F8DC2AD0907A00686F13 /* PassThrough.metal in Sources */,
 				96491C5F2AFD746300FD3666 /* ConsoleOutputCatcher.swift in Sources */,
+				96E89A352BEC469A00CCBC18 /* ImageDepth.cpp in Sources */,
 				96E3E0042B867684004374D1 /* FaceIDScanView.swift in Sources */,
 				9679F8DF2AD0907A00686F13 /* PointCloudMetalView.mm in Sources */,
 				969AC2822AB7554C0096892E /* Extensions+Modifiers.swift in Sources */,
@@ -684,6 +699,7 @@
 				962058102BB2209F00F9084F /* SignalStrengthView.swift in Sources */,
 				9679F8CE2AD0907A00686F13 /* AppDelegate.swift in Sources */,
 				96F0CF182B12A34400417716 /* ExternalData.swift in Sources */,
+				96E8A65C2BEC480500CCBC18 /* EigenWrapper.mm in Sources */,
 				9680F7DB2B2283B200F38A6F /* CapturedImageSampler.swift in Sources */,
 				9679F8DE2AD0907A00686F13 /* FilterRenderer.swift in Sources */,
 			);
@@ -867,6 +883,8 @@
 				);
 				GCC_PREFIX_HEADER = "/Users/johnseong/Documents/GitHub/OpticALLY-iOS/OpticALLY/PrefixHeader.pch";
 				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = "";
+				"HEADER_SEARCH_PATHS[arch=*]" = "";
 				INFOPLIST_FILE = OpticALLY/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = OpticALLY;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
@@ -888,6 +906,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+				MTL_HEADER_SEARCH_PATHS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.theoptically.optically;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRIP_STYLE = debugging;
@@ -900,6 +919,7 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
+				USER_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/eigen-3.4.0";
 			};
 			name = Debug;
 		};
@@ -923,6 +943,7 @@
 				);
 				GCC_PREFIX_HEADER = "/Users/johnseong/Documents/GitHub/OpticALLY-iOS/OpticALLY/PrefixHeader.pch";
 				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = OpticALLY/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = OpticALLY;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
@@ -955,6 +976,7 @@
 				SWIFT_OBJC_BRIDGING_HEADER = "OpticALLY/OpticALLY-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
+				USER_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/eigen-3.4.0";
 			};
 			name = Release;
 		};

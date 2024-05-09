@@ -16,6 +16,6 @@ using namespace std;
 
 class PointCloudProcessing {
     
-}
+};
 
 #endif /* PointCloudProcessing_hpp */

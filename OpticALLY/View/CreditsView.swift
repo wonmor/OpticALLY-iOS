@@ -49,6 +49,22 @@ struct CreditNestedView: View {
                 .font(.caption)
                 .bold()
             
+            Text(OpenCVWrapper.getOpenCVVersion())
+                .monospaced()
+                .padding(.horizontal)
+                .padding(.top)
+                .foregroundStyle(.black)
+                .font(.caption)
+                .bold()
+            
+            Text(EigenWrapper.eigenVersionString())
+                .monospaced()
+                .padding(.horizontal)
+                .padding(.top)
+                .foregroundStyle(.black)
+                .font(.caption)
+                .bold()
+            
             VStack {
                 Text("OPTICALLY")
                     .monospaced()
