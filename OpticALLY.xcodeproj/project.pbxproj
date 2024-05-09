@@ -97,6 +97,8 @@
 		96E8A65C2BEC480500CCBC18 /* EigenWrapper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 96E8A65B2BEC480500CCBC18 /* EigenWrapper.mm */; };
 		96E8A6622BEC4DF100CCBC18 /* eigen-3.4.0 in Resources */ = {isa = PBXBuildFile; fileRef = 96E8A6612BEC4DF100CCBC18 /* eigen-3.4.0 */; };
 		96E8A6642BEC960A00CCBC18 /* rapidjson in Resources */ = {isa = PBXBuildFile; fileRef = 96E8A6632BEC960A00CCBC18 /* rapidjson */; };
+		96E8A6662BED344A00CCBC18 /* pybind11 in Resources */ = {isa = PBXBuildFile; fileRef = 96E8A6652BED344A00CCBC18 /* pybind11 */; };
+		96E8A6692BED579000CCBC18 /* ImageDepthBridge.mm in Sources */ = {isa = PBXBuildFile; fileRef = 96E8A6682BED579000CCBC18 /* ImageDepthBridge.mm */; };
 		96F0CF182B12A34400417716 /* ExternalData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF172B12A34400417716 /* ExternalData.swift */; };
 		96F0CF1A2B12A39100417716 /* ExportViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF192B12A39100417716 /* ExportViewModel.swift */; };
 		96F0CF1C2B12A3D500417716 /* ExportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF1B2B12A3D500417716 /* ExportView.swift */; };
@@ -216,6 +218,9 @@
 		96E8A65B2BEC480500CCBC18 /* EigenWrapper.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = EigenWrapper.mm; sourceTree = "<group>"; };
 		96E8A6612BEC4DF100CCBC18 /* eigen-3.4.0 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "eigen-3.4.0"; sourceTree = "<group>"; };
 		96E8A6632BEC960A00CCBC18 /* rapidjson */ = {isa = PBXFileReference; lastKnownFileType = folder; path = rapidjson; sourceTree = "<group>"; };
+		96E8A6652BED344A00CCBC18 /* pybind11 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = pybind11; sourceTree = "<group>"; };
+		96E8A6672BED575C00CCBC18 /* ImageDepthBridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ImageDepthBridge.h; sourceTree = "<group>"; };
+		96E8A6682BED579000CCBC18 /* ImageDepthBridge.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ImageDepthBridge.mm; sourceTree = "<group>"; };
 		96F0CF172B12A34400417716 /* ExternalData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalData.swift; sourceTree = "<group>"; };
 		96F0CF192B12A39100417716 /* ExportViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportViewModel.swift; sourceTree = "<group>"; };
 		96F0CF1B2B12A3D500417716 /* ExportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportView.swift; sourceTree = "<group>"; };
@@ -314,6 +319,7 @@
 		967EE0582AAE06FB000C4D5F = {
 			isa = PBXGroup;
 			children = (
+				96E8A6652BED344A00CCBC18 /* pybind11 */,
 				96BE3DA72BE57C830021EBED /* opencv2.framework */,
 				96E8A6632BEC960A00CCBC18 /* rapidjson */,
 				96E8A6612BEC4DF100CCBC18 /* eigen-3.4.0 */,
@@ -373,6 +379,8 @@
 				96E8A65A2BEC480500CCBC18 /* EigenWrapper.h */,
 				96E8A65B2BEC480500CCBC18 /* EigenWrapper.mm */,
 				96E899AE2BEAAA5000CCBC18 /* PointCloudProcessing.cpp */,
+				96E8A6672BED575C00CCBC18 /* ImageDepthBridge.h */,
+				96E8A6682BED579000CCBC18 /* ImageDepthBridge.mm */,
 				96E89A332BEC469A00CCBC18 /* ImageDepth.cpp */,
 				96E89A342BEC469A00CCBC18 /* ImageDepth.hpp */,
 				96E899AF2BEAAA5000CCBC18 /* PointCloudProcessing.hpp */,
@@ -629,6 +637,7 @@
 				966360612B6E03FF001D2119 /* face-id.json in Resources */,
 				96E8A6622BEC4DF100CCBC18 /* eigen-3.4.0 in Resources */,
 				9646DC6C2B1064F500092549 /* glasses.mp4 in Resources */,
+				96E8A6662BED344A00CCBC18 /* pybind11 in Resources */,
 				9663606B2B6E0BD7001D2119 /* left-arrow-2.json in Resources */,
 				96FCF7322B1D65DE00F450A2 /* Male_Base_Head.usdz in Resources */,
 				966360622B6E03FF001D2119 /* face-detection.json in Resources */,
@@ -701,6 +710,7 @@
 				96E856BB2B6EFFE00037C3BB /* PreviousScanView.swift in Sources */,
 				9679F8D92AD0907A00686F13 /* PointCloud.metal in Sources */,
 				962058102BB2209F00F9084F /* SignalStrengthView.swift in Sources */,
+				96E8A6692BED579000CCBC18 /* ImageDepthBridge.mm in Sources */,
 				9679F8CE2AD0907A00686F13 /* AppDelegate.swift in Sources */,
 				96F0CF182B12A34400417716 /* ExternalData.swift in Sources */,
 				96E8A65C2BEC480500CCBC18 /* EigenWrapper.mm in Sources */,

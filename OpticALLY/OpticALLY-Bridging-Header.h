@@ -6,3 +6,4 @@
 #import "PointCloudMetalView.h"
 #import "OpenCVWrapper.h"
 #import "EigenWrapper.h"
+#import "ImageDepthBridge.h"
