@@ -156,7 +156,7 @@ struct ExportView: View {
                 
                 if showLog {
                     if let lastLog = logManager.latestLog {
-                        Text(lastLog)
+                        Text(lastLog.uppercased())
                             .padding()
                             .frame(maxWidth: .infinity, alignment: .center)
                             .multilineTextAlignment(.center)
@@ -199,13 +199,15 @@ struct ExportView: View {
                     }
                 } else {
                     VStack {
-                        Text(scanInstruction)
-                            .font(.title3)
-                            .fontWeight(.medium)
-                            .foregroundColor(.white)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal)
-                            .cornerRadius(12)
+                        if !scanInstruction.contains("Align") {
+                            Text(scanInstruction)
+                                .font(.title3)
+                                .fontWeight(.medium)
+                                .foregroundColor(.white)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal)
+                                .cornerRadius(12)
+                        }
                         
                         Text(scanInstruction2)
                             .monospaced()
@@ -383,7 +385,7 @@ struct DistanceIndicator: View {
         
         return (
             VStack {
-                Text("\(status.text)\(status.text.contains("FAR") || status.text.contains("CLOSE") ? "\n\(cameraViewController.faceDistance ?? 0) CM" : "")")
+                Text("\(status.text)\(status.text.contains("FAR") || status.text.contains("CLOSE") ? " \(cameraViewController.faceDistance ?? 0) CM" : "")")
                     .bold()
                     .monospaced()
                     .padding()
