@@ -99,6 +99,9 @@
 		96E8A6642BEC960A00CCBC18 /* rapidjson in Resources */ = {isa = PBXBuildFile; fileRef = 96E8A6632BEC960A00CCBC18 /* rapidjson */; };
 		96E8A6662BED344A00CCBC18 /* pybind11 in Resources */ = {isa = PBXBuildFile; fileRef = 96E8A6652BED344A00CCBC18 /* pybind11 */; };
 		96E8A6692BED579000CCBC18 /* ImageDepthBridge.mm in Sources */ = {isa = PBXBuildFile; fileRef = 96E8A6682BED579000CCBC18 /* ImageDepthBridge.mm */; };
+		96E8A66A2BED591300CCBC18 /* eigen-3.4.0 in Resources */ = {isa = PBXBuildFile; fileRef = 96E8A6612BEC4DF100CCBC18 /* eigen-3.4.0 */; };
+		96E8A66B2BED591300CCBC18 /* eigen-3.4.0 in Resources */ = {isa = PBXBuildFile; fileRef = 96E8A6612BEC4DF100CCBC18 /* eigen-3.4.0 */; };
+		96E8A66F2BED59F700CCBC18 /* fmt in Resources */ = {isa = PBXBuildFile; fileRef = 96E8A66E2BED59F700CCBC18 /* fmt */; };
 		96F0CF182B12A34400417716 /* ExternalData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF172B12A34400417716 /* ExternalData.swift */; };
 		96F0CF1A2B12A39100417716 /* ExportViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF192B12A39100417716 /* ExportViewModel.swift */; };
 		96F0CF1C2B12A3D500417716 /* ExportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF1B2B12A3D500417716 /* ExportView.swift */; };
@@ -221,6 +224,7 @@
 		96E8A6652BED344A00CCBC18 /* pybind11 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = pybind11; sourceTree = "<group>"; };
 		96E8A6672BED575C00CCBC18 /* ImageDepthBridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ImageDepthBridge.h; sourceTree = "<group>"; };
 		96E8A6682BED579000CCBC18 /* ImageDepthBridge.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ImageDepthBridge.mm; sourceTree = "<group>"; };
+		96E8A66E2BED59F700CCBC18 /* fmt */ = {isa = PBXFileReference; lastKnownFileType = folder; path = fmt; sourceTree = "<group>"; };
 		96F0CF172B12A34400417716 /* ExternalData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalData.swift; sourceTree = "<group>"; };
 		96F0CF192B12A39100417716 /* ExportViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportViewModel.swift; sourceTree = "<group>"; };
 		96F0CF1B2B12A3D500417716 /* ExportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportView.swift; sourceTree = "<group>"; };
@@ -319,6 +323,7 @@
 		967EE0582AAE06FB000C4D5F = {
 			isa = PBXGroup;
 			children = (
+				96E8A66E2BED59F700CCBC18 /* fmt */,
 				96E8A6652BED344A00CCBC18 /* pybind11 */,
 				96BE3DA72BE57C830021EBED /* opencv2.framework */,
 				96E8A6632BEC960A00CCBC18 /* rapidjson */,
@@ -630,6 +635,7 @@
 				96E899B22BEAB9D200CCBC18 /* ios.toolchain.cmake in Resources */,
 				966360632B6E03FF001D2119 /* face-scan-2.json in Resources */,
 				967EE0692AAE06FE000C4D5F /* Assets.xcassets in Resources */,
+				96E8A66F2BED59F700CCBC18 /* fmt in Resources */,
 				966360602B6E03FF001D2119 /* face-found-successfully.json in Resources */,
 				9614F0AF2ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */,
 				966360642B6E03FF001D2119 /* face-scan.json in Resources */,
@@ -648,6 +654,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				96E8A66A2BED591300CCBC18 /* eigen-3.4.0 in Resources */,
 				969E42EF2ADC9D9E00E77BA7 /* promo.mp4 in Resources */,
 				9614F0B02ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */,
 			);
@@ -657,6 +664,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				96E8A66B2BED591300CCBC18 /* eigen-3.4.0 in Resources */,
 				969E42F02ADC9D9E00E77BA7 /* promo.mp4 in Resources */,
 				9614F0B12ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */,
 			);
@@ -880,6 +888,7 @@
 		967EE0862AAE06FE000C4D5F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;
@@ -943,6 +952,7 @@
 		967EE0872AAE06FE000C4D5F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;

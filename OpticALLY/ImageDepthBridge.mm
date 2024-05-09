@@ -8,8 +8,8 @@
 #import <opencv2/opencv.hpp>
 #import <opencv2/imgcodecs/ios.h>
 #import <Foundation/Foundation.h>
-#import "LaneDetectorBridge.h"
-#include "LaneDetector.hpp"
+#import "ImageDepthBridge.h"
+#include "ImageDepth.hpp"
 
 @implementation ImageDepthBridge
 

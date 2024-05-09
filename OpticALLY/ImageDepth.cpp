@@ -6,6 +6,7 @@
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
+#import <open3d/Open3D.h>
 #include <iostream>
 #include <cmath>
 
