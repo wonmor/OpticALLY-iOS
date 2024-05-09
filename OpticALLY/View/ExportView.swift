@@ -385,7 +385,7 @@ struct DistanceIndicator: View {
         
         return (
             VStack {
-                Text("\(status.text)\(status.text.contains("FAR") || status.text.contains("CLOSE") ? " \(cameraViewController.faceDistance ?? 0) CM" : "")")
+                Text("\(status.text)\(!status.text.contains("POSITION") ? " \(cameraViewController.faceDistance ?? 0) CM" : "")")
                     .bold()
                     .monospaced()
                     .padding()
