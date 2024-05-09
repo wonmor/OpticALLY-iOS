@@ -102,6 +102,8 @@
 		96E8A66A2BED591300CCBC18 /* eigen-3.4.0 in Resources */ = {isa = PBXBuildFile; fileRef = 96E8A6612BEC4DF100CCBC18 /* eigen-3.4.0 */; };
 		96E8A66B2BED591300CCBC18 /* eigen-3.4.0 in Resources */ = {isa = PBXBuildFile; fileRef = 96E8A6612BEC4DF100CCBC18 /* eigen-3.4.0 */; };
 		96E8A66F2BED59F700CCBC18 /* fmt in Resources */ = {isa = PBXBuildFile; fileRef = 96E8A66E2BED59F700CCBC18 /* fmt */; };
+		96E8A6712BED5B7400CCBC18 /* cppcodec in Resources */ = {isa = PBXBuildFile; fileRef = 96E8A6702BED5B7400CCBC18 /* cppcodec */; };
+		96E8A6732BED5E1B00CCBC18 /* nlohmann in Resources */ = {isa = PBXBuildFile; fileRef = 96E8A6722BED5E1B00CCBC18 /* nlohmann */; };
 		96F0CF182B12A34400417716 /* ExternalData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF172B12A34400417716 /* ExternalData.swift */; };
 		96F0CF1A2B12A39100417716 /* ExportViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF192B12A39100417716 /* ExportViewModel.swift */; };
 		96F0CF1C2B12A3D500417716 /* ExportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF1B2B12A3D500417716 /* ExportView.swift */; };
@@ -225,6 +227,8 @@
 		96E8A6672BED575C00CCBC18 /* ImageDepthBridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ImageDepthBridge.h; sourceTree = "<group>"; };
 		96E8A6682BED579000CCBC18 /* ImageDepthBridge.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ImageDepthBridge.mm; sourceTree = "<group>"; };
 		96E8A66E2BED59F700CCBC18 /* fmt */ = {isa = PBXFileReference; lastKnownFileType = folder; path = fmt; sourceTree = "<group>"; };
+		96E8A6702BED5B7400CCBC18 /* cppcodec */ = {isa = PBXFileReference; lastKnownFileType = folder; path = cppcodec; sourceTree = "<group>"; };
+		96E8A6722BED5E1B00CCBC18 /* nlohmann */ = {isa = PBXFileReference; lastKnownFileType = folder; path = nlohmann; sourceTree = "<group>"; };
 		96F0CF172B12A34400417716 /* ExternalData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalData.swift; sourceTree = "<group>"; };
 		96F0CF192B12A39100417716 /* ExportViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportViewModel.swift; sourceTree = "<group>"; };
 		96F0CF1B2B12A3D500417716 /* ExportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportView.swift; sourceTree = "<group>"; };
@@ -323,6 +327,8 @@
 		967EE0582AAE06FB000C4D5F = {
 			isa = PBXGroup;
 			children = (
+				96E8A6722BED5E1B00CCBC18 /* nlohmann */,
+				96E8A6702BED5B7400CCBC18 /* cppcodec */,
 				96E8A66E2BED59F700CCBC18 /* fmt */,
 				96E8A6652BED344A00CCBC18 /* pybind11 */,
 				96BE3DA72BE57C830021EBED /* opencv2.framework */,
@@ -623,6 +629,7 @@
 				963671292BC09312003EC38C /* Process3D.py in Resources */,
 				9671FED82B5B3BCA004DA4C2 /* GoogleService-Info.plist in Resources */,
 				96B64F6B2B3D8AF70003E06D /* VideoTexturedFace.shader in Resources */,
+				96E8A6712BED5B7400CCBC18 /* cppcodec in Resources */,
 				9663606C2B6E0BD7001D2119 /* right-arrow-2.json in Resources */,
 				96E856BD2B6F0CF90037C3BB /* cargo-loading.json in Resources */,
 				969E42EE2ADC9D9E00E77BA7 /* promo.mp4 in Resources */,
@@ -631,6 +638,7 @@
 				9679F8D82AD0907A00686F13 /* Main.storyboard in Resources */,
 				966360682B6E0AAC001D2119 /* face-id-2.json in Resources */,
 				9671FED72B5B3B8A004DA4C2 /* rubicon-objc-0.4.0 in Resources */,
+				96E8A6732BED5E1B00CCBC18 /* nlohmann in Resources */,
 				9679F8D72AD0907A00686F13 /* LaunchScreen.storyboard in Resources */,
 				96E899B22BEAB9D200CCBC18 /* ios.toolchain.cmake in Resources */,
 				966360632B6E03FF001D2119 /* face-scan-2.json in Resources */,
