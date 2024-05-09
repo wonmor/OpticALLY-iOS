@@ -41,7 +41,7 @@ struct CreditNestedView: View {
                 .cornerRadius(20)
             
             // Python interpolated
-            Text("Open3D Version:\n\(o3d!.__version__.description)")
+            Text("Open3D Version\n\(o3d!.__version__.description)")
                 .monospaced()
                 .padding(.horizontal)
                 .padding(.top)
