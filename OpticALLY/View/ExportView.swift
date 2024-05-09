@@ -397,7 +397,7 @@ struct DistanceIndicator: View {
 }
 
 func determineStatus() -> (text: String, color: Color) {
-    guard let distance = cameraViewController.faceDistance else { return ("Position Yourself", Color(.white).opacity(0.2)) }
+    guard let distance = cameraViewController.faceDistance else { return ("POSITION YOURSELF", Color(.white).opacity(0.2)) }
     
     switch distance {
     case ..<30: // Assuming distance is measured in some unit where 30 is too close
@@ -407,7 +407,7 @@ func determineStatus() -> (text: String, color: Color) {
     case 40...: // Assuming distance more than 40 is too far
         return ("TOO FAR", .yellow.opacity(0.3))
     default:
-        return ("Position Yourself", Color(.white).opacity(0.2))
+        return ("POSITION YOURSELF", Color(.white).opacity(0.2))
     }
 }
 
