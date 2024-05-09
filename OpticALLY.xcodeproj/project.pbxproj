@@ -104,6 +104,7 @@
 		96E8A66F2BED59F700CCBC18 /* fmt in Resources */ = {isa = PBXBuildFile; fileRef = 96E8A66E2BED59F700CCBC18 /* fmt */; };
 		96E8A6712BED5B7400CCBC18 /* cppcodec in Resources */ = {isa = PBXBuildFile; fileRef = 96E8A6702BED5B7400CCBC18 /* cppcodec */; };
 		96E8A6732BED5E1B00CCBC18 /* nlohmann in Resources */ = {isa = PBXBuildFile; fileRef = 96E8A6722BED5E1B00CCBC18 /* nlohmann */; };
+		96E8A6762BED637D00CCBC18 /* PointCloudProcessingBridge.mm in Sources */ = {isa = PBXBuildFile; fileRef = 96E8A6752BED637D00CCBC18 /* PointCloudProcessingBridge.mm */; };
 		96F0CF182B12A34400417716 /* ExternalData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF172B12A34400417716 /* ExternalData.swift */; };
 		96F0CF1A2B12A39100417716 /* ExportViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF192B12A39100417716 /* ExportViewModel.swift */; };
 		96F0CF1C2B12A3D500417716 /* ExportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF1B2B12A3D500417716 /* ExportView.swift */; };
@@ -229,6 +230,8 @@
 		96E8A66E2BED59F700CCBC18 /* fmt */ = {isa = PBXFileReference; lastKnownFileType = folder; path = fmt; sourceTree = "<group>"; };
 		96E8A6702BED5B7400CCBC18 /* cppcodec */ = {isa = PBXFileReference; lastKnownFileType = folder; path = cppcodec; sourceTree = "<group>"; };
 		96E8A6722BED5E1B00CCBC18 /* nlohmann */ = {isa = PBXFileReference; lastKnownFileType = folder; path = nlohmann; sourceTree = "<group>"; };
+		96E8A6742BED634E00CCBC18 /* PointCloudProcessingBridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PointCloudProcessingBridge.h; sourceTree = "<group>"; };
+		96E8A6752BED637D00CCBC18 /* PointCloudProcessingBridge.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = PointCloudProcessingBridge.mm; sourceTree = "<group>"; };
 		96F0CF172B12A34400417716 /* ExternalData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalData.swift; sourceTree = "<group>"; };
 		96F0CF192B12A39100417716 /* ExportViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportViewModel.swift; sourceTree = "<group>"; };
 		96F0CF1B2B12A3D500417716 /* ExportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportView.swift; sourceTree = "<group>"; };
@@ -391,7 +394,9 @@
 				96E8A65B2BEC480500CCBC18 /* EigenWrapper.mm */,
 				96E899AE2BEAAA5000CCBC18 /* PointCloudProcessing.cpp */,
 				96E8A6672BED575C00CCBC18 /* ImageDepthBridge.h */,
+				96E8A6742BED634E00CCBC18 /* PointCloudProcessingBridge.h */,
 				96E8A6682BED579000CCBC18 /* ImageDepthBridge.mm */,
+				96E8A6752BED637D00CCBC18 /* PointCloudProcessingBridge.mm */,
 				96E89A332BEC469A00CCBC18 /* ImageDepth.cpp */,
 				96E89A342BEC469A00CCBC18 /* ImageDepth.hpp */,
 				96E899AF2BEAAA5000CCBC18 /* PointCloudProcessing.hpp */,
@@ -687,6 +692,7 @@
 			files = (
 				96C055192BD2F729003981FC /* CountdownTimerView.swift in Sources */,
 				96BE3DA22BE579950021EBED /* OpenCVWrapper.mm in Sources */,
+				96E8A6762BED637D00CCBC18 /* PointCloudProcessingBridge.mm in Sources */,
 				96F0CF222B12A51700417716 /* LogManager.swift in Sources */,
 				961D67E52B12C64A00DBB883 /* CreditsView.swift in Sources */,
 				96FC61592B146D3A00ACC840 /* HapticManager.swift in Sources */,
