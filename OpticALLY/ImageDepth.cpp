@@ -70,6 +70,22 @@ private:
         return lookup[i] * (1 - alpha) + lookup[i + 1] * alpha;
     }
     
+    void srgbToLinear(cv::Mat& img) {
+        img.convertTo(img, CV_32FC3, 1.0 / 255.0);  // Normalize the image
+        for (int i = 0; i < img.rows; ++i) {
+            for (int j = 0; j < img.cols; ++j) {
+                auto& pixel = img.at<cv::Vec3f>(i, j);
+                for (int k = 0; k < 3; ++k) {
+                    if (pixel[k] <= 0.04045) {
+                        pixel[k] /= 12.92;
+                    } else {
+                        pixel[k] = std::pow((pixel[k] + 0.055) / 1.055, 2.4);
+                    }
+                }
+            }
+        }
+    }
+
     void createUndistortionLookup() {
         std::vector<cv::Point2f> xy;
         xy.reserve(width * height);
@@ -115,20 +131,78 @@ private:
     
     void loadImage(const std::string& file) {
         std::ifstream ifs(file, std::ios::binary);
+        if (!ifs.is_open()) {
+            std::cerr << "Failed to open image file: " << file << std::endl;
+            return;
+        }
+
         std::vector<uint8_t> img_data((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
         img = cv::Mat(height, width, CV_8UC4, img_data.data());
         cv::cvtColor(img, img, cv::COLOR_RGBA2RGB);
+
+        // Convert sRGB to linear
+        srgbToLinear(img);
+
         img_undistort = cv::Mat();
         cv::remap(img, img_undistort, map_x, map_y, cv::INTER_LINEAR);
     }
     
     void loadDepth(const std::string& file) {
         std::ifstream ifs(file, std::ios::binary);
-        std::vector<float> depth_data((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-        depth_map = cv::Mat(height, width, CV_32F, depth_data.data());
+        if (!ifs.is_open()) {
+            std::cerr << "Failed to open depth file: " << file << std::endl;
+            return;
+        }
+
+        std::vector<char> buffer((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+        std::vector<float> depth_data(buffer.size() / sizeof(float));
+        std::memcpy(depth_data.data(), buffer.data(), buffer.size());
+        depth_map = cv::Mat(height, width, CV_32FC1, depth_data.data()).clone();
+
+        // Applying mask to depth map
+        cv::Mat valid_mask = (depth_map > min_depth) & (depth_map < max_depth);
+        depth_map.setTo(-1000, ~valid_mask);  // Set invalid depths to -1000
         depth_map_undistort = cv::Mat();
         cv::remap(depth_map, depth_map_undistort, map_x, map_y, cv::INTER_LINEAR);
+
+        // Create Point Cloud
+        createPointCloud(depth_map_undistort, valid_mask);
     }
+
+    void createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask) {
+        open3d::geometry::PointCloud pcd;
+        std::vector<Eigen::Vector3d> points;
+        std::vector<Eigen::Vector3d> colors;
+
+        for (int y = 0; y < depth_map.rows; ++y) {
+            for (int x = 0; x < depth_map.cols; ++x) {
+                if (mask.at<uint8_t>(y, x)) {
+                    float depth = depth_map.at<float>(y, x);
+                    if (depth > 0) {
+                        Eigen::Vector3d point(
+                            (x - intrinsic(0, 2)) * depth / intrinsic(0, 0),
+                            (y - intrinsic(1, 2)) * depth / intrinsic(1, 1),
+                            depth);
+                        points.push_back(point);
+
+                        // Assuming img_undistort is already in linear space and has type CV_32FC3
+                        cv::Vec3f color = img_undistort.at<cv::Vec3f>(y, x);
+                        colors.push_back(Eigen::Vector3d(color[2], color[1], color[0]));  // BGR to RGB
+                    }
+                }
+            }
+        }
+
+        pcd.points_ = points;
+        pcd.colors_ = colors;
+
+        // Calculate normals
+        pcd.EstimateNormals(open3d::geometry::KDTreeSearchParamHybrid(normal_radius, 30));
+        pcd.OrientNormalsTowardsCameraLocation(Eigen::Vector3d(0, 0, 0));
+
+        // Optionally, you can save or process the point cloud further
+    }
+
     
     std::vector<cv::Point3f> project3D(const std::vector<cv::Point2f>& points) {
         std::vector<cv::Point3f> points3D;
