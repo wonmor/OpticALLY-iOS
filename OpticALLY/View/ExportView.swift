@@ -258,14 +258,21 @@ struct ExportView: View {
                             .padding(.horizontal)
                             
                         } else {
-                            Text("MOVE WITHIN RANGE")
-                                .monospaced()
-                                .font(.title3)
-                                .fontWeight(.medium)
-                                .foregroundColor(.white)
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal)
-                                .cornerRadius(12)
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color.white, lineWidth: 2) // Create a white border
+                                    .frame(height: 50) // Adjust this to fit your text size
+                                    .padding(.horizontal)
+
+                                Text("MOVE WITHIN RANGE")
+                                    .monospaced()
+                                    .font(.title3)
+                                    .fontWeight(.medium)
+                                    .foregroundColor(.white)
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal)
+                            }
+                            .opacity(0.7)
                         }
                     }
                 }
