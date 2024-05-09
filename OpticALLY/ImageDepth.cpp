@@ -3,7 +3,10 @@
 
 #include "ImageDepth.hpp"
 #include <fstream>
-#include <json/json.h> // Assuming a JSON library for C++
+#include "rapidjson/document.h"
+#include "rapidjson/writer.h"
+#include "rapidjson/stringbuffer.h"
+#include <iostream>
 #include <cmath>
 
 ImageDepth::ImageDepth(const std::string& calibration_file, const std::string& image_file, const std::string& depth_file,
@@ -45,8 +48,8 @@ void ImageDepth::undistortDepthMap() {
     cv::remap(depth_map, depth_map_undistort, map_x, map_y, cv::INTER_LINEAR);
 }
 
-std::tuple<cv::Mat, std::vector<cv::Point2f>, std::vector<int>> ImageDepth::project3D(const std::vector<cv::Point2f>& pts) {
-    // Implement the 3D projection logic
-    // Return a tuple of projected points, indices, and good index flags
-}
+//std::tuple<cv::Mat, std::vector<cv::Point2f>, std::vector<int>> ImageDepth::project3D(const std::vector<cv::Point2f>& pts) {
+//    // Implement the 3D projection logic
+//    // Return a tuple of projected points, indices, and good index flags
+//}
 

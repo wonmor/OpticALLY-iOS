@@ -96,6 +96,7 @@
 		96E89A352BEC469A00CCBC18 /* ImageDepth.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 96E89A332BEC469A00CCBC18 /* ImageDepth.cpp */; };
 		96E8A65C2BEC480500CCBC18 /* EigenWrapper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 96E8A65B2BEC480500CCBC18 /* EigenWrapper.mm */; };
 		96E8A6622BEC4DF100CCBC18 /* eigen-3.4.0 in Resources */ = {isa = PBXBuildFile; fileRef = 96E8A6612BEC4DF100CCBC18 /* eigen-3.4.0 */; };
+		96E8A6642BEC960A00CCBC18 /* rapidjson in Resources */ = {isa = PBXBuildFile; fileRef = 96E8A6632BEC960A00CCBC18 /* rapidjson */; };
 		96F0CF182B12A34400417716 /* ExternalData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF172B12A34400417716 /* ExternalData.swift */; };
 		96F0CF1A2B12A39100417716 /* ExportViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF192B12A39100417716 /* ExportViewModel.swift */; };
 		96F0CF1C2B12A3D500417716 /* ExportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F0CF1B2B12A3D500417716 /* ExportView.swift */; };
@@ -214,6 +215,7 @@
 		96E8A65A2BEC480500CCBC18 /* EigenWrapper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = EigenWrapper.h; sourceTree = "<group>"; };
 		96E8A65B2BEC480500CCBC18 /* EigenWrapper.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = EigenWrapper.mm; sourceTree = "<group>"; };
 		96E8A6612BEC4DF100CCBC18 /* eigen-3.4.0 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "eigen-3.4.0"; sourceTree = "<group>"; };
+		96E8A6632BEC960A00CCBC18 /* rapidjson */ = {isa = PBXFileReference; lastKnownFileType = folder; path = rapidjson; sourceTree = "<group>"; };
 		96F0CF172B12A34400417716 /* ExternalData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalData.swift; sourceTree = "<group>"; };
 		96F0CF192B12A39100417716 /* ExportViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportViewModel.swift; sourceTree = "<group>"; };
 		96F0CF1B2B12A3D500417716 /* ExportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportView.swift; sourceTree = "<group>"; };
@@ -313,6 +315,7 @@
 			isa = PBXGroup;
 			children = (
 				96BE3DA72BE57C830021EBED /* opencv2.framework */,
+				96E8A6632BEC960A00CCBC18 /* rapidjson */,
 				96E8A6612BEC4DF100CCBC18 /* eigen-3.4.0 */,
 				96E899B12BEAB9D200CCBC18 /* ios.toolchain.cmake */,
 				967EE0632AAE06FB000C4D5F /* OpticALLY */,
@@ -610,6 +613,7 @@
 				9663606C2B6E0BD7001D2119 /* right-arrow-2.json in Resources */,
 				96E856BD2B6F0CF90037C3BB /* cargo-loading.json in Resources */,
 				969E42EE2ADC9D9E00E77BA7 /* promo.mp4 in Resources */,
+				96E8A6642BEC960A00CCBC18 /* rapidjson in Resources */,
 				967EE06C2AAE06FE000C4D5F /* Preview Assets.xcassets in Resources */,
 				9679F8D82AD0907A00686F13 /* Main.storyboard in Resources */,
 				966360682B6E0AAC001D2119 /* face-id-2.json in Resources */,
@@ -919,7 +923,10 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
-				USER_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/eigen-3.4.0";
+				USER_HEADER_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/eigen-3.4.0",
+					"$(PROJECT_DIR)",
+				);
 			};
 			name = Debug;
 		};
@@ -976,7 +983,10 @@
 				SWIFT_OBJC_BRIDGING_HEADER = "OpticALLY/OpticALLY-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
-				USER_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/eigen-3.4.0";
+				USER_HEADER_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/eigen-3.4.0",
+					"$(PROJECT_DIR)",
+				);
 			};
 			name = Release;
 		};
