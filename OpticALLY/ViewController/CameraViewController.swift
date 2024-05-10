@@ -156,8 +156,6 @@ extension CameraViewController {
             let averageDistanceCM = (Int(round(averageDistance * 100)))
             
             self.faceDistance = averageDistanceCM
-            
-            print("Approximate Distance Of Face From Camera = \(averageDistanceCM) cm")
         }
     }
 }

@@ -134,6 +134,15 @@ void ImageDepth::loadImage(const std::string& file) {
     srgbToLinear(img);
 
     img_undistort = cv::Mat();
+    
+    std::cout << "map_x type: " << map_x.type() << " Expected: " << CV_32FC1 << std::endl;
+    std::cout << "map_y type: " << map_y.type() << " Expected: " << CV_32FC1 << std::endl;
+    
+    std::cout << "Source image size: " << img.size() << std::endl;
+    std::cout << "Destination image size: " << img_undistort.size() << std::endl;
+    std::cout << "map_x size: " << map_x.size() << std::endl;
+    std::cout << "map_y size: " << map_y.size() << std::endl;
+
     cv::remap(img, img_undistort, map_x, map_y, cv::INTER_LINEAR);
 }
 

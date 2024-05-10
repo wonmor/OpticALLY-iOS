@@ -118,36 +118,34 @@ struct PostScanView: View {
         let baseFolderName = "bin_json_"
         let documentsDirectory = ExternalData.getDocumentsDirectory()
         
-       if uploadIndex < 3 {
-           let folderURL = documentsDirectory.appendingPathComponent("\(baseFolderName)\(uploadIndex)")
-           let calibrationFileURL = folderURL.appendingPathComponent("calibration.json")
-           let videoZipPath = folderURL.appendingPathComponent("videos.zip")
-           let depthZipPath = folderURL.appendingPathComponent("depths.zip")
-           
-           let videoFiles = fileManager.getFilePathsWithPrefix(baseFolder: folderURL.path, prefix: "video")
-           let depthFiles = fileManager.getFilePathsWithPrefix(baseFolder: folderURL.path, prefix: "depth")
-           
-           SSZipArchive.createZipFile(atPath: videoZipPath.path, withFilesAtPaths: videoFiles)
-           SSZipArchive.createZipFile(atPath: depthZipPath.path, withFilesAtPaths: depthFiles)
-
-           uploadFiles(calibrationFileURL: calibrationFileURL, imageFilesZipURL: videoZipPath, depthFilesZipURL: depthZipPath) { success, url in
-               if success {
-//                   self.uploadIndex += 1
-//                   exportViewModel.objURLs!.append(url!)
-//
-//                   print("objURLs: \(exportViewModel.objURLs!)")
-//                   
-//                   self.processUploads()  // Recursively process the next upload
-               } else {
-                   self.isProcessing = false
-                   self.showAlert = true
-               }
-           }
-       } else {
-           self.isProcessing = false
-           ExternalData.isMeshView = true  // All uploads are complete, allow viewing of the mesh
-       }
-   }
+        if uploadIndex < 3 {
+            let folderURL = documentsDirectory.appendingPathComponent("\(baseFolderName)\(uploadIndex)")
+            let calibrationFileURL = folderURL.appendingPathComponent("calibration.json")
+            
+            let videoFiles = fileManager.getFilePathsWithPrefix(baseFolder: folderURL.path, prefix: "video")
+            let depthFiles = fileManager.getFilePathsWithPrefix(baseFolder: folderURL.path, prefix: "depth")
+            
+            // Assuming processPointCloudsToObj is exposed to Swift through a bridging mechanism
+            PointCloudProcessingBridge.processPointClouds(withCalibrationFile: calibrationFileURL.path, imageFiles: videoFiles, depthFiles: depthFiles, outputPath: folderURL.path)
+            
+            // Assuming the processing provides a URL to the generated OBJ file, you handle it here
+            // This is a placeholder, adjust based on actual implementation details
+            if let objURL = URL(string: "\(folderURL.path)/output.obj") {
+                uploadIndex += 1
+                exportViewModel.objURLs?.append(objURL.path)
+                
+                print("objURLs: \(exportViewModel.objURLs!)")
+                
+                processUploads()  // Recursively process the next upload
+            } else {
+                self.isProcessing = false
+                self.showAlert = true
+            }
+        } else {
+            self.isProcessing = false
+            ExternalData.isMeshView = true  // All uploads are complete, allow viewing of the mesh
+        }
+    }
     
     func initialize() {
         isProcessing = true

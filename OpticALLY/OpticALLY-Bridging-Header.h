@@ -7,3 +7,4 @@
 #import "OpenCVWrapper.h"
 #import "EigenWrapper.h"
 #import "ImageDepthBridge.h"
+#import "PointCloudProcessingBridge.h"
