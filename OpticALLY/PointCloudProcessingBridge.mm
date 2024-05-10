@@ -36,6 +36,20 @@
     }
 
     std::vector<std::shared_ptr<PointCloud>> pointClouds;
+    
+    if (imageFiles.count != depthFiles.count) {
+        NSLog(@"Mismatch between the number of image files and depth files");
+        return NO;
+    }
+    if (imageFiles.count == 0) {
+        NSLog(@"No image files available");
+        return NO;
+    }
+    if (depthFiles.count == 0) {
+        NSLog(@"No depth files available");
+        return NO;
+    }
+
     for (size_t i = 0; i < cppImageFiles.size(); ++i) {
         auto imageDepth = std::make_shared<ImageDepth>([calibrationFilePath UTF8String], cppImageFiles[i], cppDepthFiles[i], 640, 480, 0.1, 0.5, 0.01);
         auto pointCloud = imageDepth->getPointCloud();
@@ -51,9 +65,6 @@
         }
 
         pointClouds.push_back(pointCloud);
-        
-        // Only iterate index 0 for debugging purposes...
-        break;
     }
 
     auto globalPCD = pointClouds[0]; // Assuming only the first point cloud is processed
