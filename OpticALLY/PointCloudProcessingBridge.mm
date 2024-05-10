@@ -51,6 +51,9 @@
         }
 
         pointClouds.push_back(pointCloud);
+        
+        // Only iterate index 0 for debugging purposes...
+        break;
     }
 
     auto globalPCD = pointClouds[0]; // Assuming only the first point cloud is processed
