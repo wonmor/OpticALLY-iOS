@@ -115,37 +115,48 @@ struct PostScanView: View {
     let fileManager = FileManager.default
     
     private func processUploads() {
-        let baseFolderName = "bin_json_"
+        let baseFolderName = "bin_json"
         let documentsDirectory = ExternalData.getDocumentsDirectory()
+        let folderURL = documentsDirectory.appendingPathComponent(baseFolderName)
+        let calibrationFileURL = folderURL.appendingPathComponent("calibration.json")
         
-        if uploadIndex < 3 {
-            let folderURL = documentsDirectory.appendingPathComponent("\(baseFolderName)\(uploadIndex)")
-            let calibrationFileURL = folderURL.appendingPathComponent("calibration.json")
-            
-            let videoFiles = fileManager.getFilePathsWithPrefix(baseFolder: folderURL.path, prefix: "video")
-            let depthFiles = fileManager.getFilePathsWithPrefix(baseFolder: folderURL.path, prefix: "depth")
-            
-            // Assuming processPointCloudsToObj is exposed to Swift through a bridging mechanism
-            PointCloudProcessingBridge.processPointClouds(withCalibrationFile: calibrationFileURL.path, imageFiles: videoFiles, depthFiles: depthFiles, outputPath: folderURL.path)
-            
-            // Assuming the processing provides a URL to the generated OBJ file, you handle it here
-            // This is a placeholder, adjust based on actual implementation details
-            if let objURL = URL(string: "\(folderURL.path)/output.obj") {
-                uploadIndex += 1
-                exportViewModel.objURLs?.append(objURL.path)
-                
-                print("objURLs: \(exportViewModel.objURLs!)")
-                
-                processUploads()  // Recursively process the next upload
-            } else {
-                self.isProcessing = false
-                self.showAlert = true
-            }
-        } else {
+        // Retrieve all video and depth files
+        let videoFiles = fileManager.getFilePathsWithPrefix(baseFolder: folderURL.path, prefix: "video")
+        let depthFiles = fileManager.getFilePathsWithPrefix(baseFolder: folderURL.path, prefix: "depth")
+        
+        // Check if there's a mismatch
+        if videoFiles.count != depthFiles.count {
+            NSLog("Mismatch between the number of video and depth files.")
+            self.showAlert = true
             self.isProcessing = false
-            ExternalData.isMeshView = true  // All uploads are complete, allow viewing of the mesh
+            return
         }
+        
+        // Process files sequentially
+        for index in 0..<videoFiles.count {
+            let videoFile = videoFiles[index]
+            let depthFile = depthFiles[index]
+            
+            // Process point clouds for each pair
+            PointCloudProcessingBridge.processPointClouds(withCalibrationFile: calibrationFileURL.path, imageFiles: [videoFile], depthFiles: [depthFile], outputPath: folderURL.path)
+            
+            // Assuming the output OBJ file is generated for each pair
+            let objFileName = "output_\(index).obj"
+            let objURL = folderURL.appendingPathComponent(objFileName)
+            if FileManager.default.fileExists(atPath: objURL.path) {
+                exportViewModel.objURLs?.append(objURL.path)
+            } else {
+                NSLog("Failed to generate OBJ file for pair index \(index)")
+                self.showAlert = true
+                self.isProcessing = false
+                return
+            }
+        }
+        
+        self.isProcessing = false
+        ExternalData.isMeshView = true  // Processing is complete, allow viewing of the mesh
     }
+
     
     func initialize() {
         isProcessing = true
