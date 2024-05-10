@@ -124,14 +124,6 @@ struct PostScanView: View {
         let videoFiles = fileManager.getFilePathsWithPrefix(baseFolder: folderURL.path, prefix: "video")
         let depthFiles = fileManager.getFilePathsWithPrefix(baseFolder: folderURL.path, prefix: "depth")
         
-        // Check if there's a mismatch
-        if videoFiles.count != depthFiles.count {
-            NSLog("Mismatch between the number of video and depth files.")
-            self.showAlert = true
-            self.isProcessing = false
-            return
-        }
-        
         // Process files sequentially
         for index in 0..<videoFiles.count {
             let videoFile = videoFiles[index]
