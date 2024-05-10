@@ -168,6 +168,7 @@ void ImageDepth::loadDepth(const std::string& file) {
     depth_map = cv::Mat(height, width, CV_16UC1, depth_data.data());
 
     depth_map_undistort = cv::Mat();
+    
     std::cout << "Remapping depth map..." << std::endl;
     cv::remap(depth_map, depth_map_undistort, map_x, map_y, cv::INTER_NEAREST);
 }
