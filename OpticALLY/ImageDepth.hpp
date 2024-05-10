@@ -1,10 +1,11 @@
 // ImageDepth.hpp
 // OpticALLY
 
-#ifndef IMAGE_DEPTH_HPP
-#define IMAGE_DEPTH_HPP
+#ifndef ImageDepth_hpp
+#define ImageDepth_hpp
 
 #include <opencv2/opencv.hpp>
+#include <open3d/Open3D.h>
 #include <vector>
 #include <string>
 #include "Eigen/Dense" // For Matrix operations
@@ -20,7 +21,6 @@ private:
     float max_depth;
     float normal_radius;
     cv::Mat img;
-    cv::Mat img_linear;
     cv::Mat img_undistort;
     cv::Mat depth_map;
     cv::Mat depth_map_undistort;
@@ -29,16 +29,19 @@ private:
     std::vector<float> inverseLensDistortionLookup;
     Eigen::Matrix3f intrinsic;
     Eigen::Matrix4f pose;
+    std::shared_ptr<open3d::geometry::PointCloud> pointCloud;
 
+    // Private utility methods
     void loadCalibration(const std::string& file);
     void createUndistortionLookup();
     void loadImage(const std::string& file);
-    void processImage();
     void loadDepth(const std::string& file);
-    void undistortDepthMap();
-    std::tuple<cv::Mat, std::vector<cv::Point2f>, std::vector<int>> project3D(const std::vector<cv::Point2f>& pts);
+    void srgbToLinear(cv::Mat& img);
+    float linearInterpolate(const std::vector<float>& lookup, float x);
+    void createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask);
 
 public:
+    // Constructor
     ImageDepth(const std::string& calibration_file,
                const std::string& image_file,
                const std::string& depth_file,
@@ -47,6 +50,10 @@ public:
                float min_depth = 0.1f,
                float max_depth = 0.5f,
                float normal_radius = 0.1f);
+
+    // Public methods
+    std::shared_ptr<open3d::geometry::PointCloud> getPointCloud();
+    std::vector<cv::Point3f> project3D(const std::vector<cv::Point2f>& points);
 };
 
 #endif // IMAGE_DEPTH_HPP

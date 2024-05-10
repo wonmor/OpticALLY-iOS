@@ -14,8 +14,15 @@
 using namespace cv;
 using namespace std;
 
-class PointCloudProcessing {
-    
-};
+// PointCloudProcessing.hpp
+#include <open3d/Open3D.h>
+#include <string>
+#include <vector>
+#include <filesystem>
+#include "ImageDepth.hpp"
+
+namespace fs = std::filesystem; // Use C++17 filesystem for file handling
+
+void processPointCloudsToObj(const std::string& calibrationFile, const std::vector<std::string>& imageFiles, const std::vector<std::string>& depthFiles, const std::string& outputPath);
 
 #endif /* PointCloudProcessing_hpp */
