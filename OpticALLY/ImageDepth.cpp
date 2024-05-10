@@ -88,45 +88,52 @@ void ImageDepth::createUndistortionLookup() {
         }
     }
 
-    cv::Mat xy_mat(height * width, 1, CV_32FC2, xy.data());
-    xy_mat = xy_mat.reshape(2);
+    // Converting vector of Point2f to Mat
+    cv::Mat xy_mat = cv::Mat(xy).reshape(2);
 
-    // Convert center to double precision and reshape for compatibility
-    cv::Mat center = (cv::Mat_<double>(1, 2) << intrinsic(0, 2), intrinsic(1, 2));
-
-    std::cout << "Subtracting center..." << std::endl;
-    cv::subtract(xy_mat, center, xy_mat); // Make sure data types and shapes align
-
-    std::vector<float> r(height * width);
-    for (int i = 0; i < height * width; ++i) {
-        auto p = xy_mat.at<cv::Vec2f>(i);
-        r[i] = std::sqrt(p[0] * p[0] + p[1] * p[1]);
+    // Subtracting center from each point
+    cv::Mat center = (cv::Mat_<float>(1, 2) << intrinsic(0, 2), intrinsic(1, 2));
+    for (int i = 0; i < xy_mat.rows; i++) {
+        xy_mat.at<cv::Vec2f>(i, 0) -= cv::Vec2f(center.at<float>(0, 0), center.at<float>(0, 1));
     }
 
-    float max_r = *std::max_element(r.begin(), r.end());
-    for (auto& val : r) val /= max_r;
+    // Calculating radius and normalizing
+    std::vector<float> r(xy_mat.rows);
+    float max_r = 0;
+    for (int i = 0; i < xy_mat.rows; ++i) {
+        auto p = xy_mat.at<cv::Vec2f>(i);
+        r[i] = std::sqrt(p[0] * p[0] + p[1] * p[1]);
+        if (r[i] > max_r) max_r = r[i];
+    }
+    for (float& val : r) {
+        val /= max_r;
+    }
 
-    std::vector<float> scale(r.size());
-    for (size_t i = 0; i < scale.size(); ++i) {
+    // Interpolating the scale
+    std::vector<float> scale(xy_mat.rows);
+    for (int i = 0; i < scale.size(); ++i) {
         float idx = r[i] * inverseLensDistortionLookup.size();
         scale[i] = 1.0f + linearInterpolate(inverseLensDistortionLookup, idx);
     }
 
-    std::cout << "Updating coordinates..." << std::endl;
-    for (int i = 0; i < height * width; ++i) {
+    // Applying scale and adding back center
+    for (int i = 0; i < xy_mat.rows; ++i) {
         auto& p = xy_mat.at<cv::Vec2f>(i);
-        p[0] = p[0] * scale[i] + center.at<double>(0, 0);
-        p[1] = p[1] * scale[i] + center.at<double>(0, 1);
+        p[0] = p[0] * scale[i] + center.at<float>(0, 0);
+        p[1] = p[1] * scale[i] + center.at<float>(0, 1);
     }
 
-    std::cout << "Creating remap matrices..." << std::endl;
+    // Creating remap matrices
     map_x = cv::Mat(height, width, CV_32F);
     map_y = cv::Mat(height, width, CV_32F);
-    for (int i = 0; i < height * width; ++i) {
-        map_x.at<float>(i / width, i % width) = xy_mat.at<cv::Vec2f>(i)[0];
-        map_y.at<float>(i / width, i % width) = xy_mat.at<cv::Vec2f>(i)[1];
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+            map_x.at<float>(i, j) = xy_mat.at<cv::Vec2f>(i * width + j)[0];
+            map_y.at<float>(i, j) = xy_mat.at<cv::Vec2f>(i * width + j)[1];
+        }
     }
 }
+
 
 
 void ImageDepth::loadImage(const std::string& file) {
