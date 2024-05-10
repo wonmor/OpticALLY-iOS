@@ -62,6 +62,7 @@ float ImageDepth::linearInterpolate(const std::vector<float>& lookup, float x) {
 }
 
 void ImageDepth::srgbToLinear(cv::Mat& img) {
+    std::cout << "Converting sRGB to Linear RGB..." << std::endl;
     img.convertTo(img, CV_32FC3, 1.0 / 255.0); // Normalize
     for (int i = 0; i < img.rows; ++i) {
         for (int j = 0; j < img.cols; ++j) {
@@ -78,6 +79,7 @@ void ImageDepth::srgbToLinear(cv::Mat& img) {
 }
 
 void ImageDepth::createUndistortionLookup() {
+    std::cout << "Creating undistortion lookup..." << std::endl;
     std::vector<cv::Point2f> xy;
     xy.reserve(width * height);
     for (int y = 0; y < height; ++y) {
@@ -89,8 +91,11 @@ void ImageDepth::createUndistortionLookup() {
     cv::Mat xy_mat(height * width, 1, CV_32FC2, xy.data());
     xy_mat = xy_mat.reshape(2);
 
-    cv::Mat center = (cv::Mat_<float>(1, 2) << intrinsic(0, 2), intrinsic(1, 2));
-    cv::subtract(xy_mat, center, xy_mat);
+    // Convert center to double precision and reshape for compatibility
+    cv::Mat center = (cv::Mat_<double>(1, 2) << intrinsic(0, 2), intrinsic(1, 2));
+
+    std::cout << "Subtracting center..." << std::endl;
+    cv::subtract(xy_mat, center, xy_mat); // Make sure data types and shapes align
 
     std::vector<float> r(height * width);
     for (int i = 0; i < height * width; ++i) {
@@ -106,12 +111,15 @@ void ImageDepth::createUndistortionLookup() {
         float idx = r[i] * inverseLensDistortionLookup.size();
         scale[i] = 1.0f + linearInterpolate(inverseLensDistortionLookup, idx);
     }
+
+    std::cout << "Updating coordinates..." << std::endl;
     for (int i = 0; i < height * width; ++i) {
         auto& p = xy_mat.at<cv::Vec2f>(i);
-        p[0] = p[0] * scale[i] + center.at<float>(0, 0);
-        p[1] = p[1] * scale[i] + center.at<float>(0, 1);
+        p[0] = p[0] * scale[i] + center.at<double>(0, 0);
+        p[1] = p[1] * scale[i] + center.at<double>(0, 1);
     }
 
+    std::cout << "Creating remap matrices..." << std::endl;
     map_x = cv::Mat(height, width, CV_32F);
     map_y = cv::Mat(height, width, CV_32F);
     for (int i = 0; i < height * width; ++i) {
@@ -120,7 +128,9 @@ void ImageDepth::createUndistortionLookup() {
     }
 }
 
+
 void ImageDepth::loadImage(const std::string& file) {
+    std::cout << "Loading image file: " << file << std::endl;
     std::ifstream ifs(file, std::ios::binary);
     if (!ifs.is_open()) {
         std::cerr << "Failed to open image file: " << file << std::endl;
@@ -129,24 +139,18 @@ void ImageDepth::loadImage(const std::string& file) {
 
     std::vector<uint8_t> img_data((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
     img = cv::Mat(height, width, CV_8UC4, img_data.data());
+    std::cout << "Converting RGBA to RGB..." << std::endl;
     cv::cvtColor(img, img, cv::COLOR_RGBA2RGB);
 
     srgbToLinear(img);
 
     img_undistort = cv::Mat();
-    
-    std::cout << "map_x type: " << map_x.type() << " Expected: " << CV_32FC1 << std::endl;
-    std::cout << "map_y type: " << map_y.type() << " Expected: " << CV_32FC1 << std::endl;
-    
-    std::cout << "Source image size: " << img.size() << std::endl;
-    std::cout << "Destination image size: " << img_undistort.size() << std::endl;
-    std::cout << "map_x size: " << map_x.size() << std::endl;
-    std::cout << "map_y size: " << map_y.size() << std::endl;
-
+    std::cout << "Remapping image..." << std::endl;
     cv::remap(img, img_undistort, map_x, map_y, cv::INTER_LINEAR);
 }
 
 void ImageDepth::loadDepth(const std::string& file) {
+    std::cout << "Loading depth file: " << file << std::endl;
     std::ifstream ifs(file, std::ios::binary);
     if (!ifs.is_open()) {
         std::cerr << "Failed to open depth file: " << file << std::endl;
@@ -157,10 +161,12 @@ void ImageDepth::loadDepth(const std::string& file) {
     depth_map = cv::Mat(height, width, CV_16UC1, depth_data.data());
 
     depth_map_undistort = cv::Mat();
+    std::cout << "Remapping depth map..." << std::endl;
     cv::remap(depth_map, depth_map_undistort, map_x, map_y, cv::INTER_NEAREST);
 }
 
 std::vector<cv::Point3f> ImageDepth::project3D(const std::vector<cv::Point2f>& points) {
+    std::cout << "Projecting points to 3D..." << std::endl;
     std::vector<cv::Point3f> result;
     for (const auto& point : points) {
         int x = static_cast<int>(point.x);
@@ -180,6 +186,7 @@ std::vector<cv::Point3f> ImageDepth::project3D(const std::vector<cv::Point2f>& p
 }
 
 void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask) {
+    std::cout << "Creating point cloud..." << std::endl;
     pointCloud = std::make_shared<open3d::geometry::PointCloud>();
     std::vector<Eigen::Vector3d> points;
     std::vector<Eigen::Vector3d> colors;
