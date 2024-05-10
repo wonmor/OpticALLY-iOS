@@ -37,6 +37,10 @@
 
     std::vector<std::shared_ptr<PointCloud>> pointClouds;
     
+    // Print out the lengths of both arrays
+    NSLog(@"Number of image files: %lu", (unsigned long)imageFiles.count);
+    NSLog(@"Number of depth files: %lu", (unsigned long)depthFiles.count);
+    
     if (imageFiles.count != depthFiles.count) {
         NSLog(@"Mismatch between the number of image files and depth files");
         return NO;
