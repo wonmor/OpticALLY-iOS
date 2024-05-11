@@ -6,6 +6,8 @@
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include "cppcodec/base64_rfc4648.hpp"
+#include <open3d/geometry/PointCloud.h>
+#include <open3d/geometry/KDTreeSearchParam.h>
 
 // Constructor implementation
 ImageDepth::ImageDepth(const std::string& calibration_file, const std::string& image_file, const std::string& depth_file,
@@ -17,6 +19,7 @@ ImageDepth::ImageDepth(const std::string& calibration_file, const std::string& i
     createUndistortionLookup();
     loadImage(image_file);
     loadDepth(depth_file);
+    createPointCloud(depth_map_undistort, cv::Mat());
 }
 
 std::shared_ptr<open3d::geometry::PointCloud> ImageDepth::getPointCloud() {
@@ -134,8 +137,6 @@ void ImageDepth::createUndistortionLookup() {
     }
 }
 
-
-
 void ImageDepth::loadImage(const std::string& file) {
     std::cout << "Loading image file: " << file << std::endl;
     std::ifstream ifs(file, std::ios::binary);
@@ -173,26 +174,6 @@ void ImageDepth::loadDepth(const std::string& file) {
     cv::remap(depth_map, depth_map_undistort, map_x, map_y, cv::INTER_NEAREST);
 }
 
-std::vector<cv::Point3f> ImageDepth::project3D(const std::vector<cv::Point2f>& points) {
-    std::cout << "Projecting points to 3D..." << std::endl;
-    std::vector<cv::Point3f> result;
-    for (const auto& point : points) {
-        int x = static_cast<int>(point.x);
-        int y = static_cast<int>(point.y);
-        float z = static_cast<float>(depth_map_undistort.at<uint16_t>(y, x)) * 0.001f;
-
-        if (z < min_depth || z > max_depth) {
-            continue;
-        }
-
-        cv::Point3f pt((x - intrinsic(0, 2)) * z / intrinsic(0, 0),
-                       (y - intrinsic(1, 2)) * z / intrinsic(1, 1), z);
-        result.push_back(pt);
-    }
-
-    return result;
-}
-
 void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask) {
     std::cout << "Creating point cloud..." << std::endl;
     pointCloud = std::make_shared<open3d::geometry::PointCloud>();
@@ -201,23 +182,29 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
 
     for (int y = 0; y < depth_map.rows; ++y) {
         for (int x = 0; x < depth_map.cols; ++x) {
-            if (mask.at<uint8_t>(y, x) == 0) continue;
+            if (mask.empty() || mask.at<uint8_t>(y, x) != 0) {
+                float z = static_cast<float>(depth_map.at<uint16_t>(y, x)) * 0.001f; // scale factor for depth
+                if (z < min_depth || z > max_depth) continue;
 
-            float z = static_cast<float>(depth_map.at<uint16_t>(y, x)) * 0.001f;
+                Eigen::Vector3d pt(
+                    (x - intrinsic(0, 2)) * z / intrinsic(0, 0),
+                    (y - intrinsic(1, 2)) * z / intrinsic(1, 1),
+                    z
+                );
+                points.push_back(pt);
 
-            if (z < min_depth || z > max_depth) continue;
-
-            Eigen::Vector3d pt((x - intrinsic(0, 2)) * z / intrinsic(0, 0),
-                               (y - intrinsic(1, 2)) * z / intrinsic(1, 1), z);
-
-            points.emplace_back(pt);
-
-            // Assuming img is already in linear RGB format
-            cv::Vec3f color = img_undistort.at<cv::Vec3f>(y, x);
-            colors.emplace_back(Eigen::Vector3d(color[0], color[1], color[2]));
+                cv::Vec3f color = img_undistort.at<cv::Vec3f>(y, x);
+                colors.push_back(Eigen::Vector3d(color[0], color[1], color[2]));
+            }
         }
     }
 
     pointCloud->points_ = points;
     pointCloud->colors_ = colors;
+
+    // Calculate normals
+    pointCloud->EstimateNormals(
+        open3d::geometry::KDTreeSearchParamHybrid(normal_radius, 30)
+    );
+    pointCloud->OrientNormalsTowardsCameraLocation();
 }
