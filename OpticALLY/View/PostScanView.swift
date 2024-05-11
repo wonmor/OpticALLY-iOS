@@ -121,20 +121,30 @@ struct PostScanView: View {
         let calibrationFileURL = folderURL.appendingPathComponent("calibration.json")
         
         // Retrieve all video and depth files
-        let videoFiles = fileManager.getFilePathsWithPrefix(baseFolder: folderURL.path, prefix: "video")
-        let depthFiles = fileManager.getFilePathsWithPrefix(baseFolder: folderURL.path, prefix: "depth")
+        var videoFiles = fileManager.getFilePathsWithPrefix(baseFolder: folderURL.path, prefix: "video")
+        var depthFiles = fileManager.getFilePathsWithPrefix(baseFolder: folderURL.path, prefix: "depth")
         
-        // Process files sequentially
-        for index in 0..<videoFiles.count {
-            let videoFile = videoFiles[index]
-            let depthFile = depthFiles[index]
-            
-            // Process point clouds for each pair
-            PointCloudProcessingBridge.processPointClouds(withCalibrationFile: calibrationFileURL.path, imageFiles: [videoFile], depthFiles: [depthFile], outputPath: folderURL.path)
-            
-            // Assuming the output OBJ file is generated for each pair
+        print("Swift-side Video Files Count: \(videoFiles.count)")
+        print("Swift-side Depth Files Count: \(depthFiles.count)")
+        
+        // Take the smaller count to ensure arrays have matching lengths
+        let minCount = min(videoFiles.count, depthFiles.count)
+        
+        // Trim both arrays to the minimum count
+        videoFiles = Array(videoFiles.prefix(minCount))
+        depthFiles = Array(depthFiles.prefix(minCount))
+        
+        print("Trimmed Video Files Count: \(videoFiles.count)")
+        print("Trimmed Depth Files Count: \(depthFiles.count)")
+
+        // Process point clouds for the matching pairs
+        PointCloudProcessingBridge.processPointClouds(withCalibrationFile: calibrationFileURL.path, imageFiles: videoFiles, depthFiles: depthFiles, outputPath: folderURL.path)
+
+        // Assuming the output OBJ file is generated for each pair
+        for index in 0..<minCount {
             let objFileName = "output_\(index).obj"
             let objURL = folderURL.appendingPathComponent(objFileName)
+            
             if FileManager.default.fileExists(atPath: objURL.path) {
                 exportViewModel.objURLs?.append(objURL.path)
             } else {
@@ -148,7 +158,6 @@ struct PostScanView: View {
         self.isProcessing = false
         ExternalData.isMeshView = true  // Processing is complete, allow viewing of the mesh
     }
-
     
     func initialize() {
         isProcessing = true
