@@ -144,7 +144,9 @@ struct PostScanView: View {
         let objURL = folderURL.appendingPathComponent(objFileName)
         
         if FileManager.default.fileExists(atPath: objURL.path) {
-            exportViewModel.objURLs?.append(objURL.path)
+            print("objURL Path: \(objURL.path)")
+            exportViewModel.objURL = objURL
+            
         } else {
             NSLog("Failed to generate OBJ file (Swift-side error catch)")
             self.showAlert = true
@@ -472,48 +474,9 @@ struct PostScanView: View {
                     
                     print("안녕")
                 }
-
-                if let url = exportViewModel.objURLs {
-                    TabView {
-                        SceneKitMDLView(snapshot: $snapshot, url: URL(string: url[0])!)
-                                .tabItem {
-                                    Label("FRONT", systemImage: "0.circle")
-                                }
-                                .onAppear() {
-                                    currentDirection = .front
-                                }
-//                                .onChange(of: frameNeedsUpdate) { _ in
-//                                    if let scnView = scnView { // Make sure scnView is properly referenced
-//                                        if let image: UIImage? = snapshot {
-//                                               detectEyes(in: image!) { [self] detected in
-//                                                   DispatchQueue.main.async {
-//                                                       self.observations = detected ?? []
-//                                                   }
-//                                               }
-//                                           }
-//                                       }
-//                                }
-//                            
-//                            EyeOverlayView(observations: observations)
                 
-                        
-                        SceneKitMDLView(snapshot: $snapshot, url: URL(string: url[1])!)
-                            .tabItem {
-                                Label("LEFT", systemImage: "1.circle")
-                            }
-                            .onAppear() {
-                                currentDirection = .left
-                            }
-                        
-                        SceneKitMDLView(snapshot: $snapshot, url: URL(string: url[2])!)
-                            .tabItem {
-                                Label("RIGHT", systemImage: "2.circle")
-                            }
-                            .onAppear() {
-                                currentDirection = .right
-                            }
-                    }
-                    .padding()
+                if let url = exportViewModel.objURL {
+                    SceneKitMDLView(snapshot: $snapshot, url: url)
                 }
                 
                 Spacer()
