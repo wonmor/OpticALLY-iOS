@@ -176,25 +176,35 @@ struct ExportView: View {
                         
                         
                         if lastLog.contains("Complete") {
-                            LottieView(animationFileName: "face-found-successfully", loopMode: .playOnce)
-                                .frame(width: 60, height: 60)
-                                .scaleEffect(0.5)
-                                .opacity(0.5)
-                                .padding(.vertical)
-                                .colorInvert()
-                                .onAppear() {
-                                    // Only do this for the LAST iteration of the 3 scans... (3rd scan) -> Because UI will be hidden until then, it's fine for now when it comes to logic
-                                    exportViewModel.hasTurnedLeft = true
-                                    exportViewModel.hasTurnedRight = true
-                                    exportViewModel.hasTurnedCenter = true
-                                    
-                                    hideMoveOnButton = false
-                                    
-                                    // Important part!
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.25) { // Assuming animation duration is 2 seconds
-                                        viewResults()
-                                    }
+                            VStack(spacing: 10) { // Adjust spacing as needed
+                                LottieView(animationFileName: "cargo-loading", loopMode: .loop)
+                                    .frame(width: 60, height: 60)
+                                    .scaleEffect(0.1)
+                                    .padding()
+                                    .colorInvert()
+                                
+                                Text("PROCESSING SCANS")
+                                    .bold()
+                                    .monospaced()
+                                    .foregroundColor(.white)
+                            }
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 30) // Adjust horizontal padding for wider background
+                            .padding(.vertical, 15) // Adjust vertical padding for background height
+                            .zIndex(1) // Ensure the spinner and text are above other content
+                            .onAppear() {
+                                // Only do this for the LAST iteration of the 3 scans... (3rd scan) -> Because UI will be hidden until then, it's fine for now when it comes to logic
+                                exportViewModel.hasTurnedLeft = true
+                                exportViewModel.hasTurnedRight = true
+                                exportViewModel.hasTurnedCenter = true
+                                
+                                hideMoveOnButton = false
+                                
+                                // Important part!
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 1.25) { // Assuming animation duration is 2 seconds
+                                    viewResults()
                                 }
+                            }
                         }
                     }
                 } else {

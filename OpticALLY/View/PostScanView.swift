@@ -471,8 +471,6 @@ struct PostScanView: View {
                 .onAppear() {
                     // onViewAppear...
                     self.initialize()
-                    
-                    print("안녕")
                 }
                 
                 if let url = exportViewModel.objURL {
