@@ -140,19 +140,16 @@ struct PostScanView: View {
         // Process point clouds for the matching pairs
         PointCloudProcessingBridge.processPointClouds(withCalibrationFile: calibrationFileURL.path, imageFiles: videoFiles, depthFiles: depthFiles, outputPath: folderURL.path)
 
-        // Assuming the output OBJ file is generated for each pair
-        for index in 0..<minCount {
-            let objFileName = "output_\(index).obj"
-            let objURL = folderURL.appendingPathComponent(objFileName)
-            
-            if FileManager.default.fileExists(atPath: objURL.path) {
-                exportViewModel.objURLs?.append(objURL.path)
-            } else {
-                NSLog("Failed to generate OBJ file for pair index \(index)")
-                self.showAlert = true
-                self.isProcessing = false
-                return
-            }
+        let objFileName = "output.obj"
+        let objURL = folderURL.appendingPathComponent(objFileName)
+        
+        if FileManager.default.fileExists(atPath: objURL.path) {
+            exportViewModel.objURLs?.append(objURL.path)
+        } else {
+            NSLog("Failed to generate OBJ file (Swift-side error catch)")
+            self.showAlert = true
+            self.isProcessing = false
+            return
         }
         
         self.isProcessing = false

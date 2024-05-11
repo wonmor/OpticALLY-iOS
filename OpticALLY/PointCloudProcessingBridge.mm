@@ -86,6 +86,11 @@
         return NO;
     }
     
+    if (globalPCD->IsEmpty()) {
+        NSLog(@"Point cloud is empty, skipping mesh generation.");
+        return NO;
+    }
+    
     auto [mesh, densities] = TriangleMesh::CreateFromPointCloudPoisson(*globalPCD, 9);
 
     const double threshold = 0.004893;
@@ -107,9 +112,16 @@
     mesh->RemoveTrianglesByMask(trianglesToRemove);
     mesh->RemoveUnreferencedVertices();
     mesh->RemoveNonManifoldEdges();
+    
+    std::cout << "Now exporting OBJ..." << std::endl;
 
     fs::path outputFilePath = fs::path([outputPath UTF8String]) / "output.obj";
-    io::WriteTriangleMesh(outputFilePath.string(), *mesh);
+    if (!io::WriteTriangleMesh(outputFilePath.string(), *mesh, false)) {
+        NSLog(@"Failed to write OBJ file at %@", outputFilePath.c_str());
+        return NO;
+    }
+    
+    NSLog(@"Successfully exported OBJ file.");
 
     return YES;
 }
