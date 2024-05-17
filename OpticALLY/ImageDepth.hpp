@@ -25,6 +25,7 @@ private:
     cv::Mat depth_map;
     cv::Mat depth_map_undistort;
     cv::Mat map_x, map_y;
+    cv::Mat mask;
     std::vector<float> lensDistortionLookup;
     std::vector<float> inverseLensDistortionLookup;
     Eigen::Matrix3f intrinsic;
@@ -38,7 +39,7 @@ private:
     void loadDepth(const std::string& file);
     void srgbToLinear(cv::Mat& img);
     float linearInterpolate(const std::vector<float>& lookup, float x);
-    void createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask);
+    void createPointCloud(const cv::Mat& depth_map);
 
 public:
     // Constructor
