@@ -91,7 +91,6 @@
 		96E856C42B70421F0037C3BB /* FilesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E856C32B70421F0037C3BB /* FilesListView.swift */; };
 		96E856C62B70441C0037C3BB /* FolderDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E856C52B70441C0037C3BB /* FolderDetailView.swift */; };
 		96E856CA2B7045510037C3BB /* SceneKitPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E856C92B7045510037C3BB /* SceneKitPreview.swift */; };
-		96E899B02BEAAA5000CCBC18 /* PointCloudProcessing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 96E899AE2BEAAA5000CCBC18 /* PointCloudProcessing.cpp */; };
 		96E899B22BEAB9D200CCBC18 /* ios.toolchain.cmake in Resources */ = {isa = PBXBuildFile; fileRef = 96E899B12BEAB9D200CCBC18 /* ios.toolchain.cmake */; };
 		96E89A352BEC469A00CCBC18 /* ImageDepth.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 96E89A332BEC469A00CCBC18 /* ImageDepth.cpp */; };
 		96E8A65C2BEC480500CCBC18 /* EigenWrapper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 96E8A65B2BEC480500CCBC18 /* EigenWrapper.mm */; };
@@ -215,8 +214,6 @@
 		96E856C32B70421F0037C3BB /* FilesListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilesListView.swift; sourceTree = "<group>"; };
 		96E856C52B70441C0037C3BB /* FolderDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderDetailView.swift; sourceTree = "<group>"; };
 		96E856C92B7045510037C3BB /* SceneKitPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneKitPreview.swift; sourceTree = "<group>"; };
-		96E899AE2BEAAA5000CCBC18 /* PointCloudProcessing.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = PointCloudProcessing.cpp; sourceTree = "<group>"; };
-		96E899AF2BEAAA5000CCBC18 /* PointCloudProcessing.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = PointCloudProcessing.hpp; sourceTree = "<group>"; };
 		96E899B12BEAB9D200CCBC18 /* ios.toolchain.cmake */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ios.toolchain.cmake; sourceTree = "<group>"; };
 		96E89A332BEC469A00CCBC18 /* ImageDepth.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ImageDepth.cpp; sourceTree = "<group>"; };
 		96E89A342BEC469A00CCBC18 /* ImageDepth.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ImageDepth.hpp; sourceTree = "<group>"; };
@@ -392,14 +389,12 @@
 				96BE3DA12BE579950021EBED /* OpenCVWrapper.mm */,
 				96E8A65A2BEC480500CCBC18 /* EigenWrapper.h */,
 				96E8A65B2BEC480500CCBC18 /* EigenWrapper.mm */,
-				96E899AE2BEAAA5000CCBC18 /* PointCloudProcessing.cpp */,
 				96E8A6672BED575C00CCBC18 /* ImageDepthBridge.h */,
 				96E8A6742BED634E00CCBC18 /* PointCloudProcessingBridge.h */,
 				96E8A6682BED579000CCBC18 /* ImageDepthBridge.mm */,
 				96E8A6752BED637D00CCBC18 /* PointCloudProcessingBridge.mm */,
 				96E89A332BEC469A00CCBC18 /* ImageDepth.cpp */,
 				96E89A342BEC469A00CCBC18 /* ImageDepth.hpp */,
-				96E899AF2BEAAA5000CCBC18 /* PointCloudProcessing.hpp */,
 			);
 			path = OpticALLY;
 			sourceTree = "<group>";
@@ -719,7 +714,6 @@
 				9679F8E12AD0907A00686F13 /* CameraView.swift in Sources */,
 				966360662B6E064B001D2119 /* LottieView.swift in Sources */,
 				96E856C22B7041E60037C3BB /* FilesViewModel.swift in Sources */,
-				96E899B02BEAAA5000CCBC18 /* PointCloudProcessing.cpp in Sources */,
 				9680F7DD2B22D6FD00F38A6F /* ARFaceTrackingView.swift in Sources */,
 				96E856C62B70441C0037C3BB /* FolderDetailView.swift in Sources */,
 				9679F8D52AD0907A00686F13 /* HistogramCalculator.m in Sources */,
