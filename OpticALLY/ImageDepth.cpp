@@ -46,7 +46,7 @@ void ImageDepth::loadCalibration(const std::string& file) {
     std::memcpy(lensDistortionLookup.data(), lensDistortionLookupBytes.data(), lensDistortionLookupBytes.size());
     std::memcpy(inverseLensDistortionLookup.data(), inverseLensDistortionLookupBytes.data(), inverseLensDistortionLookupBytes.size());
 
-    intrinsic = Eigen::Map<Eigen::Matrix<float, 3, 3, Eigen::RowMajor>>(data["intrinsic"].get<std::vector<float>>().data());
+    intrinsic = Eigen::Map<Eigen::Matrix<float, 3, 3, Eigen::RowMajor>>(data["intrinsic"].get<std::vector<float>>().data()).transpose();
 
     float scale = static_cast<float>(width) / data["intrinsicReferenceDimensionWidth"].get<int>();
     intrinsic(0, 0) *= scale;
@@ -165,8 +165,8 @@ void ImageDepth::loadDepth(const std::string& file) {
         return;
     }
 
-    std::vector<float> depth_data((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-    depth_map = cv::Mat(height, width, CV_32FC1, depth_data.data());
+    std::vector<uint16_t> depth_data((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+    depth_map = cv::Mat(height, width, CV_16UC1, depth_data.data());
 
     depth_map_undistort = cv::Mat();
 
@@ -182,10 +182,11 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
 
     for (int y = 0; y < depth_map.rows; ++y) {
         for (int x = 0; x < depth_map.cols; ++x) {
-            float z = depth_map.at<float>(y, x);
+            // float z = depth_map.at<float>(y, x);
             if (mask.empty() || mask.at<uint8_t>(y, x) != 0) {
-                if (std::isnan(z) || z < min_depth || z > max_depth) continue;
-
+                // if (std::isnan(z) || z < min_depth || z > max_depth) continue;
+                float z = static_cast<float>(depth_map.at<uint16_t>(y, x)) * 0.001f; // scale factor for depth
+                if (z < min_depth || z > max_depth) continue;
                 Eigen::Vector3d pt(
                     (x - intrinsic(0, 2)) * z / intrinsic(0, 0),
                     (y - intrinsic(1, 2)) * z / intrinsic(1, 1),
