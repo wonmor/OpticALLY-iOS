@@ -165,13 +165,13 @@ void ImageDepth::loadDepth(const std::string& file) {
         return;
     }
 
-    std::vector<uint16_t> depth_data((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-    depth_map = cv::Mat(height, width, CV_16UC1, depth_data.data());
+    std::vector<float> depth_data((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+    depth_map = cv::Mat(height, width, CV_32FC1, depth_data.data());
 
     depth_map_undistort = cv::Mat();
-    
+
     std::cout << "Remapping depth map..." << std::endl;
-    cv::remap(depth_map, depth_map_undistort, map_x, map_y, cv::INTER_NEAREST);
+    cv::remap(depth_map, depth_map_undistort, map_x, map_y, cv::INTER_LINEAR);
 }
 
 void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask) {
@@ -182,9 +182,9 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
 
     for (int y = 0; y < depth_map.rows; ++y) {
         for (int x = 0; x < depth_map.cols; ++x) {
+            float z = depth_map.at<float>(y, x);
             if (mask.empty() || mask.at<uint8_t>(y, x) != 0) {
-                float z = static_cast<float>(depth_map.at<uint16_t>(y, x)) * 0.001f; // scale factor for depth
-                if (z < min_depth || z > max_depth) continue;
+                if (std::isnan(z) || z < min_depth || z > max_depth) continue;
 
                 Eigen::Vector3d pt(
                     (x - intrinsic(0, 2)) * z / intrinsic(0, 0),
@@ -202,7 +202,6 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
     pointCloud->points_ = points;
     pointCloud->colors_ = colors;
 
-    // Calculate normals
     pointCloud->EstimateNormals(
         open3d::geometry::KDTreeSearchParamHybrid(normal_radius, 30)
     );
