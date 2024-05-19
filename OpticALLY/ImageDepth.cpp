@@ -19,7 +19,7 @@ ImageDepth::ImageDepth(const std::string& calibration_file, const std::string& i
     createUndistortionLookup();
     loadImage(image_file);
     loadDepth(depth_file);
-    createPointCloud(depth_map_undistort);
+    createPointCloud(depth_map_undistort, cv::Mat());
 }
 
 std::shared_ptr<open3d::geometry::PointCloud> ImageDepth::getPointCloud() {
@@ -46,7 +46,7 @@ void ImageDepth::loadCalibration(const std::string& file) {
     std::memcpy(lensDistortionLookup.data(), lensDistortionLookupBytes.data(), lensDistortionLookupBytes.size());
     std::memcpy(inverseLensDistortionLookup.data(), inverseLensDistortionLookupBytes.data(), inverseLensDistortionLookupBytes.size());
 
-    intrinsic = Eigen::Map<Eigen::Matrix<float, 3, 3, Eigen::RowMajor>>(data["intrinsic"].get<std::vector<float>>().data()).transpose();
+    intrinsic = Eigen::Map<Eigen::Matrix<float, 3, 3, Eigen::RowMajor>>(data["intrinsic"].get<std::vector<float>>().data());
 
     float scale = static_cast<float>(width) / data["intrinsicReferenceDimensionWidth"].get<int>();
     intrinsic(0, 0) *= scale;
@@ -165,38 +165,16 @@ void ImageDepth::loadDepth(const std::string& file) {
         return;
     }
 
-    std::vector<float> depth_data((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-    ifs.close();
-    depth_map = cv::Mat(height, width, CV_32FC1, depth_data.data());
-
-    // Generate all possible (x, y) positions
-    std::vector<cv::Point2f> xy;
-    for (int i = 0; i < width * height; ++i) {
-        int x = i % width;
-        int y = i / width;
-        xy.emplace_back(x, y);
-    }
-
-    // Create masks and filter depth values
-    mask = cv::Mat(height, width, CV_8UC1, cv::Scalar(255));
-    for (int i = 0; i < width * height; ++i) {
-        float depth_value = depth_data[i];
-        if (std::isnan(depth_value) || depth_value <= min_depth || depth_value >= max_depth) {
-            depth_data[i] = -1000;
-            mask.at<uchar>(i / width, i % width) = 0;
-        }
-    }
-
-    // Reshape depth map to height x width x 1
-    depth_map = cv::Mat(height, width, CV_32FC1, depth_data.data());
+    std::vector<uint16_t> depth_data((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+    depth_map = cv::Mat(height, width, CV_16UC1, depth_data.data());
 
     depth_map_undistort = cv::Mat();
-
+    
     std::cout << "Remapping depth map..." << std::endl;
-    cv::remap(depth_map, depth_map_undistort, map_x, map_y, cv::INTER_LINEAR);
+    cv::remap(depth_map, depth_map_undistort, map_x, map_y, cv::INTER_NEAREST);
 }
 
-void ImageDepth::createPointCloud(const cv::Mat& depth_map) {
+void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask) {
     std::cout << "Creating point cloud..." << std::endl;
     pointCloud = std::make_shared<open3d::geometry::PointCloud>();
     std::vector<Eigen::Vector3d> points;
@@ -204,11 +182,10 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map) {
 
     for (int y = 0; y < depth_map.rows; ++y) {
         for (int x = 0; x < depth_map.cols; ++x) {
-            // float z = depth_map.at<float>(y, x);
             if (mask.empty() || mask.at<uint8_t>(y, x) != 0) {
-                // if (std::isnan(z) || z < min_depth || z > max_depth) continue;
                 float z = static_cast<float>(depth_map.at<uint16_t>(y, x)) * 0.001f; // scale factor for depth
                 if (z < min_depth || z > max_depth) continue;
+
                 Eigen::Vector3d pt(
                     (x - intrinsic(0, 2)) * z / intrinsic(0, 0),
                     (y - intrinsic(1, 2)) * z / intrinsic(1, 1),
@@ -225,6 +202,7 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map) {
     pointCloud->points_ = points;
     pointCloud->colors_ = colors;
 
+    // Calculate normals
     pointCloud->EstimateNormals(
         open3d::geometry::KDTreeSearchParamHybrid(normal_radius, 30)
     );
