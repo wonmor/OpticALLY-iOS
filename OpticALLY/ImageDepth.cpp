@@ -95,74 +95,112 @@ void ImageDepth::loadCalibration(const std::string& file) {
            std::cout << "Intrinsic Matrix after scaling:\n" << intrinsic << std::endl;
        }
 void ImageDepth::createUndistortionLookup() {
-    std::vector<Eigen::Vector2f> xy_pos;
-            xy_pos.reserve(width * height);
+    // Create xy_pos
+           std::vector<cv::Point2f> xy_pos;
+           for (int y = 0; y < height; ++y) {
+               for (int x = 0; x < width; ++x) {
+                   xy_pos.emplace_back(x, y);
+               }
+           }
+           std::cout << "xy_pos (first 10 values):\n";
+           for (int i = 0; i < 10 && i < xy_pos.size(); ++i) {
+               std::cout << xy_pos[i] << " ";
+           }
+           std::cout << std::endl;
 
-            for (int y = 0; y < height; ++y) {
-                for (int x = 0; x < width; ++x) {
-                    xy_pos.emplace_back(static_cast<float>(x), static_cast<float>(y));
-                }
-            }
+           // Convert to cv::Mat and subtract center
+           cv::Mat xy = cv::Mat(xy_pos).reshape(1).clone();
+           cv::Point2f center(intrinsic(0, 2), intrinsic(1, 2));
+           std::cout << "center:\n" << center << std::endl;
 
-            Eigen::MatrixXf xy(xy_pos.size(), 2);
-            for (size_t i = 0; i < xy_pos.size(); ++i) {
-                xy.row(i) = xy_pos[i];
-            }
+           xy -= cv::Scalar(center.x, center.y);
+           std::cout << "xy after subtracting center (first 10 values):\n";
+           for (int i = 0; i < 10; ++i) {
+               std::cout << xy.at<cv::Point2f>(i) << " ";
+           }
+           std::cout << std::endl;
 
-            // Subtract center
-            Eigen::Vector2f center = intrinsic.block<2, 1>(0, 2);
-            xy.rowwise() -= center.transpose();
+           // Calculate radius from center
+           cv::Mat r;
+           cv::sqrt(xy.col(0).mul(xy.col(0)) + xy.col(1).mul(xy.col(1)), r);
+           std::cout << "radius r (first 10 values):\n";
+           for (int i = 0; i < 10; ++i) {
+               std::cout << r.at<float>(i) << " ";
+           }
+           std::cout << std::endl;
 
-            // Calculate radius from center
-            Eigen::VectorXf r = (xy.array().square().rowwise().sum()).sqrt();
+           // Normalize radius
+           double max_r;
+           cv::minMaxLoc(r, nullptr, &max_r);
+           std::cout << "max_r:\n" << max_r << std::endl;
 
-            // Normalize radius
-            float max_r = r.maxCoeff();
-            Eigen::VectorXf norm_r = r / max_r;
+           cv::Mat norm_r = r / max_r;
+           std::cout << "normalized radius norm_r (first 10 values):\n";
+           for (int i = 0; i < 10; ++i) {
+               std::cout << norm_r.at<float>(i) << " ";
+           }
+           std::cout << std::endl;
 
-            // Interpolate the scale
-            int num = inverseLensDistortionLookup.size();
-            Eigen::VectorXf table = Eigen::Map<Eigen::VectorXf>(inverseLensDistortionLookup.data(), num);
-            Eigen::VectorXf indices = norm_r * static_cast<float>(num - 1);
+           // Interpolate the scale
+           std::cout << "inverseLensDistortionLookup table:\n";
+           for (const auto& val : inverseLensDistortionLookup) {
+               std::cout << val << " ";
+           }
+           std::cout << std::endl;
 
-            // Perform linear interpolation manually
-            Eigen::VectorXf scale(indices.size());
-            for (int i = 0; i < indices.size(); ++i) {
-                int idx = static_cast<int>(indices(i));
-                float fraction = indices(i) - idx;
-                if (idx + 1 < num) {
-                    scale(i) = 1.0f + (table(idx) * (1.0f - fraction) + table(idx + 1) * fraction);
-                } else {
-                    scale(i) = 1.0f + table(idx); // Handle the case where idx + 1 is out of bounds
-                }
-            }
+           int num = inverseLensDistortionLookup.size();
+           std::cout << "num:\n" << num << std::endl;
 
-            Eigen::MatrixXf new_xy = xy.array().colwise() * scale.array();
-            new_xy.rowwise() += center.transpose();
+           std::vector<float> scale(norm_r.rows);
+           for (int i = 0; i < norm_r.rows; ++i) {
+               float interp_index = norm_r.at<float>(i) * num;
+               int index = static_cast<int>(interp_index);
+               float frac = interp_index - index;
+               if (index >= num - 1) {
+                   scale[i] = 1.0 + inverseLensDistortionLookup[num - 1];
+               } else {
+                   scale[i] = 1.0 + inverseLensDistortionLookup[index] + frac * (inverseLensDistortionLookup[index + 1] - inverseLensDistortionLookup[index]);
+               }
+           }
+           std::cout << "scale (first 10 values):\n";
+           for (int i = 0; i < 10; ++i) {
+               std::cout << scale[i] << " ";
+           }
+           std::cout << std::endl;
 
-            map_x.create(height, width, CV_32F);
-            map_y.create(height, width, CV_32F);
+           // Apply the scale
+           for (int i = 0; i < xy.rows; ++i) {
+               xy.at<cv::Point2f>(i) *= scale[i];
+           }
+           xy += cv::Scalar(center.x, center.y);
+           std::cout << "new_xy (first 10 values):\n";
+           for (int i = 0; i < 10; ++i) {
+               std::cout << xy.at<cv::Point2f>(i) << " ";
+           }
+           std::cout << std::endl;
 
-            for (int i = 0; i < height; ++i) {
-                for (int j = 0; j < width; ++j) {
-                    map_x.at<float>(i, j) = new_xy(i * width + j, 0);
-                    map_y.at<float>(i, j) = new_xy(i * width + j, 1);
-                }
-            }
+           // Reshape to map_x and map_y
+           map_x = cv::Mat(height, width, CV_32F);
+           map_y = cv::Mat(height, width, CV_32F);
+           for (int y = 0; y < height; ++y) {
+               for (int x = 0; x < width; ++x) {
+                   int index = y * width + x;
+                   map_x.at<float>(y, x) = xy.at<cv::Point2f>(index).x;
+                   map_y.at<float>(y, x) = xy.at<cv::Point2f>(index).y;
+               }
+           }
+           std::cout << "map_x (first 10 values):\n";
+           for (int i = 0; i < 10; ++i) {
+               std::cout << map_x.at<float>(i) << " ";
+           }
+           std::cout << std::endl;
 
-            // Debug prints
-            std::cout << "Remap matrix map_x (first 10 values):\n";
-            for (int i = 0; i < 10; ++i) {
-                std::cout << map_x.at<float>(i / width, i % width) << " ";
-            }
-            std::cout << "\n";
-
-            std::cout << "Remap matrix map_y (first 10 values):\n";
-            for (int i = 0; i < 10; ++i) {
-                std::cout << map_y.at<float>(i / width, i % width) << " ";
-            }
-            std::cout << "\n";
-        }
+           std::cout << "map_y (first 10 values):\n";
+           for (int i = 0; i < 10; ++i) {
+               std::cout << map_y.at<float>(i) << " ";
+           }
+           std::cout << std::endl;
+       }
 
 void ImageDepth::loadImage(const std::string& file) {
         std::cout << "Loading " << file << std::endl;
