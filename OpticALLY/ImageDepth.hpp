@@ -20,6 +20,7 @@ private:
     float min_depth;
     float max_depth;
     float normal_radius;
+    float scale;
     cv::Mat img;
     cv::Mat img_linear;
     cv::Mat img_undistort;

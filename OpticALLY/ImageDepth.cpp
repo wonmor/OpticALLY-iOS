@@ -8,6 +8,10 @@
 #include "cppcodec/base64_rfc4648.hpp"
 #include <open3d/geometry/PointCloud.h>
 #include <open3d/geometry/KDTreeSearchParam.h>
+#include "base64.hpp"
+
+using json = nlohmann::json;
+using namespace Eigen;
 
 // Constructor implementation
 ImageDepth::ImageDepth(const std::string& calibration_file, const std::string& image_file, const std::string& depth_file,
@@ -26,34 +30,53 @@ std::shared_ptr<open3d::geometry::PointCloud> ImageDepth::getPointCloud() {
     return pointCloud;
 }
 
-void ImageDepth::loadCalibration(const std::string& file) {
-    std::ifstream ifs(file);
-    if (!ifs.is_open()) {
-        std::cerr << "Error opening calibration file." << std::endl;
-        return;
+std::vector<float> bytes_to_floats(const std::vector<BYTE>& bytes) {
+        std::vector<float> floats(bytes.size() / 4);
+        for (size_t i = 0; i < bytes.size(); i += 4) {
+            float value;
+            std::memcpy(&value, &bytes[i], 4);
+            floats[i / 4] = value;
+        }
+        return floats;
     }
 
-    nlohmann::json data;
-    ifs >> data;
+void ImageDepth::loadCalibration(const std::string& file) {
+    std::ifstream ifs(file);
+            json data;
+            ifs >> data;
 
-    auto lensDistortionLookupBase64 = data["lensDistortionLookup"].get<std::string>();
-    auto inverseLensDistortionLookupBase64 = data["inverseLensDistortionLookup"].get<std::string>();
-    auto lensDistortionLookupBytes = cppcodec::base64_rfc4648::decode(lensDistortionLookupBase64);
-    auto inverseLensDistortionLookupBytes = cppcodec::base64_rfc4648::decode(inverseLensDistortionLookupBase64);
+            std::string lensDistortionLookupBase64 = data["lensDistortionLookup"];
+            std::string inverseLensDistortionLookupBase64 = data["inverseLensDistortionLookup"];
+            
+            std::vector<BYTE> lensDistortionLookupBytes = base64_decode(lensDistortionLookupBase64);
+            std::vector<BYTE> inverseLensDistortionLookupBytes = base64_decode(inverseLensDistortionLookupBase64);
 
-    lensDistortionLookup.resize(lensDistortionLookupBytes.size() / sizeof(float));
-    inverseLensDistortionLookup.resize(inverseLensDistortionLookupBytes.size() / sizeof(float));
-    std::memcpy(lensDistortionLookup.data(), lensDistortionLookupBytes.data(), lensDistortionLookupBytes.size());
-    std::memcpy(inverseLensDistortionLookup.data(), inverseLensDistortionLookupBytes.data(), inverseLensDistortionLookupBytes.size());
+            lensDistortionLookup = bytes_to_floats(lensDistortionLookupBytes);
+            inverseLensDistortionLookup = bytes_to_floats(inverseLensDistortionLookupBytes);
 
-    intrinsic = Eigen::Map<Eigen::Matrix<float, 3, 3, Eigen::RowMajor>>(data["intrinsic"].get<std::vector<float>>().data());
+            // Debug prints
+            std::cout << "Lens Distortion Lookup: ";
+            for (const auto& value : lensDistortionLookup) std::cout << value << " ";
+            std::cout << std::endl;
 
-    float scale = static_cast<float>(width) / data["intrinsicReferenceDimensionWidth"].get<int>();
-    intrinsic(0, 0) *= scale;
-    intrinsic(1, 1) *= scale;
-    intrinsic(0, 2) *= scale;
-    intrinsic(1, 2) *= scale;
-}
+            std::cout << "Inverse Lens Distortion Lookup: ";
+            for (const auto& value : inverseLensDistortionLookup) std::cout << value << " ";
+            std::cout << std::endl;
+
+            intrinsic = Matrix3f::Map(data["intrinsic"].get<std::vector<float>>().data()).transpose();
+
+            // Debug print
+            std::cout << "Intrinsic Matrix before scaling:\n" << intrinsic << std::endl;
+
+            scale = static_cast<float>(width) / data["intrinsicReferenceDimensionWidth"].get<float>();
+            intrinsic(0, 0) *= scale;
+            intrinsic(1, 1) *= scale;
+            intrinsic(0, 2) *= scale;
+            intrinsic(1, 2) *= scale;
+
+            // Debug print
+            std::cout << "Intrinsic Matrix after scaling:\n" << intrinsic << std::endl;
+        }
 
 void ImageDepth::createUndistortionLookup() {
     std::vector<Eigen::Vector2f> xy_pos;
