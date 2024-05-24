@@ -95,114 +95,120 @@ void ImageDepth::loadCalibration(const std::string& file) {
        }
 void ImageDepth::createUndistortionLookup() {
     // Create xy_pos
-           std::vector<cv::Point2f> xy_pos;
-           for (int y = 0; y < height; ++y) {
-               for (int x = 0; x < width; ++x) {
-                   xy_pos.emplace_back(x, y);
-               }
-           }
-        std::cout << "xy_pos (first 10 values):\n";
-        for (int i = 0; i < 10 && i < xy_pos.size(); ++i) {
-            std::cout << xy_pos[i] << " ";
+    std::vector<cv::Point2f> xy_pos;
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            xy_pos.emplace_back(x, y);
         }
-        std::cout << std::endl;
-
-        // Convert to cv::Mat and subtract center
-        cv::Mat xy = cv::Mat(xy_pos).reshape(2).clone();  // Reshape to have 2 columns (x and y)
-        cv::Point2f center(intrinsic(0, 2), intrinsic(1, 2));
-        std::cout << "center:\n" << center << std::endl;
-
-        for (int i = 0; i < xy.rows; ++i) {
-            xy.at<cv::Vec2f>(i, 0)[0] -= center.x;
-            xy.at<cv::Vec2f>(i, 0)[1] -= center.y;
-        }
-
-        std::cout << "xy after subtracting center (first 10 values):\n";
-        for (int i = 0; i < 10; ++i) {
-            std::cout << "[" << xy.at<cv::Vec2f>(i, 0)[0] << ", " << xy.at<cv::Vec2f>(i, 0)[1] << "] ";
-        }
-        std::cout << std::endl;
+    }
+    std::cout << "xy_pos (first 10 values):\n";
+    for (int i = 0; i < 10 && i < xy_pos.size(); ++i) {
+        std::cout << xy_pos[i] << " ";
+    }
+    std::cout << std::endl;
+    
+    // Convert to cv::Mat and subtract center
+    cv::Mat xy = cv::Mat(xy_pos).reshape(2).clone();  // Reshape to have 2 columns (x and y)
+    cv::Point2f center(intrinsic(0, 2), intrinsic(1, 2));
+    std::cout << "center:\n" << center << std::endl;
+    
+    for (int i = 0; i < xy.rows; ++i) {
+        xy.at<cv::Vec2f>(i, 0)[0] -= center.x;
+        xy.at<cv::Vec2f>(i, 0)[1] -= center.y;
+    }
+    
+    std::cout << "xy after subtracting center (first 10 values):\n";
+    for (int i = 0; i < 10; ++i) {
+        std::cout << "[" << xy.at<cv::Vec2f>(i, 0)[0] << ", " << xy.at<cv::Vec2f>(i, 0)[1] << "] ";
+    }
+    
+    std::cout << std::endl;
+    
+    int n = xy.rows;
+           cv::Mat r = cv::Mat::zeros(n, 1, CV_64F);
 
            // Calculate radius from center
-           cv::Mat r;
-           cv::sqrt(xy.col(0).mul(xy.col(0)) + xy.col(1).mul(xy.col(1)), r);
-           std::cout << "radius r (first 10 values):\n";
-           for (int i = 0; i < 10; ++i) {
-               std::cout << r.at<float>(i) << " ";
+           for (int i = 0; i < n; ++i) {
+               double x = xy.at<cv::Vec2f>(i)[0]; // Access as Vec2f to get x, y
+               double y = xy.at<cv::Vec2f>(i)[1];
+               r.at<double>(i, 0) = std::sqrt(x * x + y * y);
            }
-           std::cout << std::endl;
+
+           // Print first 10 values of r
+           std::cout << "radius r (first 10 values):\n";
+           for (int i = 0; i < std::min(n, 10); ++i) {
+               std::cout << r.at<double>(i, 0) << std::endl;
+           }
 
            // Normalize radius
-           double max_r;
-           cv::minMaxLoc(r, nullptr, &max_r);
+           double max_r = 0.0;
+           cv::minMaxIdx(r, nullptr, &max_r);
            std::cout << "max_r:\n" << max_r << std::endl;
 
            cv::Mat norm_r = r / max_r;
-           std::cout << "normalized radius norm_r (first 10 values):\n";
-           for (int i = 0; i < 10; ++i) {
-               std::cout << norm_r.at<float>(i) << " ";
-           }
-           std::cout << std::endl;
 
-           // Interpolate the scale
+           // Print first 10 values of norm_r
+           std::cout << "normalized radius norm_r (first 10 values):\n";
+           for (int i = 0; i < std::min(n, 10); ++i) {
+               std::cout << norm_r.at<double>(i, 0) << std::endl;
+           }
+
+           // Convert inverseLensDistortionLookup from float to double
+           std::vector<double> table(inverseLensDistortionLookup.begin(), inverseLensDistortionLookup.end());
            std::cout << "inverseLensDistortionLookup table:\n";
-           for (const auto& val : inverseLensDistortionLookup) {
+           for (const auto& val : table) {
                std::cout << val << " ";
            }
            std::cout << std::endl;
 
-           int num = inverseLensDistortionLookup.size();
+           int num = table.size();
            std::cout << "num:\n" << num << std::endl;
 
-           std::vector<float> scale(norm_r.rows);
-           for (int i = 0; i < norm_r.rows; ++i) {
-               float interp_index = norm_r.at<float>(i) * num;
-               int index = static_cast<int>(interp_index);
-               float frac = interp_index - index;
-               if (index >= num - 1) {
-                   scale[i] = 1.0 + inverseLensDistortionLookup[num - 1];
-               } else {
-                   scale[i] = 1.0 + inverseLensDistortionLookup[index] + frac * (inverseLensDistortionLookup[index + 1] - inverseLensDistortionLookup[index]);
-               }
+           // Interpolate the scale
+           cv::Mat scale = cv::Mat::ones(n, 1, CV_64F);
+           for (int i = 0; i < n; ++i) {
+               double val = norm_r.at<double>(i, 0) * num;
+               int idx = std::min(static_cast<int>(val), num - 2); // Adjust to avoid out-of-bounds
+               double interp_value = table[idx] + (table[idx + 1] - table[idx]) * (val - idx);
+               scale.at<double>(i, 0) = 1.0 + interp_value;
            }
+
+           // Print first 10 values of scale
            std::cout << "scale (first 10 values):\n";
-           for (int i = 0; i < 10; ++i) {
-               std::cout << scale[i] << " ";
+           for (int i = 0; i < std::min(n, 10); ++i) {
+               std::cout << scale.at<double>(i, 0) << std::endl;
            }
-           std::cout << std::endl;
 
-           // Apply the scale
-           for (int i = 0; i < xy.rows; ++i) {
-               xy.at<cv::Point2f>(i) *= scale[i];
+           // Calculate new_xy
+           cv::Mat new_xy = xy.mul(cv::repeat(scale, 1, 2));
+           for (int i = 0; i < n; ++i) {
+               new_xy.at<cv::Vec2f>(i)[0] += center.x;
+               new_xy.at<cv::Vec2f>(i)[1] += center.y;
            }
-           xy += cv::Scalar(center.x, center.y);
+
+           // Print first 10 values of new_xy
            std::cout << "new_xy (first 10 values):\n";
-           for (int i = 0; i < 10; ++i) {
-               std::cout << xy.at<cv::Point2f>(i) << " ";
+           for (int i = 0; i < std::min(n, 10); ++i) {
+               std::cout << new_xy.at<cv::Vec2f>(i)[0] << ", " << new_xy.at<cv::Vec2f>(i)[1] << std::endl;
            }
-           std::cout << std::endl;
 
-           // Reshape to map_x and map_y
-           map_x = cv::Mat(height, width, CV_32F);
-           map_y = cv::Mat(height, width, CV_32F);
-           for (int y = 0; y < height; ++y) {
-               for (int x = 0; x < width; ++x) {
-                   int index = y * width + x;
-                   map_x.at<float>(y, x) = xy.at<cv::Point2f>(index).x;
-                   map_y.at<float>(y, x) = xy.at<cv::Point2f>(index).y;
-               }
-           }
+           // Reshape new_xy to match height and width
+           cv::Mat map_x = new_xy.col(0).reshape(1, this->height).clone();
+           cv::Mat map_y = new_xy.col(1).reshape(1, this->height).clone();
+
+           // Print first 10 values of map_x and map_y
            std::cout << "map_x (first 10 values):\n";
-           for (int i = 0; i < 10; ++i) {
-               std::cout << map_x.at<float>(i) << " ";
+           for (int i = 0; i < std::min(static_cast<int>(map_x.total()), 10); ++i) {
+               std::cout << map_x.at<float>(i) << std::endl;
            }
-           std::cout << std::endl;
-
            std::cout << "map_y (first 10 values):\n";
-           for (int i = 0; i < 10; ++i) {
-               std::cout << map_y.at<float>(i) << " ";
+           for (int i = 0; i < std::min(static_cast<int>(map_y.total()), 10); ++i) {
+               std::cout << map_y.at<float>(i) << std::endl;
            }
-           std::cout << std::endl;
+
+           // Assign to class members
+           this->map_x = map_x;
+           this->map_y = map_y;
        }
 
 void ImageDepth::loadImage(const std::string& file) {
