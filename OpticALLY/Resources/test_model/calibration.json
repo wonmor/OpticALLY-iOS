@@ -1,0 +1,33 @@
+{
+  "pixelSize" : 0.0010000000474974513,
+  "intrinsicReferenceDimensionWidth" : 4032,
+  "lensDistortionLookup" : "AAAAAOiz0Tjq89A5DKppOo\/yzTrPIR87egpiO7FUlzu84sE7YPzvO\/psEDzu0Ck8FbZDPLWjXTwxH3c8udeHPFFwkzwbJJ48dcSnPEArsDx2PLc8See8PKQmwTzeAMQ8g4bFPBvQxTz1+sQ8+iTDPMxnwDx207w8QWm4PF0Xszxjtqw8\/wmlPHjGmzwPnZA8wFGDPFS6ZzyUO0U8gDghPJmd\/ztEPtA7",
+  "inverseLensDistortionLookup" : "AAAAAMsZ0LhvM8+5zmtnunKhy7qwBB27mIFeuxCSlLvwz727lkLqu+2RDLx90SS8UXQ9vKkNVrwEMm68xryCvE7Bjbwe+pe8R0ChvI1zqbxfe7C8lEe2vN\/QurzJGL68IynAvNASwbzB68C8Hsy\/vJTKvbzc97q8xlm3vC7msryzfq28O+6mvAXqnryFGJW8UiGJvCmVdbwEVFS85OIvvJ7CC7wmsd27",
+  "intrinsic" : [
+    2694.7783203125,
+    0,
+    0,
+    0,
+    2694.7783203125,
+    0,
+    2016.5,
+    1512.5,
+    1
+  ],
+  "lensDistortionCenter" : [
+    2016.5,
+    1512.5
+  ],
+  "extrinsic" : [
+    1,
+    0,
+    0,
+    0,
+    1,
+    0,
+    0,
+    0,
+    1
+  ],
+  "intrinsicReferenceDimensionHeight" : 3024
+}

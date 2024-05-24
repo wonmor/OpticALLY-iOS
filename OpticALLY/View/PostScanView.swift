@@ -115,9 +115,14 @@ struct PostScanView: View {
     let fileManager = FileManager.default
     
     private func processUploads() {
-        let baseFolderName = "bin_json"
-        let documentsDirectory = ExternalData.getDocumentsDirectory()
-        let folderURL = documentsDirectory.appendingPathComponent(baseFolderName)
+        // Accessing the resources folder within the app bundle
+        guard let resourcesURL = Bundle.main.resourceURL else {
+            print("Could not find resources folder in bundle.")
+            return
+        }
+
+        let baseFolderName = "test_model"
+        let folderURL = resourcesURL.appendingPathComponent(baseFolderName)
         let calibrationFileURL = folderURL.appendingPathComponent("calibration.json")
         
         // Retrieve all video and depth files
@@ -138,10 +143,10 @@ struct PostScanView: View {
         print("Trimmed Depth Files Count: \(depthFiles.count)")
 
         // Process point clouds for the matching pairs
-        PointCloudProcessingBridge.processPointClouds(withCalibrationFile: calibrationFileURL.path, imageFiles: videoFiles, depthFiles: depthFiles, outputPath: folderURL.path)
+        PointCloudProcessingBridge.processPointClouds(withCalibrationFile: calibrationFileURL.path, imageFiles: videoFiles, depthFiles: depthFiles, outputPath: getDocumentsDirectory().path)
 
         let objFileName = "output.obj"
-        let objURL = folderURL.appendingPathComponent(objFileName)
+        let objURL = getDocumentsDirectory().appendingPathComponent(objFileName)
         
         if FileManager.default.fileExists(atPath: objURL.path) {
             print("objURL Path: \(objURL.path)")
@@ -156,6 +161,11 @@ struct PostScanView: View {
         
         self.isProcessing = false
         ExternalData.isMeshView = true  // Processing is complete, allow viewing of the mesh
+    }
+
+    func getDocumentsDirectory() -> URL {
+        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+        return paths[0]
     }
     
     func initialize() {
@@ -560,13 +570,13 @@ struct PostScanView: View {
                             }
                         }
                     }
-                    if !exportViewModel.isLoading {
-                        Text("PUPIL DISTANCE\n\(String(format: "%.1f", cameraViewController.pupilDistance)) mm")
-                            .padding()
-                            .frame(maxWidth: .infinity, alignment: .center)
-                            .multilineTextAlignment(.center)
-                            .monospaced()
-                    }
+//                    if !exportViewModel.isLoading {
+//                        Text("PUPIL DISTANCE\n\(String(format: "%.1f", cameraViewController.pupilDistance)) mm")
+//                            .padding()
+//                            .frame(maxWidth: .infinity, alignment: .center)
+//                            .multilineTextAlignment(.center)
+//                            .monospaced()
+//                    }
                 }
                 
                 // TO DO: ADD BACKGROUND PROCESSING - https://developer.apple.com/documentation/uikit/app_and_environment/scenes/preparing_your_ui_to_run_in_the_background/using_background_tasks_to_update_your_app

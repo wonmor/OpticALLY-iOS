@@ -21,6 +21,7 @@ private:
     float max_depth;
     float normal_radius;
     cv::Mat img;
+    cv::Mat img_linear;
     cv::Mat img_undistort;
     cv::Mat depth_map;
     cv::Mat depth_map_undistort;

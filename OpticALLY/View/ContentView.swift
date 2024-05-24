@@ -24,14 +24,23 @@ struct ContentView: View {
                     .transition(.opacity)
                 
             case .scanning:
-                CameraView()
+                PostScanView()
                     .transition(.opacity)
-                    .ignoresSafeArea(.all)
                 
             case .postScanning:
                 PostScanView()
                     .transition(.opacity)
             }
+                
+//            case .scanning:
+//                CameraView()
+//                    .transition(.opacity)
+//                    .ignoresSafeArea(.all)
+//                
+//            case .postScanning:
+//                PostScanView()
+//                    .transition(.opacity)
+//            }
         }
         .animation(.easeInOut, value: globalState.currentView)
     }

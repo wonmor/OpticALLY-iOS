@@ -55,107 +55,151 @@ void ImageDepth::loadCalibration(const std::string& file) {
     intrinsic(1, 2) *= scale;
 }
 
-float ImageDepth::linearInterpolate(const std::vector<float>& lookup, float x) {
-    int i = static_cast<int>(x);
-    if (i < 0) return lookup.front();
-    if (i >= static_cast<int>(lookup.size()) - 1) return lookup.back();
+void ImageDepth::createUndistortionLookup() {
+    std::vector<Eigen::Vector2f> xy_pos;
+            xy_pos.reserve(width * height);
 
-    float alpha = x - i;
-    return lookup[i] * (1 - alpha) + lookup[i + 1] * alpha;
-}
-
-void ImageDepth::srgbToLinear(cv::Mat& img) {
-    std::cout << "Converting sRGB to Linear RGB..." << std::endl;
-    img.convertTo(img, CV_32FC3, 1.0 / 255.0); // Normalize
-    for (int i = 0; i < img.rows; ++i) {
-        for (int j = 0; j < img.cols; ++j) {
-            auto& pixel = img.at<cv::Vec3f>(i, j);
-            for (int k = 0; k < 3; ++k) {
-                if (pixel[k] <= 0.04045) {
-                    pixel[k] /= 12.92;
-                } else {
-                    pixel[k] = std::pow((pixel[k] + 0.055) / 1.055, 2.4);
+            for (int y = 0; y < height; ++y) {
+                for (int x = 0; x < width; ++x) {
+                    xy_pos.emplace_back(static_cast<float>(x), static_cast<float>(y));
                 }
             }
+
+            Eigen::MatrixXf xy(xy_pos.size(), 2);
+            for (size_t i = 0; i < xy_pos.size(); ++i) {
+                xy.row(i) = xy_pos[i];
+            }
+
+            // Subtract center
+            Eigen::Vector2f center = intrinsic.block<2, 1>(0, 2);
+            xy.rowwise() -= center.transpose();
+
+            // Calculate radius from center
+            Eigen::VectorXf r = (xy.array().square().rowwise().sum()).sqrt();
+
+            // Normalize radius
+            float max_r = r.maxCoeff();
+            Eigen::VectorXf norm_r = r / max_r;
+
+            // Interpolate the scale
+            int num = inverseLensDistortionLookup.size();
+            Eigen::VectorXf table = Eigen::Map<Eigen::VectorXf>(inverseLensDistortionLookup.data(), num);
+            Eigen::VectorXf indices = norm_r * static_cast<float>(num - 1);
+
+            // Perform linear interpolation manually
+            Eigen::VectorXf scale(indices.size());
+            for (int i = 0; i < indices.size(); ++i) {
+                int idx = static_cast<int>(indices(i));
+                float fraction = indices(i) - idx;
+                if (idx + 1 < num) {
+                    scale(i) = 1.0f + (table(idx) * (1.0f - fraction) + table(idx + 1) * fraction);
+                } else {
+                    scale(i) = 1.0f + table(idx); // Handle the case where idx + 1 is out of bounds
+                }
+            }
+
+            Eigen::MatrixXf new_xy = xy.array().colwise() * scale.array();
+            new_xy.rowwise() += center.transpose();
+
+            map_x.create(height, width, CV_32F);
+            map_y.create(height, width, CV_32F);
+
+            for (int i = 0; i < height; ++i) {
+                for (int j = 0; j < width; ++j) {
+                    map_x.at<float>(i, j) = new_xy(i * width + j, 0);
+                    map_y.at<float>(i, j) = new_xy(i * width + j, 1);
+                }
+            }
+
+            // Debug prints
+            std::cout << "Remap matrix map_x (first 10 values):\n";
+            for (int i = 0; i < 10; ++i) {
+                std::cout << map_x.at<float>(i / width, i % width) << " ";
+            }
+            std::cout << "\n";
+
+            std::cout << "Remap matrix map_y (first 10 values):\n";
+            for (int i = 0; i < 10; ++i) {
+                std::cout << map_y.at<float>(i / width, i % width) << " ";
+            }
+            std::cout << "\n";
         }
-    }
-}
-
-void ImageDepth::createUndistortionLookup() {
-    std::cout << "Creating undistortion lookup..." << std::endl;
-    std::vector<cv::Point2f> xy;
-    xy.reserve(width * height);
-    for (int y = 0; y < height; ++y) {
-        for (int x = 0; x < width; ++x) {
-            xy.emplace_back(x, y);
-        }
-    }
-
-    // Converting vector of Point2f to Mat
-    cv::Mat xy_mat = cv::Mat(xy).reshape(2);
-
-    // Subtracting center from each point
-    cv::Mat center = (cv::Mat_<float>(1, 2) << intrinsic(0, 2), intrinsic(1, 2));
-    for (int i = 0; i < xy_mat.rows; i++) {
-        xy_mat.at<cv::Vec2f>(i, 0) -= cv::Vec2f(center.at<float>(0, 0), center.at<float>(0, 1));
-    }
-
-    // Calculating radius and normalizing
-    std::vector<float> r(xy_mat.rows);
-    float max_r = 0;
-    for (int i = 0; i < xy_mat.rows; ++i) {
-        auto p = xy_mat.at<cv::Vec2f>(i);
-        r[i] = std::sqrt(p[0] * p[0] + p[1] * p[1]);
-        if (r[i] > max_r) max_r = r[i];
-    }
-    for (float& val : r) {
-        val /= max_r;
-    }
-
-    // Interpolating the scale
-    std::vector<float> scale(xy_mat.rows);
-    for (int i = 0; i < scale.size(); ++i) {
-        float idx = r[i] * inverseLensDistortionLookup.size();
-        scale[i] = 1.0f + linearInterpolate(inverseLensDistortionLookup, idx);
-    }
-
-    // Applying scale and adding back center
-    for (int i = 0; i < xy_mat.rows; ++i) {
-        auto& p = xy_mat.at<cv::Vec2f>(i);
-        p[0] = p[0] * scale[i] + center.at<float>(0, 0);
-        p[1] = p[1] * scale[i] + center.at<float>(0, 1);
-    }
-
-    // Creating remap matrices
-    map_x = cv::Mat(height, width, CV_32F);
-    map_y = cv::Mat(height, width, CV_32F);
-    for (int i = 0; i < height; i++) {
-        for (int j = 0; j < width; j++) {
-            map_x.at<float>(i, j) = xy_mat.at<cv::Vec2f>(i * width + j)[0];
-            map_y.at<float>(i, j) = xy_mat.at<cv::Vec2f>(i * width + j)[1];
-        }
-    }
-}
 
 void ImageDepth::loadImage(const std::string& file) {
-    std::cout << "Loading image file: " << file << std::endl;
-    std::ifstream ifs(file, std::ios::binary);
-    if (!ifs.is_open()) {
-        std::cerr << "Failed to open image file: " << file << std::endl;
-        return;
-    }
+        std::cout << "Loading " << file << std::endl;
+        // Load image file
+        std::vector<uint8_t> buffer(width * height * 4);
+        std::ifstream fileStream(file, std::ios::binary);
+        fileStream.read(reinterpret_cast<char*>(buffer.data()), buffer.size());
+        fileStream.close();
 
-    std::vector<uint8_t> img_data((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-    img = cv::Mat(height, width, CV_8UC4, img_data.data());
-    std::cout << "Converting RGBA to RGB..." << std::endl;
-    cv::cvtColor(img, img, cv::COLOR_RGBA2RGB);
+        // Reshape and convert image
+        cv::Mat img(height, width, CV_8UC4, buffer.data());
+        img = img(cv::Rect(0, 0, width, height)).clone(); // Extract 3 channels
+        cv::cvtColor(img, img, cv::COLOR_BGRA2BGR); // Remove alpha and swap RB
 
-    srgbToLinear(img);
+    // Convert image from sRGB to linear space
+           img_linear = img.clone();
+           img_linear.convertTo(img_linear, CV_32F, 1.0 / 255.0);
 
-    img_undistort = cv::Mat();
-    std::cout << "Remapping image..." << std::endl;
-    cv::remap(img, img_undistort, map_x, map_y, cv::INTER_LINEAR);
+           srgbToLinear(img_linear);
+
+           // Debug print for the linear image
+           std::cout << "Linear image (first 10 values): [";
+           for (int i = 0; i < 10; ++i) {
+               int y = i / img_linear.cols;
+               int x = i % img_linear.cols;
+               cv::Vec3f pixel = img_linear.at<cv::Vec3f>(y, x);
+               std::cout << pixel[2] << ", " << pixel[1] << ", " << pixel[0];
+               if (i < 9) std::cout << ", ";
+           }
+           std::cout << "]" << std::endl;
+    
+           std::cout << "map_x (first 10 values): ";
+           for (int i = 0; i < 10 && i < map_x.total(); ++i) {
+               std::cout << map_x.at<float>(i) << " ";
+           }
+           std::cout << std::endl;
+
+           std::cout << "map_y (first 10 values): ";
+           for (int i = 0; i < 10 && i < map_y.total(); ++i) {
+               std::cout << map_y.at<float>(i) << " ";
+           }
+           std::cout << std::endl;
+
+           // Undistort image
+           cv::Mat img_undistort;
+            // Convert linear space image to 8-bit
+            cv::Mat img_temp;
+            img_linear.convertTo(img_temp, CV_8UC1, 255.0);
+
+            // Remap to undistort
+            cv::remap(img_temp, img_undistort, map_x, map_y, cv::INTER_LINEAR);
+
+            // Debug print
+            std::vector<uchar> flattened(img_undistort.begin<uchar>(), img_undistort.end<uchar>());
+            std::cout << "Undistorted image (first 10 values): ";
+            for (int i = 0; i < 10 && i < flattened.size(); ++i) {
+                std::cout << static_cast<int>(flattened[i]) << " ";
+            }
+           std::cout << std::endl;
+       }
+    
+
+
+void ImageDepth::srgbToLinear(cv::Mat& img) {
+    img.forEach<cv::Vec3f>([](cv::Vec3f& pixel, const int* position) -> void {
+        for (int i = 0; i < 3; ++i) {
+            float& channel = pixel[i];
+            if (channel <= 0.04045f) {
+                channel = channel / 12.92f;
+            } else {
+                channel = pow((channel + 0.055f) / 1.055f, 2.4f);
+            }
+        }
+    });
 }
+
 
 void ImageDepth::loadDepth(const std::string& file) {
     std::cout << "Loading depth file: " << file << std::endl;

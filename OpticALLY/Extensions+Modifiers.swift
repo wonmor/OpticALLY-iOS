@@ -18,29 +18,12 @@ extension SCNVector3{
 }
 
 extension FileManager {
-    /// Searches the specified directory for files beginning with a given prefix.
-    /// - Parameters:
-    ///   - baseFolder: The path to the directory where files should be searched.
-    ///   - prefix: The prefix to match at the start of the file names.
-    /// - Returns: An array of strings, where each string is the full path to a file that matches the prefix.
     func getFilePathsWithPrefix(baseFolder: String, prefix: String) -> [String] {
         do {
-            // Get the URL for the baseFolder
-            let baseFolderURL = URL(fileURLWithPath: baseFolder, isDirectory: true)
-            
-            // Retrieve the contents of the baseFolder
-            let fileURLs = try contentsOfDirectory(at: baseFolderURL, includingPropertiesForKeys: nil)
-            
-            // Filter the files that start with the specified prefix
-            let filteredFiles = fileURLs.filter { $0.lastPathComponent.hasPrefix(prefix) }
-            
-            // Map the URLs to their string paths
-            let filePaths = filteredFiles.map { $0.path }
-            
-            return filePaths
+            let fileURLs = try self.contentsOfDirectory(at: URL(fileURLWithPath: baseFolder), includingPropertiesForKeys: nil)
+            return fileURLs.filter { $0.lastPathComponent.hasPrefix(prefix) }.map { $0.path }
         } catch {
-            // Handle any errors during directory enumeration
-            print("Error while enumerating files in \(baseFolder): \(error.localizedDescription)")
+            print("Error while enumerating files \(baseFolder): \(error.localizedDescription)")
             return []
         }
     }
