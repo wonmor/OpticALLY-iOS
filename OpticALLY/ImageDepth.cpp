@@ -42,42 +42,58 @@ std::vector<float> bytes_to_floats(const std::vector<BYTE>& bytes) {
 
 void ImageDepth::loadCalibration(const std::string& file) {
     std::ifstream ifs(file);
-            json data;
-            ifs >> data;
+           if (!ifs.is_open()) {
+               std::cerr << "Error: Could not open file " << file << std::endl;
+               return;
+           }
 
-            std::string lensDistortionLookupBase64 = data["lensDistortionLookup"];
-            std::string inverseLensDistortionLookupBase64 = data["inverseLensDistortionLookup"];
-            
-            std::vector<BYTE> lensDistortionLookupBytes = base64_decode(lensDistortionLookupBase64);
-            std::vector<BYTE> inverseLensDistortionLookupBytes = base64_decode(inverseLensDistortionLookupBase64);
+           json data;
+           ifs >> data;
+           ifs.close();
 
-            lensDistortionLookup = bytes_to_floats(lensDistortionLookupBytes);
-            inverseLensDistortionLookup = bytes_to_floats(inverseLensDistortionLookupBytes);
+           std::string lensDistortionLookupBase64 = data["lensDistortionLookup"];
+           std::string inverseLensDistortionLookupBase64 = data["inverseLensDistortionLookup"];
+           
+           std::vector<BYTE> lensDistortionLookupBytes = base64_decode(lensDistortionLookupBase64);
+           std::vector<BYTE> inverseLensDistortionLookupBytes = base64_decode(inverseLensDistortionLookupBase64);
 
-            // Debug prints
-            std::cout << "Lens Distortion Lookup: ";
-            for (const auto& value : lensDistortionLookup) std::cout << value << " ";
-            std::cout << std::endl;
+           lensDistortionLookup = bytes_to_floats(lensDistortionLookupBytes);
+           inverseLensDistortionLookup = bytes_to_floats(inverseLensDistortionLookupBytes);
 
-            std::cout << "Inverse Lens Distortion Lookup: ";
-            for (const auto& value : inverseLensDistortionLookup) std::cout << value << " ";
-            std::cout << std::endl;
+           // Debug prints
+           std::cout << "Lens Distortion Lookup: ";
+           for (const auto& value : lensDistortionLookup) std::cout << value << " ";
+           std::cout << std::endl;
 
-            intrinsic = Matrix3f::Map(data["intrinsic"].get<std::vector<float>>().data()).transpose();
+           std::cout << "Inverse Lens Distortion Lookup: ";
+           for (const auto& value : inverseLensDistortionLookup) std::cout << value << " ";
+           std::cout << std::endl;
 
-            // Debug print
-            std::cout << "Intrinsic Matrix before scaling:\n" << intrinsic << std::endl;
+            std::vector<double> intrinsic_data = data["intrinsic"];
 
-            scale = static_cast<float>(width) / data["intrinsicReferenceDimensionWidth"].get<float>();
-            intrinsic(0, 0) *= scale;
-            intrinsic(1, 1) *= scale;
-            intrinsic(0, 2) *= scale;
-            intrinsic(1, 2) *= scale;
+            // Create an Eigen matrix and fill it with the intrinsic data
+            Eigen::Matrix3d intrinsic;
+            for (int i = 0; i < 3; ++i) {
+                for (int j = 0; j < 3; ++j) {
+                    intrinsic(i, j) = intrinsic_data[i * 3 + j];
+                }
+            }
 
-            // Debug print
-            std::cout << "Intrinsic Matrix after scaling:\n" << intrinsic << std::endl;
-        }
+            // Transpose the matrix
+            intrinsic.transposeInPlace();
 
+           // Debug print
+           std::cout << "Intrinsic Matrix before scaling:\n" << intrinsic << std::endl;
+
+           scale = static_cast<float>(width) / data["intrinsicReferenceDimensionWidth"].get<float>();
+           intrinsic(0, 0) *= scale;
+           intrinsic(1, 1) *= scale;
+           intrinsic(0, 2) *= scale;
+           intrinsic(1, 2) *= scale;
+
+           // Debug print
+           std::cout << "Intrinsic Matrix after scaling:\n" << intrinsic << std::endl;
+       }
 void ImageDepth::createUndistortionLookup() {
     std::vector<Eigen::Vector2f> xy_pos;
             xy_pos.reserve(width * height);
