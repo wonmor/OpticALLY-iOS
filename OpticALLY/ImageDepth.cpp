@@ -101,23 +101,27 @@ void ImageDepth::createUndistortionLookup() {
                    xy_pos.emplace_back(x, y);
                }
            }
-           std::cout << "xy_pos (first 10 values):\n";
-           for (int i = 0; i < 10 && i < xy_pos.size(); ++i) {
-               std::cout << xy_pos[i] << " ";
-           }
-           std::cout << std::endl;
+        std::cout << "xy_pos (first 10 values):\n";
+        for (int i = 0; i < 10 && i < xy_pos.size(); ++i) {
+            std::cout << xy_pos[i] << " ";
+        }
+        std::cout << std::endl;
 
-           // Convert to cv::Mat and subtract center
-           cv::Mat xy = cv::Mat(xy_pos).reshape(1).clone();
-           cv::Point2f center(intrinsic(0, 2), intrinsic(1, 2));
-           std::cout << "center:\n" << center << std::endl;
+        // Convert to cv::Mat and subtract center
+        cv::Mat xy = cv::Mat(xy_pos).reshape(2).clone();  // Reshape to have 2 columns (x and y)
+        cv::Point2f center(intrinsic(0, 2), intrinsic(1, 2));
+        std::cout << "center:\n" << center << std::endl;
 
-           xy -= cv::Scalar(center.x, center.y);
-           std::cout << "xy after subtracting center (first 10 values):\n";
-           for (int i = 0; i < 10; ++i) {
-               std::cout << xy.at<cv::Point2f>(i) << " ";
-           }
-           std::cout << std::endl;
+        for (int i = 0; i < xy.rows; ++i) {
+            xy.at<cv::Vec2f>(i, 0)[0] -= center.x;
+            xy.at<cv::Vec2f>(i, 0)[1] -= center.y;
+        }
+
+        std::cout << "xy after subtracting center (first 10 values):\n";
+        for (int i = 0; i < 10; ++i) {
+            std::cout << "[" << xy.at<cv::Vec2f>(i, 0)[0] << ", " << xy.at<cv::Vec2f>(i, 0)[1] << "] ";
+        }
+        std::cout << std::endl;
 
            // Calculate radius from center
            cv::Mat r;
