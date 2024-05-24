@@ -72,7 +72,6 @@ void ImageDepth::loadCalibration(const std::string& file) {
             std::vector<double> intrinsic_data = data["intrinsic"];
 
             // Create an Eigen matrix and fill it with the intrinsic data
-            Eigen::Matrix3d intrinsic;
             for (int i = 0; i < 3; ++i) {
                 for (int j = 0; j < 3; ++j) {
                     intrinsic(i, j) = intrinsic_data[i * 3 + j];

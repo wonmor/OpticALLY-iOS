@@ -27,10 +27,10 @@ private:
     cv::Mat depth_map;
     cv::Mat depth_map_undistort;
     cv::Mat map_x, map_y;
+    Eigen::Matrix3d intrinsic;
+    Eigen::Matrix4f pose;
     std::vector<float> lensDistortionLookup;
     std::vector<float> inverseLensDistortionLookup;
-    Eigen::Matrix3f intrinsic;
-    Eigen::Matrix4f pose;
     std::shared_ptr<open3d::geometry::PointCloud> pointCloud;
 
     // Private utility methods
