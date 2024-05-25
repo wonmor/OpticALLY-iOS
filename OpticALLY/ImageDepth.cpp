@@ -218,8 +218,8 @@ void ImageDepth::createUndistortionLookup() {
     std::vector<cv::Mat> new_xy_channels(2);
     cv::split(new_xy_mat, new_xy_channels);
     
-    cv::Mat map_x = new_xy_channels[0];
-    cv::Mat map_y = new_xy_channels[1];
+    map_x = new_xy_channels[0];
+    map_y = new_xy_channels[1];
     
     
     std::cout << "map_x (first 10 values):\n";
