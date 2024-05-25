@@ -218,19 +218,20 @@ void ImageDepth::createUndistortionLookup() {
     std::vector<cv::Mat> new_xy_channels(2);
     cv::split(new_xy_mat, new_xy_channels);
     
-    map_x = new_xy_channels[0];
-    map_y = new_xy_channels[1];
+    // Convert to CV_32FC1
+    new_xy_channels[0].convertTo(map_x, CV_32FC1);
+    new_xy_channels[1].convertTo(map_y, CV_32FC1);
     
-    
+    // Debug prints
     std::cout << "map_x (first 10 values):\n";
     for (int i = 0; i < 10; ++i) {
-        std::cout << map_x.at<double>(i) << " ";
+        std::cout << map_x.at<float>(i) << " ";
     }
     std::cout << std::endl;
     
     std::cout << "map_y (first 10 values):\n";
     for (int i = 0; i < 10; ++i) {
-        std::cout << map_y.at<double>(i) << " ";
+        std::cout << map_y.at<float>(i) << " ";
     }
     std::cout << std::endl;
 }
@@ -265,17 +266,17 @@ void ImageDepth::loadImage(const std::string& file) {
            }
            std::cout << "]" << std::endl;
     
-           std::cout << "map_x (first 10 values): ";
-           for (int i = 0; i < 10 && i < map_x.total(); ++i) {
-               std::cout << map_x.at<float>(i) << " ";
-           }
-           std::cout << std::endl;
-
-           std::cout << "map_y (first 10 values): ";
-           for (int i = 0; i < 10 && i < map_y.total(); ++i) {
-               std::cout << map_y.at<float>(i) << " ";
-           }
-           std::cout << std::endl;
+            std::cout << "map_x (first 10 values):\n";
+            for (int i = 0; i < 10; ++i) {
+                std::cout << map_x.at<double>(i) << " ";
+            }
+            std::cout << std::endl;
+            
+            std::cout << "map_y (first 10 values):\n";
+            for (int i = 0; i < 10; ++i) {
+                std::cout << map_y.at<double>(i) << " ";
+            }
+            std::cout << std::endl;
 
            // Undistort image
            cv::Mat img_undistort;
