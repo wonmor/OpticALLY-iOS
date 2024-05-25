@@ -121,58 +121,58 @@ void ImageDepth::createUndistortionLookup() {
             xy_pos.emplace_back(static_cast<float>(x), static_cast<float>(y));
         }
     }
-
+    
     std::cout << "xy_pos (first 10 values):\n";
     for (int i = 0; i < 10 && i < xy_pos.size(); ++i) {
         std::cout << xy_pos[i] << " ";
     }
     std::cout << std::endl;
-
+    
     // Convert to cv::Mat and subtract center
     cv::Mat xy = cv::Mat(xy_pos).reshape(2).clone();  // Reshape to have 2 columns (x and y)
     cv::Point2f center(intrinsic(0, 2), intrinsic(1, 2));
     std::cout << "center:\n" << center << std::endl;
-
+    
     for (int i = 0; i < xy.rows; ++i) {
         xy.at<cv::Vec2f>(i, 0)[0] -= center.x;
         xy.at<cv::Vec2f>(i, 0)[1] -= center.y;
     }
-
+    
     std::cout << "xy after subtracting center (first 10 values):\n";
     for (int i = 0; i < 10; ++i) {
         std::cout << "[" << xy.at<cv::Vec2f>(i, 0)[0] << ", " << xy.at<cv::Vec2f>(i, 0)[1] << "] ";
     }
     std::cout << std::endl;
-
+    
     int n = xy.rows;
     cv::Mat r = cv::Mat::zeros(n, 1, CV_64F);
-
+    
     // Calculate radius from center
     for (int i = 0; i < n; ++i) {
         double x = xy.at<cv::Vec2f>(i, 0)[0]; // Access as Vec2f to get x, y
         double y = xy.at<cv::Vec2f>(i, 0)[1];
         r.at<double>(i, 0) = std::sqrt(x * x + y * y);
     }
-
+    
     // Print first 10 values of r
     std::cout << "radius r (first 10 values):\n";
     for (int i = 0; i < std::min(n, 10); ++i) {
         std::cout << r.at<double>(i, 0) << std::endl;
     }
-
+    
     // Normalize radius
     double max_r = 0.0;
     cv::minMaxIdx(r, nullptr, &max_r);
     std::cout << "max_r:\n" << max_r << std::endl;
-
+    
     cv::Mat norm_r = r / max_r;
-
+    
     // Print first 10 values of norm_r
     std::cout << "normalized radius norm_r (first 10 values):\n";
     for (int i = 0; i < std::min(n, 10); ++i) {
         std::cout << norm_r.at<double>(i, 0) << std::endl;
     }
-
+    
     // Convert inverseLensDistortionLookup from float to double
     std::vector<double> table(inverseLensDistortionLookup.begin(), inverseLensDistortionLookup.end());
     std::cout << "inverseLensDistortionLookup table:\n";
@@ -180,57 +180,60 @@ void ImageDepth::createUndistortionLookup() {
         std::cout << val << " ";
     }
     std::cout << std::endl;
-
+    
     int num = table.size();
     std::cout << "num:\n" << num << std::endl;
-
+    
     // Interpolate the scale
     cv::Mat scale = cv::Mat::ones(norm_r.size(), CV_64F);
-
+    
     for (int i = 0; i < norm_r.rows; ++i) {
         double interpolated_value = interpolate(norm_r.at<double>(i, 0) * num, std::vector<double>(num), table);
         scale.at<double>(i, 0) = 1.0 + interpolated_value;
     }
-
+    
     std::cout << "scale (first 10 values):\n";
     for (int i = 0; i < std::min(10, scale.rows); ++i) {
         std::cout << scale.at<double>(i, 0) << std::endl;
     }
-
+    
     std::vector<cv::Point2d> new_xy(xy.rows);
-
+    
     for (int i = 0; i < xy.rows; ++i) {
         cv::Point2d point = cv::Point2d(static_cast<double>(xy.at<cv::Vec2f>(i, 0)[0]), static_cast<double>(xy.at<cv::Vec2f>(i, 0)[1])) * scale.at<double>(i, 0) + cv::Point2d(center);
         new_xy[i] = point;
     }
-
+    
     std::cout << "new_xy (first 10 values):\n";
     for (int i = 0; i < std::min(10, static_cast<int>(new_xy.size())); ++i) {
         std::cout << "[" << new_xy[i].x << ", " << new_xy[i].y << "] ";
     }
     std::cout << std::endl;
-
-    cv::Mat map_x(height, width, CV_32F);
-    cv::Mat map_y(height, width, CV_32F);
-
-    for (int i = 0; i < new_xy.size(); ++i) {
-        int row = i / width;
-        int col = i % width;
-        map_x.at<float>(row, col) = static_cast<float>(new_xy[i].x);
-        map_y.at<float>(row, col) = static_cast<float>(new_xy[i].y);
-    }
-
+    
+    // Convert new_xy to cv::Mat and reshape to match dimensions
+    cv::Mat new_xy_mat(new_xy, true); // Convert to Mat
+    new_xy_mat = new_xy_mat.reshape(2, height); // Reshape to (height, width, 2)
+    
+    // Split the Mat into two channels
+    std::vector<cv::Mat> new_xy_channels(2);
+    cv::split(new_xy_mat, new_xy_channels);
+    
+    cv::Mat map_x = new_xy_channels[0];
+    cv::Mat map_y = new_xy_channels[1];
+    
+    
     std::cout << "map_x (first 10 values):\n";
-    for (int i = 0; i < std::min(10, static_cast<int>(map_x.total())); ++i) {
-        std::cout << map_x.at<float>(i) << std::endl;
+    for (int i = 0; i < 10; ++i) {
+        std::cout << map_x.at<double>(i) << " ";
     }
-
+    std::cout << std::endl;
+    
     std::cout << "map_y (first 10 values):\n";
-    for (int i = 0; i < std::min(10, static_cast<int>(map_y.total())); ++i) {
-        std::cout << map_y.at<float>(i) << std::endl;
+    for (int i = 0; i < 10; ++i) {
+        std::cout << map_y.at<double>(i) << " ";
     }
+    std::cout << std::endl;
 }
-
 
 void ImageDepth::loadImage(const std::string& file) {
         std::cout << "Loading " << file << std::endl;
