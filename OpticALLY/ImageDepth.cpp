@@ -237,65 +237,66 @@ void ImageDepth::createUndistortionLookup() {
 }
 
 void ImageDepth::loadImage(const std::string& file) {
-        std::cout << "Loading " << file << std::endl;
-        // Load image file
-        std::vector<uint8_t> buffer(width * height * 4);
-        std::ifstream fileStream(file, std::ios::binary);
-        fileStream.read(reinterpret_cast<char*>(buffer.data()), buffer.size());
-        fileStream.close();
+    std::cout << "Loading " << file << std::endl;
 
-        // Reshape and convert image
-        cv::Mat img(height, width, CV_8UC4, buffer.data());
-        img = img(cv::Rect(0, 0, width, height)).clone(); // Extract 3 channels
-        cv::cvtColor(img, img, cv::COLOR_BGRA2BGR); // Remove alpha and swap RB
+    // Load image file
+    std::vector<uint8_t> buffer(width * height * 4);
+    std::ifstream fileStream(file, std::ios::binary);
+    fileStream.read(reinterpret_cast<char*>(buffer.data()), buffer.size());
+    fileStream.close();
+
+    // Reshape and convert image
+    cv::Mat img(height, width, CV_8UC4, buffer.data());
+    img = img(cv::Rect(0, 0, width, height)).clone(); // Extract 3 channels
+    cv::cvtColor(img, img, cv::COLOR_BGRA2BGR); // Remove alpha and swap RB
 
     // Convert image from sRGB to linear space
-           img_linear = img.clone();
-           img_linear.convertTo(img_linear, CV_32F, 1.0 / 255.0);
+    img_linear = img.clone();
+    img_linear.convertTo(img_linear, CV_32F, 1.0 / 255.0);
 
-           srgbToLinear(img_linear);
+    srgbToLinear(img_linear);
 
-           // Debug print for the linear image
-           std::cout << "Linear image (first 10 values): [";
-           for (int i = 0; i < 10; ++i) {
-               int y = i / img_linear.cols;
-               int x = i % img_linear.cols;
-               cv::Vec3f pixel = img_linear.at<cv::Vec3f>(y, x);
-               std::cout << pixel[2] << ", " << pixel[1] << ", " << pixel[0];
-               if (i < 9) std::cout << ", ";
-           }
-           std::cout << "]" << std::endl;
-    
-            std::cout << "map_x (first 10 values):\n";
-            for (int i = 0; i < 10; ++i) {
-                std::cout << map_x.at<double>(i) << " ";
-            }
-            std::cout << std::endl;
-            
-            std::cout << "map_y (first 10 values):\n";
-            for (int i = 0; i < 10; ++i) {
-                std::cout << map_y.at<double>(i) << " ";
-            }
-            std::cout << std::endl;
+    // Debug print for the linear image
+    std::cout << "Linear image (first 10 values): [";
+    for (int i = 0; i < 10; ++i) {
+        int y = i / img_linear.cols;
+        int x = i % img_linear.cols;
+        cv::Vec3f pixel = img_linear.at<cv::Vec3f>(y, x);
+        std::cout << pixel[2] << ", " << pixel[1] << ", " << pixel[0];
+        if (i < 9) std::cout << ", ";
+    }
+    std::cout << "]" << std::endl;
 
-           // Undistort image
-           cv::Mat img_undistort;
-            // Convert linear space image to 8-bit
-            cv::Mat img_temp;
-            img_linear.convertTo(img_temp, CV_8UC1, 255.0);
+    // Print first 10 values of map_x
+    std::cout << "map_x (first 10 values):\n";
+    for (int i = 0; i < 10; ++i) {
+        std::cout << map_x.at<float>(i) << " ";
+    }
+    std::cout << std::endl;
 
-            // Remap to undistort
-            cv::remap(img_temp, img_undistort, map_x, map_y, cv::INTER_LINEAR);
+    // Print first 10 values of map_y
+    std::cout << "map_y (first 10 values):\n";
+    for (int i = 0; i < 10; ++i) {
+        std::cout << map_y.at<float>(i) << " ";
+    }
+    std::cout << std::endl;
 
-            // Debug print
-            std::vector<uchar> flattened(img_undistort.begin<uchar>(), img_undistort.end<uchar>());
-            std::cout << "Undistorted image (first 10 values): ";
-            for (int i = 0; i < 10 && i < flattened.size(); ++i) {
-                std::cout << static_cast<int>(flattened[i]) << " ";
-            }
-           std::cout << std::endl;
-       }
-    
+    // Scale the image back to [0, 255] and convert to uint8 before remap
+    cv::Mat img_linear_8bit;
+
+    img_linear.convertTo(img_linear_8bit, CV_8UC1, 255.0);
+
+        // Remap the image
+        cv::Mat img_undistort;
+        cv::remap(img_linear_8bit, img_undistort, map_x, map_y, cv::INTER_LINEAR);
+
+        // Debug print the first 10 values
+        std::cout << "Undistorted image (first 10 values):";
+        for (int i = 0; i < 10; ++i) {
+            std::cout << " " << static_cast<int>(img_undistort.data[i]);
+        }
+        std::cout << std::endl;
+}
 
 
 void ImageDepth::srgbToLinear(cv::Mat& img) {
