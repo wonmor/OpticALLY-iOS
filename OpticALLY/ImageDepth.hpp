@@ -41,6 +41,7 @@ private:
     void srgbToLinear(cv::Mat& img);
     float linearInterpolate(const std::vector<float>& lookup, float x);
     void createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask);
+    void debugImageStats(const cv::Mat& image, const std::string& name);
 
 public:
     // Constructor

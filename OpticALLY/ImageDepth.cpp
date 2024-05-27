@@ -4,6 +4,7 @@
 #include "ImageDepth.hpp"
 #include <algorithm>
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include "cppcodec/base64_rfc4648.hpp"
@@ -281,14 +282,25 @@ void ImageDepth::loadImage(const std::string& file) {
     }
     std::cout << std::endl;
 
-    // Scale the image back to [0, 255] and convert to uint8 before remap
-    cv::Mat img_linear_8bit;
+    debugImageStats(img_linear, "img_linear");
 
-    img_linear.convertTo(img_linear_8bit, CV_8UC1, 255.0);
+       // Convert img_linear to uint8 and multiply by 255
+       cv::Mat img_linear_uint8;
+       img_linear.convertTo(img_linear_uint8, CV_8U, 255.0);
 
-        // Remap the image
-        cv::Mat img_undistort;
-        cv::remap(img_linear_8bit, img_undistort, map_x, map_y, cv::INTER_LINEAR);
+       // Debug: Print shape and type of img_linear_uint8
+       debugImageStats(img_linear_uint8, "img_linear_uint8");
+
+       // Debug: Print shape and type of map_x and map_y
+       debugImageStats(map_x, "map_x");
+       debugImageStats(map_y, "map_y");
+
+       // Apply remap
+       cv::Mat img_undistort;
+       cv::remap(img_linear_uint8, img_undistort, map_x, map_y, cv::INTER_LINEAR);
+
+       // Debug: Print shape and type of img_undistort
+       debugImageStats(img_undistort, "img_undistort");
 
         // Debug print the first 10 values
         std::cout << "Undistorted image (first 10 values):";
@@ -298,6 +310,18 @@ void ImageDepth::loadImage(const std::string& file) {
         std::cout << std::endl;
     
     // set img_undistort global variable?
+}
+
+void ImageDepth::debugImageStats(const cv::Mat& image, const std::string& name) {
+    double min, max, mean;
+    cv::minMaxLoc(image, &min, &max);
+    mean = cv::mean(image)[0];
+
+    std::cout << name << " shape: " << image.rows << " x " << image.cols << std::endl;
+    std::cout << name << " type: " << image.type() << std::endl;
+    std::cout << name << " max value: " << max << std::endl;
+    std::cout << name << " min value: " << min << std::endl;
+    std::cout << name << " mean value: " << mean << std::endl;
 }
 
 
