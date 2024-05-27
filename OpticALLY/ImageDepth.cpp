@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <iostream>
 #include <iomanip>
+#include <string>
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include "cppcodec/base64_rfc4648.hpp"
@@ -312,18 +313,40 @@ void ImageDepth::loadImage(const std::string& file) {
     // set img_undistort global variable?
 }
 
+std::string getMatType(int type) {
+    std::string r;
+
+    uchar depth = type & CV_MAT_DEPTH_MASK;
+    uchar chans = 1 + (type >> CV_CN_SHIFT);
+
+    switch (depth) {
+        case CV_8U:  r = "8U"; break;
+        case CV_8S:  r = "8S"; break;
+        case CV_16U: r = "16U"; break;
+        case CV_16S: r = "16S"; break;
+        case CV_32S: r = "32S"; break;
+        case CV_32F: r = "32F"; break;
+        case CV_64F: r = "64F"; break;
+        default:     r = "User"; break;
+    }
+
+    r += "C";
+    r += (chans + '0');
+
+    return r;
+}
+
 void ImageDepth::debugImageStats(const cv::Mat& image, const std::string& name) {
     double min, max, mean;
     cv::minMaxLoc(image, &min, &max);
     mean = cv::mean(image)[0];
 
     std::cout << name << " shape: " << image.rows << " x " << image.cols << std::endl;
-    std::cout << name << " type: " << image.type() << std::endl;
+    std::cout << name << " type: " << getMatType(image.type()) << std::endl;
     std::cout << name << " max value: " << max << std::endl;
     std::cout << name << " min value: " << min << std::endl;
     std::cout << name << " mean value: " << mean << std::endl;
 }
-
 
 void ImageDepth::srgbToLinear(cv::Mat& img) {
     img.forEach<cv::Vec3f>([](cv::Vec3f& pixel, const int* position) -> void {
