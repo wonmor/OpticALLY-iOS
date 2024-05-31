@@ -296,8 +296,6 @@ void ImageDepth::loadImage(const std::string& file) {
        debugImageStats(map_x, "map_x");
        debugImageStats(map_y, "map_y");
 
-       // Apply remap
-       cv::Mat img_undistort;
        cv::remap(img_linear_uint8, img_undistort, map_x, map_y, cv::INTER_LINEAR);
 
        // Debug: Print shape and type of img_undistort
@@ -309,6 +307,8 @@ void ImageDepth::loadImage(const std::string& file) {
             std::cout << " " << static_cast<int>(img_undistort.data[i]);
         }
         std::cout << std::endl;
+    
+    
     
     // set img_undistort global variable?
 }
