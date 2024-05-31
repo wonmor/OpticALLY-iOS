@@ -307,10 +307,6 @@ void ImageDepth::loadImage(const std::string& file) {
             std::cout << " " << static_cast<int>(img_undistort.data[i]);
         }
         std::cout << std::endl;
-    
-    
-    
-    // set img_undistort global variable?
 }
 
 std::string getMatType(int type) {
