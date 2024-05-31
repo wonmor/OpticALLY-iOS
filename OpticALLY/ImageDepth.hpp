@@ -27,11 +27,13 @@ private:
     cv::Mat depth_map;
     cv::Mat depth_map_undistort;
     cv::Mat map_x, map_y;
+    cv::Mat mask;
     Eigen::Matrix3d intrinsic;
     Eigen::Matrix4f pose;
     std::vector<float> lensDistortionLookup;
     std::vector<float> inverseLensDistortionLookup;
     std::shared_ptr<open3d::geometry::PointCloud> pointCloud;
+    open3d::geometry::PointCloud pcd;
 
     // Private utility methods
     void loadCalibration(const std::string& file);
@@ -40,8 +42,9 @@ private:
     void loadDepth(const std::string& file);
     void srgbToLinear(cv::Mat& img);
     float linearInterpolate(const std::vector<float>& lookup, float x);
-    void createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask);
     void debugImageStats(const cv::Mat& image, const std::string& name);
+    void project3d(const cv::Mat& pts, cv::Mat& xyz, std::vector<int>& good_idx);
+    void undistort_depth_map();
 
 public:
     // Constructor
@@ -56,7 +59,6 @@ public:
 
     // Public methods
     std::shared_ptr<open3d::geometry::PointCloud> getPointCloud();
-    std::vector<cv::Point3f> project3D(const std::vector<cv::Point2f>& points);
 };
 
 #endif // IMAGE_DEPTH_HPP
