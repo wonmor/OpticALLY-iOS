@@ -285,28 +285,21 @@ void ImageDepth::loadImage(const std::string& file) {
 
     debugImageStats(img_linear, "img_linear");
 
-       // Convert img_linear to uint8 and multiply by 255
-       cv::Mat img_linear_uint8;
-       img_linear.convertTo(img_linear_uint8, CV_8U, 255.0);
+   // Debug: Print shape and type of map_x and map_y
+   debugImageStats(map_x, "map_x");
+   debugImageStats(map_y, "map_y");
 
-       // Debug: Print shape and type of img_linear_uint8
-       debugImageStats(img_linear_uint8, "img_linear_uint8");
+   cv::remap(img_linear, img_undistort, map_x, map_y, cv::INTER_LINEAR);
 
-       // Debug: Print shape and type of map_x and map_y
-       debugImageStats(map_x, "map_x");
-       debugImageStats(map_y, "map_y");
+   // Debug: Print shape and type of img_undistort
+   debugImageStats(img_undistort, "img_undistort");
 
-       cv::remap(img_linear_uint8, img_undistort, map_x, map_y, cv::INTER_LINEAR);
-
-       // Debug: Print shape and type of img_undistort
-       debugImageStats(img_undistort, "img_undistort");
-
-        // Debug print the first 10 values
-        std::cout << "Undistorted image (first 10 values):";
-        for (int i = 0; i < 10; ++i) {
-            std::cout << " " << static_cast<int>(img_undistort.data[i]);
-        }
-        std::cout << std::endl;
+    // Debug print the first 10 values
+    std::cout << "Undistorted image (first 10 values):";
+    for (int i = 0; i < 10; ++i) {
+        std::cout << " " << static_cast<int>(img_undistort.data[i]);
+    }
+    std::cout << std::endl;
 }
 
 std::string getMatType(int type) {
