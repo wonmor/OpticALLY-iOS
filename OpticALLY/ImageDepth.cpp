@@ -250,7 +250,7 @@ void ImageDepth::loadImage(const std::string& file) {
     // Reshape and convert image
     cv::Mat img(height, width, CV_8UC4, buffer.data());
     img = img(cv::Rect(0, 0, width, height)).clone(); // Extract 3 channels
-    cv::cvtColor(img, img, cv::COLOR_BGRA2BGR); // Remove alpha and swap RB
+    cv::cvtColor(img, img, cv::COLOR_BGRA2RGB); // Remove alpha and swap RB
 
     // Convert image from sRGB to linear space
     img_linear = img.clone();
