@@ -529,6 +529,24 @@ void ImageDepth::project3d(const cv::Mat& pts, cv::Mat& xyz, std::vector<int>& g
 }
 
 void ImageDepth::undistort_depth_map() {
+    std::cout << "depth_map type: " << getMatType(depth_map.type()) << std::endl;
+    std::cout << "map_x type: " << getMatType(map_x.type()) << std::endl;
+    std::cout << "map_y type: " << getMatType(map_y.type()) << std::endl;
+
+    std::cout << "depth_map size: " << depth_map.size() << std::endl;
+    std::cout << "map_x size: " << map_x.size() << std::endl;
+    std::cout << "map_y size: " << map_y.size() << std::endl;
+
+    if (depth_map.cols >= SHRT_MAX || depth_map.rows >= SHRT_MAX ||
+        map_x.cols >= SHRT_MAX || map_x.rows >= SHRT_MAX ||
+        map_y.cols >= SHRT_MAX || map_y.rows >= SHRT_MAX) {
+        std::cerr << "One or more dimensions exceed the maximum allowable size." << std::endl;
+        return;
+    }
+
     cv::remap(depth_map, depth_map_undistort, map_x, map_y, cv::INTER_LINEAR);
     std::cout << "Undistorted depth map (first 10 values): " << depth_map_undistort.reshape(1, 1).colRange(0, 10) << std::endl;
+    
+    // Debug print
+       std::cout << "Undistorted depth map (first 10 values): " << depth_map_undistort.reshape(1, 1).colRange(0, 10) << std::endl;
 }
