@@ -404,7 +404,24 @@ void ImageDepth::loadDepth(const std::string& file) {
     for (int i = 0; i < valid_idx.size(); ++i) {
         if (valid_idx[i]) {
             filtered_xy.push_back(xy.row(i));
-            filtered_rgb.push_back(img_undistort.reshape(1, -1).row(i));
+            std::cout << "xy.row(" << i << "): " << xy.row(i) << std::endl;
+            
+            // Access elements as float
+           cv::Vec2f coord = xy.at<cv::Vec2f>(i);
+           float x = coord[0];
+           float y = coord[1];
+
+           // Assuming img_undistort is a floating-point image for the sake of demonstration
+           // If not, you might need to handle the conversion or use interpolation
+           cv::Vec3f color = img_undistort.at<cv::Vec3f>(y, x);
+
+           // Convert cv::Vec3f to cv::Mat
+           cv::Mat colorMat(3, 1, CV_32F);
+           for (int j = 0; j < 3; ++j) {
+               colorMat.at<float>(j, 0) = color[j];
+           }
+
+           filtered_rgb.push_back(colorMat);
         }
     }
 
