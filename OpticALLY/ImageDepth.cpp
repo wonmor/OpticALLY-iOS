@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <iostream>
 #include <iomanip>
+#include <climits>
 #include <string>
 #include <fstream>
 #include <nlohmann/json.hpp>
@@ -442,11 +443,6 @@ void ImageDepth::loadDepth(const std::string& file) {
         if (!valid_idx[i])
             depth_map.at<float>(i / width, i % width) = -1000;
 
-    depth_map = depth_map.reshape(1, height * width).clone();
-    std::cout << "Generated depth map with mask (first 10 values): " << depth_map.rowRange(0, 10) << std::endl;
-
-    // Debug prints
-    std::cout << "Depth map (first 10 values): " << depth_map.rowRange(0, 10) << std::endl;
 
     undistort_depth_map();
 
@@ -537,13 +533,37 @@ void ImageDepth::undistort_depth_map() {
     std::cout << "map_x size: " << map_x.size() << std::endl;
     std::cout << "map_y size: " << map_y.size() << std::endl;
 
-    if (depth_map.cols >= SHRT_MAX || depth_map.rows >= SHRT_MAX ||
-        map_x.cols >= SHRT_MAX || map_x.rows >= SHRT_MAX ||
-        map_y.cols >= SHRT_MAX || map_y.rows >= SHRT_MAX) {
-        std::cerr << "One or more dimensions exceed the maximum allowable size." << std::endl;
-        return;
-    }
+    std::cerr << "SHRT_MAX: " << SHRT_MAX << std::endl;
+        std::cerr << "depth_map.cols: " << depth_map.cols << ", depth_map.rows: " << depth_map.rows << std::endl;
+        std::cerr << "map_x.cols: " << map_x.cols << ", map_x.rows: " << map_x.rows << std::endl;
+        std::cerr << "map_y.cols: " << map_y.cols << ", map_y.rows: " << map_y.rows << std::endl;
 
+        if (depth_map.cols >= SHRT_MAX) {
+            std::cerr << "depth_map.cols exceeds SHRT_MAX" << std::endl;
+        }
+        if (depth_map.rows >= SHRT_MAX) {
+            std::cerr << "depth_map.rows exceeds SHRT_MAX" << std::endl;
+        }
+        if (map_x.cols >= SHRT_MAX) {
+            std::cerr << "map_x.cols exceeds SHRT_MAX" << std::endl;
+        }
+        if (map_x.rows >= SHRT_MAX) {
+            std::cerr << "map_x.rows exceeds SHRT_MAX" << std::endl;
+        }
+        if (map_y.cols >= SHRT_MAX) {
+            std::cerr << "map_y.cols exceeds SHRT_MAX" << std::endl;
+        }
+        if (map_y.rows >= SHRT_MAX) {
+            std::cerr << "map_y.rows exceeds SHRT_MAX" << std::endl;
+        }
+
+        if (depth_map.cols >= SHRT_MAX || depth_map.rows >= SHRT_MAX ||
+            map_x.cols >= SHRT_MAX || map_x.rows >= SHRT_MAX ||
+            map_y.cols >= SHRT_MAX || map_y.rows >= SHRT_MAX) {
+            std::cerr << "One or more dimensions exceed the maximum allowable size." << std::endl;
+            return;
+        }
+    
     cv::remap(depth_map, depth_map_undistort, map_x, map_y, cv::INTER_LINEAR);
     std::cout << "Undistorted depth map (first 10 values): " << depth_map_undistort.reshape(1, 1).colRange(0, 10) << std::endl;
     
