@@ -486,6 +486,17 @@ void ImageDepth::loadDepth(const std::string& file) {
     pcd.EstimateNormals(open3d::geometry::KDTreeSearchParamHybrid(normal_radius, 30));
     pcd.OrientNormalsTowardsCameraLocation();
     std::cout << "Estimated and oriented normals for point cloud" << std::endl;
+    
+    // Set the pointCloud variable
+    pointCloud = std::make_shared<open3d::geometry::PointCloud>();
+    pointCloud->points_ = std::vector<Eigen::Vector3d>(valid_xyz.begin(), valid_xyz.end());
+    pointCloud->colors_ = std::vector<Eigen::Vector3d>(valid_rgb.begin(), valid_rgb.end());
+    
+    pointCloud.EstimateNormals(open3d::geometry::KDTreeSearchParamHybrid(normal_radius, 30));
+    pointCloud.OrientNormalsTowardsCameraLocation();
+    std::cout << "Estimated and oriented normals for point cloud" << std::endl;
+    
+
 }
 
 void ImageDepth::project3d(const cv::Mat& pts, cv::Mat& xyz, std::vector<int>& good_idx) {
