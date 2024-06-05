@@ -492,9 +492,10 @@ void ImageDepth::loadDepth(const std::string& file) {
     pointCloud->points_ = std::vector<Eigen::Vector3d>(valid_xyz.begin(), valid_xyz.end());
     pointCloud->colors_ = std::vector<Eigen::Vector3d>(valid_rgb.begin(), valid_rgb.end());
     
-    pointCloud.EstimateNormals(open3d::geometry::KDTreeSearchParamHybrid(normal_radius, 30));
-    pointCloud.OrientNormalsTowardsCameraLocation();
-    std::cout << "Estimated and oriented normals for point cloud" << std::endl;
+    // Calculate normal, required for ICP point-to-plane
+        pointCloud->EstimateNormals(open3d::geometry::KDTreeSearchParamHybrid(normal_radius, 30));
+        pointCloud->OrientNormalsTowardsCameraLocation();
+        std::cout << "Estimated and oriented normals for point cloud" << std::endl;
     
 
 }
