@@ -518,8 +518,34 @@ void ImageDepth::project3d(const cv::Mat& pts, cv::Mat& xyz, std::vector<int>& g
         xy.at<float>(i, 0) = (xy.at<float>(i, 0) - cx) / fx;
         xy.at<float>(i, 1) = (xy.at<float>(i, 1) - cy) / fy;
     }
-    cv::multiply(xy, depths, xy);
-    cv::hconcat(xy, depths, xyz);
+    std::cout << "line 1" << std::endl;
+        
+        // Debug: Print xy values before multiplication
+    std::cout << "xy values before multiplication (first 10 values): " << xy.rowRange(0, 10) << std::endl;
+       std::cout << "depths values (first 10 values): " << depths.rowRange(0, 10) << std::endl;
+
+    std::cout << "xy size: " << xy.size() << std::endl;
+        std::cout << "depths size: " << depths.size() << std::endl;
+        std::cout << "xy type: " << getMatType(xy.type()) << std::endl;
+        std::cout << "depths type: " << getMatType(depths.type()) << std::endl;
+    
+    xy.convertTo(xy, CV_32F);
+           cv::Mat pts_float;
+           xy.copyTo(pts_float);
+
+           for (int i = 0; i < pts_float.rows; ++i) {
+               pts_float.at<float>(i, 0) -= cx;
+               pts_float.at<float>(i, 1) -= cy;
+               pts_float.at<float>(i, 0) /= fx;
+               pts_float.at<float>(i, 1) /= fy;
+           }
+
+        
+    cv::Mat depths_repeated;
+    cv::repeat(depths, 1, 2, depths_repeated);
+    cv::multiply(pts_float, depths_repeated, pts_float);
+    cv::hconcat(pts_float, depths, xyz);
+    std::cout << "line 3" << std::endl;
 
     std::cout << "Projected 3D points (first 10 values): " << xyz.rowRange(0, 10) << std::endl;
 }
