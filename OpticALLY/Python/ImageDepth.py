@@ -158,8 +158,25 @@ class ImageDepth:
         depth = np.expand_dims(self.depth_map_undistort.flatten()[np.where(idx)], 1)
         print("Expanded depth map for valid indices (first 10 values):", depth[:10])
 
+        # Project to 3D
+        xyz, _, good_idx = self.project3d(xy)
+        xyz = xyz[good_idx]
+        rgb = rgb[good_idx]
+        print("Filtered projected 3D points (first 10 values):", xyz[:10])
+        print("Filtered rgb values for 3D points (first 10 values):", rgb[:10])
+
+        self.pcd = o3d.geometry.PointCloud()
+        self.pcd.points = o3d.utility.Vector3dVector(xyz)
+        self.pcd.colors = o3d.utility.Vector3dVector(rgb)
+
+        # Calculate normal, required for ICP point-to-plane
+        self.pcd.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=self.normal_radius, max_nn=30))
+        self.pcd.orient_normals_towards_camera_location()
+        print("Estimated and oriented normals for point cloud")
+
+    def project3d(self, pts):
         # Expect pts to be Nx2
-        xy = np.round(xyz).astype(int)
+        xy = np.round(pts).astype(int)
         print("Rounded xy positions (first 10 values):", xy[:10])
 
         fx = self.intrinsic[0, 0]
@@ -176,26 +193,15 @@ class ImageDepth:
         print("Filtered valid depths (first 10 values):", depths[:10])
         print("Good indices for valid depths (first 10 values):", good_idx[:10])
 
-        xyz = xy.astype(np.float32)
-        xyz -= np.array([cx, cy])
-        xyz /= np.array([fx, fy])
-        xyz *= depths
-        xyz = np.hstack((xyz, depths))
-        print("Projected 3D points (first 10 values):", xyz[:10])
+        pts = xy.astype(np.float32)
+        pts -= np.array([cx, cy])
+        pts /= np.array([fx, fy])
+        pts *= depths
+        pts = np.hstack((pts, depths))
+        print("Projected 3D points (first 10 values):", pts[:10])
 
-        xyz = xyz[good_idx]
-        rgb = rgb[good_idx]
-        print("Filtered projected 3D points (first 10 values):", xyz[:10])
-        print("Filtered rgb values for 3D points (first 10 values):", rgb[:10])
+        return pts, xy, good_idx
 
-        self.pcd = o3d.geometry.PointCloud()
-        self.pcd.points = o3d.utility.Vector3dVector(xyz)
-        self.pcd.colors = o3d.utility.Vector3dVector(rgb)
-
-        # Calculate normal, required for ICP point-to-plane
-        self.pcd.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=self.normal_radius, max_nn=30))
-        self.pcd.orient_normals_towards_camera_location()
-        print("Estimated and oriented normals for point cloud")
 
     def undistort_depth_map(self):
         self.depth_map_undistort = cv.remap(self.depth_map, self.map_x, self.map_y, cv.INTER_LINEAR)
