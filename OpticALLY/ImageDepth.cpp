@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <iostream>
 #include <iomanip>
-#include <climits>
 #include <string>
 #include <fstream>
 #include <nlohmann/json.hpp>
@@ -46,6 +45,7 @@ ImageDepth::ImageDepth(const std::string& calibration_file, const std::string& i
     createUndistortionLookup();
     loadImage(image_file);
     loadDepth(depth_file);
+    createPointCloud(depth_map_undistort, cv::Mat());
 }
 
 std::shared_ptr<open3d::geometry::PointCloud> ImageDepth::getPointCloud() {
@@ -350,261 +350,132 @@ void ImageDepth::srgbToLinear(cv::Mat& img) {
     });
 }
 
+
 void ImageDepth::loadDepth(const std::string& file) {
     std::cout << "Loading depth file " << file << std::endl;
 
-        // Read binary file as float32
-        std::ifstream in(file, std::ios::binary);
-        if (!in) {
-            std::cerr << "Cannot open file: " << file << std::endl;
-            return;
-        }
-        
-        in.seekg(0, std::ios::end);
-        std::streampos fileSize = in.tellg();
-        in.seekg(0, std::ios::beg);
+            // Read binary file as float32
+            std::ifstream in(file, std::ios::binary);
+            if (!in) {
+                std::cerr << "Cannot open file: " << file << std::endl;
+                return;
+            }
+            
+            in.seekg(0, std::ios::end);
+            std::streampos fileSize = in.tellg();
+            in.seekg(0, std::ios::beg);
 
-        std::vector<float> depth(fileSize / sizeof(float));
-        in.read(reinterpret_cast<char*>(depth.data()), fileSize);
-        in.close();
+            std::vector<float> depth(fileSize / sizeof(float));
+            in.read(reinterpret_cast<char*>(depth.data()), fileSize);
+            in.close();
 
-        std::cout << "Loaded depth data (first 10 values): ";
-        for (int i = 0; i < 10 && i < depth.size(); ++i)
-            std::cout << depth[i] << " ";
-        std::cout << std::endl;
+            std::cout << "Loaded depth data (first 10 values): ";
+            for (int i = 0; i < 10 && i < depth.size(); ++i)
+                std::cout << depth[i] << " ";
+            std::cout << std::endl;
 
 
-    // Vectorized version, faster
-    // All possible (x, y) positions
-    std::vector<int> idx(width * height);
-    std::iota(idx.begin(), idx.end(), 0);
+        // Vectorized version, faster
+        // All possible (x, y) positions
+        std::vector<int> idx(width * height);
+        std::iota(idx.begin(), idx.end(), 0);
 
     cv::Mat xy(height * width, 2, CV_32F);
-    for (int i = 0; i < idx.size(); ++i) {
-        xy.at<float>(i, 0) = idx[i] % width;
-        xy.at<float>(i, 1) = idx[i] / width;
-    }
-
-    std::cout << "Generated xy positions (first 10 values): " << xy.rowRange(0, 10) << std::endl;
-
-    // Remove bad values
-    std::vector<bool> no_nan(depth.size()), depth1(depth.size()), depth2(depth.size()), valid_idx(depth.size());
-    for (int i = 0; i < depth.size(); ++i) {
-        no_nan[i] = !std::isnan(depth[i]);
-        depth1[i] = depth[i] > min_depth;
-        depth2[i] = depth[i] < max_depth;
-        valid_idx[i] = no_nan[i] && depth1[i] && depth2[i];
-    }
-
-    std::cout << "Filtered valid depth indices (first 10 values): ";
-    for (int i = 0; i < 10 && i < valid_idx.size(); ++i)
-        std::cout << valid_idx[i] << " ";
-    std::cout << std::endl;
-
-    cv::Mat filtered_xy, filtered_rgb;
-    for (int i = 0; i < valid_idx.size(); ++i) {
-        if (valid_idx[i]) {
-            filtered_xy.push_back(xy.row(i));
-            std::cout << "xy.row(" << i << "): " << xy.row(i) << std::endl;
-            
-            // Access elements as float
-           cv::Vec2f coord = xy.at<cv::Vec2f>(i);
-           float x = coord[0];
-           float y = coord[1];
-
-           // Assuming img_undistort is a floating-point image for the sake of demonstration
-           // If not, you might need to handle the conversion or use interpolation
-           cv::Vec3f color = img_undistort.at<cv::Vec3f>(y, x);
-
-           // Convert cv::Vec3f to cv::Mat
-           cv::Mat colorMat(3, 1, CV_32F);
-           for (int j = 0; j < 3; ++j) {
-               colorMat.at<float>(j, 0) = color[j];
-           }
-
-           filtered_rgb.push_back(colorMat);
+        for (int i = 0; i < idx.size(); ++i) {
+            xy.at<float>(i, 0) = idx[i] % width;
+            xy.at<float>(i, 1) = idx[i] / width;
         }
-    }
 
+        std::cout << "Generated xy positions (first 10 values): " << xy.rowRange(0, 10) << std::endl;
+
+        // Remove bad values
+        std::vector<bool> no_nan(depth.size()), depth1(depth.size()), depth2(depth.size()), valid_idx(depth.size());
+        for (int i = 0; i < depth.size(); ++i) {
+            no_nan[i] = !std::isnan(depth[i]);
+            depth1[i] = depth[i] > min_depth;
+            depth2[i] = depth[i] < max_depth;
+            valid_idx[i] = no_nan[i] && depth1[i] && depth2[i];
+        }
+
+        std::cout << "Filtered valid depth indices (first 10 values): ";
+        for (int i = 0; i < 10 && i < valid_idx.size(); ++i)
+            std::cout << valid_idx[i] << " ";
+        std::cout << std::endl;
+
+        cv::Mat filtered_xy, filtered_rgb;
+        for (int i = 0; i < valid_idx.size(); ++i) {
+            if (valid_idx[i]) {
+                filtered_xy.push_back(xy.row(i));
+                std::cout << "xy.row(" << i << "): " << xy.row(i) << std::endl;
+                
+                // Access elements as float
+               cv::Vec2f coord = xy.at<cv::Vec2f>(i);
+               float x = coord[0];
+               float y = coord[1];
+
+               // Assuming img_undistort is a floating-point image for the sake of demonstration
+               // If not, you might need to handle the conversion or use interpolation
+               cv::Vec3f color = img_undistort.at<cv::Vec3f>(y, x);
+
+               // Convert cv::Vec3f to cv::Mat
+               cv::Mat colorMat(3, 1, CV_32F);
+               for (int j = 0; j < 3; ++j) {
+                   colorMat.at<float>(j, 0) = color[j];
+               }
+
+               filtered_rgb.push_back(colorMat);
+            }
+        }
     filtered_rgb /= 255.0;
-    std::cout << "Filtered xy positions (first 10 values): " << filtered_xy.rowRange(0, 10) << std::endl;
-    std::cout << "Filtered rgb values (first 10 values): " << filtered_rgb.rowRange(0, 10) << std::endl;
+       std::cout << "Filtered xy positions (first 10 values): " << filtered_xy.rowRange(0, 10) << std::endl;
+       std::cout << "Filtered rgb values (first 10 values): " << filtered_rgb.rowRange(0, 10) << std::endl;
 
-    mask = cv::Mat::ones(height, width, CV_8U) * 255;
-    for (int i = 0; i < valid_idx.size(); ++i)
-        if (!valid_idx[i])
-            mask.at<uchar>(i / width, i % width) = 0;
+       mask = cv::Mat::ones(height, width, CV_8U) * 255;
+       for (int i = 0; i < valid_idx.size(); ++i)
+           if (!valid_idx[i])
+               mask.at<uchar>(i / width, i % width) = 0;
 
-    std::cout << "Generated mask (first 10 values): " << mask.reshape(1, 1).colRange(0, 10) << std::endl;
+       std::cout << "Generated mask (first 10 values): " << mask.reshape(1, 1).colRange(0, 10) << std::endl;
 
-    // Mask out depth buffer
-    depth_map = cv::Mat(height, width, CV_32F, depth.data()).clone();
-    for (int i = 0; i < valid_idx.size(); ++i)
-        if (!valid_idx[i])
-            depth_map.at<float>(i / width, i % width) = -1000;
-
-
-    undistort_depth_map();
-
-    float per = static_cast<float>(std::count(valid_idx.begin(), valid_idx.end(), true)) / depth.size();
-    std::cout << "Processing " << file << ", keeping=" << std::count(valid_idx.begin(), valid_idx.end(), true) << "/" << depth.size() << " (" << per << ") points" << std::endl;
-
-    cv::Mat depth_valid = depth_map_undistort.reshape(1, height * width).clone();
-    cv::Mat valid_depth;
-    for (int i = 0; i < valid_idx.size(); ++i)
-        if (valid_idx[i])
-            valid_depth.push_back(depth_valid.row(i));
-
-    std::cout << "Expanded depth map for valid indices (first 10 values): " << valid_depth.rowRange(0, 10) << std::endl;
-
-    // Project to 3D
-    cv::Mat xyz;
-    std::vector<int> good_idx;
-    project3d(filtered_xy, xyz, good_idx);
-
-    std::vector<Eigen::Vector3d> valid_xyz, valid_rgb;
-    for (int i : good_idx) {
-        valid_xyz.emplace_back(Eigen::Vector3d(xyz.at<cv::Vec3f>(i, 0)[0], xyz.at<cv::Vec3f>(i, 0)[1], xyz.at<cv::Vec3f>(i, 0)[2]));
-        valid_rgb.emplace_back(Eigen::Vector3d(filtered_rgb.at<cv::Vec3f>(i, 0)[0], filtered_rgb.at<cv::Vec3f>(i, 0)[1], filtered_rgb.at<cv::Vec3f>(i, 0)[2]));
-    }
-
-    std::cout << "Filtered projected 3D points (first 10 values): ";
-    for (int i = 0; i < 10 && i < valid_xyz.size(); ++i)
-        std::cout << valid_xyz[i].transpose() << " ";
-    std::cout << std::endl;
-
-    std::cout << "Filtered rgb values for 3D points (first 10 values): ";
-    for (int i = 0; i < 10 && i < valid_rgb.size(); ++i)
-        std::cout << valid_rgb[i].transpose() << " ";
-    std::cout << std::endl;
-
-    pcd.Clear();
-    pcd.points_ = std::vector<Eigen::Vector3d>(valid_xyz.begin(), valid_xyz.end());
-    pcd.colors_ = std::vector<Eigen::Vector3d>(valid_rgb.begin(), valid_rgb.end());
-
-    // Calculate normal, required for ICP point-to-plane
-    pcd.EstimateNormals(open3d::geometry::KDTreeSearchParamHybrid(normal_radius, 30));
-    pcd.OrientNormalsTowardsCameraLocation();
-    std::cout << "Estimated and oriented normals for point cloud" << std::endl;
+       // Mask out depth buffer
+       depth_map = cv::Mat(height, width, CV_32F, depth.data()).clone();
+//       for (int i = 0; i < valid_idx.size(); ++i)
+//           if (!valid_idx[i])
+//               depth_map.at<float>(i / width, i % width) = -1000;
     
-    // Set the pointCloud variable
+}
+
+void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask) {
+    std::cout << "Creating point cloud..." << std::endl;
     pointCloud = std::make_shared<open3d::geometry::PointCloud>();
-    pointCloud->points_ = std::vector<Eigen::Vector3d>(valid_xyz.begin(), valid_xyz.end());
-    pointCloud->colors_ = std::vector<Eigen::Vector3d>(valid_rgb.begin(), valid_rgb.end());
-    
-    // Calculate normal, required for ICP point-to-plane
-        pointCloud->EstimateNormals(open3d::geometry::KDTreeSearchParamHybrid(normal_radius, 30));
-        pointCloud->OrientNormalsTowardsCameraLocation();
-        std::cout << "Estimated and oriented normals for point cloud" << std::endl;
-    
+    std::vector<Eigen::Vector3d> points;
+    std::vector<Eigen::Vector3d> colors;
 
-}
+    for (int y = 0; y < depth_map.rows; ++y) {
+        for (int x = 0; x < depth_map.cols; ++x) {
+            if (mask.empty() || mask.at<uint8_t>(y, x) != 0) {
+                float z = static_cast<float>(depth_map.at<uint16_t>(y, x)) * 0.001f; // scale factor for depth
+                if (z < min_depth || z > max_depth) continue;
 
-void ImageDepth::project3d(const cv::Mat& pts, cv::Mat& xyz, std::vector<int>& good_idx) {
-    cv::Mat xy = pts.clone();
-    xy.convertTo(xy, CV_32S);
+                Eigen::Vector3d pt(
+                    (x - intrinsic(0, 2)) * z / intrinsic(0, 0),
+                    (y - intrinsic(1, 2)) * z / intrinsic(1, 1),
+                    z
+                );
+                points.push_back(pt);
 
-    std::cout << "Rounded xy positions (first 10 values): " << xy.rowRange(0, 10) << std::endl;
-
-    float fx = intrinsic(0, 0);
-    float fy = intrinsic(1, 1);
-    float cx = intrinsic(0, 2);
-    float cy = intrinsic(1, 2);
-
-    cv::Mat depths;
-    for (int i = 0; i < xy.rows; ++i) {
-        float depth_val = depth_map_undistort.at<float>(xy.at<int>(i, 1), xy.at<int>(i, 0));
-        depths.push_back(depth_val);
-        if (depth_val > min_depth && depth_val < max_depth)
-            good_idx.push_back(i);
+                cv::Vec3f color = img_undistort.at<cv::Vec3f>(y, x);
+                colors.push_back(Eigen::Vector3d(color[0], color[1], color[2]));
+            }
+        }
     }
 
-    std::cout << "Filtered valid depths (first 10 values): " << depths.rowRange(0, 10) << std::endl;
-    std::cout << "Good indices for valid depths (first 10 values): ";
-    for (int i = 0; i < 10 && i < good_idx.size(); ++i)
-        std::cout << good_idx[i] << " ";
-    std::cout << std::endl;
+    pointCloud->points_ = points;
+    pointCloud->colors_ = colors;
 
-    xy.convertTo(xy, CV_32F);
-    for (int i = 0; i < xy.rows; ++i) {
-        xy.at<float>(i, 0) = (xy.at<float>(i, 0) - cx) / fx;
-        xy.at<float>(i, 1) = (xy.at<float>(i, 1) - cy) / fy;
-    }
-    std::cout << "line 1" << std::endl;
-        
-        // Debug: Print xy values before multiplication
-    std::cout << "xy values before multiplication (first 10 values): " << xy.rowRange(0, 10) << std::endl;
-       std::cout << "depths values (first 10 values): " << depths.rowRange(0, 10) << std::endl;
-
-    std::cout << "xy size: " << xy.size() << std::endl;
-        std::cout << "depths size: " << depths.size() << std::endl;
-        std::cout << "xy type: " << getMatType(xy.type()) << std::endl;
-        std::cout << "depths type: " << getMatType(depths.type()) << std::endl;
-    
-    xy.convertTo(xy, CV_32F);
-           cv::Mat pts_float;
-           xy.copyTo(pts_float);
-
-           for (int i = 0; i < pts_float.rows; ++i) {
-               pts_float.at<float>(i, 0) -= cx;
-               pts_float.at<float>(i, 1) -= cy;
-               pts_float.at<float>(i, 0) /= fx;
-               pts_float.at<float>(i, 1) /= fy;
-           }
-
-        
-    cv::Mat depths_repeated;
-    cv::repeat(depths, 1, 2, depths_repeated);
-    cv::multiply(pts_float, depths_repeated, pts_float);
-    cv::hconcat(pts_float, depths, xyz);
-    std::cout << "line 3" << std::endl;
-
-    std::cout << "Projected 3D points (first 10 values): " << xyz.rowRange(0, 10) << std::endl;
-}
-
-void ImageDepth::undistort_depth_map() {
-    std::cout << "depth_map type: " << getMatType(depth_map.type()) << std::endl;
-    std::cout << "map_x type: " << getMatType(map_x.type()) << std::endl;
-    std::cout << "map_y type: " << getMatType(map_y.type()) << std::endl;
-
-    std::cout << "depth_map size: " << depth_map.size() << std::endl;
-    std::cout << "map_x size: " << map_x.size() << std::endl;
-    std::cout << "map_y size: " << map_y.size() << std::endl;
-
-    std::cerr << "SHRT_MAX: " << SHRT_MAX << std::endl;
-        std::cerr << "depth_map.cols: " << depth_map.cols << ", depth_map.rows: " << depth_map.rows << std::endl;
-        std::cerr << "map_x.cols: " << map_x.cols << ", map_x.rows: " << map_x.rows << std::endl;
-        std::cerr << "map_y.cols: " << map_y.cols << ", map_y.rows: " << map_y.rows << std::endl;
-
-        if (depth_map.cols >= SHRT_MAX) {
-            std::cerr << "depth_map.cols exceeds SHRT_MAX" << std::endl;
-        }
-        if (depth_map.rows >= SHRT_MAX) {
-            std::cerr << "depth_map.rows exceeds SHRT_MAX" << std::endl;
-        }
-        if (map_x.cols >= SHRT_MAX) {
-            std::cerr << "map_x.cols exceeds SHRT_MAX" << std::endl;
-        }
-        if (map_x.rows >= SHRT_MAX) {
-            std::cerr << "map_x.rows exceeds SHRT_MAX" << std::endl;
-        }
-        if (map_y.cols >= SHRT_MAX) {
-            std::cerr << "map_y.cols exceeds SHRT_MAX" << std::endl;
-        }
-        if (map_y.rows >= SHRT_MAX) {
-            std::cerr << "map_y.rows exceeds SHRT_MAX" << std::endl;
-        }
-
-        if (depth_map.cols >= SHRT_MAX || depth_map.rows >= SHRT_MAX ||
-            map_x.cols >= SHRT_MAX || map_x.rows >= SHRT_MAX ||
-            map_y.cols >= SHRT_MAX || map_y.rows >= SHRT_MAX) {
-            std::cerr << "One or more dimensions exceed the maximum allowable size." << std::endl;
-            return;
-        }
-    
-    cv::remap(depth_map, depth_map_undistort, map_x, map_y, cv::INTER_LINEAR);
-    std::cout << "Undistorted depth map (first 10 values): " << depth_map_undistort.reshape(1, 1).colRange(0, 10) << std::endl;
-    
-    // Debug print
-       std::cout << "Undistorted depth map (first 10 values): " << depth_map_undistort.reshape(1, 1).colRange(0, 10) << std::endl;
+    // Calculate normals
+    pointCloud->EstimateNormals(
+        open3d::geometry::KDTreeSearchParamHybrid(normal_radius, 30)
+    );
+    pointCloud->OrientNormalsTowardsCameraLocation();
 }
