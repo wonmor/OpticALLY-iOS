@@ -91,7 +91,7 @@ struct OpticALLYApp: App {
             
             sys!.path.insert(1, Bundle.main.bundlePath)
             
-            imageDepth = Python.import("ImageDepth")
+            // imageDepth = Python.import("ImageDepth")
             
             // let bridge = Python.import("ObjCBridge")
             // let code = Python.import("code")
