@@ -97,7 +97,7 @@ struct OpticALLYApp: App {
             // let code = Python.import("code")
             // code.interact(readfunc: bridge.input, exitmsg: "Bye.")
             
-            print("Importing Python Code... \(imageDepth!.test_output())")
+            // print("Importing Python Code... \(imageDepth!.test_output())")
             print("Python \(sys!.version_info.major).\(sys!.version_info.minor)")
             print("Python Version: \(sys!.version)")
             print("Python Encoding: \(sys!.getdefaultencoding().upper())")
