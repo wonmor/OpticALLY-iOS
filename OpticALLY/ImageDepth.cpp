@@ -45,7 +45,7 @@ ImageDepth::ImageDepth(const std::string& calibration_file, const std::string& i
     createUndistortionLookup();
     loadImage(image_file);
     loadDepth(depth_file);
-    createPointCloud(depth_map_undistort, cv::Mat());
+    createPointCloud(depth_map_undistort, mask);
 }
 
 std::shared_ptr<open3d::geometry::PointCloud> ImageDepth::getPointCloud() {
@@ -442,6 +442,9 @@ void ImageDepth::loadDepth(const std::string& file) {
 //       for (int i = 0; i < valid_idx.size(); ++i)
 //           if (!valid_idx[i])
 //               depth_map.at<float>(i / width, i % width) = -1000;
+    
+    cv::remap(depth_map, depth_map_undistort, map_x, map_y, cv::INTER_LINEAR);
+        std::cout << "Undistorted depth map (first 10 values): " << depth_map_undistort.reshape(1, 1).colRange(0, 10) << std::endl;
     
 }
 
