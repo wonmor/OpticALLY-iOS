@@ -257,8 +257,6 @@ void ImageDepth::loadImage(const std::string& file) {
     img_linear.convertTo(img_linear, CV_32F, 1.0 / 255.0);
 
     srgbToLinear(img_linear);
-    
-    img_linear.convertTo(img_linear, CV_8U, 255);
 
     // Debug print for the linear image
     std::cout << "Linear image (first 10 values): [";
@@ -462,7 +460,8 @@ void ImageDepth::loadDepth(const std::string& file) {
        // Project to 3D
        cv::Mat xyz;
        std::vector<int> good_idx;
-         
+    
+
        xy.convertTo(xy, CV_32S);
 
        std::cout << "Rounded xy positions (first 10 values): " << xy.rowRange(0, 10) << std::endl;
