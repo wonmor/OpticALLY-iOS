@@ -257,6 +257,8 @@ void ImageDepth::loadImage(const std::string& file) {
     img_linear.convertTo(img_linear, CV_32F, 1.0 / 255.0);
 
     srgbToLinear(img_linear);
+    
+    img_linear.convertTo(img_linear, CV_8U, 255);
 
     // Debug print for the linear image
     std::cout << "Linear image (first 10 values): [";
