@@ -460,8 +460,7 @@ void ImageDepth::loadDepth(const std::string& file) {
        // Project to 3D
        cv::Mat xyz;
        std::vector<int> good_idx;
-    
-    cv::Mat xy = filtered_xy.clone();
+     
        xy.convertTo(xy, CV_32S);
 
        std::cout << "Rounded xy positions (first 10 values): " << xy.rowRange(0, 10) << std::endl;
