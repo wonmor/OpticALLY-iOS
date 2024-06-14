@@ -463,6 +463,28 @@ void ImageDepth::loadDepth(const std::string& file) {
         std::cout << "xy_filtered size: " << xy_filtered.size() << std::endl;
         std::cout << "rgb_filtered size: " << rgb_filtered.size() << std::endl;
 
+    // Create mask
+      std::vector<uint8_t> mask(depth.size(), 255);
+      for (size_t i = 0; i < idx.size(); ++i) {
+          if (!idx[i]) {
+              mask[i] = 0;
+          }
+      }
+
+      // Reshape mask to (height, width)
+      cv::Mat mask_mat(height, width, CV_8U, mask.data());
+
+      // Print first 10 values of mask
+      std::cout << "Generated mask (first 10 values): [";
+      for (size_t i = 0; i < 10 && i < mask.size(); ++i) {
+          std::cout << static_cast<int>(mask[i]);
+          if (i < 9 && i < mask.size() - 1) {
+              std::cout << " ";
+          }
+      }
+      std::cout << "]" << std::endl;
+    
+    
 
 
 
