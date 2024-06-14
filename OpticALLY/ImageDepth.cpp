@@ -484,7 +484,36 @@ void ImageDepth::loadDepth(const std::string& file) {
       }
       std::cout << "]" << std::endl;
     
-    
+    // Mask out depth buffer
+        std::vector<float> depth_map = depth;
+        for (size_t i = 0; i < depth_map.size(); ++i) {
+            if (!idx[i]) {
+                depth_map[i] = -1000.0f;
+            }
+        }
+
+        // Reshape depth map to (height, width, 1)
+        cv::Mat depth_map_mat(height, width, CV_32F, depth_map.data());
+
+        // Print first 10 values of depth map
+        std::cout << "Generated depth map with mask (first 10 values): [";
+        for (size_t i = 0; i < 10 && i < depth_map.size(); ++i) {
+            std::cout << depth_map[i];
+            if (i < 9 && i < depth_map.size() - 1) {
+                std::cout << " ";
+            }
+        }
+        std::cout << "]" << std::endl;
+
+        // Debug prints
+        std::cout << "Depth map (first 10 values): [";
+        for (size_t i = 0; i < 10 && i < depth_map.size(); ++i) {
+            std::cout << depth_map[i];
+            if (i < 9 && i < depth_map.size() - 1) {
+                std::cout << " ";
+            }
+        }
+        std::cout << "]" << std::endl;
 
 
 
