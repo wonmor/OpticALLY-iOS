@@ -406,7 +406,7 @@ void ImageDepth::loadDepth(const std::string& file) {
         for (int i = 0; i < valid_idx.size(); ++i) {
             if (valid_idx[i]) {
                 filtered_xy.push_back(xy.row(i));
-                std::cout << "xy.row(" << i << "): " << xy.row(i) << std::endl;
+                // std::cout << "xy.row(" << i << "): " << xy.row(i) << std::endl;
                 
                 // Access elements as float
                cv::Vec2f coord = xy.at<cv::Vec2f>(i);
@@ -439,14 +439,17 @@ void ImageDepth::loadDepth(const std::string& file) {
 
        // Mask out depth buffer
        depth_map = cv::Mat(height, width, CV_32F, depth.data()).clone();
-//       for (int i = 0; i < valid_idx.size(); ++i)
-//           if (!valid_idx[i])
-//               depth_map.at<float>(i / width, i % width) = -1000;
+       for (int i = 0; i < valid_idx.size(); ++i)
+           if (!valid_idx[i])
+               depth_map.at<float>(i / width, i % width) = -1000;
     
     cv::remap(depth_map, depth_map_undistort, map_x, map_y, cv::INTER_LINEAR);
         std::cout << "Undistorted depth map (first 10 values): " << depth_map_undistort.reshape(1, 1).colRange(0, 10) << std::endl;
     
-    float per = static_cast<float>(std::count(valid_idx.begin(), valid_idx.end(), true)) / depth.size();
+    // Calculate the percentage of points to keep
+        float num_true = static_cast<float>(cv::countNonZero(idx));
+        float per = num_true / static_cast<float>(depth_map_undistort.total());
+    
        std::cout << "Processing " << file << ", keeping=" << std::count(valid_idx.begin(), valid_idx.end(), true) << "/" << depth.size() << " (" << per << ") points" << std::endl;
 
        cv::Mat depth_valid = depth_map_undistort.reshape(1, height * width).clone();
