@@ -354,25 +354,48 @@ void ImageDepth::srgbToLinear(cv::Mat& img) {
 void ImageDepth::loadDepth(const std::string& file) {
     std::cout << "Loading depth file " << file << std::endl;
 
-            // Read binary file as float32
-            std::ifstream in(file, std::ios::binary);
-            if (!in) {
-                std::cerr << "Cannot open file: " << file << std::endl;
-                return;
+    // Read binary file as float32
+    std::ifstream in(file, std::ios::binary);
+    if (!in) {
+        std::cerr << "Cannot open file: " << file << std::endl;
+        return;
+    }
+    
+    in.seekg(0, std::ios::end);
+    std::streampos fileSize = in.tellg();
+    in.seekg(0, std::ios::beg);
+
+    std::vector<float> depth(fileSize / sizeof(float));
+    in.read(reinterpret_cast<char*>(depth.data()), fileSize);
+    in.close();
+
+    std::cout << "Loaded depth data (first 10 values): ";
+    for (int i = 0; i < 10 && i < depth.size(); ++i)
+        std::cout << depth[i] << " ";
+    std::cout << std::endl;
+    // All possible (x, y) positions
+        std::vector<int> idx(width * height);
+        std::iota(idx.begin(), idx.end(), 0);
+
+        // Print first 10 values of idx array
+        std::cout << "Generated idx array (first 10 values): [";
+        for (int i = 0; i < 10; ++i) {
+            std::cout << idx[i];
+            if (i < 9) {
+                std::cout << " ";
             }
-            
-            in.seekg(0, std::ios::end);
-            std::streampos fileSize = in.tellg();
-            in.seekg(0, std::ios::beg);
+        }
+        std::cout << "]" << std::endl;
 
-            std::vector<float> depth(fileSize / sizeof(float));
-            in.read(reinterpret_cast<char*>(depth.data()), fileSize);
-            in.close();
+        cv::Mat xy(height * width, 2, CV_32F);
+        for (int i = 0; i < idx.size(); ++i) {
+            xy.at<float>(i, 0) = idx[i] % width;
+            xy.at<float>(i, 1) = idx[i] / width;
+        }
 
-            std::cout << "Loaded depth data (first 10 values): ";
-            for (int i = 0; i < 10 && i < depth.size(); ++i)
-                std::cout << depth[i] << " ";
-            std::cout << std::endl;
+        std::cout << "Generated xy positions (first 10 values): " << xy.rowRange(0, 10) << std::endl;
+
+
 
 
        
