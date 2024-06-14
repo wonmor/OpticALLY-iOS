@@ -394,7 +394,40 @@ void ImageDepth::loadDepth(const std::string& file) {
         }
 
         std::cout << "Generated xy positions (first 10 values): " << xy.rowRange(0, 10) << std::endl;
+    
+    // Remove bad values
+        std::vector<bool> no_nan(depth.size());
+        std::vector<bool> depth1(depth.size());
+        std::vector<bool> depth2(depth.size());
 
+
+        for (size_t i = 0; i < depth.size(); ++i) {
+            no_nan[i] = !std::isnan(depth[i]);
+            depth1[i] = depth[i] > min_depth;
+            depth2[i] = depth[i] < max_depth;
+            idx[i] = no_nan[i] && depth1[i] && depth2[i];
+        }
+
+        // Print first 10 values of idx
+        std::cout << "Filtered valid depth indices (first 10 values): [";
+        for (size_t i = 0; i < 10 && i < idx.size(); ++i) {
+            std::cout << idx[i];
+            if (i < 9 && i < idx.size() - 1) {
+                std::cout << " ";
+            }
+        }
+        std::cout << "]" << std::endl;
+
+        // Example data for xy and img_undistort
+     
+        cv::Mat img_undistort(height, width, CV_8UC3, cv::Scalar(0, 0, 0));
+
+        std::cout << "Initial sizes:" << std::endl;
+        std::cout << "xy shape: (" << xy.rows << ", " << xy.cols << ")" << std::endl;
+        std::cout << "img_undistort shape: (" << img_undistort.rows << ", " << img_undistort.cols << ")" << std::endl;
+        std::cout << "idx size: " << idx.size() << std::endl;
+
+    
 
 
 
