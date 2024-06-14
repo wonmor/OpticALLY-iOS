@@ -535,6 +535,31 @@ void ImageDepth::loadDepth(const std::string& file) {
             }
         }
         std::cout << "]" << std::endl;
+    
+        // Calculate the percentage of valid depth points
+        float valid_count = static_cast<float>(std::count(idx.begin(), idx.end(), true));
+        float total_count = static_cast<float>(depth.size());
+        float per = valid_count / total_count;
+        std::cout << "Processing " << file << ", keeping=" << valid_count << "/" << total_count << " (" << per << ") points" << std::endl;
+
+        // Expand the depth map for valid indices
+        std::vector<float> depth_undistort_flattened(depth_map_undistort.begin<float>(), depth_map_undistort.end<float>());
+        std::vector<float> depth_valid;
+        for (size_t i = 0; i < depth_undistort_flattened.size(); ++i) {
+            if (idx[i]) {
+                depth_valid.push_back(depth_undistort_flattened[i]);
+            }
+        }
+
+        // Print first 10 values of the expanded depth map for valid indices
+        std::cout << "Expanded depth map for valid indices (first 10 values): [";
+        for (size_t i = 0; i < 10 && i < depth_valid.size(); ++i) {
+            std::cout << depth_valid[i];
+            if (i < 9 && i < depth_valid.size() - 1) {
+                std::cout << " ";
+            }
+        }
+        std::cout << "]" << std::endl;
 
 
 
