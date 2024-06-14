@@ -427,7 +427,42 @@ void ImageDepth::loadDepth(const std::string& file) {
         std::cout << "img_undistort shape: (" << img_undistort.rows << ", " << img_undistort.cols << ")" << std::endl;
         std::cout << "idx size: " << idx.size() << std::endl;
 
-    
+    // Filter xy and img_undistort based on idx
+        std::vector<cv::Point2f> xy_filtered;
+        std::vector<cv::Vec3f> rgb_filtered;
+
+        for (size_t i = 0; i < idx.size(); ++i) {
+            if (idx[i]) {
+                xy_filtered.push_back(cv::Point2f(xy.at<float>(i, 0), xy.at<float>(i, 1)));
+                cv::Vec3b color = img_undistort.at<cv::Vec3b>(i / width, i % width);
+                rgb_filtered.push_back(cv::Vec3f(color[0] / 255.0f, color[1] / 255.0f, color[2] / 255.0f));
+            }
+        }
+
+        // Print first 10 values of filtered xy and rgb
+        std::cout << "Filtered xy positions (first 10 values): [";
+        for (size_t i = 0; i < 10 && i < xy_filtered.size(); ++i) {
+            std::cout << "(" << xy_filtered[i].x << ", " << xy_filtered[i].y << ")";
+            if (i < 9 && i < xy_filtered.size() - 1) {
+                std::cout << " ";
+            }
+        }
+        std::cout << "]" << std::endl;
+
+        std::cout << "Filtered rgb values (first 10 values): [";
+        for (size_t i = 0; i < 10 && i < rgb_filtered.size(); ++i) {
+            std::cout << "(" << rgb_filtered[i][0] << ", " << rgb_filtered[i][1] << ", " << rgb_filtered[i][2] << ")";
+            if (i < 9 && i < rgb_filtered.size() - 1) {
+                std::cout << " ";
+            }
+        }
+        std::cout << "]" << std::endl;
+
+        // Print filtered sizes
+        std::cout << "Filtered sizes:" << std::endl;
+        std::cout << "xy_filtered size: " << xy_filtered.size() << std::endl;
+        std::cout << "rgb_filtered size: " << rgb_filtered.size() << std::endl;
+
 
 
 
