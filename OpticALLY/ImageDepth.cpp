@@ -514,6 +514,27 @@ void ImageDepth::loadDepth(const std::string& file) {
             }
         }
         std::cout << "]" << std::endl;
+    
+        for (int y = 0; y < height; ++y) {
+            for (int x = 0; x < width; ++x) {
+                map_x.at<float>(y, x) = static_cast<float>(x);
+                map_y.at<float>(y, x) = static_cast<float>(y);
+            }
+        }
+
+        // Undistort the depth map using remap
+        cv::Mat depth_map_undistort;
+        cv::remap(depth_map_mat, depth_map_undistort, map_x, map_y, cv::INTER_LINEAR);
+
+        // Print first 10 values of the undistorted depth map
+        std::cout << "Undistorted depth map (first 10 values): [";
+        for (size_t i = 0; i < 10 && i < depth_map_undistort.total(); ++i) {
+            std::cout << depth_map_undistort.at<float>(i / width, i % width);
+            if (i < 9 && i < depth_map_undistort.total() - 1) {
+                std::cout << " ";
+            }
+        }
+        std::cout << "]" << std::endl;
 
 
 
