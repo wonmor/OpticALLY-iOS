@@ -29,11 +29,14 @@ private:
     cv::Mat mask;
     cv::Mat map_x, map_y;
     Eigen::Matrix3d intrinsic;
+    cv::Mat xy, rgb;
     Eigen::Matrix4f pose;
     std::vector<float> lensDistortionLookup;
     std::vector<float> inverseLensDistortionLookup;
     std::shared_ptr<open3d::geometry::PointCloud> pointCloud;
     std::vector<int> valid_indices;
+    std::vector<cv::Point2f> xy_filtered;
+    std::vector<cv::Vec3f> rgb_filtered;
 
     // Private utility methods
     void loadCalibration(const std::string& file);
@@ -44,6 +47,9 @@ private:
     float linearInterpolate(const std::vector<float>& lookup, float x);
     void createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask);
     void debugImageStats(const cv::Mat& image, const std::string& name);
+    
+    std::tuple<cv::Mat, cv::Mat> project3D(const cv::Mat& pts);
+    void filterPoints(const cv::Mat& xyz, const cv::Mat& rgb, const cv::Mat& good_idx, cv::Mat& filtered_xyz, cv::Mat& filtered_rgb);
 
 public:
     // Constructor

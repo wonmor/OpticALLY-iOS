@@ -135,7 +135,7 @@ void ImageDepth::createUndistortionLookup() {
     std::cout << std::endl;
     
     // Convert to cv::Mat and subtract center
-    cv::Mat xy = cv::Mat(xy_pos).reshape(2).clone();  // Reshape to have 2 columns (x and y)
+    xy = cv::Mat(xy_pos).reshape(2).clone();  // Reshape to have 2 columns (x and y)
     cv::Point2f center(intrinsic(0, 2), intrinsic(1, 2));
     std::cout << "center:\n" << center << std::endl;
     
@@ -391,7 +391,7 @@ void ImageDepth::loadDepth(const std::string& file) {
         }
         std::cout << "]" << std::endl;
 
-        cv::Mat xy(height * width, 2, CV_32F);
+    xy = cv::Mat(height * width, 2, CV_32F);
         for (int i = 0; i < idx.size(); ++i) {
             xy.at<float>(i, 0) = idx[i] % width;
             xy.at<float>(i, 1) = idx[i] / width;
@@ -430,10 +430,6 @@ void ImageDepth::loadDepth(const std::string& file) {
         }
         std::cout << "]" << std::endl;
 
-        // Example data for xy and img_undistort
-     
-        cv::Mat img_undistort(height, width, CV_8UC3, cv::Scalar(0, 0, 0));
-
         std::cout << "Initial sizes:" << std::endl;
         std::cout << "xy shape: (" << xy.rows << ", " << xy.cols << ")" << std::endl;
         std::cout << "img_undistort shape: (" << img_undistort.rows << ", " << img_undistort.cols << ")" << std::endl;
@@ -448,6 +444,11 @@ void ImageDepth::loadDepth(const std::string& file) {
                 xy_filtered.push_back(cv::Point2f(xy.at<float>(i, 0), xy.at<float>(i, 1)));
                 cv::Vec3b color = img_undistort.at<cv::Vec3b>(i / width, i % width);
                 rgb_filtered.push_back(cv::Vec3f(color[0] / 255.0f, color[1] / 255.0f, color[2] / 255.0f));
+                
+                // Print the color values
+                       std::cout << "color[0]: " << static_cast<int>(color[0]) << ", "
+                                 << "color[1]: " << static_cast<int>(color[1]) << ", "
+                                 << "color[2]: " << static_cast<int>(color[2]) << std::endl;
             }
         }
 
@@ -558,45 +559,113 @@ void ImageDepth::loadDepth(const std::string& file) {
         std::cout << "Min value of undistorted depth map: " << min_value << std::endl;
         std::cout << "Average value of undistorted depth map: " << average_value << std::endl;
     
-   
+    // Populate the rgb matrix with undistorted RGB values
+       rgb = cv::Mat(height, width, CV_32FC3); // Initialize rgb matrix
+       for (int y = 0; y < height; ++y) {
+           for (int x = 0; x < width; ++x) {
+               cv::Vec3b color = img_undistort.at<cv::Vec3b>(y, x);
+               rgb.at<cv::Vec3f>(y, x) = cv::Vec3f(color[0] / 255.0f, color[1] / 255.0f, color[2] / 255.0f);
+           }
+       }
 
-
-
-
-       
+       // Debug prints for rgb
+       std::cout << "rgb (first 10 values): [";
+       for (int i = 0; i < 10; ++i) {
+           int y = i / rgb.cols;
+           int x = i % rgb.cols;
+           cv::Vec3f color = rgb.at<cv::Vec3f>(y, x);
+           std::cout << "(" << color[0] << ", " << color[1] << ", " << color[2] << ")";
+           if (i < 9) {
+               std::cout << ", ";
+           }
+       }
+       std::cout << "]" << std::endl;
 }
 
 void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask) {
     std::cout << "Creating point cloud..." << std::endl;
-    pointCloud = std::make_shared<open3d::geometry::PointCloud>();
-    std::vector<Eigen::Vector3d> points;
-    std::vector<Eigen::Vector3d> colors;
+    cv::Mat xyz, good_idx;
+    std::tie(xyz, good_idx) = project3D(xy);
 
-    for (int y = 0; y < depth_map.rows; ++y) {
-        for (int x = 0; x < depth_map.cols; ++x) {
-            if (mask.empty() || mask.at<uint8_t>(y, x) != 0) {
-                float z = static_cast<float>(depth_map.at<uint16_t>(y, x)) * 0.001f; // scale factor for depth
-                if (z < min_depth || z > max_depth) continue;
+            cv::Mat filtered_xyz, filtered_rgb;
+            filterPoints(xyz, rgb, good_idx, filtered_xyz, filtered_rgb);
 
-                Eigen::Vector3d pt(
-                    (x - intrinsic(0, 2)) * z / intrinsic(0, 0),
-                    (y - intrinsic(1, 2)) * z / intrinsic(1, 1),
-                    z
-                );
-                points.push_back(pt);
+            std::cout << "Filtered projected 3D points (first 10 values):" << std::endl;
+            std::cout << filtered_xyz.rowRange(0, 10) << std::endl;
+            std::cout << "Filtered RGB values for 3D points (first 10 values):" << std::endl;
+            std::cout << filtered_rgb.rowRange(0, 10) << std::endl;
 
-                cv::Vec3f color = img_undistort.at<cv::Vec3f>(y, x);
-                colors.push_back(Eigen::Vector3d(color[0], color[1], color[2]));
+            // Prepare point cloud with Eigen vectors
+            std::vector<Eigen::Vector3d> points, colors;
+            for (int i = 0; i < filtered_xyz.rows; ++i) {
+                points.emplace_back(filtered_xyz.at<float>(i, 0), filtered_xyz.at<float>(i, 1), filtered_xyz.at<float>(i, 2));
+                colors.emplace_back(filtered_rgb.at<float>(i, 0), filtered_rgb.at<float>(i, 1), filtered_rgb.at<float>(i, 2));
+            }
+
+            auto pcd = std::make_shared<open3d::geometry::PointCloud>();
+            pcd->points_ = points;
+            pcd->colors_ = colors;
+
+            // Calculate normals, required for ICP point-to-plane
+            pcd->EstimateNormals(open3d::geometry::KDTreeSearchParamHybrid(normal_radius, 30));
+            pcd->OrientNormalsTowardsCameraLocation();
+            std::cout << "Estimated and oriented normals for point cloud" << std::endl;
+}
+
+std::tuple<cv::Mat, cv::Mat> ImageDepth::project3D(const cv::Mat& pts) {
+        pts.convertTo(xy, CV_32S);
+        cv::Mat depths(pts.rows, 1, CV_32F);
+
+        double fx = intrinsic(0, 0);
+        double fy = intrinsic(1, 1);
+        double cx = intrinsic(0, 2);
+        double cy = intrinsic(1, 2);
+
+        for (int i = 0; i < pts.rows; ++i) {
+            int x = xy.at<int>(i, 0);
+            int y = xy.at<int>(i, 1);
+            depths.at<float>(i) = depth_map_undistort.at<float>(y, x);
+        }
+
+        std::vector<int> good_indices;
+        for (int i = 0; i < depths.rows; ++i) {
+            if (depths.at<float>(i) > min_depth && depths.at<float>(i) < max_depth) {
+                good_indices.push_back(i);
             }
         }
+
+        cv::Mat good_idx = cv::Mat(good_indices).reshape(1, 1);
+        cv::Mat valid_xy, valid_depths;
+        cv::findNonZero(depths > min_depth & depths < max_depth, good_idx);
+
+        xy.convertTo(valid_xy, CV_32F);
+        valid_depths = depths(good_idx);
+
+        for (int i = 0; i < valid_xy.rows; ++i) {
+            valid_xy.at<float>(i, 0) = (valid_xy.at<float>(i, 0) - cx) / fx * valid_depths.at<float>(i);
+            valid_xy.at<float>(i, 1) = (valid_xy.at<float>(i, 1) - cy) / fy * valid_depths.at<float>(i);
+        }
+
+        cv::Mat xyz(valid_xy.rows, 3, CV_32F);
+        for (int i = 0; i < valid_xy.rows; ++i) {
+            xyz.at<float>(i, 0) = valid_xy.at<float>(i, 0);
+            xyz.at<float>(i, 1) = valid_xy.at<float>(i, 1);
+            xyz.at<float>(i, 2) = valid_depths.at<float>(i);
+        }
+
+        return std::make_tuple(xyz, good_idx);
     }
 
-    pointCloud->points_ = points;
-    pointCloud->colors_ = colors;
-
-    // Calculate normals
-    pointCloud->EstimateNormals(
-        open3d::geometry::KDTreeSearchParamHybrid(normal_radius, 30)
-    );
-    pointCloud->OrientNormalsTowardsCameraLocation();
-}
+    void ImageDepth::filterPoints(const cv::Mat& xyz, const cv::Mat& rgb, const cv::Mat& good_idx, cv::Mat& filtered_xyz, cv::Mat& filtered_rgb) {
+        filtered_xyz = cv::Mat(good_idx.rows, 3, CV_32F);
+        filtered_rgb = cv::Mat(good_idx.rows, 3, CV_32F);
+        for (int i = 0; i < good_idx.rows; ++i) {
+            int idx = good_idx.at<int>(i);
+            filtered_xyz.at<float>(i, 0) = xyz.at<float>(idx, 0);
+            filtered_xyz.at<float>(i, 1) = xyz.at<float>(idx, 1);
+            filtered_xyz.at<float>(i, 2) = xyz.at<float>(idx, 2);
+            filtered_rgb.at<float>(i, 0) = rgb.at<float>(idx, 0);
+            filtered_rgb.at<float>(i, 1) = rgb.at<float>(idx, 1);
+            filtered_rgb.at<float>(i, 2) = rgb.at<float>(idx, 2);
+        }
+    }
