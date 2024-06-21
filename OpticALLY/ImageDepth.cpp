@@ -590,19 +590,19 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
     
     // Expect pts to be Nx2
        cv::Mat xy_converted;
-       xy.convertTo(xy_converted, CV_32S);
+    xy.convertTo(xy_converted, CV_32U); // Convert to 64-bit floating-point type
 
-       std::cout << "Rounded xy positions (first 10 values):" << std::endl;
-       for (int i = 0; i < std::min(10, xy_converted.rows); ++i) {
-           std::cout << "(" << xy_converted.at<int>(i, 0) << ", " << xy_converted.at<int>(i, 1) << ")" << std::endl;
-       }
+      std::cout << "Converted xy positions (first 10 values):" << std::endl;
+      for (int i = 0; i < std::min(10, xy_converted.rows); ++i) {
+          std::cout << "(" << xy_converted.at<double>(i, 0) << ", " << xy_converted.at<double>(i, 1) << ")" << std::endl;
+      }
 
     double fx = intrinsic(0, 0);
     double fy = intrinsic(1, 1);
     double cx = intrinsic(0, 2);
     double cy = intrinsic(1, 2);
 
-       std::cout << "fx: " << fx << ", fy: " << fy << ", cx: " << cx << ", cy: " << cy << std::endl;
+   std::cout << "fx: " << fx << ", fy: " << fy << ", cx: " << cx << ", cy: " << cy << std::endl;
 
     for (int y = 0; y < depth_map.rows; ++y) {
         for (int x = 0; x < depth_map.cols; ++x) {

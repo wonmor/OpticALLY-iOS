@@ -111,6 +111,7 @@ class ImageDepth:
 
         xy[:, 0] = np.mod(idx, self.width)
         xy[:, 1] = idx // self.width
+        print("Generated idx array (first 10 values):", idx[:10])
         print("Generated xy positions (first 10 values):", xy[:10])
 
         # Remove bad values
@@ -155,9 +156,6 @@ class ImageDepth:
         per = float(np.sum(idx == True)) / len(depth)
         print(f"Processing {file}, keeping={np.sum(idx == True)}/{len(depth)} ({per:.3f}) points")
 
-        depth = np.expand_dims(self.depth_map_undistort.flatten()[np.where(idx)], 1)
-        print("Expanded depth map for valid indices (first 10 values):", depth[:10])
-
         # Project to 3D
         xyz, _, good_idx = self.project3d(xy)
         xyz = xyz[good_idx]
@@ -177,6 +175,7 @@ class ImageDepth:
     def project3d(self, pts):
         # Expect pts to be Nx2
         xy = np.round(pts).astype(int)
+        print(xy.dtype)
         print("Rounded xy positions (first 10 values):", xy[:10])
 
         fx = self.intrinsic[0, 0]
@@ -184,10 +183,15 @@ class ImageDepth:
         cx = self.intrinsic[0, 2]
         cy = self.intrinsic[1, 2]
 
+        print(f"fx: {fx}, fy: {fy}, cx: {cx}, cy: {cy}")
+
         depths = self.depth_map_undistort[xy[:, 1], xy[:, 0]]
         depths = np.expand_dims(depths, 1)
         print("Depths size:", depths.shape)
         print("xy size:", xy.shape)
+
+        # Print the first 10 values of depths
+        print("First 10 values of depths:", depths[:10])
 
         good_idx = np.where((depths > self.min_depth) & (depths < self.max_depth))[0]
         print("Filtered valid depths (first 10 values):", depths[:10])
@@ -207,6 +211,16 @@ class ImageDepth:
         self.depth_map_undistort = cv.remap(self.depth_map, self.map_x, self.map_y, cv.INTER_LINEAR)
         # Debug print
         print("Undistorted depth map (first 10 values):", self.depth_map_undistort.flatten()[:10])
+
+        # Calculate max, min, and average
+        max_value = np.max(self.depth_map_undistort)
+        min_value = np.min(self.depth_map_undistort)
+        average_value = np.mean(self.depth_map_undistort)
+        
+        # Print max, min, and average values
+        print("Max value of undistorted depth map:", max_value)
+        print("Min value of undistorted depth map:", min_value)
+        print("Average value of undistorted depth map:", average_value)
 
     def load_image(self, file):
         print(f"Loading {file}")
