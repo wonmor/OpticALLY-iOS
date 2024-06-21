@@ -587,6 +587,22 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
     pointCloud = std::make_shared<open3d::geometry::PointCloud>();
     std::vector<Eigen::Vector3d> points;
     std::vector<Eigen::Vector3d> colors;
+    
+    // Expect pts to be Nx2
+       cv::Mat xy_converted;
+       xy.convertTo(xy_converted, CV_32S);
+
+       std::cout << "Rounded xy positions (first 10 values):" << std::endl;
+       for (int i = 0; i < std::min(10, xy_converted.rows); ++i) {
+           std::cout << "(" << xy_converted.at<int>(i, 0) << ", " << xy_converted.at<int>(i, 1) << ")" << std::endl;
+       }
+
+    double fx = intrinsic(0, 0);
+    double fy = intrinsic(1, 1);
+    double cx = intrinsic(0, 2);
+    double cy = intrinsic(1, 2);
+
+       std::cout << "fx: " << fx << ", fy: " << fy << ", cx: " << cx << ", cy: " << cy << std::endl;
 
     for (int y = 0; y < depth_map.rows; ++y) {
         for (int x = 0; x < depth_map.cols; ++x) {
@@ -615,8 +631,4 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
         open3d::geometry::KDTreeSearchParamHybrid(normal_radius, 30)
     );
     pointCloud->OrientNormalsTowardsCameraLocation();
-}
-
-void ImageDepth::filterPoints(const cv::Mat& xyz, const cv::Mat& rgb, const cv::Mat& good_idx, cv::Mat& filtered_xyz, cv::Mat& filtered_rgb) {
-
 }

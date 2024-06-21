@@ -47,9 +47,6 @@ private:
     float linearInterpolate(const std::vector<float>& lookup, float x);
     void createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask);
     void debugImageStats(const cv::Mat& image, const std::string& name);
-    
-    std::tuple<cv::Mat, cv::Mat> project3D(const cv::Mat& pts);
-    void filterPoints(const cv::Mat& xyz, const cv::Mat& rgb, const cv::Mat& good_idx, cv::Mat& filtered_xyz, cv::Mat& filtered_rgb);
 
 public:
     // Constructor
