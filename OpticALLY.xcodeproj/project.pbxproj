@@ -188,6 +188,7 @@
 		967EE0812AAE06FE000C4D5F /* OpticALLYUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpticALLYUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		9680F7DA2B2283B200F38A6F /* CapturedImageSampler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapturedImageSampler.swift; sourceTree = "<group>"; };
 		9680F7DC2B22D6FD00F38A6F /* ARFaceTrackingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARFaceTrackingView.swift; sourceTree = "<group>"; };
+		968994C82C259ACD0092FC05 /* tinyndarray.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = tinyndarray.h; sourceTree = "<group>"; };
 		969AC27F2AB7550C0096892E /* IntroductionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroductionView.swift; sourceTree = "<group>"; };
 		969AC2812AB7554C0096892E /* Extensions+Modifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Extensions+Modifiers.swift"; sourceTree = "<group>"; };
 		969DF1C62B12916900FA9ABE /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
@@ -390,6 +391,7 @@
 				9679F8B12AD0907800686F13 /* OpticALLY-Bridging-Header.h */,
 				963FF2822B6316F700B89019 /* OpticALLY.entitlements */,
 				9639661D2B76B87300EB435B /* PrefixHeader.pch */,
+				968994C82C259ACD0092FC05 /* tinyndarray.h */,
 				96BE3DA02BE579950021EBED /* OpenCVWrapper.h */,
 				96BE3DA12BE579950021EBED /* OpenCVWrapper.mm */,
 				96E8A65A2BEC480500CCBC18 /* EigenWrapper.h */,

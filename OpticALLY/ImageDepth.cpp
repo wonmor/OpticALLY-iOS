@@ -1,6 +1,8 @@
 // ImageDepth.cpp
 // OpticALLY
 
+#define TINYNDARRAY_IMPLEMENTATION
+
 #include "ImageDepth.hpp"
 #include <algorithm>
 #include <iostream>
@@ -12,7 +14,9 @@
 #include <open3d/geometry/PointCloud.h>
 #include <open3d/geometry/KDTreeSearchParam.h>
 #include "base64.hpp"
+#include "tinyndarray.h"
 
+using tinyndarray::NdArray;
 using json = nlohmann::json;
 using namespace Eigen;
 
@@ -408,11 +412,19 @@ void ImageDepth::loadDepth(const std::string& file) {
             idx[i] = no_nan[i] && depth1[i] && depth2[i];
         }
 
-        // Print first 10 values of idx
+    // Populate valid_indices
+        valid_indices.clear();
+        for (size_t i = 0; i < depth.size(); ++i) {
+            if (!std::isnan(depth[i]) && depth[i] > min_depth && depth[i] < max_depth) {
+                valid_indices.push_back(i);
+            }
+        }
+
+        // Print first 10 values of valid_indices
         std::cout << "Filtered valid depth indices (first 10 values): [";
-        for (size_t i = 0; i < 10 && i < idx.size(); ++i) {
-            std::cout << idx[i];
-            if (i < 9 && i < idx.size() - 1) {
+        for (size_t i = 0; i < 10 && i < valid_indices.size(); ++i) {
+            std::cout << valid_indices[i];
+            if (i < 9 && i < valid_indices.size() - 1) {
                 std::cout << " ";
             }
         }
@@ -522,10 +534,9 @@ void ImageDepth::loadDepth(const std::string& file) {
             }
         }
 
-        // Undistort the depth map using remap
-        cv::Mat depth_map_undistort;
         cv::remap(depth_map_mat, depth_map_undistort, map_x, map_y, cv::INTER_LINEAR);
 
+    
         // Print first 10 values of the undistorted depth map
         std::cout << "Undistorted depth map (first 10 values): [";
         for (size_t i = 0; i < 10 && i < depth_map_undistort.total(); ++i) {
@@ -536,30 +547,19 @@ void ImageDepth::loadDepth(const std::string& file) {
         }
         std::cout << "]" << std::endl;
     
-        // Calculate the percentage of valid depth points
-        float valid_count = static_cast<float>(std::count(idx.begin(), idx.end(), true));
-        float total_count = static_cast<float>(depth.size());
-        float per = valid_count / total_count;
-        std::cout << "Processing " << file << ", keeping=" << valid_count << "/" << total_count << " (" << per << ") points" << std::endl;
+    // Calculate max, min, and average values
+        double min_value, max_value;
+        cv::minMaxLoc(depth_map_undistort, &min_value, &max_value);
+        double sum = cv::sum(depth_map_undistort)[0];
+        double average_value = sum / depth_map_undistort.total();
 
-        // Expand the depth map for valid indices
-        std::vector<float> depth_undistort_flattened(depth_map_undistort.begin<float>(), depth_map_undistort.end<float>());
-        std::vector<float> depth_valid;
-        for (size_t i = 0; i < depth_undistort_flattened.size(); ++i) {
-            if (idx[i]) {
-                depth_valid.push_back(depth_undistort_flattened[i]);
-            }
-        }
+        // Print max, min, and average values
+        std::cout << "Max value of undistorted depth map: " << max_value << std::endl;
+        std::cout << "Min value of undistorted depth map: " << min_value << std::endl;
+        std::cout << "Average value of undistorted depth map: " << average_value << std::endl;
+    
+   
 
-        // Print first 10 values of the expanded depth map for valid indices
-        std::cout << "Expanded depth map for valid indices (first 10 values): [";
-        for (size_t i = 0; i < 10 && i < depth_valid.size(); ++i) {
-            std::cout << depth_valid[i];
-            if (i < 9 && i < depth_valid.size() - 1) {
-                std::cout << " ";
-            }
-        }
-        std::cout << "]" << std::endl;
 
 
 

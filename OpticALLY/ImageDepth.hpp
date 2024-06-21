@@ -33,6 +33,7 @@ private:
     std::vector<float> lensDistortionLookup;
     std::vector<float> inverseLensDistortionLookup;
     std::shared_ptr<open3d::geometry::PointCloud> pointCloud;
+    std::vector<int> valid_indices;
 
     // Private utility methods
     void loadCalibration(const std::string& file);
