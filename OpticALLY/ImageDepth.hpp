@@ -42,11 +42,13 @@ private:
     void loadCalibration(const std::string& file);
     void createUndistortionLookup();
     void loadImage(const std::string& file);
+    void processImage();
     void loadDepth(const std::string& file);
-    void srgbToLinear(cv::Mat& img);
     float linearInterpolate(const std::vector<float>& lookup, float x);
     void createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask);
     void debugImageStats(const cv::Mat& image, const std::string& name);
+    
+    cv::Mat srgbToLinear(const cv::Mat& srgb);
 
 public:
     // Constructor
