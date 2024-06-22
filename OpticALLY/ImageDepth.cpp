@@ -682,6 +682,10 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
            float py = (y - cy) / fy * depth;
 
            pts.emplace_back(px, py, depth);
+           points.emplace_back(px, py, depth);
+           // Extract color (assuming color_image is a BGR image)
+                   cv::Vec3b color = img_undistort.at<cv::Vec3b>(y, x);
+                   colors.emplace_back(color[2], color[1], color[0]);
        }
 
        // Print projected 3D points
