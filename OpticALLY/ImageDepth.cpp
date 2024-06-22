@@ -630,24 +630,66 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
 
        std::cout << "fx: " << fx << ", fy: " << fy << ", cx: " << cx << ", cy: " << cy << std::endl;
 
-    for (int y = 0; y < depth_map.rows; ++y) {
-        for (int x = 0; x < depth_map.cols; ++x) {
-            if (mask.empty() || mask.at<uint8_t>(y, x) != 0) {
-                float z = static_cast<float>(depth_map.at<uint16_t>(y, x)) * 0.001f; // scale factor for depth
-                if (z < min_depth || z > max_depth) continue;
+    // Extract depths using xy_converted coordinates
+       std::vector<float> depths;
+       for (int i = 0; i < xy_converted.rows; ++i) {
+           int x = xy_converted.at<int>(i, 0);
+           int y = xy_converted.at<int>(i, 1);
+           depths.push_back(depth_map_undistort.at<float>(y, x));
+       }
 
-                Eigen::Vector3d pt(
-                    (x - intrinsic(0, 2)) * z / intrinsic(0, 0),
-                    (y - intrinsic(1, 2)) * z / intrinsic(1, 1),
-                    z
-                );
-                points.push_back(pt);
+       // Print the size of depths and xy_converted
+       std::cout << "Depths size: " << depths.size() << std::endl;
+       std::cout << "xy_converted size: " << xy_converted.rows << std::endl;
 
-                cv::Vec3f color = img_undistort.at<cv::Vec3f>(y, x);
-                colors.push_back(Eigen::Vector3d(color[0], color[1], color[2]));
-            }
-        }
-    }
+       // Print the first 10 values of depths
+       std::cout << "First 10 values of depths: ";
+       for (size_t i = 0; i < std::min(depths.size(), size_t(10)); ++i) {
+           std::cout << depths[i] << " ";
+       }
+       std::cout << std::endl;
+
+       // Filter valid depths
+       std::vector<int> good_idx;
+       for (size_t i = 0; i < depths.size(); ++i) {
+           if (depths[i] > min_depth && depths[i] < max_depth) {
+               good_idx.push_back(i);
+           }
+       }
+
+       // Print filtered valid depths and good indices
+       std::cout << "Filtered valid depths (first 10 values): ";
+       for (size_t i = 0; i < std::min(depths.size(), size_t(10)); ++i) {
+           std::cout << depths[i] << " ";
+       }
+       std::cout << std::endl;
+
+       std::cout << "Good indices for valid depths (first 10 values): ";
+       for (size_t i = 0; i < std::min(good_idx.size(), size_t(10)); ++i) {
+           std::cout << good_idx[i] << " ";
+       }
+       std::cout << std::endl;
+
+       // Project to 3D points
+       std::vector<cv::Point3f> pts;
+       for (size_t i = 0; i < good_idx.size(); ++i) {
+           int idx = good_idx[i];
+           int x = xy_converted.at<int>(idx, 0);
+           int y = xy_converted.at<int>(idx, 1);
+           float depth = depths[idx];
+
+           float px = (x - cx) / fx * depth;
+           float py = (y - cy) / fy * depth;
+
+           pts.emplace_back(px, py, depth);
+       }
+
+       // Print projected 3D points
+       std::cout << "Projected 3D points (first 10 values): ";
+       for (size_t i = 0; i < std::min(pts.size(), size_t(10)); ++i) {
+           std::cout << "(" << pts[i].x << ", " << pts[i].y << ", " << pts[i].z << ") ";
+       }
+       std::cout << std::endl;
 
     pointCloud->points_ = points;
     pointCloud->colors_ = colors;
