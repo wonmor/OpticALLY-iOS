@@ -475,6 +475,32 @@ void ImageDepth::loadDepth(const std::string& file) {
         std::cout << "Filtered sizes:" << std::endl;
         std::cout << "xy_filtered size: " << xy_filtered.size() << std::endl;
         std::cout << "rgb_filtered size: " << rgb_filtered.size() << std::endl;
+    
+    // Convert xy_filtered to cv::Mat
+       xy = cv::Mat(static_cast<int>(xy_filtered.size()), 2, CV_32F);
+       for (size_t i = 0; i < xy_filtered.size(); ++i) {
+           xy.at<float>(i, 0) = xy_filtered[i].x;
+           xy.at<float>(i, 1) = xy_filtered[i].y;
+       }
+
+       // Convert rgb_filtered to cv::Mat
+       rgb = cv::Mat(static_cast<int>(rgb_filtered.size()), 3, CV_32F);
+       for (size_t i = 0; i < rgb_filtered.size(); ++i) {
+           rgb.at<cv::Vec3f>(i, 0)[0] = rgb_filtered[i][0];
+           rgb.at<cv::Vec3f>(i, 0)[1] = rgb_filtered[i][1];
+           rgb.at<cv::Vec3f>(i, 0)[2] = rgb_filtered[i][2];
+       }
+
+       // Debug prints to verify the conversion
+       std::cout << "Converted xy positions (first 10 values):" << std::endl;
+       for (int i = 0; i < std::min(10, xy.rows); ++i) {
+           std::cout << "(" << xy.at<float>(i, 0) << ", " << xy.at<float>(i, 1) << ")" << std::endl;
+       }
+
+       std::cout << "Converted rgb values (first 10 values):" << std::endl;
+       for (int i = 0; i < std::min(10, rgb.rows); ++i) {
+           std::cout << "(" << rgb.at<cv::Vec3f>(i, 0)[0] << ", " << rgb.at<cv::Vec3f>(i, 0)[1] << ", " << rgb.at<cv::Vec3f>(i, 0)[2] << ")" << std::endl;
+       }
 
     // Create mask
       std::vector<uint8_t> mask(depth.size(), 255);
@@ -590,19 +616,19 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
     
     // Expect pts to be Nx2
        cv::Mat xy_converted;
-    xy.convertTo(xy_converted, CV_32U); // Convert to 64-bit floating-point type
+       xy.convertTo(xy_converted, CV_32S);
 
-      std::cout << "Converted xy positions (first 10 values):" << std::endl;
-      for (int i = 0; i < std::min(10, xy_converted.rows); ++i) {
-          std::cout << "(" << xy_converted.at<double>(i, 0) << ", " << xy_converted.at<double>(i, 1) << ")" << std::endl;
-      }
+       std::cout << "Rounded xy positions (first 10 values):" << std::endl;
+       for (int i = 0; i < std::min(10, xy_converted.rows); ++i) {
+           std::cout << "(" << xy_converted.at<int>(i, 0) << ", " << xy_converted.at<int>(i, 1) << ")" << std::endl;
+       }
 
     double fx = intrinsic(0, 0);
     double fy = intrinsic(1, 1);
     double cx = intrinsic(0, 2);
     double cy = intrinsic(1, 2);
 
-   std::cout << "fx: " << fx << ", fy: " << fy << ", cx: " << cx << ", cy: " << cy << std::endl;
+       std::cout << "fx: " << fx << ", fy: " << fy << ", cx: " << cx << ", cy: " << cy << std::endl;
 
     for (int y = 0; y < depth_map.rows; ++y) {
         for (int x = 0; x < depth_map.cols; ++x) {
