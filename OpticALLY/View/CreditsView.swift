@@ -65,14 +65,6 @@ struct CreditNestedView: View {
                 .font(.caption)
                 .bold()
             
-            Text("Python Version\n\(sys!.version)")
-                .monospaced()
-                .padding(.horizontal)
-                .padding(.top)
-                .foregroundStyle(.black)
-                .font(.caption)
-                .bold()
-            
             VStack {
                 Text("OPTICALLY")
                     .monospaced()

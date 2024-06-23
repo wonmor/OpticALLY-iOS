@@ -297,6 +297,9 @@ void ImageDepth::loadImage(const std::string& file) {
 
    // Debug: Print shape and type of img_undistort
    debugImageStats(img_undistort, "img_undistort");
+    
+    // Flip the image like in the mirror
+    cv::flip(img_undistort, img_undistort, 0);
 
     // Debug print the first 10 values
     std::cout << "Undistorted image (first 10 values):";
