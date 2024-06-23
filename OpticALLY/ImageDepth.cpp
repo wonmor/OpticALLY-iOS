@@ -242,80 +242,68 @@ void ImageDepth::createUndistortionLookup() {
     std::cout << std::endl;
 }
 
-// Function to convert sRGB to linear space
-cv::Mat ImageDepth::srgbToLinear(const cv::Mat& srgb) {
-    cv::Mat linear = srgb.clone();
-    for (int y = 0; y < srgb.rows; ++y) {
-        for (int x = 0; x < srgb.cols; ++x) {
-            for (int c = 0; c < 3; ++c) {
-                float value = srgb.at<cv::Vec3f>(y, x)[c];
-                if (value <= 0.04045) {
-                    linear.at<cv::Vec3f>(y, x)[c] = value / 12.92;
-                } else {
-                    linear.at<cv::Vec3f>(y, x)[c] = std::pow((value + 0.055) / 1.055, 2.4);
-                }
-            }
-        }
-    }
-    return linear;
-}
-
 void ImageDepth::loadImage(const std::string& file) {
     std::cout << "Loading " << file << std::endl;
-      img = cv::imread(file, cv::IMREAD_UNCHANGED);
 
-      if (img.empty()) {
-          throw std::runtime_error("Failed to load image: " + file);
-      }
+    // Load image file
+    std::vector<uint8_t> buffer(width * height * 4);
+    std::ifstream fileStream(file, std::ios::binary);
+    fileStream.read(reinterpret_cast<char*>(buffer.data()), buffer.size());
+    fileStream.close();
 
-      if (img.channels() == 4) {
-          cv::cvtColor(img, img, cv::COLOR_BGRA2BGR);
-      }
+    // Reshape and convert image
+    cv::Mat img(height, width, CV_8UC4, buffer.data());
+    img = img(cv::Rect(0, 0, width, height)).clone(); // Extract 3 channels
+    cv::cvtColor(img, img, cv::COLOR_BGRA2RGB); // Remove alpha and swap RB
 
-      // Swap RB channels
-      cv::cvtColor(img, img, cv::COLOR_BGR2RGB);
+    // Convert image from sRGB to linear space
+    img_linear = img.clone();
+    img_linear.convertTo(img_linear, CV_32F, 1.0 / 255.0);
 
-      if (img.size() != cv::Size(width, height)) {
-          throw std::runtime_error("Image size does not match specified width and height.");
-      }
-    
-    img.convertTo(img, CV_32F, 1.0 / 255.0);
-       img_linear = srgbToLinear(img);
+    srgbToLinear(img_linear);
 
-       // Debug print
-       std::cout << "Linear image (first 10 values): ";
-       for (int i = 0; i < 10; ++i) {
-           std::cout << img_linear.at<cv::Vec3f>(i / img_linear.cols, i % img_linear.cols) << " ";
-       }
-       std::cout << std::endl;
+    // Debug print for the linear image
+    std::cout << "Linear image (first 10 values): [";
+    for (int i = 0; i < 10; ++i) {
+        int y = i / img_linear.cols;
+        int x = i % img_linear.cols;
+        cv::Vec3f pixel = img_linear.at<cv::Vec3f>(y, x);
+        std::cout << pixel[2] << ", " << pixel[1] << ", " << pixel[0];
+        if (i < 9) std::cout << ", ";
+    }
+    std::cout << "]" << std::endl;
 
-       // Print first 10 values of map_x
-       std::cout << "map_x (first 10 values): ";
-       for (int i = 0; i < 10; ++i) {
-           std::cout << map_x.at<float>(i) << " ";
-       }
-       std::cout << std::endl;
+    // Print first 10 values of map_x
+    std::cout << "map_x (first 10 values):\n";
+    for (int i = 0; i < 10; ++i) {
+        std::cout << map_x.at<float>(i) << " ";
+    }
+    std::cout << std::endl;
 
-       // Print first 10 values of map_y
-       std::cout << "map_y (first 10 values): ";
-       for (int i = 0; i < 10; ++i) {
-           std::cout << map_y.at<float>(i) << " ";
-       }
-       std::cout << std::endl;
+    // Print first 10 values of map_y
+    std::cout << "map_y (first 10 values):\n";
+    for (int i = 0; i < 10; ++i) {
+        std::cout << map_y.at<float>(i) << " ";
+    }
+    std::cout << std::endl;
 
-       // Debug: Print shape and type of img_linear
-       std::cout << "img_linear shape: " << img_linear.rows << "x" << img_linear.cols << std::endl;
-       std::cout << "img_linear dtype: " << img_linear.type() << std::endl;
+    debugImageStats(img_linear, "img_linear");
 
-       // Debug: Print max, min, and mean values of img_linear
-       double minVal, maxVal, meanVal;
-       cv::minMaxLoc(img_linear, &minVal, &maxVal);
-       meanVal = cv::mean(img_linear)[0];
-       std::cout << "img_linear max value: " << maxVal << std::endl;
-       std::cout << "img_linear min value: " << minVal << std::endl;
-       std::cout << "img_linear mean value: " << meanVal << std::endl;
-    
-    
+   // Debug: Print shape and type of map_x and map_y
+   debugImageStats(map_x, "map_x");
+   debugImageStats(map_y, "map_y");
+
+   cv::remap(img_linear, img_undistort, map_x, map_y, cv::INTER_LINEAR);
+
+   // Debug: Print shape and type of img_undistort
+   debugImageStats(img_undistort, "img_undistort");
+
+    // Debug print the first 10 values
+    std::cout << "Undistorted image (first 10 values):";
+    for (int i = 0; i < 10; ++i) {
+        std::cout << " " << static_cast<int>(img_undistort.data[i]);
+    }
+    std::cout << std::endl;
 }
 
 std::string getMatType(int type) {
@@ -352,6 +340,20 @@ void ImageDepth::debugImageStats(const cv::Mat& image, const std::string& name) 
     std::cout << name << " min value: " << min << std::endl;
     std::cout << name << " mean value: " << mean << std::endl;
 }
+
+void ImageDepth::srgbToLinear(cv::Mat& img) {
+    img.forEach<cv::Vec3f>([](cv::Vec3f& pixel, const int* position) -> void {
+        for (int i = 0; i < 3; ++i) {
+            float& channel = pixel[i];
+            if (channel <= 0.04045f) {
+                channel = channel / 12.92f;
+            } else {
+                channel = pow((channel + 0.055f) / 1.055f, 2.4f);
+            }
+        }
+    });
+}
+
 
 void ImageDepth::loadDepth(const std::string& file) {
     std::cout << "Loading depth file " << file << std::endl;
@@ -662,9 +664,6 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
            std::cout << good_idx[i] << " ";
        }
        std::cout << std::endl;
-    
-    // Flip the image like in the mirror
-    cv::flip(img_undistort, img_undistort, 0);
 
        // Project to 3D points
        std::vector<cv::Point3f> pts;
