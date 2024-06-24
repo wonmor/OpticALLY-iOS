@@ -115,14 +115,9 @@ struct PostScanView: View {
     let fileManager = FileManager.default
     
     private func processUploads() {
-        // Accessing the resources folder within the app bundle
-        guard let resourcesURL = Bundle.main.resourceURL else {
-            print("Could not find resources folder in bundle.")
-            return
-        }
-
-        let baseFolderName = "test_model"
-        let folderURL = resourcesURL.appendingPathComponent(baseFolderName)
+        let baseFolderName = "bin_json"
+        let documentsDirectory = ExternalData.getDocumentsDirectory()
+        let folderURL = documentsDirectory.appendingPathComponent(baseFolderName)
         let calibrationFileURL = folderURL.appendingPathComponent("calibration.json")
         
         // Retrieve all video and depth files
@@ -143,29 +138,25 @@ struct PostScanView: View {
         print("Trimmed Depth Files Count: \(depthFiles.count)")
 
         // Process point clouds for the matching pairs
-        PointCloudProcessingBridge.processPointClouds(withCalibrationFile: calibrationFileURL.path, imageFiles: videoFiles, depthFiles: depthFiles, outputPath: getDocumentsDirectory().path)
+        PointCloudProcessingBridge.processPointClouds(withCalibrationFile: calibrationFileURL.path, imageFiles: videoFiles, depthFiles: depthFiles, outputPath: folderURL.path)
 
-        let objFileName = "output.obj"
-        let objURL = getDocumentsDirectory().appendingPathComponent(objFileName)
-        
-        if FileManager.default.fileExists(atPath: objURL.path) {
-            print("objURL Path: \(objURL.path)")
-            exportViewModel.objURL = objURL
+        // Assuming the output OBJ file is generated for each pair
+        for index in 0..<minCount {
+            let objFileName = "output.obj"
+            let objURL = folderURL.appendingPathComponent(objFileName)
             
-        } else {
-            NSLog("Failed to generate OBJ file (Swift-side error catch)")
-            self.showAlert = true
-            self.isProcessing = false
-            return
+            if FileManager.default.fileExists(atPath: objURL.path) {
+                exportViewModel.objURLs?.append(objURL.path)
+            } else {
+                NSLog("Failed to generate OBJ file for pair index \(index)")
+                self.showAlert = true
+                self.isProcessing = false
+                return
+            }
         }
         
         self.isProcessing = false
         ExternalData.isMeshView = true  // Processing is complete, allow viewing of the mesh
-    }
-
-    func getDocumentsDirectory() -> URL {
-        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
-        return paths[0]
     }
     
     func initialize() {
@@ -177,34 +168,34 @@ struct PostScanView: View {
 //      ON-DEVICE MESHING... (CURRENTLY FACING ISSUES REGARDING BASE64 UIIMAGE TRANSFER BETWEEN PYTHON AND SWIFT! NEEDS FIX!
 //        DispatchQueue.global(qos: .userInitiated).async {
 //            let gstate = PyGILState_Ensure()
-//            
+//
 //          defer {
 //              DispatchQueue.main.async {
 //                  guard let tstate = self.tstate else { fatalError() }
 //                  PyEval_RestoreThread(tstate)
 //                  self.tstate = nil
 //              }
-//              
+//
 //              PyGILState_Release(gstate)
 //          }
 //            var pointClouds: [PythonObject] = []
-//    
+//
 //            for (index, videoFile) in videoFiles.enumerated() {
 //                do {
 //                    let objFileURL = try OpticALLYApp.poissonReconstruction_PLYtoOBJ(json_string: calibrationFileContent, image_file: videoFile, depth_file: depthFiles[index])
-//                    
+//
 //                    pointClouds.append(objFileURL)
-//                    
+//
 //                } catch {
 //                    print(error.localizedDescription)
 //                }
 //            }
-//            
+//
 //            let process3D = Python.import("Process3D")
 //            let meshOutput = process3D.process3D(pointClouds)
-//            
+//
 //            o3d!.io.write_triangle_mesh(outputFilePath.path, meshOutput)
-//           
+//
 //            // Update the state to indicate that there's a file to share
 //            DispatchQueue.main.async {
 //                // self.fileURL = zipFileURL
@@ -213,7 +204,7 @@ struct PostScanView: View {
 //                self.isProcessing = false
 //            }
 //        }
-//        
+//
 //        tstate = PyEval_SaveThread()
         
         // Using cloud services... (server)
@@ -221,13 +212,13 @@ struct PostScanView: View {
 //            if success, let objURLs = objURLs {
 //                DispatchQueue.main.async {
 //                    exportViewModel.objURLs = objURLs
-//                    
+//
 //                    print("objURLs: \(objURLs)")
-//                    
+//
 //                    ExternalData.isMeshView = true
 //                    self.isProcessing = false
 //                }
-//                
+//
 //            } else {
 //                // Handle errors
 //                DispatchQueue.main.async {
@@ -481,10 +472,51 @@ struct PostScanView: View {
                 .onAppear() {
                     // onViewAppear...
                     self.initialize()
+                    
+                    print("안녕")
                 }
+
+                if let url = exportViewModel.objURLs {
+                    TabView {
+                        SceneKitMDLView(snapshot: $snapshot, url: URL(string: url[0])!)
+                                .tabItem {
+                                    Label("FRONT", systemImage: "0.circle")
+                                }
+                                .onAppear() {
+                                    currentDirection = .front
+                                }
+//                                .onChange(of: frameNeedsUpdate) { _ in
+//                                    if let scnView = scnView { // Make sure scnView is properly referenced
+//                                        if let image: UIImage? = snapshot {
+//                                               detectEyes(in: image!) { [self] detected in
+//                                                   DispatchQueue.main.async {
+//                                                       self.observations = detected ?? []
+//                                                   }
+//                                               }
+//                                           }
+//                                       }
+//                                }
+//
+//                            EyeOverlayView(observations: observations)
                 
-                if let url = exportViewModel.objURL {
-                    SceneKitMDLView(snapshot: $snapshot, url: url)
+                        
+                        SceneKitMDLView(snapshot: $snapshot, url: URL(string: url[1])!)
+                            .tabItem {
+                                Label("LEFT", systemImage: "1.circle")
+                            }
+                            .onAppear() {
+                                currentDirection = .left
+                            }
+                        
+                        SceneKitMDLView(snapshot: $snapshot, url: URL(string: url[2])!)
+                            .tabItem {
+                                Label("RIGHT", systemImage: "2.circle")
+                            }
+                            .onAppear() {
+                                currentDirection = .right
+                            }
+                    }
+                    .padding()
                 }
                 
                 Spacer()
@@ -570,13 +602,13 @@ struct PostScanView: View {
                             }
                         }
                     }
-//                    if !exportViewModel.isLoading {
-//                        Text("PUPIL DISTANCE\n\(String(format: "%.1f", cameraViewController.pupilDistance)) mm")
-//                            .padding()
-//                            .frame(maxWidth: .infinity, alignment: .center)
-//                            .multilineTextAlignment(.center)
-//                            .monospaced()
-//                    }
+                    if !exportViewModel.isLoading {
+                        Text("PUPIL DISTANCE\n\(String(format: "%.1f", cameraViewController.pupilDistance)) mm")
+                            .padding()
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .multilineTextAlignment(.center)
+                            .monospaced()
+                    }
                 }
                 
                 // TO DO: ADD BACKGROUND PROCESSING - https://developer.apple.com/documentation/uikit/app_and_environment/scenes/preparing_your_ui_to_run_in_the_background/using_background_tasks_to_update_your_app
