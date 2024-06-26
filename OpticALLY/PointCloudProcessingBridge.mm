@@ -102,7 +102,7 @@
         0,      // Width is ignored if depth is set
         scale,
         linear_fit,
-        1       // Setting n_threads to 1
+        1       // Setting n_threads to 1 (VERY IMPORTANT)
     ); // VVIP: FORCE THREAD COUNT TO 1 TO PREVENT "FAILED CLOSING THE LOOP" ERROR!
 
         const double threshold = 0.004893;
