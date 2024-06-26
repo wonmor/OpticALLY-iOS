@@ -308,6 +308,32 @@ void ImageDepth::loadImage(const std::string& file) {
         }
     
         cout << endl;
+    
+    // Debug: Print max, min, and mean values of img_linear
+        double min_val, max_val;
+        cv::minMaxLoc(img_linear, &min_val, &max_val);
+        cv::Scalar mean_val = cv::mean(img_linear);
+
+        std::cout << "img_linear max value: " << max_val << std::endl;
+        std::cout << "img_linear min value: " << min_val << std::endl;
+        std::cout << "img_linear mean value: " << mean_val[0] << std::endl;
+
+        // Convert img_linear to uint8 and multiply by 255
+        cv::Mat img_linear_uint8;
+        img_linear.convertTo(img_linear_uint8, CV_8U, 255.0);
+
+        // Debug: Print shape and type of img_linear_uint8
+        std::cout << "img_linear_uint8 shape: " << img_linear_uint8.rows << "x" << img_linear_uint8.cols << "x" << img_linear_uint8.channels() << std::endl;
+        std::cout << "img_linear_uint8 dtype: " << img_linear_uint8.type() << std::endl;
+
+        // Debug: Print max, min, and mean values of img_linear_uint8
+        cv::minMaxLoc(img_linear_uint8, &min_val, &max_val);
+        mean_val = cv::mean(img_linear_uint8);
+
+        std::cout << "img_linear_uint8 max value: " << max_val << std::endl;
+        std::cout << "img_linear_uint8 min value: " << min_val << std::endl;
+        std::cout << "img_linear_uint8 mean value: " << mean_val[0] << std::endl;
+
 
         
 }
