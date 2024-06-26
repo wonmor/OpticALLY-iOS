@@ -298,7 +298,7 @@ void ImageDepth::loadImage(const std::string& file) {
         img_swapped.convertTo(img_float, CV_32F, 1.0 / 255.0);
 
         // Apply sRGB to linear conversion
-        cv::Mat img_linear = srgb_to_linear(img_float);
+        img_linear = srgb_to_linear(img_float);
 
         // Debug print (first 10 values)
         cout << "Linear image (first 10 values):" << endl;
@@ -333,6 +333,27 @@ void ImageDepth::loadImage(const std::string& file) {
         std::cout << "img_linear_uint8 max value: " << max_val << std::endl;
         std::cout << "img_linear_uint8 min value: " << min_val << std::endl;
         std::cout << "img_linear_uint8 mean value: " << mean_val[0] << std::endl;
+    
+        cv::remap(img_linear_uint8, img_undistort, map_x, map_y, cv::INTER_LINEAR);
+
+        // Debug: Print shape and type of img_undistort
+        std::cout << "img_undistort shape: " << img_undistort.rows << "x" << img_undistort.cols << "x" << img_undistort.channels() << std::endl;
+        std::cout << "img_undistort dtype: " << img_undistort.type() << std::endl;
+
+        // Debug: Print max, min, and mean values of img_undistort
+        cv::minMaxLoc(img_undistort, &min_val, &max_val);
+        mean_val = cv::mean(img_undistort);
+
+        std::cout << "img_undistort max value: " << max_val << std::endl;
+        std::cout << "img_undistort min value: " << min_val << std::endl;
+        std::cout << "img_undistort mean value: " << mean_val[0] << std::endl;
+
+        // Debug print first 10 values
+        std::cout << "Undistorted image (first 10 values): ";
+        for (int i = 0; i < std::min(10, img_undistort.rows * img_undistort.cols); i++) {
+            std::cout << static_cast<int>(img_undistort.at<uchar>(i / img_undistort.cols, i % img_undistort.cols)) << " ";
+        }
+        std::cout << std::endl;
 
 
         
