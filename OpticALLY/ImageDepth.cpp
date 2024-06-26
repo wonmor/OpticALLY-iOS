@@ -355,7 +355,15 @@ void ImageDepth::loadImage(const std::string& file) {
         }
         std::cout << std::endl;
 
+    // Reshape img_undistort to a single row
+        cv::Mat reshaped_img = img_undistort.reshape(1, 1);
 
+        // Debug: Print reshaped img_undistort (first 10 values)
+        std::cout << "Reshaped img_undistort (first 10 values): ";
+        for (int i = 0; i < std::min(10, reshaped_img.cols); i++) {
+            std::cout << static_cast<int>(reshaped_img.at<uchar>(0, i)) << " ";
+        }
+        std::cout << std::endl;
         
 }
 
