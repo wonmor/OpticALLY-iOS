@@ -29,7 +29,7 @@ private:
     cv::Mat mask;
     cv::Mat map_x, map_y;
     Eigen::Matrix3d intrinsic;
-    cv::Mat xy, rgb;
+    cv::Mat xy, rgb, reshaped_img;
     Eigen::Matrix4f pose;
     std::vector<float> lensDistortionLookup;
     std::vector<float> inverseLensDistortionLookup;
@@ -39,6 +39,7 @@ private:
     std::vector<cv::Vec3f> rgb_filtered;
 
     // Private utility methods
+    void debugPrint(const std::string& msg, const cv::Mat& mat);
     void loadCalibration(const std::string& file);
     void createUndistortionLookup();
     void loadImage(const std::string& file);
@@ -47,6 +48,7 @@ private:
     float linearInterpolate(const std::vector<float>& lookup, float x);
     void createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask);
     void debugImageStats(const cv::Mat& image, const std::string& name);
+    
     cv::Mat srgb_to_linear(const cv::Mat& srgb_img);
 
 public:

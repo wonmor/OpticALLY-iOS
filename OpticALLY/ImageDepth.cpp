@@ -333,7 +333,7 @@ void ImageDepth::loadImage(const std::string& file) {
         std::cout << "img_linear_uint8 max value: " << max_val << std::endl;
         std::cout << "img_linear_uint8 min value: " << min_val << std::endl;
         std::cout << "img_linear_uint8 mean value: " << mean_val[0] << std::endl;
-    
+
         cv::remap(img_linear_uint8, img_undistort, map_x, map_y, cv::INTER_LINEAR);
 
         // Debug: Print shape and type of img_undistort
@@ -364,7 +364,6 @@ void ImageDepth::loadImage(const std::string& file) {
             std::cout << static_cast<int>(reshaped_img.at<uchar>(0, i)) << " ";
         }
         std::cout << std::endl;
-        
 }
 
 std::string getMatType(int type) {
@@ -483,14 +482,26 @@ void ImageDepth::loadDepth(const std::string& file) {
         std::cout << "idx size: " << idx.size() << std::endl;
 
     // Filter xy and img_undistort based on idx
-        std::vector<cv::Point2f> xy_filtered;
-        std::vector<cv::Vec3f> rgb_filtered;
-
-        for (size_t i = 0; i < idx.size(); ++i) {
+        
+    
+    
+//    if (img_undistort.channels() == 1) {
+//           img_undistort = img_undistort.reshape(1, img_undistort.total());
+//       } else if (img_undistort.channels() == 3) {
+//           img_undistort = img_undistort.reshape(3, img_undistort.total() / 3);
+//       }
+    
+    //img_undistort.convertTo(img_undistort, CV_32F, 1);
+    
+   
+    
+    // img_undistort = img_undistort.reshape(1, height * width);
+    
+        for (size_t i = 0; i < idx.size(); i++) {
             if (idx[i]) {
                 xy_filtered.push_back(cv::Point2f(xy.at<float>(i, 0), xy.at<float>(i, 1)));
                 cv::Vec3b color = img_undistort.at<cv::Vec3b>(i / width, i % width);
-                rgb_filtered.push_back(cv::Vec3f(color[0] / 255.0f, color[1] / 255.0f, color[2] / 255.0f));
+                               rgb_filtered.push_back(cv::Vec3f(color[0] / 255.0f, color[1] / 255.0f, color[2] / 255.0f));
             }
         }
 
@@ -626,28 +637,6 @@ void ImageDepth::loadDepth(const std::string& file) {
         std::cout << "Max value of undistorted depth map: " << max_value << std::endl;
         std::cout << "Min value of undistorted depth map: " << min_value << std::endl;
         std::cout << "Average value of undistorted depth map: " << average_value << std::endl;
-    
-    // Populate the rgb matrix with undistorted RGB values
-       rgb = cv::Mat(height, width, CV_32FC3); // Initialize rgb matrix
-       for (int y = 0; y < height; ++y) {
-           for (int x = 0; x < width; ++x) {
-               cv::Vec3b color = img_undistort.at<cv::Vec3b>(y, x);
-               rgb.at<cv::Vec3f>(y, x) = cv::Vec3f(color[0] / 255.0f, color[1] / 255.0f, color[2] / 255.0f);
-           }
-       }
-
-       // Debug prints for rgb
-       std::cout << "rgb (first 10 values): [";
-       for (int i = 0; i < 10; ++i) {
-           int y = i / rgb.cols;
-           int x = i % rgb.cols;
-           cv::Vec3f color = rgb.at<cv::Vec3f>(y, x);
-           std::cout << "(" << color[0] << ", " << color[1] << ", " << color[2] << ")";
-           if (i < 9) {
-               std::cout << ", ";
-           }
-       }
-       std::cout << "]" << std::endl;
 }
 
 void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask) {
@@ -712,6 +701,8 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
        }
        std::cout << std::endl;
 
+        img_undistort.convertTo(img_undistort, CV_32F, 1 / 255.0f);
+    
        // Project to 3D points
        std::vector<cv::Point3f> pts;
        for (size_t i = 0; i < good_idx.size(); ++i) {
@@ -719,16 +710,33 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
            int x = xy_converted.at<int>(idx, 0);
            int y = xy_converted.at<int>(idx, 1);
            float depth = depths[idx];
-
+           
            float px = (x - cx) / fx * depth;
            float py = (y - cy) / fy * depth;
 
            pts.emplace_back(px, py, depth);
            points.emplace_back(px, py, depth);
-           // Extract color (assuming color_image is a BGR image)
+           
            cv::Vec3f color = img_undistort.at<cv::Vec3f>(y, x);
-                          colors.push_back(Eigen::Vector3d(color[0], color[1], color[2]));
+                                    colors.push_back(Eigen::Vector3d(color[0], color[1], color[2]));
        }
+    
+    // indices between rgb_filtered and xy_converted don't match...
+//    for (size_t i = 0; i < 10 && i < rgb_filtered.size(); ++i) {
+//        std::cout << "(" << rgb_filtered[i][0] << ", " << rgb_filtered[i][1] << ", " << rgb_filtered[i][2] << ")";
+//        if (i < 9 && i < rgb_filtered.size() - 1) {
+//            std::cout << " ";
+//        }
+//        
+//        colors.emplace_back(Eigen::Vector3d(rgb_filtered[i][0], rgb_filtered[i][1], rgb_filtered[i][2]));
+//    }
+    
+//    for (int y = 0; y < height; ++y) {
+//        for (int x = 0; x < width; ++x) {
+//            cv::Vec3b color = img_undistort.at<cv::Vec3b>(y, x);
+//            colors.emplace_back(Eigen::Vector3d(color[0], color[1], color[2]));
+//        }
+//    }
 
        // Print projected 3D points
        std::cout << "Projected 3D points (first 10 values): ";
