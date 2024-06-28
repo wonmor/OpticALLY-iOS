@@ -608,7 +608,7 @@ struct ExternalData {
         
         totalRenderCount += 1
         
-        if totalRenderCount >= 3 {
+        if totalRenderCount >= 2 {
             print("3D Mapping Complete!")
             LogManager.shared.log("3D Mapping Complete!")
         }

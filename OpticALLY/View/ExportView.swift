@@ -42,7 +42,7 @@ struct CompassView: View {
         case .left:
             return 2
         case .right:
-            return 3
+            return 4
         }
     }
 
