@@ -9,11 +9,11 @@ enum ScanState {
 enum ScanDirection {
     case left, right
 
-    init?(rawValue: Int) {
+    init(rawValue: Int) {
         switch rawValue {
         case 0: self = .left
         case 1: self = .right
-        default: return nil
+        default: self = .right
         }
     }
 }

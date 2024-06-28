@@ -518,10 +518,10 @@ struct PostScanView: View {
                         ForEach(0..<urls.count, id: \.self) { index in
                             SceneKitMDLView(snapshot: $snapshot, url: URL(string: urls[index])!)
                                 .tabItem {
-                                    Label(currentDirectionString, systemImage: "\(index).circle")
+                                    Label(ScanDirection(rawValue: index) == .left ? "LEFT" : "RIGHT", systemImage: "\(index).circle")
                                 }
                                 .onAppear() {
-                                    currentDirection = ScanDirection(rawValue: index) ?? .left
+                                    currentDirection = ScanDirection(rawValue: index)
                                 }
                         }
                     }
