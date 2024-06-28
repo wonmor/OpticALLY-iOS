@@ -7,13 +7,12 @@ enum ScanState {
 }
 
 enum ScanDirection {
-    case left, front, right
+    case left, right
 
     init?(rawValue: Int) {
         switch rawValue {
-        case 0: self = .front
-        case 1: self = .left
-        case 2: self = .right
+        case 0: self = .left
+        case 1: self = .right
         default: return nil
         }
     }
@@ -42,10 +41,8 @@ struct CompassView: View {
         switch scanDirection {
         case .left:
             return 2
-        case .front:
-            return 3
         case .right:
-            return 4
+            return 3
         }
     }
 
@@ -71,12 +68,6 @@ struct CompassView: View {
                             
                             switch scanDirection {
                             case .left where newFaceYawAngle > 20:
-                                let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
-                                impactGenerator.impactOccurred(intensity: 1.00)
-                                
-                                barColor = .green.opacity(0.5)
-                                
-                            case .front where abs(newFaceYawAngle) < 10:
                                 let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
                                 impactGenerator.impactOccurred(intensity: 1.00)
                                 
@@ -139,7 +130,7 @@ struct ExportView: View {
     @ObservedObject var logManager = LogManager.shared
     
     @State private var scanState: ScanState = .ready
-    @State private var scanDirection: ScanDirection = .front
+    @State private var scanDirection: ScanDirection = .left
     @State private var showScanCompleteView: Bool = false
     
     @State private var showLog: Bool = false
@@ -324,8 +315,7 @@ struct ExportView: View {
             switch scanDirection {
             case .left:
                 return "Turn your head"
-            case .front:
-                return "Now, face the"
+                
             case .right:
                 return "Turn your head"
             }
@@ -342,8 +332,7 @@ struct ExportView: View {
             switch scanDirection {
             case .left:
                 return "LEFT"
-            case .front:
-                return "FRONT"
+                
             case .right:
                 return "RIGHT"
             }
@@ -371,12 +360,6 @@ struct ExportView: View {
         guard scanState == .scanning else { return }
         
         switch scanDirection {
-        case .front where abs(yawAngle) < 10:
-            captureFrame()
-            
-            withAnimation {
-                scanDirection = .left
-            }
         case .left where yawAngle > 20:
             captureFrame()
             
@@ -454,13 +437,6 @@ struct DirectionIndicatorView: View {
                 path.closeSubpath()
             }
             .fill(self.scanDirection == .left && cameraViewController.faceYawAngle > 20 ? Color.green : Color.gray.opacity(0.5))
-            
-            // Center indication - entire circle
-            if scanDirection == .front && abs(cameraViewController.faceYawAngle) < 10 {
-                Circle()
-                    .fill(Color.green.opacity(0.5))
-                    .frame(width: 220, height: 220)
-            }
         }
     }
 }

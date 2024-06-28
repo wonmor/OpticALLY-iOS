@@ -34,9 +34,6 @@ struct SignalStrengthView: View {
                     return 0
                 }
                 
-            case .front where abs(cameraViewController.faceYawAngle) < 10:
-                return -1
-                
             case .right where cameraViewController.faceYawAngle < -20:
                 return -1
                 
@@ -54,24 +51,6 @@ struct SignalStrengthView: View {
             switch scanDirection {
             case .left where cameraViewController.faceYawAngle > 20:
                 return -1
-                
-            case .front where abs(cameraViewController.faceYawAngle) < 10:
-                let delta = abs(0 - cameraViewController.faceYawAngle)
-                
-                print("Delta front: \(delta)")
-                
-                if delta >= 14 {
-                    return 3
-                    
-                } else if delta >= 11 {
-                    return 2
-                    
-                } else if delta >= 9 {
-                    return 1
-                    
-                } else if delta >= 6 {
-                    return 0
-                }
                 
             case .right where cameraViewController.faceYawAngle < -20:
                 let delta = abs(cameraViewController.faceYawAngle - 20)

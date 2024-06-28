@@ -68,7 +68,7 @@ struct PostScanView: View {
     @ObservedObject private var exportViewModel = ExportViewModel()
     @ObservedObject var logManager = LogManager.shared
     
-    @State private var currentDirection: ScanDirection = .front
+    @State private var currentDirection: ScanDirection = .left
     
     @State private var frameNeedsUpdate = false
     @State private var scnView: SCNView?
@@ -124,7 +124,7 @@ struct PostScanView: View {
         // Filter video files to keep only video01.bin, video03.bin, and video05.bin
         var filteredVideoFiles = videoFiles.filter { file in
             let fileName = (file as NSString).lastPathComponent
-            return fileName == "video01.bin" || fileName == "video03.bin" || fileName == "video05.bin"
+            return fileName == "video01.bin" || fileName == "video03.bin"
         }
         
         // Rename video03.bin to video02.bin and video05.bin to video03.bin
@@ -134,8 +134,6 @@ struct PostScanView: View {
             switch fileName {
             case "video03.bin":
                 newFileName = "video02.bin"
-            case "video05.bin":
-                newFileName = "video03.bin"
             default:
                 newFileName = fileName
             }
@@ -444,8 +442,7 @@ struct PostScanView: View {
         switch currentDirection {
         case .left:
             return "LEFT"
-        case .front:
-            return "YOUR SCAN"
+            
         case .right:
             return "RIGHT"
         }
@@ -524,7 +521,7 @@ struct PostScanView: View {
                                     Label(currentDirectionString, systemImage: "\(index).circle")
                                 }
                                 .onAppear() {
-                                    currentDirection = ScanDirection(rawValue: index) ?? .front
+                                    currentDirection = ScanDirection(rawValue: index) ?? .left
                                 }
                         }
                     }
