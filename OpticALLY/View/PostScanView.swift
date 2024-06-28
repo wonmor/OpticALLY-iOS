@@ -98,7 +98,7 @@ struct PostScanView: View {
     @State private var snapshot: UIImage?
     
     // Retrieve all the output OBJ files
-    @State private var objFiles: [URL] = []
+    @State private var objFiles: [String] = []
     
     @State private var uploadProgress = [Double](repeating: 0.0, count: 3)
     @State private var uploadResults = [Bool](repeating: false, count: 3)
@@ -124,36 +124,8 @@ struct PostScanView: View {
         var videoFiles = fileManager.getFilePathsWithPrefix(baseFolder: folderURL.path, prefix: "video")
         var depthFiles = fileManager.getFilePathsWithPrefix(baseFolder: folderURL.path, prefix: "depth")
         
-        // Filter video files to keep only video01.bin, video03.bin, and video05.bin
-        var filteredVideoFiles = videoFiles.filter { file in
-            let fileName = (file as NSString).lastPathComponent
-            return fileName == "video01.bin" || fileName == "video02.bin"
-        }
-        
-        // Rename video03.bin to video02.bin and video05.bin to video03.bin
-        filteredVideoFiles = filteredVideoFiles.map { file in
-            let fileName = (file as NSString).lastPathComponent
-            let newFileName: String
-            switch fileName {
-            case "video02.bin":
-                newFileName = "video02.bin"
-            default:
-                newFileName = fileName
-            }
-            let newPath = (folderURL as NSURL).appendingPathComponent(newFileName)!.path
-            
-            if file != newPath {
-                do {
-                    try fileManager.moveItem(atPath: file, toPath: newPath)
-                } catch {
-                    print("Error renaming file \(file) to \(newPath): \(error)")
-                }
-            }
-            return newPath
-        }
-        
         // Sort renamed video files by their new names
-        videoFiles = filteredVideoFiles.sorted()
+        videoFiles = videoFiles.sorted()
 
         print("Renamed Video Files: \(videoFiles)")
         print("Swift-side Depth Files Count: \(depthFiles.count)")
@@ -182,7 +154,7 @@ struct PostScanView: View {
         for path in outputPaths {
             let objURL = URL(fileURLWithPath: path)
             if FileManager.default.fileExists(atPath: objURL.path) {
-                objFiles.append(objURL)
+                objFiles.append(objURL.path)
                 print("objURL Path: \(objURL.path)")
             } else {
                 NSLog("Failed to generate OBJ file for path: \(path) (Swift-side error catch)")
@@ -196,7 +168,7 @@ struct PostScanView: View {
         }
         
         // Store the OBJ URLs in the export view model
-        exportViewModel.objURLs = objFiles.map { $0.path }
+        exportViewModel.objURLs = objFiles.map { $0 }
         
         self.isProcessing = false
         ExternalData.isMeshView = true  // Processing is complete, allow viewing of the mesh
@@ -569,7 +541,7 @@ struct PostScanView: View {
                 // This will present the share sheet
                 
                 if let fileURL = fileURLToShare {
-                    ShareSheet(fileURL: objFiles[currentDirectionIndex])
+                    ShareSheet(fileURL: URL(fileURLWithPath: objFiles[currentDirectionIndex]))
                         .onAppear() {
                             print("Shared: \(objFiles[currentDirectionIndex])")
                         }
