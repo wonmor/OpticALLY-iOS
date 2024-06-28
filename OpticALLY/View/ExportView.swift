@@ -8,6 +8,15 @@ enum ScanState {
 
 enum ScanDirection {
     case left, front, right
+
+    init?(rawValue: Int) {
+        switch rawValue {
+        case 0: self = .front
+        case 1: self = .left
+        case 2: self = .right
+        default: return nil
+        }
+    }
 }
 
 struct CompassView: View {

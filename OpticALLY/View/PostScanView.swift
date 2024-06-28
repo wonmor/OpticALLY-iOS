@@ -33,7 +33,6 @@ struct PointWrapper: Hashable {
     }
 }
 
-
 struct EyeOverlayView: View {
     var observations: [VNFaceObservation]
 
@@ -51,8 +50,6 @@ struct EyeOverlayView: View {
         }
     }
 }
-
-
 
 struct ShareSheet: UIViewControllerRepresentable {
     var fileURL: URL
@@ -115,21 +112,49 @@ struct PostScanView: View {
     let fileManager = FileManager.default
     
     private func processUploads() {
-        // Accessing the resources folder within the app bundle
-        guard let resourcesURL = Bundle.main.resourceURL else {
-            print("Could not find resources folder in bundle.")
-            return
-        }
-
-        let baseFolderName = "test_model"
-        let folderURL = resourcesURL.appendingPathComponent(baseFolderName)
+        let baseFolderName = "bin_json"
+        let documentsDirectory = ExternalData.getDocumentsDirectory()
+        let folderURL = documentsDirectory.appendingPathComponent(baseFolderName)
         let calibrationFileURL = folderURL.appendingPathComponent("calibration.json")
         
         // Retrieve all video and depth files
         var videoFiles = fileManager.getFilePathsWithPrefix(baseFolder: folderURL.path, prefix: "video")
         var depthFiles = fileManager.getFilePathsWithPrefix(baseFolder: folderURL.path, prefix: "depth")
         
-        print("Swift-side Video Files Count: \(videoFiles.count)")
+        // Filter video files to keep only video01.bin, video03.bin, and video05.bin
+        var filteredVideoFiles = videoFiles.filter { file in
+            let fileName = (file as NSString).lastPathComponent
+            return fileName == "video01.bin" || fileName == "video03.bin" || fileName == "video05.bin"
+        }
+        
+        // Rename video03.bin to video02.bin and video05.bin to video03.bin
+        filteredVideoFiles = filteredVideoFiles.map { file in
+            let fileName = (file as NSString).lastPathComponent
+            let newFileName: String
+            switch fileName {
+            case "video03.bin":
+                newFileName = "video02.bin"
+            case "video05.bin":
+                newFileName = "video03.bin"
+            default:
+                newFileName = fileName
+            }
+            let newPath = (folderURL as NSURL).appendingPathComponent(newFileName)!.path
+            
+            if file != newPath {
+                do {
+                    try fileManager.moveItem(atPath: file, toPath: newPath)
+                } catch {
+                    print("Error renaming file \(file) to \(newPath): \(error)")
+                }
+            }
+            return newPath
+        }
+        
+        // Sort renamed video files by their new names
+        videoFiles = filteredVideoFiles.sorted()
+
+        print("Renamed Video Files: \(videoFiles)")
         print("Swift-side Depth Files Count: \(depthFiles.count)")
         
         // Take the smaller count to ensure arrays have matching lengths
@@ -142,30 +167,40 @@ struct PostScanView: View {
         print("Trimmed Video Files Count: \(videoFiles.count)")
         print("Trimmed Depth Files Count: \(depthFiles.count)")
 
-        // Process point clouds for the matching pairs
-        PointCloudProcessingBridge.processPointClouds(withCalibrationFile: calibrationFileURL.path, imageFiles: videoFiles, depthFiles: depthFiles, outputPath: getDocumentsDirectory().path)
+        // Generate output paths for the OBJ files
+        var outputPaths: [String] = []
+        for index in 0..<minCount {
+            let objFileName = "output_\(index).obj"
+            let objPath = folderURL.appendingPathComponent(objFileName).path
+            outputPaths.append(objPath)
+        }
 
-        let objFileName = "output.obj"
-        let objURL = getDocumentsDirectory().appendingPathComponent(objFileName)
+        // Process point clouds for the matching pairs
+        PointCloudProcessingBridge.processPointClouds(withCalibrationFile: calibrationFileURL.path, imageFiles: videoFiles, depthFiles: depthFiles, outputPaths: outputPaths)
+
+        // Retrieve all the output OBJ files
+        var objFiles: [URL] = []
+        for path in outputPaths {
+            let objURL = URL(fileURLWithPath: path)
+            if FileManager.default.fileExists(atPath: objURL.path) {
+                objFiles.append(objURL)
+                print("objURL Path: \(objURL.path)")
+            } else {
+                NSLog("Failed to generate OBJ file for path: \(path) (Swift-side error catch)")
+            }
+        }
         
-        if FileManager.default.fileExists(atPath: objURL.path) {
-            print("objURL Path: \(objURL.path)")
-            exportViewModel.objURL = objURL
-            
-        } else {
-            NSLog("Failed to generate OBJ file (Swift-side error catch)")
+        if objFiles.isEmpty {
             self.showAlert = true
             self.isProcessing = false
             return
         }
         
+        // Store the OBJ URLs in the export view model
+        exportViewModel.objURLs = objFiles.map { $0.path }
+        
         self.isProcessing = false
         ExternalData.isMeshView = true  // Processing is complete, allow viewing of the mesh
-    }
-
-    func getDocumentsDirectory() -> URL {
-        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
-        return paths[0]
     }
     
     func initialize() {
@@ -177,34 +212,34 @@ struct PostScanView: View {
 //      ON-DEVICE MESHING... (CURRENTLY FACING ISSUES REGARDING BASE64 UIIMAGE TRANSFER BETWEEN PYTHON AND SWIFT! NEEDS FIX!
 //        DispatchQueue.global(qos: .userInitiated).async {
 //            let gstate = PyGILState_Ensure()
-//            
+//
 //          defer {
 //              DispatchQueue.main.async {
 //                  guard let tstate = self.tstate else { fatalError() }
 //                  PyEval_RestoreThread(tstate)
 //                  self.tstate = nil
 //              }
-//              
+//
 //              PyGILState_Release(gstate)
 //          }
 //            var pointClouds: [PythonObject] = []
-//    
+//
 //            for (index, videoFile) in videoFiles.enumerated() {
 //                do {
 //                    let objFileURL = try OpticALLYApp.poissonReconstruction_PLYtoOBJ(json_string: calibrationFileContent, image_file: videoFile, depth_file: depthFiles[index])
-//                    
+//
 //                    pointClouds.append(objFileURL)
-//                    
+//
 //                } catch {
 //                    print(error.localizedDescription)
 //                }
 //            }
-//            
+//
 //            let process3D = Python.import("Process3D")
 //            let meshOutput = process3D.process3D(pointClouds)
-//            
+//
 //            o3d!.io.write_triangle_mesh(outputFilePath.path, meshOutput)
-//           
+//
 //            // Update the state to indicate that there's a file to share
 //            DispatchQueue.main.async {
 //                // self.fileURL = zipFileURL
@@ -213,7 +248,7 @@ struct PostScanView: View {
 //                self.isProcessing = false
 //            }
 //        }
-//        
+//
 //        tstate = PyEval_SaveThread()
         
         // Using cloud services... (server)
@@ -221,13 +256,13 @@ struct PostScanView: View {
 //            if success, let objURLs = objURLs {
 //                DispatchQueue.main.async {
 //                    exportViewModel.objURLs = objURLs
-//                    
+//
 //                    print("objURLs: \(objURLs)")
-//                    
+//
 //                    ExternalData.isMeshView = true
 //                    self.isProcessing = false
 //                }
-//                
+//
 //            } else {
 //                // Handle errors
 //                DispatchQueue.main.async {
@@ -272,7 +307,6 @@ struct PostScanView: View {
         rootViewController.present(activityViewController, animated: true, completion: nil)
     }
     
-
     func detectEyes(in image: UIImage, completion: @escaping ([VNFaceObservation]?) -> Void) {
         guard let cgImage = image.cgImage else {
             completion(nil)
@@ -297,7 +331,6 @@ struct PostScanView: View {
         }
     }
 
-    
     func convertFileData(fieldName: String,
                          fileName: String,
                          mimeType: String,
@@ -321,91 +354,91 @@ struct PostScanView: View {
     }
     
     func uploadFiles(calibrationFileURL: URL, imageFilesZipURL: URL, depthFilesZipURL: URL, completion: @escaping (Bool, URL?) -> Void) {
-           let endpoint = "https://harolden-server.apps.johnseong.com/process3d-to-obj/"
-           guard let url = URL(string: endpoint) else {
-               print("Invalid URL")
-               completion(false, URL(string: ""))
-               return
-           }
-           
-           var request = URLRequest(url: url)
-           request.httpMethod = "POST"
-           
-           let boundary = "Boundary-\(UUID().uuidString)"
-           request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-           
-           var data = Data()
-           
-           // Append Calibration File
-           data.append(convertFileData(fieldName: "calibration_file",
-                                       fileName: calibrationFileURL.lastPathComponent,
-                                       mimeType: "application/json",
-                                       fileURL: calibrationFileURL,
-                                       using: boundary))
-           
-           // Append Image Files Zip
-           data.append(convertFileData(fieldName: "image_files_zip",
-                                       fileName: imageFilesZipURL.lastPathComponent,
-                                       mimeType: "application/zip",
-                                       fileURL: imageFilesZipURL,
-                                       using: boundary))
-           
-           // Append Depth Files Zip
-           data.append(convertFileData(fieldName: "depth_files_zip",
-                                       fileName: depthFilesZipURL.lastPathComponent,
-                                       mimeType: "application/zip",
-                                       fileURL: depthFilesZipURL,
-                                       using: boundary))
-           
-           data.append("--\(boundary)--".data(using: .utf8)!)
-           
-           request.httpBody = data
-           
-           // Create URLSessionUploadTask
-           let task = URLSession.shared.uploadTask(with: request, from: data) { data, response, error in
-               DispatchQueue.main.async {
-                   self.isLoading = false  // Stop loading indicator
-                   if let data = data, error == nil {
-                       // Save the PLY file
-                       let fileURL =  ExternalData.getDocumentsDirectory().appendingPathComponent("output_from_server.obj")
-                       do {
-                           exportViewModel.objURLs!.append(fileURL.path)
-                           
-                           try data.write(to: fileURL)
-                           print("OBJ file saved to: \(fileURL.path)")
-                           // self.fileURLToShare = fileURL --> VVIP
-                           // self.triggerUpdate = true
-                           // ExternalData.isMeshView = true
-                           // self.isProcessing = false
+        let endpoint = "https://harolden-server.apps.johnseong.com/process3d-to-obj/"
+        guard let url = URL(string: endpoint) else {
+            print("Invalid URL")
+            completion(false, URL(string: ""))
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        
+        let boundary = "Boundary-\(UUID().uuidString)"
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        
+        var data = Data()
+        
+        // Append Calibration File
+        data.append(convertFileData(fieldName: "calibration_file",
+                                    fileName: calibrationFileURL.lastPathComponent,
+                                    mimeType: "application/json",
+                                    fileURL: calibrationFileURL,
+                                    using: boundary))
+        
+        // Append Image Files Zip
+        data.append(convertFileData(fieldName: "image_files_zip",
+                                    fileName: imageFilesZipURL.lastPathComponent,
+                                    mimeType: "application/zip",
+                                    fileURL: imageFilesZipURL,
+                                    using: boundary))
+        
+        // Append Depth Files Zip
+        data.append(convertFileData(fieldName: "depth_files_zip",
+                                    fileName: depthFilesZipURL.lastPathComponent,
+                                    mimeType: "application/zip",
+                                    fileURL: depthFilesZipURL,
+                                    using: boundary))
+        
+        data.append("--\(boundary)--".data(using: .utf8)!)
+        
+        request.httpBody = data
+        
+        // Create URLSessionUploadTask
+        let task = URLSession.shared.uploadTask(with: request, from: data) { data, response, error in
+            DispatchQueue.main.async {
+                self.isLoading = false  // Stop loading indicator
+                if let data = data, error == nil {
+                    // Save the PLY file
+                    let fileURL =  ExternalData.getDocumentsDirectory().appendingPathComponent("output_from_server.obj")
+                    do {
+                        exportViewModel.objURLs!.append(fileURL.path)
+                        
+                        try data.write(to: fileURL)
+                        print("OBJ file saved to: \(fileURL.path)")
+                        // self.fileURLToShare = fileURL --> VVIP
+                        // self.triggerUpdate = true
+                        // ExternalData.isMeshView = true
+                        // self.isProcessing = false
 
-                           print("objURLs: \(exportViewModel.objURLs!)")
-                           
-                           self.uploadIndex += 1
-                           self.processUploads()  // Recursively process the next upload
-                           
-                           completion(true, fileURL)  // Pass the file URL to the completion handler
-                       } catch {
-                           print("Failed to save PLY file: \(error.localizedDescription)")
-                           completion(false, nil)
-                       }
-                   } else {
-                       print("Network error: \(error?.localizedDescription ?? "Unknown error")")
-                       completion(false, nil)
-                   }
-               }
-           }
-           
-           // Handle upload progress
-           task.observe(\.countOfBytesSent) { task, _ in
-               DispatchQueue.main.async {
-                   let progress = Double(task.countOfBytesSent) / Double(task.countOfBytesExpectedToSend)
-                   // self.uploadProgress = progress
-               }
-           }
-           
-           self.isLoading = true  // Start loading indicator
-           task.resume()
-       }
+                        print("objURLs: \(exportViewModel.objURLs!)")
+                        
+                        self.uploadIndex += 1
+                        self.processUploads()  // Recursively process the next upload
+                        
+                        completion(true, fileURL)  // Pass the file URL to the completion handler
+                    } catch {
+                        print("Failed to save PLY file: \(error.localizedDescription)")
+                        completion(false, nil)
+                    }
+                } else {
+                    print("Network error: \(error?.localizedDescription ?? "Unknown error")")
+                    completion(false, nil)
+                }
+            }
+        }
+        
+        // Handle upload progress
+        task.observe(\.countOfBytesSent) { task, _ in
+            DispatchQueue.main.async {
+                let progress = Double(task.countOfBytesSent) / Double(task.countOfBytesExpectedToSend)
+                // self.uploadProgress = progress
+            }
+        }
+        
+        self.isLoading = true  // Start loading indicator
+        task.resume()
+    }
     
     private var currentDirectionString: String {
         switch currentDirection {
@@ -482,9 +515,20 @@ struct PostScanView: View {
                     // onViewAppear...
                     self.initialize()
                 }
-                
-                if let url = exportViewModel.objURL {
-                    SceneKitMDLView(snapshot: $snapshot, url: url)
+
+                if let urls = exportViewModel.objURLs {
+                    TabView {
+                        ForEach(0..<urls.count, id: \.self) { index in
+                            SceneKitMDLView(snapshot: $snapshot, url: URL(string: urls[index])!)
+                                .tabItem {
+                                    Label(currentDirectionString, systemImage: "\(index).circle")
+                                }
+                                .onAppear() {
+                                    currentDirection = ScanDirection(rawValue: index) ?? .front
+                                }
+                        }
+                    }
+                    .padding()
                 }
                 
                 Spacer()
@@ -570,13 +614,13 @@ struct PostScanView: View {
                             }
                         }
                     }
-//                    if !exportViewModel.isLoading {
-//                        Text("PUPIL DISTANCE\n\(String(format: "%.1f", cameraViewController.pupilDistance)) mm")
-//                            .padding()
-//                            .frame(maxWidth: .infinity, alignment: .center)
-//                            .multilineTextAlignment(.center)
-//                            .monospaced()
-//                    }
+                    if !exportViewModel.isLoading {
+                        Text("PUPIL DISTANCE\n\(String(format: "%.1f", cameraViewController.pupilDistance)) mm")
+                            .padding()
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .multilineTextAlignment(.center)
+                            .monospaced()
+                    }
                 }
                 
                 // TO DO: ADD BACKGROUND PROCESSING - https://developer.apple.com/documentation/uikit/app_and_environment/scenes/preparing_your_ui_to_run_in_the_background/using_background_tasks_to_update_your_app
