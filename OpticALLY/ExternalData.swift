@@ -153,31 +153,40 @@ struct ExternalData {
     // Static counters for depth and color files
     private static var depthFileIndex: Int = 1
     private static var colorFileIndex: Int = 1
+    
+    private static var actualColorFileIndex: Int = 1
 
     static func saveDataToFaceScansFolder(data: Data, isDepthData: Bool) {
-          let folderURL = getFaceScansFolder()
+        let folderURL = getFaceScansFolder()
 
-          // Choose file base name and increment the appropriate index
-          let baseFileName: String
-          let fileExtension = "bin"
-          if isDepthData {
-              baseFileName = "depth\(String(format: "%02d", depthFileIndex))"
-              depthFileIndex += 1
-          } else {
-              baseFileName = "video\(String(format: "%02d", colorFileIndex))"
-              colorFileIndex += 1
-          }
+        // Choose file base name and increment the appropriate index
+        let baseFileName: String
+        let fileExtension = "bin"
+        
+        if isDepthData {
+            baseFileName = "depth\(String(format: "%02d", depthFileIndex))"
+            depthFileIndex += 1
+        } else {
+            // Skip even numbers for colorFileIndex
+            if colorFileIndex % 2 == 0 {
+                colorFileIndex += 1
+                return;
+            }
+            baseFileName = "video\(String(format: "%02d", actualColorFileIndex))"
+            colorFileIndex += 1
+            actualColorFileIndex += 1
+        }
 
-          let fileURL = folderURL.appendingPathComponent(baseFileName).appendingPathExtension(fileExtension)
+        let fileURL = folderURL.appendingPathComponent(baseFileName).appendingPathExtension(fileExtension)
 
-          // Write data to the file
-          do {
-              try data.write(to: fileURL)
-              print("\(baseFileName) data saved successfully to \(fileURL.path)")
-          } catch {
-              print("Error saving \(baseFileName) data: \(error)")
-          }
-      }
+        // Write data to the file
+        do {
+            try data.write(to: fileURL)
+            print("\(baseFileName) data saved successfully to \(fileURL.path)")
+        } catch {
+            print("Error saving \(baseFileName) data: \(error)")
+        }
+    }
     
     static func saveSingleScan(data: Data, fileExtension: String) {
         let folderURL = getFaceScansFolder_NoDev()

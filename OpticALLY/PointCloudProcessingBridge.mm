@@ -6,6 +6,7 @@
 #include <Eigen/Dense>
 #include <filesystem>
 #include <regex>
+#include <future>
 #include "ImageDepth.hpp"
 
 @implementation PointCloudProcessingBridge
@@ -13,7 +14,7 @@
 + (BOOL)processPointCloudsWithCalibrationFile:(NSString *)calibrationFilePath
                                    imageFiles:(NSArray<NSString *> *)imageFiles
                                    depthFiles:(NSArray<NSString *> *)depthFiles
-                                   outputPath:(NSString *)outputPath {
+                                  outputPaths:(NSArray<NSString *> *)outputPaths {
     using namespace open3d;
     using namespace geometry;
     namespace fs = std::filesystem;
@@ -31,6 +32,7 @@
     // Convert NSArray to std::vector
     std::vector<std::pair<int, std::string>> numberedImageFiles;
     std::vector<std::pair<int, std::string>> numberedDepthFiles;
+    std::vector<std::string> cppOutputPaths;
 
     for (NSString *path in imageFiles) {
         std::string stdPath = [path UTF8String];
@@ -43,11 +45,11 @@
         int number = extractNumber(stdPath);
         numberedDepthFiles.emplace_back(number, stdPath);
     }
-    
-    // This is because video files follow even number indices: video01.bin, video03.bin, video05.bin, and so on. All the in-between numbers are not valid.
-    auto it = std::remove_if(numberedImageFiles.begin(), numberedImageFiles.end(),
-                                 [](const std::pair<int, std::string>& p) { return p.second.find("video02.bin") != std::string::npos; });
-        numberedImageFiles.erase(it, numberedImageFiles.end());
+
+    for (NSString *path in outputPaths) {
+        std::string stdPath = [path UTF8String];
+        cppOutputPaths.push_back(stdPath);
+    }
 
     // Sort based on the extracted number
     std::sort(numberedImageFiles.begin(), numberedImageFiles.end());
@@ -65,56 +67,47 @@
         cppDepthFiles.push_back(pair.second);
     }
 
-    if (cppImageFiles.empty() || cppDepthFiles.empty()) {
-        NSLog(@"No image or depth files found");
+    if (cppImageFiles.empty() || cppDepthFiles.empty() || cppOutputPaths.empty()) {
+        NSLog(@"No image, depth files or output paths found");
+        return NO;
+    }
+
+    if (cppImageFiles.size() != cppDepthFiles.size() || cppImageFiles.size() != cppOutputPaths.size()) {
+        NSLog(@"Mismatch between the number of image files, depth files, and output paths");
         return NO;
     }
 
     std::vector<std::shared_ptr<PointCloud>> pointClouds;
 
-    // Print out the lengths of both arrays
+    // Print out the lengths of the arrays
     NSLog(@"Number of image files: %lu", (unsigned long)imageFiles.count);
     NSLog(@"Number of depth files: %lu", (unsigned long)depthFiles.count);
+    NSLog(@"Number of output paths: %lu", (unsigned long)outputPaths.count);
 
-    if (cppImageFiles.size() != cppDepthFiles.size()) {
-        NSLog(@"Mismatch between the number of image files and depth files");
-        return NO;
-    }
+    std::vector<std::future<std::shared_ptr<PointCloud>>> futures;
 
+    // Process each point cloud in parallel
     for (size_t i = 0; i < cppImageFiles.size(); ++i) {
-        auto imageDepth = std::make_shared<ImageDepth>([calibrationFilePath UTF8String], cppImageFiles[i], cppDepthFiles[i], 640, 480, 0.1, 0.5, 0.01);
-        auto pointCloud = imageDepth->getPointCloud();
+        futures.push_back(std::async(std::launch::async, [&calibrationFilePath, &cppImageFiles, &cppDepthFiles, i]() -> std::shared_ptr<PointCloud> {
+            auto imageDepth = std::make_shared<ImageDepth>([calibrationFilePath UTF8String], cppImageFiles[i], cppDepthFiles[i], 640, 480, 0.1, 0.5, 0.01);
+            auto pointCloud = imageDepth->getPointCloud();
+            if (!pointCloud || pointCloud->points_.empty()) {
+                return nullptr;
+            }
+            return pointCloud;
+        }));
+    }
 
-        if (!pointCloud) {
-            std::cerr << "Error: Failed to generate point cloud for image file: " << cppImageFiles[i] << " and depth file: " << cppDepthFiles[i] << std::endl;
-            continue; // Skip this point cloud
+    // Collect all point clouds
+    for (auto &f : futures) {
+        auto pointCloud = f.get();
+        if (pointCloud && !pointCloud->IsEmpty()) {
+            pointClouds.push_back(pointCloud);
         }
-
-        if (pointCloud->points_.empty()) {
-            std::cerr << "Warning: Point cloud generated but contains no points for image file: " << cppImageFiles[i] << " and depth file: " << cppDepthFiles[i] << std::endl;
-            continue; // Skip empty point clouds
-        }
-
-        pointClouds.push_back(pointCloud);
     }
 
-    auto globalPCD = pointClouds[0]; // Assuming only the first point cloud is processed
-    std::cout << "Meshing ..." << std::endl;
-
-    // Ensure globalPCD is not null
-    if (!globalPCD) {
-        NSLog(@"globalPCD is null");
-        return NO;
-    }
-
-    // Ensure the point cloud has points
-    if (globalPCD->points_.empty()) {
-        NSLog(@"No points in globalPCD");
-        return NO;
-    }
-
-    if (globalPCD->IsEmpty()) {
-        NSLog(@"Point cloud is empty, skipping mesh generation.");
+    if (pointClouds.empty()) {
+        NSLog(@"No valid point clouds generated");
         return NO;
     }
 
@@ -122,61 +115,65 @@
     float scale = 1.1f;
     bool linear_fit = false; // Set to true if you need linear interpolation
 
-    // Call the Poisson reconstruction with a single thread
-    auto [mesh, densities] = open3d::geometry::TriangleMesh::CreateFromPointCloudPoisson(
-        *globalPCD,
-        depth,
-        0,      // Width is ignored if depth is set
-        scale,
-        linear_fit,
-        1       // Setting n_threads to 1 (VERY IMPORTANT)
-    ); // VVIP: FORCE THREAD COUNT TO 1 TO PREVENT "FAILED CLOSING THE LOOP" ERROR!
+    for (size_t i = 0; i < pointClouds.size(); ++i) {
+        auto pointCloud = pointClouds[i];
 
-    const double threshold = 0.004893;
-    std::cout << "Remove artifacts and large triangles generated by screened Poisson" << std::endl;
+        // Call the Poisson reconstruction with a single thread
+        auto [mesh, densities] = open3d::geometry::TriangleMesh::CreateFromPointCloudPoisson(
+            *pointCloud,
+            depth,
+            0,      // Width is ignored if depth is set
+            scale,
+            linear_fit,
+            1       // Setting n_threads to 1 (VERY IMPORTANT)
+        ); // VVIP: FORCE THREAD COUNT TO 1 TO PREVENT "FAILED CLOSING THE LOOP" ERROR!
 
-    std::vector<bool> trianglesToRemove(mesh->triangles_.size(), false);
-    for (size_t i = 0; i < mesh->triangles_.size(); ++i) {
-        auto& tri = mesh->triangles_[i];
-        double edgeLengths[3] = {
-            (mesh->vertices_[tri[0]] - mesh->vertices_[tri[1]]).norm(),
-            (mesh->vertices_[tri[1]] - mesh->vertices_[tri[2]]).norm(),
-            (mesh->vertices_[tri[2]] - mesh->vertices_[tri[0]]).norm()
-        };
-        if (edgeLengths[0] > threshold || edgeLengths[1] > threshold || edgeLengths[2] > threshold) {
-            trianglesToRemove[i] = true;
+        const double threshold = 0.004893;
+        std::cout << "Remove artifacts and large triangles generated by screened Poisson" << std::endl;
+
+        std::vector<bool> trianglesToRemove(mesh->triangles_.size(), false);
+        for (size_t j = 0; j < mesh->triangles_.size(); ++j) {
+            auto& tri = mesh->triangles_[j];
+            double edgeLengths[3] = {
+                (mesh->vertices_[tri[0]] - mesh->vertices_[tri[1]]).norm(),
+                (mesh->vertices_[tri[1]] - mesh->vertices_[tri[2]]).norm(),
+                (mesh->vertices_[tri[2]] - mesh->vertices_[tri[0]]).norm()
+            };
+            if (edgeLengths[0] > threshold || edgeLengths[1] > threshold || edgeLengths[2] > threshold) {
+                trianglesToRemove[j] = true;
+            }
         }
-    }
 
-    mesh->RemoveTrianglesByMask(trianglesToRemove);
-    mesh->RemoveUnreferencedVertices();
-    mesh->RemoveNonManifoldEdges();
+        mesh->RemoveTrianglesByMask(trianglesToRemove);
+        mesh->RemoveUnreferencedVertices();
+        mesh->RemoveNonManifoldEdges();
 
-    std::cout << "Now exporting OBJ..." << std::endl;
+        std::cout << "Now exporting OBJ..." << std::endl;
 
-    fs::path outputFilePath = fs::path([outputPath UTF8String]) / "output.obj";
-    if (!fs::exists(outputFilePath.parent_path())) {
-        std::cerr << "Output directory does not exist: " << outputFilePath.parent_path() << std::endl;
-        return NO;
-    }
-
-    std::cout << "Mesh has " << mesh->vertices_.size() << " vertices and " << mesh->triangles_.size() << " triangles." << std::endl;
-    if (mesh->vertices_.empty() || mesh->triangles_.empty()) {
-        NSLog(@"Mesh is empty, cannot write to file.");
-        return NO;
-    }
-
-    try {
-        if (!io::WriteTriangleMesh(outputFilePath.string(), *mesh, false)) {
-            NSLog(@"Failed to write OBJ file at %@", [outputPath UTF8String]);
+        fs::path outputFilePath = cppOutputPaths[i];
+        if (!fs::exists(outputFilePath.parent_path())) {
+            std::cerr << "Output directory does not exist: " << outputFilePath.parent_path() << std::endl;
             return NO;
         }
-    } catch (const std::exception &e) {
-        std::cerr << "Exception occurred while writing OBJ file: " << e.what() << std::endl;
-        return NO;
+
+        std::cout << "Mesh has " << mesh->vertices_.size() << " vertices and " << mesh->triangles_.size() << " triangles." << std::endl;
+        if (mesh->vertices_.empty() || mesh->triangles_.empty()) {
+            NSLog(@"Mesh is empty, cannot write to file.");
+            return NO;
+        }
+
+        try {
+            if (!io::WriteTriangleMesh(outputFilePath.string(), *mesh, false)) {
+                NSLog(@"Failed to write OBJ file");
+                return NO;
+            }
+        } catch (const std::exception &e) {
+            std::cerr << "Exception occurred while writing OBJ file: " << e.what() << std::endl;
+            return NO;
+        }
     }
 
-    NSLog(@"Successfully exported OBJ file.");
+    NSLog(@"Successfully exported OBJ files.");
 
     return YES;
 }
