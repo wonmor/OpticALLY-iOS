@@ -127,7 +127,7 @@ struct PostScanView: View {
         // Filter video files to keep only video01.bin, video03.bin, and video05.bin
         var filteredVideoFiles = videoFiles.filter { file in
             let fileName = (file as NSString).lastPathComponent
-            return fileName == "video01.bin" || fileName == "video03.bin"
+            return fileName == "video01.bin" || fileName == "video02.bin"
         }
         
         // Rename video03.bin to video02.bin and video05.bin to video03.bin
@@ -135,7 +135,7 @@ struct PostScanView: View {
             let fileName = (file as NSString).lastPathComponent
             let newFileName: String
             switch fileName {
-            case "video03.bin":
+            case "video02.bin":
                 newFileName = "video02.bin"
             default:
                 newFileName = fileName
@@ -485,42 +485,7 @@ struct PostScanView: View {
                                         .foregroundColor(.white)
                                         .background(Capsule().fill(Color(.black)))
                                 }
-                                .padding(.top)
-                                .padding(.horizontal)
-                                
-//                                Button(action: {
-//                                    exportViewModel.exportFaceNodes(showShareSheet: true)
-//                                }) {
-//                                    Text("LANDMARK 3DMM")
-//                                        .font(.caption)
-//                                        .bold()
-//                                        .padding()
-//                                        .foregroundColor(.white)
-//                                        .background(Capsule().fill(Color(.black)))
-//                                }
-//                                .padding(.horizontal)
-                                
-                                Text("FOR DEVELOPERS")
-                                    .bold()
-                                    .monospaced()
-                                    .font(.caption)
-                                    .padding(.top)
-                                    .padding(.horizontal)
-                                    .multilineTextAlignment(.center)
-                                    .foregroundStyle(.black)
-                                
-                                Button(action: {
-                                    shareExportedData()
-                                }) {
-                                    Text("RGB-D\n.BIN\n\nCALIBRATION\n.JSON")
-                                        .font(.caption)
-                                        .bold()
-                                        .padding()
-                                        .foregroundColor(.white)
-                                        .fixedSize(horizontal: false, vertical: true) // Allow height to adjust based on content
-                                        .background(Capsule().fill(Color.black))
-                                }
-                                .padding() // Adjust padding as needed
+                                .padding()
                             }
                             .background(.white)
                             .clipShape(RoundedRectangle(cornerRadius: 20)) // Clips the image as a rounded rectangle
