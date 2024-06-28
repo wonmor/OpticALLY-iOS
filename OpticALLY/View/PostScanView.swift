@@ -121,30 +121,14 @@ struct PostScanView: View {
         var videoFiles = fileManager.getFilePathsWithPrefix(baseFolder: folderURL.path, prefix: "video")
         var depthFiles = fileManager.getFilePathsWithPrefix(baseFolder: folderURL.path, prefix: "depth")
         
-        // Filter video files to keep only video01.bin, video03.bin, and video06.bin
-        let allowedFiles = ["video01.bin", "video03.bin", "video05.bin"]
-        let filteredVideoFiles = videoFiles.filter { file in
+        // Filter video files to keep only video01.bin, video03.bin, and video05.bin
+        var filteredVideoFiles = videoFiles.filter { file in
             let fileName = (file as NSString).lastPathComponent
-            return allowedFiles.contains(fileName)
+            return fileName == "video01.bin" || fileName == "video03.bin" || fileName == "video05.bin"
         }
         
-        // Remove files that are not allowed
-        let filesToRemove = videoFiles.filter { file in
-            let fileName = (file as NSString).lastPathComponent
-            return !allowedFiles.contains(fileName)
-        }
-        
-        for file in filesToRemove {
-            do {
-                try fileManager.removeItem(atPath: file)
-                print("Removed file: \(file)")
-            } catch {
-                print("Error removing file \(file): \(error)")
-            }
-        }
-        
-        // Rename video03.bin to video02.bin and video06.bin to video03.bin
-        let renamedVideoFiles = filteredVideoFiles.map { file in
+        // Rename video03.bin to video02.bin and video05.bin to video03.bin
+        filteredVideoFiles = filteredVideoFiles.map { file in
             let fileName = (file as NSString).lastPathComponent
             let newFileName: String
             switch fileName {
@@ -160,7 +144,6 @@ struct PostScanView: View {
             if file != newPath {
                 do {
                     try fileManager.moveItem(atPath: file, toPath: newPath)
-                    print("Renamed file \(file) to \(newPath)")
                 } catch {
                     print("Error renaming file \(file) to \(newPath): \(error)")
                 }
@@ -169,7 +152,7 @@ struct PostScanView: View {
         }
         
         // Sort renamed video files by their new names
-        videoFiles = renamedVideoFiles.sorted()
+        videoFiles = filteredVideoFiles.sorted()
 
         print("Renamed Video Files: \(videoFiles)")
         print("Swift-side Depth Files Count: \(depthFiles.count)")
