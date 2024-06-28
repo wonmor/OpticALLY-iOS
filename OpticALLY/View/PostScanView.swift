@@ -97,6 +97,9 @@ struct PostScanView: View {
     
     @State private var snapshot: UIImage?
     
+    // Retrieve all the output OBJ files
+    @State private var objFiles: [URL] = []
+    
     @State private var uploadProgress = [Double](repeating: 0.0, count: 3)
     @State private var uploadResults = [Bool](repeating: false, count: 3)
     
@@ -176,8 +179,6 @@ struct PostScanView: View {
         // Process point clouds for the matching pairs
         PointCloudProcessingBridge.processPointClouds(withCalibrationFile: calibrationFileURL.path, imageFiles: videoFiles, depthFiles: depthFiles, outputPaths: outputPaths)
 
-        // Retrieve all the output OBJ files
-        var objFiles: [URL] = []
         for path in outputPaths {
             let objURL = URL(fileURLWithPath: path)
             if FileManager.default.fileExists(atPath: objURL.path) {
@@ -349,93 +350,6 @@ struct PostScanView: View {
         data.append("\r\n".data(using: .utf8)!)
         
         return data
-    }
-    
-    func uploadFiles(calibrationFileURL: URL, imageFilesZipURL: URL, depthFilesZipURL: URL, completion: @escaping (Bool, URL?) -> Void) {
-        let endpoint = "https://harolden-server.apps.johnseong.com/process3d-to-obj/"
-        guard let url = URL(string: endpoint) else {
-            print("Invalid URL")
-            completion(false, URL(string: ""))
-            return
-        }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        
-        let boundary = "Boundary-\(UUID().uuidString)"
-        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-        
-        var data = Data()
-        
-        // Append Calibration File
-        data.append(convertFileData(fieldName: "calibration_file",
-                                    fileName: calibrationFileURL.lastPathComponent,
-                                    mimeType: "application/json",
-                                    fileURL: calibrationFileURL,
-                                    using: boundary))
-        
-        // Append Image Files Zip
-        data.append(convertFileData(fieldName: "image_files_zip",
-                                    fileName: imageFilesZipURL.lastPathComponent,
-                                    mimeType: "application/zip",
-                                    fileURL: imageFilesZipURL,
-                                    using: boundary))
-        
-        // Append Depth Files Zip
-        data.append(convertFileData(fieldName: "depth_files_zip",
-                                    fileName: depthFilesZipURL.lastPathComponent,
-                                    mimeType: "application/zip",
-                                    fileURL: depthFilesZipURL,
-                                    using: boundary))
-        
-        data.append("--\(boundary)--".data(using: .utf8)!)
-        
-        request.httpBody = data
-        
-        // Create URLSessionUploadTask
-        let task = URLSession.shared.uploadTask(with: request, from: data) { data, response, error in
-            DispatchQueue.main.async {
-                self.isLoading = false  // Stop loading indicator
-                if let data = data, error == nil {
-                    // Save the PLY file
-                    let fileURL =  ExternalData.getDocumentsDirectory().appendingPathComponent("output_\(currentDirectionIndex).obj")
-                    do {
-                        exportViewModel.objURLs!.append(fileURL.path)
-                        
-                        try data.write(to: fileURL)
-                        print("OBJ file saved to: \(fileURL.path)")
-                        // self.fileURLToShare = fileURL --> VVIP
-                        // self.triggerUpdate = true
-                        // ExternalData.isMeshView = true
-                        // self.isProcessing = false
-
-                        print("objURLs: \(exportViewModel.objURLs!)")
-                        
-                        self.uploadIndex += 1
-                        self.processUploads()  // Recursively process the next upload
-                        
-                        completion(true, fileURL)  // Pass the file URL to the completion handler
-                    } catch {
-                        print("Failed to save PLY file: \(error.localizedDescription)")
-                        completion(false, nil)
-                    }
-                } else {
-                    print("Network error: \(error?.localizedDescription ?? "Unknown error")")
-                    completion(false, nil)
-                }
-            }
-        }
-        
-        // Handle upload progress
-        task.observe(\.countOfBytesSent) { task, _ in
-            DispatchQueue.main.async {
-                let progress = Double(task.countOfBytesSent) / Double(task.countOfBytesExpectedToSend)
-                // self.uploadProgress = progress
-            }
-        }
-        
-        self.isLoading = true  // Start loading indicator
-        task.resume()
     }
     
     private var currentDirectionString: String {
@@ -611,14 +525,7 @@ struct PostScanView: View {
                             .background(.white)
                             .clipShape(RoundedRectangle(cornerRadius: 20)) // Clips the image as a rounded rectangle
                             .padding(.top, 5)
-                            .sheet(isPresented: $exportViewModel.showShareSheet, onDismiss: {
-                                exportViewModel.showShareSheet = false
-                            }) {
-                                // This will present the share sheet
-                                if let fileURL = exportViewModel.fileURL {
-                                    ShareSheet(fileURL: fileURL)
-                                }
-                            }
+                          
                         }
                     }
                     if !exportViewModel.isLoading {
@@ -691,22 +598,15 @@ struct PostScanView: View {
                 }
             }
             .allowsHitTesting(!(exportViewModel.isLoading || isInteractionDisabled)) // Disabling hit testing when loading or interaction is disabled
-            .alert(isPresented: $showAlert) {
-                Alert(
-                    title: Text("No Internet Connection"),
-                    message: Text("Please check your internet connection and try again."),
-                    dismissButton: .default(Text("OK"))
-                )
-            }
             .sheet(isPresented: $showShareSheet, onDismiss: {
                 showShareSheet = false
             }) {
                 // This will present the share sheet
                 
                 if let fileURL = fileURLToShare {
-                    ShareSheet(fileURL: fileURL)
+                    ShareSheet(fileURL: objFiles[currentDirectionIndex])
                         .onAppear() {
-                            print("Shared: \(fileURL)")
+                            print("Shared: \(objFiles[currentDirectionIndex])")
                         }
                 }
             }
