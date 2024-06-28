@@ -398,7 +398,7 @@ struct PostScanView: View {
                 self.isLoading = false  // Stop loading indicator
                 if let data = data, error == nil {
                     // Save the PLY file
-                    let fileURL =  ExternalData.getDocumentsDirectory().appendingPathComponent("output_from_server.obj")
+                    let fileURL =  ExternalData.getDocumentsDirectory().appendingPathComponent("output_\(currentDirectionIndex).obj")
                     do {
                         exportViewModel.objURLs!.append(fileURL.path)
                         
@@ -445,6 +445,16 @@ struct PostScanView: View {
             
         case .right:
             return "RIGHT"
+        }
+    }
+    
+    private var currentDirectionIndex: Int {
+        switch currentDirection {
+        case .left:
+            return 0
+            
+        case .right:
+            return 1
         }
     }
     
