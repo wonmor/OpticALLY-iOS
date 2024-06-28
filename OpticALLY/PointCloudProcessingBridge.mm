@@ -6,6 +6,7 @@
 #include <Eigen/Dense>
 #include <filesystem>
 #include <regex>
+#include <future>
 #include "ImageDepth.hpp"
 
 @implementation PointCloudProcessingBridge
@@ -76,40 +77,41 @@
         return NO;
     }
 
+    std::vector<std::future<std::shared_ptr<PointCloud>>> futures;
+
+    // Process each point cloud in parallel
     for (size_t i = 0; i < cppImageFiles.size(); ++i) {
-        auto imageDepth = std::make_shared<ImageDepth>([calibrationFilePath UTF8String], cppImageFiles[i], cppDepthFiles[i], 640, 480, 0.1, 0.5, 0.01);
-        auto pointCloud = imageDepth->getPointCloud();
-
-        if (!pointCloud) {
-            std::cerr << "Error: Failed to generate point cloud for image file: " << cppImageFiles[i] << " and depth file: " << cppDepthFiles[i] << std::endl;
-            continue; // Skip this point cloud
-        }
-
-        if (pointCloud->points_.empty()) {
-            std::cerr << "Warning: Point cloud generated but contains no points for image file: " << cppImageFiles[i] << " and depth file: " << cppDepthFiles[i] << std::endl;
-            continue; // Skip empty point clouds
-        }
-
-        pointClouds.push_back(pointCloud);
+        futures.push_back(std::async(std::launch::async, [&calibrationFilePath, &cppImageFiles, &cppDepthFiles, i]() -> std::shared_ptr<PointCloud> {
+            auto imageDepth = std::make_shared<ImageDepth>([calibrationFilePath UTF8String], cppImageFiles[i], cppDepthFiles[i], 640, 480, 0.1, 0.5, 0.01);
+            auto pointCloud = imageDepth->getPointCloud();
+            if (!pointCloud || pointCloud->points_.empty()) {
+                return nullptr;
+            }
+            return pointCloud;
+        }));
     }
 
-    auto globalPCD = pointClouds[0]; // Assuming only the first point cloud is processed
-    std::cout << "Meshing ..." << std::endl;
+    // Collect all point clouds
+    for (auto &f : futures) {
+        auto pointCloud = f.get();
+        if (pointCloud && !pointCloud->IsEmpty()) {
+            pointClouds.push_back(pointCloud);
+        }
+    }
 
-    // Ensure globalPCD is not null
-    if (!globalPCD) {
-        NSLog(@"globalPCD is null");
+    if (pointClouds.empty()) {
+        NSLog(@"No valid point clouds generated");
         return NO;
     }
 
-    // Ensure the point cloud has points
-    if (globalPCD->points_.empty()) {
-        NSLog(@"No points in globalPCD");
-        return NO;
+    // Combine all point clouds into a global point cloud
+    auto globalPCD = std::make_shared<PointCloud>();
+    for (const auto &pc : pointClouds) {
+        *globalPCD += *pc;
     }
 
     if (globalPCD->IsEmpty()) {
-        NSLog(@"Point cloud is empty, skipping mesh generation.");
+        NSLog(@"Combined point cloud is empty, skipping mesh generation.");
         return NO;
     }
 
