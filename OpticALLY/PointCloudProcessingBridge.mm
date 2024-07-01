@@ -1,5 +1,6 @@
 #import "PointCloudProcessingBridge.h"
 #include <open3d/Open3D.h>
+#import <Vision/Vision.h>
 #include <vector>
 #include <memory>
 #include <fstream>
@@ -7,6 +8,7 @@
 #include <filesystem>
 #include <regex>
 #include <future>
+#import <UIKit/UIKit.h>
 #include "ImageDepth.hpp"
 
 @implementation PointCloudProcessingBridge
@@ -176,6 +178,26 @@
     NSLog(@"Successfully exported OBJ files.");
 
     return YES;
+}
+
+- (UIImage *)convertOpen3DImageToUIImage:(const open3d::geometry::Image &)open3dImage {
+    int width = open3dImage.width_;
+    int height = open3dImage.height_;
+    int bytesPerPixel = 4; // Assuming RGBA format
+
+    // Create a CGImage from Open3D image data
+    CGDataProviderRef provider = CGDataProviderCreateWithData(NULL, open3dImage.data_.data(), width * height * bytesPerPixel, NULL);
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    CGImageRef cgImage = CGImageCreate(width, height, 8, 32, width * bytesPerPixel, colorSpace, kCGBitmapByteOrderDefault, provider, NULL, NO, kCGRenderingIntentDefault);
+
+    UIImage *uiImage = [UIImage imageWithCGImage:cgImage];
+
+    // Release the created resources
+    CGColorSpaceRelease(colorSpace);
+    CGImageRelease(cgImage);
+    CGDataProviderRelease(provider);
+
+    return uiImage;
 }
 
 @end

@@ -285,6 +285,13 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		96156AB72C2F7D4A00B47A74 /* lib */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = lib;
+			sourceTree = "<group>";
+		};
 		9671FDC42B5B14F2004DA4C2 /* Python */ = {
 			isa = PBXGroup;
 			children = (
@@ -333,6 +340,7 @@
 		967EE0582AAE06FB000C4D5F = {
 			isa = PBXGroup;
 			children = (
+				96156AB72C2F7D4A00B47A74 /* lib */,
 				96E8A6722BED5E1B00CCBC18 /* nlohmann */,
 				96E8A6702BED5B7400CCBC18 /* cppcodec */,
 				96E8A66E2BED59F700CCBC18 /* fmt */,
