@@ -11,6 +11,21 @@
 #import <UIKit/UIKit.h>
 #include "ImageDepth.hpp"
 
+// Function to get texture images from a TriangleMesh
+std::vector<open3d::geometry::Image> GetTextureImages(const open3d::geometry::TriangleMesh &mesh) {
+    std::vector<open3d::geometry::Image> texture_images;
+    if (mesh.textures_.empty()) {
+        std::cerr << "No textures found in the mesh." << std::endl;
+        return texture_images;
+    }
+
+    for (const auto &texture : mesh.textures_) {
+        texture_images.push_back(texture);
+    }
+
+    return texture_images;
+}
+
 @implementation PointCloudProcessingBridge
 
 + (BOOL)processPointCloudsWithCalibrationFile:(NSString *)calibrationFilePath
@@ -173,6 +188,15 @@
             std::cerr << "Exception occurred while writing OBJ file: " << e.what() << std::endl;
             return NO;
         }
+
+        // Extract texture images from the mesh
+        std::vector<open3d::geometry::Image> textureImages = GetTextureImages(*mesh);
+        for (size_t j = 0; j < textureImages.size(); ++j) {
+//            UIImage *uiImage = [self convertOpen3DImageToUIImage:textureImages[j]];
+//            // Save UIImage to a file
+//            NSString *imageOutputPath = [NSString stringWithFormat:@"%@/image_%lu.jpg", [outputFilePath.parent_path().string().c_str() UTF8String], (unsigned long)i];
+//            [self saveUIImage:uiImage toPath:imageOutputPath];
+        }
     }
 
     NSLog(@"Successfully exported OBJ files.");
@@ -198,6 +222,13 @@
     CGDataProviderRelease(provider);
 
     return uiImage;
+}
+
+- (void)saveUIImage:(UIImage *)image toPath:(NSString *)path {
+    NSData *imageData = UIImageJPEGRepresentation(image, 1.0);
+    if (![imageData writeToFile:path atomically:YES]) {
+        NSLog(@"Failed to save image at path: %@", path);
+    }
 }
 
 @end
