@@ -192,10 +192,7 @@ std::vector<open3d::geometry::Image> GetTextureImages(const open3d::geometry::Tr
         // Extract texture images from the mesh
         std::vector<open3d::geometry::Image> textureImages = GetTextureImages(*mesh);
         for (size_t j = 0; j < textureImages.size(); ++j) {
-//            UIImage *uiImage = [self convertOpen3DImageToUIImage:textureImages[j]];
-//            // Save UIImage to a file
-//            NSString *imageOutputPath = [NSString stringWithFormat:@"%@/image_%lu.jpg", [outputFilePath.parent_path().string().c_str() UTF8String], (unsigned long)i];
-//            [self saveUIImage:uiImage toPath:imageOutputPath];
+
         }
     }
 
