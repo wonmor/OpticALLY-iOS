@@ -112,8 +112,4 @@
     return myConvertedRects;
 }
 
-+ (NSString *)dlibVersionString {
-    return [NSString stringWithFormat:@"Dlib Version %d.%d.%d", DLIB_MAJOR_VERSION, DLIB_MINOR_VERSION, DLIB_PATCH_VERSION];
-}
-
 @end
