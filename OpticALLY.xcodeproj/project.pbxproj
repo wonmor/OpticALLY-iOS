@@ -85,6 +85,8 @@
 		96BE3DA82BE57C830021EBED /* opencv2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96BE3DA72BE57C830021EBED /* opencv2.framework */; };
 		96C055152BD2F544003981FC /* Open3D-iOS in Frameworks */ = {isa = PBXBuildFile; productRef = 96C055142BD2F544003981FC /* Open3D-iOS */; };
 		96C055192BD2F729003981FC /* CountdownTimerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96C055182BD2F729003981FC /* CountdownTimerView.swift */; };
+		96CC48472C3A958500E954C5 /* lib in Resources */ = {isa = PBXBuildFile; fileRef = 96CC48462C3A958500E954C5 /* lib */; };
+		96CC484A2C3A959E00E954C5 /* DlibWrapper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 96CC48492C3A959E00E954C5 /* DlibWrapper.mm */; };
 		96E3E0042B867684004374D1 /* FaceIDScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E3E0032B867684004374D1 /* FaceIDScanView.swift */; };
 		96E856BB2B6EFFE00037C3BB /* PreviousScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E856BA2B6EFFE00037C3BB /* PreviousScanView.swift */; };
 		96E856BD2B6F0CF90037C3BB /* cargo-loading.json in Resources */ = {isa = PBXBuildFile; fileRef = 96E856BC2B6F0CF90037C3BB /* cargo-loading.json */; };
@@ -212,6 +214,9 @@
 		96BE3DA12BE579950021EBED /* OpenCVWrapper.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = OpenCVWrapper.mm; sourceTree = "<group>"; };
 		96BE3DA72BE57C830021EBED /* opencv2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = opencv2.framework; sourceTree = "<group>"; };
 		96C055182BD2F729003981FC /* CountdownTimerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountdownTimerView.swift; sourceTree = "<group>"; };
+		96CC48462C3A958500E954C5 /* lib */ = {isa = PBXFileReference; lastKnownFileType = folder; path = lib; sourceTree = "<group>"; };
+		96CC48482C3A959E00E954C5 /* DlibWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlibWrapper.h; sourceTree = "<group>"; };
+		96CC48492C3A959E00E954C5 /* DlibWrapper.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = DlibWrapper.mm; sourceTree = "<group>"; };
 		96E3E0032B867684004374D1 /* FaceIDScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceIDScanView.swift; sourceTree = "<group>"; };
 		96E856BA2B6EFFE00037C3BB /* PreviousScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviousScanView.swift; sourceTree = "<group>"; };
 		96E856BC2B6F0CF90037C3BB /* cargo-loading.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "cargo-loading.json"; sourceTree = "<group>"; };
@@ -285,13 +290,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		96156AB72C2F7D4A00B47A74 /* lib */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = lib;
-			sourceTree = "<group>";
-		};
 		9671FDC42B5B14F2004DA4C2 /* Python */ = {
 			isa = PBXGroup;
 			children = (
@@ -340,7 +338,7 @@
 		967EE0582AAE06FB000C4D5F = {
 			isa = PBXGroup;
 			children = (
-				96156AB72C2F7D4A00B47A74 /* lib */,
+				96CC48462C3A958500E954C5 /* lib */,
 				96E8A6722BED5E1B00CCBC18 /* nlohmann */,
 				96E8A6702BED5B7400CCBC18 /* cppcodec */,
 				96E8A66E2BED59F700CCBC18 /* fmt */,
@@ -380,6 +378,8 @@
 				967EE0912AAEDBD2000C4D5F /* ViewModel */,
 				967EE0902AAEDBBE000C4D5F /* View */,
 				967EE0642AAE06FB000C4D5F /* OpticALLYApp.swift */,
+				96CC48482C3A959E00E954C5 /* DlibWrapper.h */,
+				96CC48492C3A959E00E954C5 /* DlibWrapper.mm */,
 				9679F8B32AD0907900686F13 /* AppDelegate.swift */,
 				96F0CF172B12A34400417716 /* ExternalData.swift */,
 				96491C5E2AFD746300FD3666 /* ConsoleOutputCatcher.swift */,
@@ -653,6 +653,7 @@
 				969E42EE2ADC9D9E00E77BA7 /* promo.mp4 in Resources */,
 				96E8A6642BEC960A00CCBC18 /* rapidjson in Resources */,
 				963A88DB2C00E84B00A68720 /* test_model in Resources */,
+				96CC48472C3A958500E954C5 /* lib in Resources */,
 				967EE06C2AAE06FE000C4D5F /* Preview Assets.xcassets in Resources */,
 				9679F8D82AD0907A00686F13 /* Main.storyboard in Resources */,
 				966360682B6E0AAC001D2119 /* face-id-2.json in Resources */,
@@ -733,6 +734,7 @@
 				9679F8E12AD0907A00686F13 /* CameraView.swift in Sources */,
 				966360662B6E064B001D2119 /* LottieView.swift in Sources */,
 				96E856C22B7041E60037C3BB /* FilesViewModel.swift in Sources */,
+				96CC484A2C3A959E00E954C5 /* DlibWrapper.mm in Sources */,
 				9680F7DD2B22D6FD00F38A6F /* ARFaceTrackingView.swift in Sources */,
 				96E856C62B70441C0037C3BB /* FolderDetailView.swift in Sources */,
 				9679F8D52AD0907A00686F13 /* HistogramCalculator.m in Sources */,

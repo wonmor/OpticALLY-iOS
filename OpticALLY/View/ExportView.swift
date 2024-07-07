@@ -24,9 +24,7 @@ struct CompassView: View {
     @Binding var scanState: ScanState
     @Binding var scanDirection: ScanDirection
     
-    @State private var previousYawAngle: Double = 0.0
-    @State private var previousTimestamp: Date = Date()
-    @State private var velocity: Double = 0.0
+    @State private var previousYawAngle: Int = 0
     @State private var barColor = Color.white.opacity(0.2)
     
     // screenWidth represents the total width available for the compass view
@@ -49,99 +47,80 @@ struct CompassView: View {
     }
 
     var body: some View {
-        VStack {
-            GeometryReader { geometry in
-                ZStack {
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(barColor)
-                        .frame(height: 30)
-                    
-                    // Text displaying the degree and velocity
-                    HStack {
-                        Text("\(Int(viewModel.faceYawAngle))º")
-                            .font(.system(size: 16))
-                            .monospaced()
-                            .foregroundColor(.white)
-                            .padding(5)
-                            .background(Color.black.opacity(0.5))
-                            .cornerRadius(5)
-                            .padding(.leading, compassIndicatorPosition - 30)
-                            .onChange(of: viewModel.faceYawAngle) { newFaceYawAngle in
-                                guard scanState == .scanning else { return }
+        GeometryReader { geometry in
+            ZStack {
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(barColor)
+                    .frame(height: 30)
+ 
+                // Text displaying the degree
+                HStack {
+                    Text("\(Int(viewModel.faceYawAngle))º")
+                        .font(.system(size: 16))
+                        .monospaced()
+                        .foregroundColor(.white)
+                        .padding(5)
+                        .background(Color.black.opacity(0.5))
+                        .cornerRadius(5)
+                        .padding(.leading, compassIndicatorPosition - 30)
+                        .onChange(of: Int(viewModel.faceYawAngle)) { newFaceYawAngle in
+                            guard scanState == .scanning else { return }
+                            
+                            switch scanDirection {
+                            case .left where newFaceYawAngle > 20:
+                                let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
+                                impactGenerator.impactOccurred(intensity: 1.00)
                                 
-                                let currentTimestamp = Date()
-                                let timeInterval = currentTimestamp.timeIntervalSince(previousTimestamp)
-                                velocity = abs((newFaceYawAngle - previousYawAngle) / timeInterval)
+                                barColor = .green.opacity(0.5)
                                 
+                            case .right where newFaceYawAngle < -20:
+                                let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
+                                impactGenerator.impactOccurred(intensity: 1.00)
+                                
+                                barColor = .green.opacity(0.5)
+                                
+                            default:
+                                let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
+                                impactGenerator.impactOccurred(intensity: 0.25)
                                 previousYawAngle = newFaceYawAngle
-                                previousTimestamp = currentTimestamp
                                 
-                                switch scanDirection {
-                                case .left where newFaceYawAngle > 20:
-                                    let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
-                                    impactGenerator.impactOccurred(intensity: 1.00)
-                                    
-                                    barColor = .green.opacity(0.5)
-                                    
-                                case .right where newFaceYawAngle < -20:
-                                    let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
-                                    impactGenerator.impactOccurred(intensity: 1.00)
-                                    
-                                    barColor = .green.opacity(0.5)
-                                    
-                                default:
-                                    let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
-                                    impactGenerator.impactOccurred(intensity: 0.25)
-                                    
-                                    barColor = .white.opacity(0.2)
-                                    
-                                    break
-                                }
+                                barColor = .white.opacity(0.2)
+                                
+                                break
                             }
-                        
-                        Spacer()
-                    }
-                    
-                    // Multiple vertical lines for the compass indicator
-                    let numberOfLines = 10 // Number of lines you want
-                    let lineSpacing = geometry.size.width / CGFloat(numberOfLines + 1)
-                    
-                    ForEach(0..<numberOfLines, id: \.self) { index in
-                        if getIndexForStick() == index {
-                            Rectangle()
-                                .fill(Color.green)
-                                .frame(width: 2, height: 30)
-                                .offset(x: lineSpacing * CGFloat(index + 1) - 1, y: 0)
-                        } else {
-                            Rectangle()
-                                .fill(Color.black)
-                                .frame(width: 2, height: 30)
-                                .offset(x: lineSpacing * CGFloat(index + 1) - 1, y: 0)
                         }
-                    }
-                    
-                    // The active indicator line
-                    Rectangle()
-                        .fill(Color.white.opacity(0.5)) // Use a distinct color to highlight the active indicator
-                        .frame(width: 2, height: 30)
-                        .offset(x: compassIndicatorPosition - 1, y: 0)
+
+                    Spacer()
                 }
                 
+                // Multiple vertical lines for the compass indicator
+               let numberOfLines = 10 // Number of lines you want
+               let lineSpacing = geometry.size.width / CGFloat(numberOfLines + 1)
+
+               ForEach(0..<numberOfLines, id: \.self) { index in
+                   if getIndexForStick() == index {
+                       Rectangle()
+                           .fill(Color.green)
+                           .frame(width: 2, height: 30)
+                           .offset(x: lineSpacing * CGFloat(index + 1) - 1, y: 0)
+                   } else {
+                       Rectangle()
+                           .fill(Color.black)
+                           .frame(width: 2, height: 30)
+                           .offset(x: lineSpacing * CGFloat(index + 1) - 1, y: 0)
+                   }
+               }
+
+               // The active indicator line
+               Rectangle()
+                    .fill(Color.white.opacity(0.5)) // Use a distinct color to highlight the active indicator
+                   .frame(width: 2, height: 30)
+                   .offset(x: compassIndicatorPosition - 1, y: 0)
             }
+
         }
-        
-        Text(String(format: "VELOCITY %.1fº/s", velocity))
-            .font(.system(size: 16))
-            .monospaced()
-            .foregroundColor(.white)
-            .padding(5)
-            .background(Color.black.opacity(0.5))
-            .cornerRadius(5)
-            .padding(.trailing, compassIndicatorPosition - 1)
     }
 }
-
-// Other structs and views remain the same...
 
 struct ExportView: View {
     @EnvironmentObject var globalState: GlobalState
