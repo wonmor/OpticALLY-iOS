@@ -342,6 +342,7 @@
 		967EE0582AAE06FB000C4D5F = {
 			isa = PBXGroup;
 			children = (
+				96D59E7D2C3AA55C00A79563 /* shape_predictor_68_face_landmarks.dat */,
 				9647457E2C3AA66D00263A59 /* libdlib.a */,
 				9647457C2C3AA66900263A59 /* dlib */,
 				96E8A6722BED5E1B00CCBC18 /* nlohmann */,
@@ -481,7 +482,6 @@
 		969E42E82ADC9ABD00E77BA7 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				96D59E7D2C3AA55C00A79563 /* shape_predictor_68_face_landmarks.dat */,
 				9663605D2B6E03FF001D2119 /* face-detection.json */,
 				96E856BC2B6F0CF90037C3BB /* cargo-loading.json */,
 				9663605B2B6E03FF001D2119 /* face-found-successfully.json */,

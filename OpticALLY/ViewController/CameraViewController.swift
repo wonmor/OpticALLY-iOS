@@ -1001,7 +1001,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             
             metaOutput.metadataObjectTypes = [AVMetadataObject.ObjectType.face]
             
-            //wrapper?.prepare()
+            wrapper?.prepare()
             
             // Additional AVCaptureSession configuration
         } catch {
