@@ -225,6 +225,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     private var scaleZ: Float = 1.0
     
     // MARK: - UI Bindings
+    @IBOutlet weak private var preview: UIView!
     @IBOutlet weak private var cameraUnavailableLabel: UILabel!
     @IBOutlet weak private var depthSmoothingSwitch: UISwitch!
     @IBOutlet weak private var mixFactorSlider: UISlider!
@@ -748,11 +749,6 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                                          .stopTrackedRaycasts])
         
         
-        //let layer = sessionHandler.layer
-//        layer.frame = preview.bounds
-//
-//        preview.layer.addSublayer(layer)
-        
         view.layoutIfNeeded()
     }
     
@@ -989,7 +985,13 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             let sessionHandler = SessionHandler(session: avCaptureSession, input: videoDeviceInput)
             sessionHandler.openSession()
             
-            // Additional AVCaptureSession configuration
+            let layer = sessionHandler.layer
+            layer.frame = preview.bounds
+
+            preview.layer.addSublayer(layer)
+            
+            self.view.bringSubviewToFront(preview)
+            
         } catch {
             print("Error configuring AVCaptureSession: \(error)")
         }

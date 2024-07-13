@@ -1,6 +1,5 @@
 #import "DlibWrapper.h"
 #import <UIKit/UIKit.h>
-
 #include <dlib/image_processing.h>
 #include <dlib/image_io.h>
 
@@ -26,16 +25,32 @@
 
 - (void)prepare {
     NSString *modelFileName = [[NSBundle mainBundle] pathForResource:@"shape_predictor_68_face_landmarks" ofType:@"dat"];
-    std::string modelFileNameCString = [modelFileName UTF8String];
+    if (!modelFileName) {
+        NSLog(@"Model file not found in the bundle.");
+        return;
+    }
     
-    dlib::deserialize(modelFileNameCString) >> sp;
+    const char *modelFileNameCString = [modelFileName UTF8String];
+    if (!modelFileNameCString) {
+        NSLog(@"Failed to convert NSString to C string.");
+        return;
+    }
     
-    self.prepared = YES;
+    try {
+        dlib::deserialize(modelFileNameCString) >> sp;
+        self.prepared = YES;
+    } catch (const std::exception& e) {
+        NSLog(@"Deserialization failed: %s", e.what());
+    }
 }
 
 - (void)doWorkOnSampleBuffer:(CMSampleBufferRef)sampleBuffer inRects:(NSArray<NSValue *> *)rects {
     if (!self.prepared) {
         [self prepare];
+        if (!self.prepared) {
+            NSLog(@"Failed to prepare shape predictor.");
+            return;
+        }
     }
     
     dlib::array2d<dlib::bgr_pixel> img;
@@ -77,6 +92,16 @@
         for (unsigned long k = 0; k < shape.num_parts(); k++) {
             dlib::point p = shape.part(k);
             draw_solid_circle(img, p, 3, dlib::rgb_pixel(0, 255, 255));
+        }
+        
+        // Print out eye coordinates
+        for (unsigned long k = 36; k <= 47; k++) {
+            dlib::point p = shape.part(k);
+            if (k <= 41) {
+                NSLog(@"Left eye point %lu: (%ld, %ld)", k - 35, p.x(), p.y());
+            } else {
+                NSLog(@"Right eye point %lu: (%ld, %ld)", k - 41, p.x(), p.y());
+            }
         }
     }
     
