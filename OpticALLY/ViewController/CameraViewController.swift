@@ -160,7 +160,7 @@ extension CameraViewController {
     }
 }
 
-class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelegate, AVCaptureDataOutputSynchronizerDelegate, AVCaptureMetadataOutputObjectsDelegate, ObservableObject {
+class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelegate, AVCaptureDataOutputSynchronizerDelegate, ObservableObject {
     var contentNode: SCNNode?
 
     // MARK: - Properties
@@ -232,10 +232,6 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     @IBOutlet weak private var smoothDepthLabel: UILabel!
     @IBOutlet weak private var cloudView: PointCloudMetalView!
     
-    let faceQueue = DispatchQueue(label: "com.zweigraf.DisplayLiveSamples.faceQueue", attributes: [])
-    let wrapper = DlibWrapper()
-    
-    var currentMetadata: [AnyObject] = []
     var imageView: UIImageView!
     
     deinit {
@@ -253,12 +249,6 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         let node = SCNNode(geometry: scnFaceGeometry)
         scnFaceGeometry.firstMaterial?.diffuse.contents = faceUvGenerator.texture
         return node
-    }
-    
-    // MARK: AVCaptureMetadataOutputObjectsDelegate
-    
-    func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
-        currentMetadata = metadataObjects as [AnyObject]
     }
     
     func updatePupillaryDistance() {
@@ -756,6 +746,14 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                                          .resetTracking,
                                          .resetSceneReconstruction,
                                          .stopTrackedRaycasts])
+        
+        
+        //let layer = sessionHandler.layer
+//        layer.frame = preview.bounds
+//
+//        preview.layer.addSublayer(layer)
+        
+        view.layoutIfNeeded()
     }
     
     override func viewDidLoad() {
@@ -974,15 +972,10 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         }
         
         do {
-            let metaOutput = AVCaptureMetadataOutput()
-            metaOutput.setMetadataObjectsDelegate(self, queue: faceQueue)
-            
             let videoDeviceInput = try AVCaptureDeviceInput(device: videoDevice)
             if avCaptureSession.canAddInput(videoDeviceInput) {
                 avCaptureSession.addInput(videoDeviceInput)
             }
-            
-            avCaptureSession.beginConfiguration()
             
             videoDataOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA]
             if avCaptureSession.canAddOutput(videoDataOutput) {
@@ -993,15 +986,8 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                 avCaptureSession.addOutput(depthDataOutput)
             }
             
-            if avCaptureSession.canAddOutput(metaOutput) {
-                avCaptureSession.addOutput(metaOutput)
-            }
-            
-            avCaptureSession.commitConfiguration()
-            
-            metaOutput.metadataObjectTypes = [AVMetadataObject.ObjectType.face]
-            
-            wrapper?.prepare()
+            let sessionHandler = SessionHandler(session: avCaptureSession, input: videoDeviceInput)
+            sessionHandler.openSession()
             
             // Additional AVCaptureSession configuration
         } catch {
@@ -1044,7 +1030,6 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         
         outputSynchronizer = AVCaptureDataOutputSynchronizer(dataOutputs: [videoDataOutput, depthDataOutput])
         outputSynchronizer?.setDelegate(self, queue: dataOutputQueue)
-        
         print("AVCaptureSession Running")
     }
     

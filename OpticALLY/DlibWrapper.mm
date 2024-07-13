@@ -25,13 +25,42 @@
 }
 
 - (void)prepare {
+    // Step 1: Get the model file name path from the bundle
     NSString *modelFileName = [[NSBundle mainBundle] pathForResource:@"shape_predictor_68_face_landmarks" ofType:@"dat"];
-    std::string modelFileNameCString = [modelFileName UTF8String];
+    NSLog(@"Model file name path: %@", modelFileName);
     
-    dlib::deserialize(modelFileNameCString) >> sp;
+    // Step 2: Check if model file name path is valid
+    if (!modelFileName) {
+        NSLog(@"Model file not found in the bundle.");
+        return;
+    }
     
-    self.prepared = YES;
+    // Step 3: Convert NSString to C string
+    const char *modelFileNameCStr = [modelFileName UTF8String];
+    if (!modelFileNameCStr) {
+        NSLog(@"Failed to convert NSString to C string.");
+        return;
+    } else {
+        NSLog(@"C string conversion successful: %s", modelFileNameCStr);
+    }
+    
+    // Step 4: Verify if the file at the path is accessible
+    std::ifstream infile(modelFileNameCStr);
+    if (infile.good()) {
+        // Step 5: Convert to std::string and deserialize
+        std::string modelFileNameStdStr(modelFileNameCStr);
+        try {
+            dlib::deserialize(modelFileNameStdStr) >> sp;
+            NSLog(@"Deserialization successful.");
+            self.prepared = YES;
+        } catch (const std::exception& e) {
+            NSLog(@"Deserialization failed: %s", e.what());
+        }
+    } else {
+        NSLog(@"Failed to open the file at path: %s", modelFileNameCStr);
+    }
 }
+
 
 - (void)doWorkOnSampleBuffer:(CMSampleBufferRef)sampleBuffer inRects:(NSArray<NSValue *> *)rects {
     if (!self.prepared) {
