@@ -39,6 +39,8 @@
     try {
         dlib::deserialize(modelFileNameCString) >> sp;
         self.prepared = YES;
+        NSLog(@"DLib Wrapper Loading Completed!");
+        
     } catch (const std::exception& e) {
         NSLog(@"Deserialization failed: %s", e.what());
     }
