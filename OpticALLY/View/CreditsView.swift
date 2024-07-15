@@ -39,16 +39,7 @@ struct CreditNestedView: View {
                 .padding()
                 .background(backgroundColor)
                 .cornerRadius(20)
-            
-            // Python interpolated
-            Text("Dlib Version 19.24.4")
-                .monospaced()
-                .padding(.horizontal)
-                .padding(.top)
-                .foregroundStyle(.black)
-                .font(.caption)
-                .bold()
-            
+        
             // Python interpolated
             Text("Open3D Version\n\(o3d!.__version__.description)")
                 .monospaced()

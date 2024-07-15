@@ -3,6 +3,8 @@ import AVFoundation
 class SessionHandler: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureMetadataOutputObjectsDelegate {
     var session: AVCaptureSession
     var input: AVCaptureDeviceInput
+    var output: AVCaptureVideoDataOutput
+    
     let layer = AVSampleBufferDisplayLayer()
     let sampleQueue = DispatchQueue(label: "com.zweigraf.DisplayLiveSamples.sampleQueue", attributes: [])
     let faceQueue = DispatchQueue(label: "com.zweigraf.DisplayLiveSamples.faceQueue", attributes: [])
@@ -10,15 +12,15 @@ class SessionHandler: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AV
     
     var currentMetadata: [AnyObject]
     
-    init(session: AVCaptureSession, input: AVCaptureDeviceInput) {
+    init(session: AVCaptureSession, input: AVCaptureDeviceInput, output: AVCaptureVideoDataOutput) {
         self.session = session
         self.input = input
+        self.output = output
         self.currentMetadata = []
         super.init()
     }
     
     func openSession() {
-        let output = AVCaptureVideoDataOutput()
         output.setSampleBufferDelegate(self, queue: sampleQueue)
         
         let metaOutput = AVCaptureMetadataOutput()
@@ -35,7 +37,7 @@ class SessionHandler: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AV
 
         wrapper?.prepare()
 //        
-//        session.startRunning()
+       // session.startRunning()
     }
     
     // MARK: AVCaptureVideoDataOutputSampleBufferDelegate

@@ -217,6 +217,8 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     private let faceDetectionRequest = VNDetectFaceLandmarksRequest()
     private let faceDetectionHandler = VNSequenceRequestHandler()
     
+    private var videoDeviceInput: AVCaptureDeviceInput? = nil
+    
     private var faceGeometry: ARSCNFaceGeometry?
     private var faceNode: SCNNode?
     
@@ -748,6 +750,16 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
                                          .resetSceneReconstruction,
                                          .stopTrackedRaycasts])
         
+        let sessionHandler = SessionHandler(session: avCaptureSession, input: videoDeviceInput!, output: videoDataOutput)
+        sessionHandler.openSession()
+        
+        let layer = sessionHandler.layer
+        layer.frame = preview.bounds
+
+        preview.layer.addSublayer(layer)
+        
+        self.view.bringSubviewToFront(preview)
+        
         
         view.layoutIfNeeded()
     }
@@ -757,10 +769,10 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         
         configureARSCNView()
         configureAVCaptureSession()
-        switchSession(toARSession: true)
+        switchSession(toARSession: false) // TEMP... used to be TRUE
         
         configureCloudView()
-        addAndConfigureSwiftUIView()
+        // addAndConfigureSwiftUIView()
         
         // Configure imageView
         // configureImageView()
@@ -968,9 +980,9 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
         }
         
         do {
-            let videoDeviceInput = try AVCaptureDeviceInput(device: videoDevice)
-            if avCaptureSession.canAddInput(videoDeviceInput) {
-                avCaptureSession.addInput(videoDeviceInput)
+            self.videoDeviceInput = try AVCaptureDeviceInput(device: videoDevice)
+            if avCaptureSession.canAddInput(self.videoDeviceInput!) {
+                avCaptureSession.addInput(self.videoDeviceInput!)
             }
             
             videoDataOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA]
@@ -981,16 +993,6 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
             if avCaptureSession.canAddOutput(depthDataOutput) {
                 avCaptureSession.addOutput(depthDataOutput)
             }
-            
-            let sessionHandler = SessionHandler(session: avCaptureSession, input: videoDeviceInput)
-            sessionHandler.openSession()
-            
-            let layer = sessionHandler.layer
-            layer.frame = preview.bounds
-
-            preview.layer.addSublayer(layer)
-            
-            self.view.bringSubviewToFront(preview)
             
         } catch {
             print("Error configuring AVCaptureSession: \(error)")
@@ -1004,7 +1006,7 @@ class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelega
     }
     
     func resumeAllStreams() {
-        switchSession(toARSession: true)
+        switchSession(toARSession: false) // TEMP... used to be true
     }
     
     // MARK: - ARSession and AVCaptureSession Management
