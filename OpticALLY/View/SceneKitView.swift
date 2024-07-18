@@ -151,9 +151,9 @@ struct SceneKitUSDZView: UIViewRepresentable {
     }
     
     func updateUIView(_ uiView: SCNView, context: Context) {
-        guard let faceAnchor = cameraViewController.faceAnchor else { return }
-        let faceTransform = SCNMatrix4(faceAnchor.transform)
-        uiView.scene?.rootNode.childNodes.first?.transform = faceTransform
+//        guard let faceAnchor = cameraViewController.faceAnchor else { return }
+//        let faceTransform = SCNMatrix4(faceAnchor.transform)
+//        uiView.scene?.rootNode.childNodes.first?.transform = faceTransform
     }
 }
 
