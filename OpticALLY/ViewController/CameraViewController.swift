@@ -167,10 +167,8 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         if !currentMetadata.isEmpty {
             let boundsArray = currentMetadata
                 .compactMap { $0 as? AVMetadataFaceObject }
-                .map { (faceObject) -> NSValue in
-                    let convertedObject = output.transformedMetadataObject(for: faceObject, connection: connection)
-                    return NSValue(cgRect: convertedObject!.bounds)
-            }
+                .map { NSValue(cgRect: $0.bounds) }
+            
             print("GOTTA DO WORK")
             wrapper?.doWork(on: sampleBuffer, inRects: boundsArray)
         }
