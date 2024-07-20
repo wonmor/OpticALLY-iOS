@@ -149,8 +149,6 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         let settings: [AnyHashable: Any] = [kCVPixelBufferPixelFormatTypeKey as AnyHashable: Int(kCVPixelFormatType_32BGRA)]
         output.videoSettings = settings as! [String : Any]
         
-
-
         // availableMetadataObjectTypes change when output is added to session.
         // before it is added, availableMetadataObjectTypes is empty
         metaOutput.metadataObjectTypes = [AVMetadataObject.ObjectType.face]
@@ -169,7 +167,6 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
                 .compactMap { $0 as? AVMetadataFaceObject }
                 .map { NSValue(cgRect: $0.bounds) }
             
-            print("GOTTA DO WORK")
             wrapper?.doWork(on: sampleBuffer, inRects: boundsArray)
         }
         
@@ -183,7 +180,6 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     // MARK: AVCaptureMetadataOutputObjectsDelegate
     
     func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
-        print("METADATA RUNNING")
         currentMetadata = metadataObjects as [AnyObject]
     }
     
