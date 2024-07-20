@@ -178,6 +178,7 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     
     func captureOutput(_ output: AVCaptureOutput, didDrop sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         print("DidDropSampleBuffer")
+        connection.videoOrientation = AVCaptureVideoOrientation.portrait
     }
     
     // MARK: AVCaptureMetadataOutputObjectsDelegate

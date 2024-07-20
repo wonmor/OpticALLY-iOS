@@ -128,10 +128,10 @@
 }
 
 + (dlib::rectangle)convertScaleCGRect:(CGRect)rect toDlibRectacleWithImageSize:(CGSize)size {
-    long left = rect.origin.x * size.width;
-    long top = rect.origin.y * size.height;
-    long right = (rect.origin.x + rect.size.width) * size.width;
-    long bottom = (rect.origin.y + rect.size.height) * size.height;
+    long right = (1.0 - rect.origin.y ) * size.width;
+    long left = right - rect.size.height * size.width;
+    long top = rect.origin.x * size.height;
+    long bottom = top + rect.size.width * size.height;
     
     dlib::rectangle dlibRect(left, top, right, bottom);
     return dlibRect;
