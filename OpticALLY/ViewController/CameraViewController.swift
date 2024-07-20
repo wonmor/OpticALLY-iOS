@@ -131,7 +131,7 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         
         let metaOutput = AVCaptureMetadataOutput()
         metaOutput.setMetadataObjectsDelegate(self, queue: faceQueue)
-    
+
         session.beginConfiguration()
         
         if session.canAddInput(input) {
@@ -148,20 +148,22 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         
         let settings: [AnyHashable: Any] = [kCVPixelBufferPixelFormatTypeKey as AnyHashable: Int(kCVPixelFormatType_32BGRA)]
         output.videoSettings = settings as! [String : Any]
-    
+        
+
+
         // availableMetadataObjectTypes change when output is added to session.
         // before it is added, availableMetadataObjectTypes is empty
         metaOutput.metadataObjectTypes = [AVMetadataObject.ObjectType.face]
         
         wrapper?.prepare()
-        
+        session.sessionPreset = AVCaptureSession.Preset.vga640x480
         session.startRunning()
-//
-        
     }
-    
+
     // MARK: AVCaptureVideoDataOutputSampleBufferDelegate
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+        //connection.videoOrientation = AVCaptureVideoOrientation.portrait
+        
         if !currentMetadata.isEmpty {
             let boundsArray = currentMetadata
                 .compactMap { $0 as? AVMetadataFaceObject }
@@ -172,7 +174,7 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             print("GOTTA DO WORK")
             wrapper?.doWork(on: sampleBuffer, inRects: boundsArray)
         }
-
+        
         layer.enqueue(sampleBuffer)
     }
     
@@ -528,7 +530,7 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         startAVCaptureSession()
         
         configureCloudView()
-        addAndConfigureSwiftUIView()
+        //addAndConfigureSwiftUIView()
         
         // Configure imageView
         // configureImageView()
@@ -536,10 +538,13 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         setupEyeNode()
         
        openSession()
+        
     
         layer.frame = preview.bounds
 
         preview.layer.addSublayer(layer)
+        preview.transform = CGAffineTransformMakeRotation(CGFloat(Double.pi))
+        preview.transform = CGAffineTransformScale(preview.transform, 1, -1)
         
         self.view.bringSubviewToFront(preview)
         
@@ -674,6 +679,9 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     
     func dataOutputSynchronizer(_ synchronizer: AVCaptureDataOutputSynchronizer,
                                 didOutput synchronizedDataCollection: AVCaptureSynchronizedDataCollection) {
+        
+        print("DATA OUTPUT SYNC")
+        
         // Read all outputs
         guard ExternalData.renderingEnabled,
               let syncedDepthData: AVCaptureSynchronizedDepthData =
