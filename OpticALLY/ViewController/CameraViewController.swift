@@ -119,43 +119,54 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     var session = AVCaptureSession()
     
     func openSession() {
-        let device = AVCaptureDevice.devices(for: AVMediaType.video)
-            .map { $0 }
-            .filter { $0.position == .front}
-            .first!
+        // Use AVCaptureDeviceDiscoverySession to find the front camera
+        let discoverySession = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera], mediaType: .video, position: .front)
         
-        let input = try! AVCaptureDeviceInput(device: device)
-      
-        let output = AVCaptureVideoDataOutput()
-        output.setSampleBufferDelegate(self, queue: sampleQueue)
+        guard let device = discoverySession.devices.first else {
+            print("No front camera found.")
+            return
+        }
         
-        let metaOutput = AVCaptureMetadataOutput()
-        metaOutput.setMetadataObjectsDelegate(self, queue: faceQueue)
+        do {
+            let input = try AVCaptureDeviceInput(device: device)
+          
+            let output = AVCaptureVideoDataOutput()
+            output.setSampleBufferDelegate(self, queue: sampleQueue)
+            
+            let metaOutput = AVCaptureMetadataOutput()
+            metaOutput.setMetadataObjectsDelegate(self, queue: faceQueue)
 
-        session.beginConfiguration()
-        
-        if session.canAddInput(input) {
-            session.addInput(input)
+            session.beginConfiguration()
+            
+            if session.canAddInput(input) {
+                session.addInput(input)
+            }
+            if session.canAddOutput(output) {
+                session.addOutput(output)
+            }
+            if session.canAddOutput(metaOutput) {
+                session.addOutput(metaOutput)
+            }
+            
+            session.commitConfiguration()
+            
+            let settings: [AnyHashable: Any] = [kCVPixelBufferPixelFormatTypeKey as AnyHashable: Int(kCVPixelFormatType_32BGRA)]
+            output.videoSettings = settings as! [String : Any]
+            
+            // availableMetadataObjectTypes change when output is added to session.
+            // before it is added, availableMetadataObjectTypes is empty
+            metaOutput.metadataObjectTypes = [AVMetadataObject.ObjectType.face]
+            
+            wrapper?.prepare()
+            session.sessionPreset = AVCaptureSession.Preset.vga640x480
+            
+            // Start the session on a background thread
+            DispatchQueue.global(qos: .userInitiated).async {
+                self.session.startRunning()
+            }
+        } catch {
+            print("Error configuring AVCaptureSession: \(error)")
         }
-        if session.canAddOutput(output) {
-            session.addOutput(output)
-        }
-        if session.canAddOutput(metaOutput) {
-            session.addOutput(metaOutput)
-        }
-        
-        session.commitConfiguration()
-        
-        let settings: [AnyHashable: Any] = [kCVPixelBufferPixelFormatTypeKey as AnyHashable: Int(kCVPixelFormatType_32BGRA)]
-        output.videoSettings = settings as! [String : Any]
-        
-        // availableMetadataObjectTypes change when output is added to session.
-        // before it is added, availableMetadataObjectTypes is empty
-        metaOutput.metadataObjectTypes = [AVMetadataObject.ObjectType.face]
-        
-        wrapper?.prepare()
-        session.sessionPreset = AVCaptureSession.Preset.vga640x480
-        session.startRunning()
     }
 
     // MARK: AVCaptureVideoDataOutputSampleBufferDelegate
