@@ -4,6 +4,7 @@
 
 #include <dlib/image_processing.h>
 #include <dlib/image_io.h>
+#include <opencv2/opencv.hpp>
 
 @implementation DlibWrapper {
     dlib::shape_predictor sp;
@@ -84,7 +85,7 @@
         // detect all landmarks
         dlib::full_object_detection shape = sp(img, oneFaceRect);
         
-        // Print specific landmarks
+        // Extract specific landmarks
         dlib::point noseTip = shape.part(30);
         dlib::point chin = shape.part(8);
         dlib::point leftEyeLeftCorner = shape.part(36);
@@ -92,14 +93,6 @@
         dlib::point leftMouthCorner = shape.part(48);
         dlib::point rightMouthCorner = shape.part(54);
 
-        NSLog(@"Nose Tip: (%ld, %ld)", noseTip.x(), noseTip.y());
-        NSLog(@"Chin: (%ld, %ld)", chin.x(), chin.y());
-        NSLog(@"Left Eye Left Corner: (%ld, %ld)", leftEyeLeftCorner.x(), leftEyeLeftCorner.y());
-        NSLog(@"Right Eye Right Corner: (%ld, %ld)", rightEyeRightCorner.x(), rightEyeRightCorner.y());
-        NSLog(@"Left Mouth Corner: (%ld, %ld)", leftMouthCorner.x(), leftMouthCorner.y());
-        NSLog(@"Right Mouth Corner: (%ld, %ld)", rightMouthCorner.x(), rightMouthCorner.y());
-
-        // TO DO: Handle case where face is not visible within the bound of the camera view
         // Extract depth information for landmarks
         float noseDepth = depthDataPointer[noseTip.y() * width + noseTip.x()];
         float chinDepth = depthDataPointer[chin.y() * width + chin.x()];
@@ -108,18 +101,69 @@
         float leftMouthDepth = depthDataPointer[leftMouthCorner.y() * width + leftMouthCorner.x()];
         float rightMouthDepth = depthDataPointer[rightMouthCorner.y() * width + rightMouthCorner.x()];
 
-        NSLog(@"Nose Depth: %f", noseDepth);
-        NSLog(@"Chin Depth: %f", chinDepth);
-        NSLog(@"Left Eye Depth: %f", leftEyeDepth);
-        NSLog(@"Right Eye Depth: %f", rightEyeDepth);
-        NSLog(@"Left Mouth Depth: %f", leftMouthDepth);
-        NSLog(@"Right Mouth Depth: %f", rightMouthDepth);
+        // Print the coordinates and depths
+        NSLog(@"Nose Tip: (%ld, %ld) Depth: %f", noseTip.x(), noseTip.y(), noseDepth);
+        NSLog(@"Chin: (%ld, %ld) Depth: %f", chin.x(), chin.y(), chinDepth);
+        NSLog(@"Left Eye Left Corner: (%ld, %ld) Depth: %f", leftEyeLeftCorner.x(), leftEyeLeftCorner.y(), leftEyeDepth);
+        NSLog(@"Right Eye Right Corner: (%ld, %ld) Depth: %f", rightEyeRightCorner.x(), rightEyeRightCorner.y(), rightEyeDepth);
+        NSLog(@"Left Mouth Corner: (%ld, %ld) Depth: %f", leftMouthCorner.x(), leftMouthCorner.y(), leftMouthDepth);
+        NSLog(@"Right Mouth Corner: (%ld, %ld) Depth: %f", rightMouthCorner.x(), rightMouthCorner.y(), rightMouthDepth);
 
-        // and draw them into the image (samplebuffer)
+        // Draw landmarks onto the image
         for (unsigned long k = 0; k < shape.num_parts(); k++) {
             dlib::point p = shape.part(k);
             draw_solid_circle(img, p, 3, dlib::rgb_pixel(0, 255, 255));
         }
+
+        // OpenCV head pose estimation
+        cv::Mat cvImg(height, width, CV_8UC4, baseBuffer);
+        cv::cvtColor(cvImg, cvImg, cv::COLOR_BGRA2BGR);
+        
+        std::vector<cv::Point2d> image_points;
+        image_points.push_back(cv::Point2d(noseTip.x(), noseTip.y()));    // Nose tip
+        image_points.push_back(cv::Point2d(chin.x(), chin.y()));          // Chin
+        image_points.push_back(cv::Point2d(leftEyeLeftCorner.x(), leftEyeLeftCorner.y()));    // Left eye left corner
+        image_points.push_back(cv::Point2d(rightEyeRightCorner.x(), rightEyeRightCorner.y()));    // Right eye right corner
+        image_points.push_back(cv::Point2d(leftMouthCorner.x(), leftMouthCorner.y()));    // Left Mouth corner
+        image_points.push_back(cv::Point2d(rightMouthCorner.x(), rightMouthCorner.y()));    // Right mouth corner
+
+        std::vector<cv::Point3d> model_points;
+        model_points.push_back(cv::Point3d(noseTip.x(), noseTip.y(), noseDepth));    // Nose tip
+        model_points.push_back(cv::Point3d(chin.x(), chin.y(), chinDepth));          // Chin
+        model_points.push_back(cv::Point3d(leftEyeLeftCorner.x(), leftEyeLeftCorner.y(), leftEyeDepth));    // Left eye left corner
+        model_points.push_back(cv::Point3d(rightEyeRightCorner.x(), rightEyeRightCorner.y(), rightEyeDepth));    // Right eye right corner
+        model_points.push_back(cv::Point3d(leftMouthCorner.x(), leftMouthCorner.y(), leftMouthDepth));    // Left Mouth corner
+        model_points.push_back(cv::Point3d(rightMouthCorner.x(), rightMouthCorner.y(), rightMouthDepth));    // Right mouth corner
+
+        double focal_length = cvImg.cols;
+        cv::Point2d center = cv::Point2d(cvImg.cols / 2, cvImg.rows / 2);
+        cv::Mat camera_matrix = (cv::Mat_<double>(3, 3) << focal_length, 0, center.x, 0, focal_length, center.y, 0, 0, 1);
+        cv::Mat dist_coeffs = cv::Mat::zeros(4, 1, cv::DataType<double>::type); // Assuming no lens distortion
+
+        cv::Mat rotation_vector;
+        cv::Mat translation_vector;
+
+        cv::solvePnP(model_points, image_points, camera_matrix, dist_coeffs, rotation_vector, translation_vector);
+
+        // Project a 3D point (0, 0, 1000.0) onto the image plane.
+        std::vector<cv::Point3d> nose_end_point3D;
+        std::vector<cv::Point2d> nose_end_point2D;
+        nose_end_point3D.push_back(cv::Point3d(0, 0, 1000.0));
+        
+        cv::projectPoints(nose_end_point3D, rotation_vector, translation_vector, camera_matrix, dist_coeffs, nose_end_point2D);
+        
+        for (int i = 0; i < image_points.size(); i++) {
+            cv::circle(cvImg, image_points[i], 3, cv::Scalar(0,0,255), -1);
+        }
+        
+        cv::line(cvImg, image_points[0], nose_end_point2D[0], cv::Scalar(255,0,0), 2);
+
+        // Print rotation and translation vectors
+        NSLog(@"Rotation Vector: [%f, %f, %f]", rotation_vector.at<double>(0), rotation_vector.at<double>(1), rotation_vector.at<double>(2));
+        NSLog(@"Translation Vector: [%f, %f, %f]", translation_vector.at<double>(0), translation_vector.at<double>(1), translation_vector.at<double>(2));
+
+        // Print nose end point
+        NSLog(@"Nose End Point 2D: [%f, %f]", nose_end_point2D[0].x, nose_end_point2D[0].y);
     }
     
     // unlock depth buffer
