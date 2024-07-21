@@ -336,12 +336,17 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     private func processFrameAV(depthData: AVDepthData, imageData: CVImageBuffer) {
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self = self else { return }
-            let depthPixelBuffer = depthData.depthDataMap
+            
+            var depthDataToUse = depthData
+            
+            depthDataToUse = depthData.converting(toDepthDataType: kCVPixelFormatType_DepthFloat32)
+            
+            let depthPixelBuffer = depthDataToUse.depthDataMap
             
             let depthWidth = CVPixelBufferGetWidth(depthPixelBuffer)
             let depthHeight = CVPixelBufferGetHeight(depthPixelBuffer)
             
-            let colorPixelBuffer = resizePixelBuffer(imageData, width: depthWidth, height: depthHeight)
+            let colorPixelBuffer = self.resizePixelBuffer(imageData, width: depthWidth, height: depthHeight)
             
             CVPixelBufferLockBaseAddress(depthPixelBuffer, .readOnly)
             CVPixelBufferLockBaseAddress(colorPixelBuffer!, .readOnly)
@@ -359,22 +364,24 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             let colorBytesPerRow = CVPixelBufferGetBytesPerRow(colorPixelBuffer!)
             
             let depthPixelFormatType = CVPixelBufferGetPixelFormatType(depthPixelBuffer)
-            var depthBytesPerPixel: Int = 0 // Initialize with zero
             
             // Convert depthPixelFormatType to a string
-                    let depthPixelFormatTypeString = FourCharCodeToString(depthPixelFormatType)
-                    print("Depth Pixel Format Type: \(depthPixelFormatTypeString)")  // Log the pixel format type
+            let depthPixelFormatTypeString = FourCharCodeToString(depthPixelFormatType)
+            print("Depth Pixel Format Type: \(depthPixelFormatTypeString)")  // Log the pixel format type
+            
+            var depthBytesPerPixel: Int = 0 // Initialize with zero
             
             switch depthPixelFormatType {
             case kCVPixelFormatType_DepthFloat32:
                 depthBytesPerPixel = 4
             case kCVPixelFormatType_DepthFloat16:
                 depthBytesPerPixel = 2
-                // Add more cases as necessary for different formats
             default:
-                print("Unsupported depth pixel format type")
+                print("Unsupported depth pixel format type: \(depthPixelFormatTypeString)")
                 return
             }
+            
+            print("depthBytesPerPixel: \(depthBytesPerPixel)")
             
             // Ensure that you're iterating within the bounds of both buffers
             let commonWidth = min(colorWidth, depthWidth)
@@ -384,33 +391,33 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             let colorBaseAddress = CVPixelBufferGetBaseAddress(colorPixelBuffer!)!.assumingMemoryBound(to: UInt8.self)
             
             let metadata = PointCloudMetadata(
-                yaw: Double(previewYaws.last ?? 0.0),
-                pitch: Double(previewRolls.last ?? 0.0),
-                roll: Double(previewPitches.last ?? 0.0),
-                leftEyePosition: leftEyePosition,
-                rightEyePosition: rightEyePosition,
-                chinPosition: chinPosition,
-                leftEyePosition3D: leftEyePosition3D,
-                rightEyePosition3D: rightEyePosition3D,
-                chinPosition3D: chinPosition3D,
+                yaw: Double(self.previewYaws.last ?? 0.0),
+                pitch: Double(self.previewRolls.last ?? 0.0),
+                roll: Double(self.previewPitches.last ?? 0.0),
+                leftEyePosition: self.leftEyePosition,
+                rightEyePosition: self.rightEyePosition,
+                chinPosition: self.chinPosition,
+                leftEyePosition3D: self.leftEyePosition3D,
+                rightEyePosition3D: self.rightEyePosition3D,
+                chinPosition3D: self.chinPosition3D,
                 image: imageData,
-                depth: depthData
+                depth: depthDataToUse
             )
             
             ExternalData.pointCloudDataArray.append(metadata)
             
             // Call the point cloud creation function
             ExternalData.convertToSceneKitModel(
-                depthData: depthData,
+                depthData: depthDataToUse,
                 colorPixelBuffer: colorPixelBuffer!,
                 colorData: colorBaseAddress,
                 metadata: metadata,
                 width: commonWidth,
                 height: commonHeight,
                 bytesPerRow: colorBytesPerRow, // Use the correct bytes per row for color data,
-                scaleX: scaleX,
-                scaleY: scaleY,
-                scaleZ: scaleZ
+                scaleX: self.scaleX,
+                scaleY: self.scaleY,
+                scaleZ: self.scaleZ
             )
         }
     }
@@ -717,8 +724,7 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             return
         }
         
-        // TEMP REVERSAL OF THE LOGIC...
-        if !ExternalData.isSavingFileAsPLY {
+        if ExternalData.isSavingFileAsPLY {
             processFrameAV(depthData: depthData, imageData: videoPixelBuffer)
             
             // Set cloudView to empty depth data and texture
