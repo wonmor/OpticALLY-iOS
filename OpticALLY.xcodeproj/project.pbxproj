@@ -63,7 +63,6 @@
 		9680F7DD2B22D6FD00F38A6F /* ARFaceTrackingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9680F7DC2B22D6FD00F38A6F /* ARFaceTrackingView.swift */; };
 		969AC2802AB7550C0096892E /* IntroductionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 969AC27F2AB7550C0096892E /* IntroductionView.swift */; };
 		969AC2822AB7554C0096892E /* Extensions+Modifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 969AC2812AB7554C0096892E /* Extensions+Modifiers.swift */; };
-		969C3F6E2C412B4A0088C077 /* SessionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 969C3F6D2C412B4A0088C077 /* SessionHandler.swift */; };
 		969C3F6F2C420A780088C077 /* shape_predictor_68_face_landmarks.dat in Resources */ = {isa = PBXBuildFile; fileRef = 96D59E7D2C3AA55C00A79563 /* shape_predictor_68_face_landmarks.dat */; };
 		969E42EE2ADC9D9E00E77BA7 /* promo.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 969E42ED2ADC9D9E00E77BA7 /* promo.mp4 */; };
 		969E42EF2ADC9D9E00E77BA7 /* promo.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 969E42ED2ADC9D9E00E77BA7 /* promo.mp4 */; };
@@ -199,7 +198,6 @@
 		968994C82C259ACD0092FC05 /* tinyndarray.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = tinyndarray.h; sourceTree = "<group>"; };
 		969AC27F2AB7550C0096892E /* IntroductionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroductionView.swift; sourceTree = "<group>"; };
 		969AC2812AB7554C0096892E /* Extensions+Modifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Extensions+Modifiers.swift"; sourceTree = "<group>"; };
-		969C3F6D2C412B4A0088C077 /* SessionHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionHandler.swift; sourceTree = "<group>"; };
 		969DF1C62B12916900FA9ABE /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		969E42ED2ADC9D9E00E77BA7 /* promo.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = promo.mp4; sourceTree = "<group>"; };
 		96A29DDE2C4B91110063C0D0 /* CameraPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPreview.swift; sourceTree = "<group>"; };
@@ -394,7 +392,6 @@
 				96491C5E2AFD746300FD3666 /* ConsoleOutputCatcher.swift */,
 				96B64F722B3D90490003E06D /* ScnMatrix.swift */,
 				96A29DDE2C4B91110063C0D0 /* CameraPreview.swift */,
-				969C3F6D2C412B4A0088C077 /* SessionHandler.swift */,
 				969AC2812AB7554C0096892E /* Extensions+Modifiers.swift */,
 				96E856C92B7045510037C3BB /* SceneKitPreview.swift */,
 				9680F7DA2B2283B200F38A6F /* CapturedImageSampler.swift */,
@@ -758,7 +755,6 @@
 				9679F8CF2AD0907A00686F13 /* VideoMixer.swift in Sources */,
 				9679F8D22AD0907A00686F13 /* Mixer.metal in Sources */,
 				967EE0652AAE06FB000C4D5F /* OpticALLYApp.swift in Sources */,
-				969C3F6E2C412B4A0088C077 /* SessionHandler.swift in Sources */,
 				96795D6E2B7FE786003A5192 /* ParsePLY.swift in Sources */,
 				96E856BB2B6EFFE00037C3BB /* PreviousScanView.swift in Sources */,
 				9679F8D92AD0907A00686F13 /* PointCloud.metal in Sources */,

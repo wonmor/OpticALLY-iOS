@@ -1,23 +1,15 @@
 #import "DlibWrapper.h"
 #import <UIKit/UIKit.h>
+#import <AVFoundation/AVFoundation.h>
 
 #include <dlib/image_processing.h>
 #include <dlib/image_io.h>
 
-@interface DlibWrapper ()
-
-@property (assign) BOOL prepared;
-
-+ (dlib::rectangle)convertScaleCGRect:(CGRect)rect toDlibRectacleWithImageSize:(CGSize)size;
-+ (std::vector<dlib::rectangle>)convertCGRectValueArray:(NSArray<NSValue *> *)rects toVectorWithImageSize:(CGSize)size;
-
-@end
 @implementation DlibWrapper {
     dlib::shape_predictor sp;
 }
 
-
--(instancetype)init {
+- (instancetype)init {
     self = [super init];
     if (self) {
         _prepared = NO;
@@ -35,8 +27,7 @@
     self.prepared = YES;
 }
 
--(void)doWorkOnSampleBuffer:(CMSampleBufferRef)sampleBuffer inRects:(NSArray<NSValue *> *)rects {
-    
+- (void)doWorkOnSampleBuffer:(CMSampleBufferRef)sampleBuffer inRects:(NSArray<NSValue *> *)rects withDepthData:(AVDepthData *)depthData {
     if (!self.prepared) {
         [self prepare];
     }
@@ -65,8 +56,6 @@
         char b = baseBuffer[bufferLocation];
         char g = baseBuffer[bufferLocation + 1];
         char r = baseBuffer[bufferLocation + 2];
-        //        we do not need this
-        //        char a = baseBuffer[bufferLocation + 3];
         
         dlib::bgr_pixel newpixel(b, g, r);
         pixel = newpixel;
@@ -81,6 +70,11 @@
     
     // convert the face bounds list to dlib format
     std::vector<dlib::rectangle> convertedRectangles = [DlibWrapper convertCGRectValueArray:rects toVectorWithImageSize:imageSize];
+    
+    // Get depth data if available
+    CVPixelBufferRef depthPixelBuffer = depthData.depthDataMap;
+    CVPixelBufferLockBaseAddress(depthPixelBuffer, kCVPixelBufferLock_ReadOnly);
+    float *depthDataPointer = (float *)CVPixelBufferGetBaseAddress(depthPixelBuffer);
     
     // for every detected face
     for (unsigned long j = 0; j < convertedRectangles.size(); ++j)
@@ -105,6 +99,21 @@
         NSLog(@"Left Mouth Corner: (%ld, %ld)", leftMouthCorner.x(), leftMouthCorner.y());
         NSLog(@"Right Mouth Corner: (%ld, %ld)", rightMouthCorner.x(), rightMouthCorner.y());
 
+        // Extract depth information for landmarks
+        float noseDepth = depthDataPointer[noseTip.y() * width + noseTip.x()];
+        float chinDepth = depthDataPointer[chin.y() * width + chin.x()];
+        float leftEyeDepth = depthDataPointer[leftEyeLeftCorner.y() * width + leftEyeLeftCorner.x()];
+        float rightEyeDepth = depthDataPointer[rightEyeRightCorner.y() * width + rightEyeRightCorner.x()];
+        float leftMouthDepth = depthDataPointer[leftMouthCorner.y() * width + leftMouthCorner.x()];
+        float rightMouthDepth = depthDataPointer[rightMouthCorner.y() * width + rightMouthCorner.x()];
+
+        NSLog(@"Nose Depth: %f", noseDepth);
+        NSLog(@"Chin Depth: %f", chinDepth);
+        NSLog(@"Left Eye Depth: %f", leftEyeDepth);
+        NSLog(@"Right Eye Depth: %f", rightEyeDepth);
+        NSLog(@"Left Mouth Depth: %f", leftMouthDepth);
+        NSLog(@"Right Mouth Depth: %f", rightMouthDepth);
+
         // and draw them into the image (samplebuffer)
         for (unsigned long k = 0; k < shape.num_parts(); k++) {
             dlib::point p = shape.part(k);
@@ -112,6 +121,9 @@
         }
     }
     
+    // unlock depth buffer
+    CVPixelBufferUnlockBaseAddress(depthPixelBuffer, kCVPixelBufferLock_ReadOnly);
+
     // lets put everything back where it belongs
     CVPixelBufferLockBaseAddress(imageBuffer, 0);
 
@@ -126,8 +138,6 @@
         baseBuffer[bufferLocation] = pixel.blue;
         baseBuffer[bufferLocation + 1] = pixel.green;
         baseBuffer[bufferLocation + 2] = pixel.red;
-        //        we do not need this
-        //        char a = baseBuffer[bufferLocation + 3];
         
         position++;
     }

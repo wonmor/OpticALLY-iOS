@@ -160,7 +160,7 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             // before it is added, availableMetadataObjectTypes is empty
             metaOutput.metadataObjectTypes = [AVMetadataObject.ObjectType.face]
             
-            wrapper?.prepare()
+            wrapper.prepare()
             session.sessionPreset = AVCaptureSession.Preset.vga640x480
             
             print("Session configured!")
@@ -705,7 +705,16 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         
         // Process video sample buffer
             let sampleBuffer = syncedVideoData.sampleBuffer
-            
+        
+        // Process depth data and video pixel buffer
+        let depthData = syncedDepthData.depthData
+        guard let videoPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
+            return
+        }
+        
+        var depthDataToUse = depthData
+        
+        depthDataToUse = depthData.converting(toDepthDataType: kCVPixelFormatType_DepthFloat32)
         
         // Process metadata
         if !currentMetadata.isEmpty {
@@ -713,16 +722,11 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
                 .compactMap { $0 as? AVMetadataFaceObject }
                 .map { NSValue(cgRect: $0.bounds) }
             
-            wrapper?.doWork(on: sampleBuffer, inRects: boundsArray)
+            wrapper.doWork(on: sampleBuffer, inRects: boundsArray, with: depthDataToUse)
         }
         
         layer.enqueue(sampleBuffer)
-        
-        // Process depth data and video pixel buffer
-        let depthData = syncedDepthData.depthData
-        guard let videoPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
-            return
-        }
+
         
         if ExternalData.isSavingFileAsPLY {
             processFrameAV(depthData: depthData, imageData: videoPixelBuffer)
