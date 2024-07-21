@@ -138,7 +138,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		9608596E2C4AE09F0001F94D /* DlibWrapperDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlibWrapperDelegate.h; sourceTree = "<group>"; };
 		9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = RobotoSlab.ttf; sourceTree = "<group>"; };
 		961D67E22B12BDFC00DBB883 /* SceneKitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneKitView.swift; sourceTree = "<group>"; };
 		961D67E42B12C64A00DBB883 /* CreditsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditsView.swift; sourceTree = "<group>"; };
@@ -417,7 +416,6 @@
 				96E8A65A2BEC480500CCBC18 /* EigenWrapper.h */,
 				96D59E7B2C3AA54200A79563 /* DlibWrapper.h */,
 				96D59E7A2C3AA54200A79563 /* DlibWrapper.mm */,
-				9608596E2C4AE09F0001F94D /* DlibWrapperDelegate.h */,
 				96E8A65B2BEC480500CCBC18 /* EigenWrapper.mm */,
 				96E8A6672BED575C00CCBC18 /* ImageDepthBridge.h */,
 				96E8A6742BED634E00CCBC18 /* PointCloudProcessingBridge.h */,
