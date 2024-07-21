@@ -99,6 +99,7 @@
         NSLog(@"Left Mouth Corner: (%ld, %ld)", leftMouthCorner.x(), leftMouthCorner.y());
         NSLog(@"Right Mouth Corner: (%ld, %ld)", rightMouthCorner.x(), rightMouthCorner.y());
 
+        // TO DO: Handle case where face is not visible within the bound of the camera view
         // Extract depth information for landmarks
         float noseDepth = depthDataPointer[noseTip.y() * width + noseTip.x()];
         float chinDepth = depthDataPointer[chin.y() * width + chin.x()];
