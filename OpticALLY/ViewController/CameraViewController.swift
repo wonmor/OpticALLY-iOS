@@ -361,6 +361,10 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             let depthPixelFormatType = CVPixelBufferGetPixelFormatType(depthPixelBuffer)
             var depthBytesPerPixel: Int = 0 // Initialize with zero
             
+            // Convert depthPixelFormatType to a string
+                    let depthPixelFormatTypeString = FourCharCodeToString(depthPixelFormatType)
+                    print("Depth Pixel Format Type: \(depthPixelFormatTypeString)")  // Log the pixel format type
+            
             switch depthPixelFormatType {
             case kCVPixelFormatType_DepthFloat32:
                 depthBytesPerPixel = 4
@@ -409,6 +413,17 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
                 scaleZ: scaleZ
             )
         }
+    }
+    
+    // Function to convert FourCharCode to String
+    func FourCharCodeToString(_ code: FourCharCode) -> String {
+        let bytes: [UInt8] = [
+            UInt8((code >> 24) & 0xff),
+            UInt8((code >> 16) & 0xff),
+            UInt8((code >> 8) & 0xff),
+            UInt8(code & 0xff)
+        ]
+        return String(bytes: bytes, encoding: .ascii) ?? "????"
     }
     
     func drawEyePositionsOnImage(image: UIImage, leftEyePosition: CGPoint, rightEyePosition: CGPoint) -> UIImage? {
@@ -702,7 +717,8 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             return
         }
         
-        if ExternalData.isSavingFileAsPLY {
+        // TEMP REVERSAL OF THE LOGIC...
+        if !ExternalData.isSavingFileAsPLY {
             processFrameAV(depthData: depthData, imageData: videoPixelBuffer)
             
             // Set cloudView to empty depth data and texture
