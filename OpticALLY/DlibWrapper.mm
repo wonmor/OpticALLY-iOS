@@ -90,6 +90,21 @@
         // detect all landmarks
         dlib::full_object_detection shape = sp(img, oneFaceRect);
         
+        // Print specific landmarks
+        dlib::point noseTip = shape.part(30);
+        dlib::point chin = shape.part(8);
+        dlib::point leftEyeLeftCorner = shape.part(36);
+        dlib::point rightEyeRightCorner = shape.part(45);
+        dlib::point leftMouthCorner = shape.part(48);
+        dlib::point rightMouthCorner = shape.part(54);
+
+        NSLog(@"Nose Tip: (%ld, %ld)", noseTip.x(), noseTip.y());
+        NSLog(@"Chin: (%ld, %ld)", chin.x(), chin.y());
+        NSLog(@"Left Eye Left Corner: (%ld, %ld)", leftEyeLeftCorner.x(), leftEyeLeftCorner.y());
+        NSLog(@"Right Eye Right Corner: (%ld, %ld)", rightEyeRightCorner.x(), rightEyeRightCorner.y());
+        NSLog(@"Left Mouth Corner: (%ld, %ld)", leftMouthCorner.x(), leftMouthCorner.y());
+        NSLog(@"Right Mouth Corner: (%ld, %ld)", rightMouthCorner.x(), rightMouthCorner.y());
+
         // and draw them into the image (samplebuffer)
         for (unsigned long k = 0; k < shape.num_parts(); k++) {
             dlib::point p = shape.part(k);

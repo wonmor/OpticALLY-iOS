@@ -57,7 +57,7 @@ private let fillMesh = true
 
 class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDelegate, ObservableObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureMetadataOutputObjectsDelegate {
     var contentNode: SCNNode?
-
+    
     // MARK: - Properties
     @Published var currentImage: UIImage!
     @Published var faceDistance: Int?
@@ -85,9 +85,8 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     
     var currentMetadata: [AnyObject] = []
     
-    @Published var avCaptureSession: AVCaptureSession = AVCaptureSession()
     private var outputSynchronizer: AVCaptureDataOutputSynchronizer?
-    @Published var videoDataOutput = AVCaptureVideoDataOutput()
+    private var output = AVCaptureVideoDataOutput()
     private var depthDataOutput = AVCaptureDepthDataOutput()
     
     private var previewYaws: [Float] = []
@@ -100,7 +99,7 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     private var synchronizedDepthData: AVDepthData?
     private var synchronizedVideoPixelBuffer: CVPixelBuffer?
     
-    private var videoDeviceInput: AVCaptureDeviceInput? = nil
+    private var input: AVCaptureDeviceInput? = nil
     
     private var scaleX: Float = 1.0
     private var scaleY: Float = 1.0
@@ -120,7 +119,7 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     
     func openSession() {
         // Use AVCaptureDeviceDiscoverySession to find the front camera
-        let discoverySession = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera], mediaType: .video, position: .front)
+        let discoverySession = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInTrueDepthCamera], mediaType: .video, position: .front)
         
         guard let device = discoverySession.devices.first else {
             print("No front camera found.")
@@ -128,18 +127,18 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         }
         
         do {
-            let input = try AVCaptureDeviceInput(device: device)
-          
-            let output = AVCaptureVideoDataOutput()
+            input = try AVCaptureDeviceInput(device: device)
+            
+            output = AVCaptureVideoDataOutput()
             output.setSampleBufferDelegate(self, queue: sampleQueue)
             
             let metaOutput = AVCaptureMetadataOutput()
             metaOutput.setMetadataObjectsDelegate(self, queue: faceQueue)
-
+            
             session.beginConfiguration()
             
-            if session.canAddInput(input) {
-                session.addInput(input)
+            if session.canAddInput(input!) {
+                session.addInput(input!)
             }
             if session.canAddOutput(output) {
                 session.addOutput(output)
@@ -148,10 +147,14 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
                 session.addOutput(metaOutput)
             }
             
+            if session.canAddOutput(depthDataOutput) {
+                session.addOutput(depthDataOutput)
+            }
+            
             session.commitConfiguration()
             
             let settings: [AnyHashable: Any] = [kCVPixelBufferPixelFormatTypeKey as AnyHashable: Int(kCVPixelFormatType_32BGRA)]
-            output.videoSettings = settings as! [String : Any]
+            output.videoSettings = settings as? [String : Any]
             
             // availableMetadataObjectTypes change when output is added to session.
             // before it is added, availableMetadataObjectTypes is empty
@@ -159,6 +162,8 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             
             wrapper?.prepare()
             session.sessionPreset = AVCaptureSession.Preset.vga640x480
+            
+            print("Session configured!")
             
             // Start the session on a background thread
             DispatchQueue.global(qos: .userInitiated).async {
@@ -168,30 +173,32 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             print("Error configuring AVCaptureSession: \(error)")
         }
     }
-
+    
     // MARK: AVCaptureVideoDataOutputSampleBufferDelegate
-    func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-        connection.videoOrientation = AVCaptureVideoOrientation.portrait
-        
-        if !currentMetadata.isEmpty {
-            let boundsArray = currentMetadata
-                .compactMap { $0 as? AVMetadataFaceObject }
-                .map { NSValue(cgRect: $0.bounds) }
-            
-            wrapper?.doWork(on: sampleBuffer, inRects: boundsArray)
-        }
-        
-        layer.enqueue(sampleBuffer)
-    }
+    /*
+     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+     connection.videoOrientation = AVCaptureVideoOrientation.portrait
+     
+     if !currentMetadata.isEmpty {
+     let boundsArray = currentMetadata
+     .compactMap { $0 as? AVMetadataFaceObject }
+     .map { NSValue(cgRect: $0.bounds) }
+     
+     wrapper?.doWork(on: sampleBuffer, inRects: boundsArray)
+     }
+     
+     layer.enqueue(sampleBuffer)
+     }
+     
+     func captureOutput(_ output: AVCaptureOutput, didDrop sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+     print("DidDropSampleBuffer")
+     }
+     */
     
-    func captureOutput(_ output: AVCaptureOutput, didDrop sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-        print("DidDropSampleBuffer")
-    }
-    
-    // MARK: AVCaptureMetadataOutputObjectsDelegate
+     // MARK: AVCaptureMetadataOutputObjectsDelegate
     
     func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
-        currentMetadata = metadataObjects as [AnyObject]
+        currentMetadata = metadataObjects // Update metadata
     }
     
     func updatePupillaryDistance() {
@@ -531,7 +538,7 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
-        configureAVCaptureSession()
+        openSession()
         startAVCaptureSession()
         
         configureCloudView()
@@ -542,11 +549,8 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         
         setupEyeNode()
         
-       openSession()
-        
-    
         layer.frame = preview.bounds
-
+        
         preview.layer.addSublayer(layer)
         preview.transform = CGAffineTransformMakeRotation(CGFloat(Double.pi))
         preview.transform = CGAffineTransformScale(preview.transform, 1, -1)
@@ -637,51 +641,21 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         return UIImage(cgImage: cgImage)
     }
     
-    private func configureAVCaptureSession() {
-        // Setup AVCaptureSession but don't start it yet
-        guard let videoDevice = AVCaptureDevice.default(.builtInTrueDepthCamera, for: .video, position: .front) else {
-            print("TrueDepth camera is not available.")
-            return
-        }
-        
-        do {
-            self.videoDeviceInput = try AVCaptureDeviceInput(device: videoDevice)
-            if avCaptureSession.canAddInput(self.videoDeviceInput!) {
-                avCaptureSession.addInput(self.videoDeviceInput!)
-            }
-            
-            videoDataOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA]
-            if avCaptureSession.canAddOutput(videoDataOutput) {
-                avCaptureSession.addOutput(videoDataOutput)
-            }
-            
-            if avCaptureSession.canAddOutput(depthDataOutput) {
-                avCaptureSession.addOutput(depthDataOutput)
-            }
-            
-        } catch {
-            print("Error configuring AVCaptureSession: \(error)")
-        }
-    }
-    
     private func startAVCaptureSession() {
-        DispatchQueue.global(qos: .userInitiated).async {
-            self.avCaptureSession.startRunning()
-        }
-        
-        outputSynchronizer = AVCaptureDataOutputSynchronizer(dataOutputs: [videoDataOutput, depthDataOutput])
+        outputSynchronizer = AVCaptureDataOutputSynchronizer(dataOutputs: [output, depthDataOutput])
         outputSynchronizer?.setDelegate(self, queue: dataOutputQueue)
         print("AVCaptureSession Running")
     }
     
     private func pauseAVCaptureSession() {
-        avCaptureSession.stopRunning()
+        session.stopRunning()
         outputSynchronizer?.setDelegate(nil, queue: nil)
         print("AVCaptureSession Paused")
     }
     
     // MARK: - Video + Depth Frame Processing (AVCaptureSession)
     
+    // MARK: - Video + Depth Frame Processing (AVCaptureSession)
     func dataOutputSynchronizer(_ synchronizer: AVCaptureDataOutputSynchronizer,
                                 didOutput synchronizedDataCollection: AVCaptureSynchronizedDataCollection) {
         
@@ -692,7 +666,7 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
               let syncedDepthData: AVCaptureSynchronizedDepthData =
                 synchronizedDataCollection.synchronizedData(for: depthDataOutput) as? AVCaptureSynchronizedDepthData,
               let syncedVideoData: AVCaptureSynchronizedSampleBufferData =
-                synchronizedDataCollection.synchronizedData(for: videoDataOutput) as? AVCaptureSynchronizedSampleBufferData else {
+                synchronizedDataCollection.synchronizedData(for: output) as? AVCaptureSynchronizedSampleBufferData else {
             // only work on synced pairs
             return
         }
@@ -701,20 +675,31 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             return
         }
         
-        if ExternalData.isSavingFileAsPLY {
-            let depthData = syncedDepthData.depthData
-            let sampleBuffer = syncedVideoData.sampleBuffer
-            guard let videoPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
-                return
-            }
+        // Process video sample buffer
+        let sampleBuffer = syncedVideoData.sampleBuffer
+        
+        // Process metadata
+        if !currentMetadata.isEmpty {
+            let boundsArray = currentMetadata
+                .compactMap { $0 as? AVMetadataFaceObject }
+                .map { NSValue(cgRect: $0.bounds) }
             
-            processFrameAV(depthData: depthData, imageData: videoPixelBuffer)
-            
-            // Set cloudView to empty depth data and texture
-            // cloudView?.setDepthFrame(nil, withTexture: nil)
-            // cloudView?.setDepthFrame(depthData, withTexture: videoPixelBuffer)
-            
-            ExternalData.isSavingFileAsPLY = false
+            wrapper?.doWork(on: sampleBuffer, inRects: boundsArray)
         }
+        
+        // Process depth data and video pixel buffer
+        let depthData = syncedDepthData.depthData
+        guard let videoPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
+            return
+        }
+        
+        processFrameAV(depthData: depthData, imageData: videoPixelBuffer)
+        layer.enqueue(sampleBuffer)
+        
+        // Set cloudView to empty depth data and texture
+        // cloudView?.setDepthFrame(nil, withTexture: nil)
+        // cloudView?.setDepthFrame(depthData, withTexture: videoPixelBuffer)
+        
+        ExternalData.isSavingFileAsPLY = false
     }
 }
