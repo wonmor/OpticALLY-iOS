@@ -644,6 +644,14 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     private func startAVCaptureSession() {
         outputSynchronizer = AVCaptureDataOutputSynchronizer(dataOutputs: [output, depthDataOutput])
         outputSynchronizer?.setDelegate(self, queue: dataOutputQueue)
+        
+        // Set the video orientation for each connection in the output
+           for connection in output.connections {
+               if connection.isVideoOrientationSupported {
+                   connection.videoOrientation = .portrait
+               }
+           }
+           
         print("AVCaptureSession Running")
     }
     
@@ -674,7 +682,8 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         }
         
         // Process video sample buffer
-        let sampleBuffer = syncedVideoData.sampleBuffer
+            let sampleBuffer = syncedVideoData.sampleBuffer
+            
         
         // Process metadata
         if !currentMetadata.isEmpty {
@@ -685,6 +694,8 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             wrapper?.doWork(on: sampleBuffer, inRects: boundsArray)
         }
         
+        layer.enqueue(sampleBuffer)
+        
         // Process depth data and video pixel buffer
         let depthData = syncedDepthData.depthData
         guard let videoPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
@@ -693,7 +704,6 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         
         if ExternalData.isSavingFileAsPLY {
             processFrameAV(depthData: depthData, imageData: videoPixelBuffer)
-            layer.enqueue(sampleBuffer)
             
             // Set cloudView to empty depth data and texture
             // cloudView?.setDepthFrame(nil, withTexture: nil)
