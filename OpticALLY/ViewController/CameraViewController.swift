@@ -654,8 +654,6 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     }
     
     // MARK: - Video + Depth Frame Processing (AVCaptureSession)
-    
-    // MARK: - Video + Depth Frame Processing (AVCaptureSession)
     func dataOutputSynchronizer(_ synchronizer: AVCaptureDataOutputSynchronizer,
                                 didOutput synchronizedDataCollection: AVCaptureSynchronizedDataCollection) {
         
@@ -693,13 +691,15 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             return
         }
         
-        processFrameAV(depthData: depthData, imageData: videoPixelBuffer)
-        layer.enqueue(sampleBuffer)
-        
-        // Set cloudView to empty depth data and texture
-        // cloudView?.setDepthFrame(nil, withTexture: nil)
-        // cloudView?.setDepthFrame(depthData, withTexture: videoPixelBuffer)
-        
-        ExternalData.isSavingFileAsPLY = false
+        if ExternalData.isSavingFileAsPLY {
+            processFrameAV(depthData: depthData, imageData: videoPixelBuffer)
+            layer.enqueue(sampleBuffer)
+            
+            // Set cloudView to empty depth data and texture
+            // cloudView?.setDepthFrame(nil, withTexture: nil)
+            // cloudView?.setDepthFrame(depthData, withTexture: videoPixelBuffer)
+            
+            ExternalData.isSavingFileAsPLY = false
+        }
     }
 }
