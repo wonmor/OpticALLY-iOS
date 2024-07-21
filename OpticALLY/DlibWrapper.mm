@@ -145,6 +145,24 @@
 
         cv::solvePnP(model_points, image_points, camera_matrix, dist_coeffs, rotation_vector, translation_vector);
 
+        // Convert rotation vector to rotation matrix
+        cv::Mat rotation_matrix;
+        cv::Rodrigues(rotation_vector, rotation_matrix);
+
+        // Extract Euler angles from the rotation matrix
+        cv::Vec3d euler_angles;
+        cv::Mat R;
+        cv::transpose(rotation_matrix, R);
+        euler_angles[0] = atan2(R.at<double>(2,1), R.at<double>(2,2));
+        euler_angles[1] = atan2(-R.at<double>(2,0), sqrt(R.at<double>(2,1)*R.at<double>(2,1) + R.at<double>(2,2)*R.at<double>(2,2)));
+        euler_angles[2] = atan2(R.at<double>(1,0), R.at<double>(0,0));
+
+        // Convert to degrees
+        euler_angles *= (180.0 / CV_PI);
+
+        // Print Euler angles in degrees
+        NSLog(@"Euler Angles (degrees): Pitch: %f, Yaw: %f, Roll: %f", euler_angles[0], euler_angles[1], euler_angles[2]);
+
         // Project a 3D point (0, 0, 1000.0) onto the image plane.
         std::vector<cv::Point3d> nose_end_point3D;
         std::vector<cv::Point2d> nose_end_point2D;
@@ -157,6 +175,19 @@
         }
         
         cv::line(cvImg, image_points[0], nose_end_point2D[0], cv::Scalar(255,0,0), 2);
+
+        // Draw the coordinate axes
+        std::vector<cv::Point3d> axes_points3D;
+        axes_points3D.push_back(cv::Point3d(100, 0, 0)); // X-axis
+        axes_points3D.push_back(cv::Point3d(0, 100, 0)); // Y-axis
+        axes_points3D.push_back(cv::Point3d(0, 0, 100)); // Z-axis
+        
+        std::vector<cv::Point2d> axes_points2D;
+        cv::projectPoints(axes_points3D, rotation_vector, translation_vector, camera_matrix, dist_coeffs, axes_points2D);
+
+        cv::line(cvImg, image_points[0], axes_points2D[0], cv::Scalar(0, 0, 255), 2); // X-axis in red
+        cv::line(cvImg, image_points[0], axes_points2D[1], cv::Scalar(0, 255, 0), 2); // Y-axis in green
+        cv::line(cvImg, image_points[0], axes_points2D[2], cv::Scalar(255, 0, 0), 2); // Z-axis in blue
 
         // Print rotation and translation vectors
         NSLog(@"Rotation Vector: [%f, %f, %f]", rotation_vector.at<double>(0), rotation_vector.at<double>(1), rotation_vector.at<double>(2));
