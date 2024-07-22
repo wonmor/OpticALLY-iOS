@@ -95,6 +95,7 @@
 
         // Extract depth information for landmarks
         float noseDepth = depthDataPointer[noseTip.y() * width + noseTip.x()];
+
         float chinDepth = depthDataPointer[chin.y() * width + chin.x()];
         float leftEyeDepth = depthDataPointer[leftEyeLeftCorner.y() * width + leftEyeLeftCorner.x()];
         float rightEyeDepth = depthDataPointer[rightEyeRightCorner.y() * width + rightEyeRightCorner.x()];
@@ -171,10 +172,35 @@
         cv::projectPoints(nose_end_point3D, rotation_vector, translation_vector, camera_matrix, dist_coeffs, nose_end_point2D);
         
         for (int i = 0; i < image_points.size(); i++) {
-            cv::circle(cvImg, image_points[i], 3, cv::Scalar(0,0,255), -1);
+            dlib::point p(image_points[i].x, image_points[i].y);
+            draw_solid_circle(img, p, 3, dlib::rgb_pixel(0, 0, 255));
         }
         
-        cv::line(cvImg, image_points[0], nose_end_point2D[0], cv::Scalar(255,0,0), 2);
+        // Convert image points and nose end point to dlib points
+//        dlib::point start_point(image_points[0].x, image_points[0].y);
+//        dlib::point end_point(nose_end_point2D[0].x, nose_end_point2D[0].y);
+//
+//        // Draw the line on the img
+//        draw_line(img, start_point, end_point, dlib::rgb_pixel(255, 0, 0));
+//        
+//        
+        // Convert image points and nose end point to dlib points
+        dlib::point start_point(image_points[0].x, image_points[0].y);
+        dlib::point end_point(nose_end_point2D[0].x, nose_end_point2D[0].y);
+
+        // Calculate the distance and step size
+        double distance = sqrt(pow(end_point.x() - start_point.x(), 2) + pow(end_point.y() - start_point.y(), 2));
+        int num_steps = static_cast<int>(distance / 3); // 3 pixels apart
+        double step_x = (end_point.x() - start_point.x()) / num_steps;
+        double step_y = (end_point.y() - start_point.y()) / num_steps;
+
+        // Draw circles along the line
+        for (int i = 0; i < num_steps; ++i) {
+            int x = start_point.x() + step_x * i;
+            int y = start_point.y() + step_y * i;
+            dlib::point p(x, y);
+            draw_solid_circle(img, p, 2, dlib::rgb_pixel(255, 0, 0));
+        }
 
         // Draw the coordinate axes
         std::vector<cv::Point3d> axes_points3D;
