@@ -76,7 +76,39 @@
     CVPixelBufferRef depthPixelBuffer = depthData.depthDataMap;
     CVPixelBufferLockBaseAddress(depthPixelBuffer, kCVPixelBufferLock_ReadOnly);
     float *depthDataPointer = (float *)CVPixelBufferGetBaseAddress(depthPixelBuffer);
+
+    // Create a grayscale depth map
+    dlib::array2d<unsigned char> depthMap;
+    depthMap.set_size(height, width);
+
+    // Normalize depth values and copy to depthMap
+    float minDepth = FLT_MAX, maxDepth = FLT_MIN;
+    for (int i = 0; i < height; ++i) {
+        for (int j = 0; j < width; ++j) {
+            float depthValue = depthDataPointer[i * width + j];
+            if (depthValue < minDepth) minDepth = depthValue;
+            if (depthValue > maxDepth) maxDepth = depthValue;
+        }
+    }
     
+    for (int i = 0; i < height; ++i) {
+        for (int j = 0; j < width; ++j) {
+            float depthValue = depthDataPointer[i * width + j];
+            unsigned char intensity = (unsigned char)(255.0 * (depthValue - minDepth) / (maxDepth - minDepth));
+            depthMap[i][j] = intensity;
+        }
+    }
+
+    // Draw depth map onto the img
+    for (long row = 0; row < img.nr(); ++row) {
+        for (long col = 0; col < img.nc(); ++col) {
+            unsigned char intensity = depthMap[row][col];
+            img[row][col].blue = intensity;
+            img[row][col].green = intensity;
+            img[row][col].red = intensity;
+        }
+    }
+
     // for every detected face
     for (unsigned long j = 0; j < convertedRectangles.size(); ++j)
     {
@@ -176,14 +208,6 @@
             draw_solid_circle(img, p, 3, dlib::rgb_pixel(0, 0, 255));
         }
         
-        // Convert image points and nose end point to dlib points
-//        dlib::point start_point(image_points[0].x, image_points[0].y);
-//        dlib::point end_point(nose_end_point2D[0].x, nose_end_point2D[0].y);
-//
-//        // Draw the line on the img
-//        draw_line(img, start_point, end_point, dlib::rgb_pixel(255, 0, 0));
-//        
-//        
         // Convert image points and nose end point to dlib points
         dlib::point start_point(image_points[0].x, image_points[0].y);
         dlib::point end_point(nose_end_point2D[0].x, nose_end_point2D[0].y);

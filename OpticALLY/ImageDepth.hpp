@@ -40,16 +40,6 @@ private:
 
     // Private utility methods
     void debugPrint(const std::string& msg, const cv::Mat& mat);
-    void loadCalibration(const std::string& file);
-    void createUndistortionLookup();
-    void loadImage(const std::string& file);
-    void processImage();
-    void loadDepth(const std::string& file);
-    float linearInterpolate(const std::vector<float>& lookup, float x);
-    void createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask);
-    void debugImageStats(const cv::Mat& image, const std::string& name);
-    
-    cv::Mat srgb_to_linear(const cv::Mat& srgb_img);
 
 public:
     // Constructor
@@ -65,6 +55,18 @@ public:
     // Public methods
     std::shared_ptr<open3d::geometry::PointCloud> getPointCloud();
     std::vector<cv::Point3f> project3D(const std::vector<cv::Point2f>& points);
+
+    // Utility methods
+    void loadCalibration(const std::string& file);
+    void createUndistortionLookup();
+    void loadImage(const std::string& file);
+    void processImage();
+    void loadDepth(const std::string& file);
+    float linearInterpolate(const std::vector<float>& lookup, float x);
+    void createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask);
+    void debugImageStats(const cv::Mat& image, const std::string& name);
+    
+    cv::Mat srgb_to_linear(const cv::Mat& srgb_img);
 };
 
 #endif // IMAGE_DEPTH_HPP
