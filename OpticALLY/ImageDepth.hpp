@@ -67,6 +67,9 @@ public:
     void debugImageStats(const cv::Mat& image, const std::string& name);
     
     cv::Mat srgb_to_linear(const cv::Mat& srgb_img);
+    
+    // New function to project specific (x, y) to 3D
+    std::tuple<float, float, float> projectTo3D(int x, int y) const;
 };
 
 #endif // IMAGE_DEPTH_HPP

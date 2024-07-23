@@ -639,6 +639,29 @@ void ImageDepth::loadDepth(const std::string& file) {
         std::cout << "Average value of undistorted depth map: " << average_value << std::endl;
 }
 
+std::tuple<float, float, float> ImageDepth::projectTo3D(int x, int y) const {
+    double fx = intrinsic(0, 0);
+    double fy = intrinsic(1, 1);
+    double cx = intrinsic(0, 2);
+    double cy = intrinsic(1, 2);
+
+    // Extract depth using (x, y) coordinates
+    float depth = depth_map_undistort.at<float>(y, x);
+    
+    // Check if depth is within valid range
+    if (depth <= min_depth || depth >= max_depth) {
+        return std::make_tuple(std::numeric_limits<float>::quiet_NaN(),
+                               std::numeric_limits<float>::quiet_NaN(),
+                               std::numeric_limits<float>::quiet_NaN());
+    }
+
+    // Project to 3D point
+    float px = (x - cx) / fx * depth;
+    float py = (y - cy) / fy * depth;
+
+    return std::make_tuple(px, py, depth);
+}
+
 void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask) {
     std::cout << "Creating point cloud..." << std::endl;
     pointCloud = std::make_shared<open3d::geometry::PointCloud>();
