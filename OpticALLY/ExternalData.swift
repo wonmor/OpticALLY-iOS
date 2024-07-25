@@ -463,18 +463,6 @@ struct ExternalData {
                 
                 let vertex = SCNVector3(x: xrw, y: yrw, z: zrw)
                 
-//                print("Coordinate Check (\(round(metadata.leftEyePosition.x)), \(round(metadata.leftEyePosition.y))) VS. (\(x), \(y))")
-//                
-//                // Check if within threshold range for left eye
-//                if Int(x) == Int(round(metadata.leftEyePosition.x)) && Int(y) == Int(round(metadata.leftEyePosition.y)) {
-//                    print("Near Left eye landmark point x: \(x), y: \(y), z: \(depthValue * scaleFactor)")
-//                }
-//                
-//                // Check if within threshold range for right eye
-//                if Int(x) == Int(round(metadata.rightEyePosition.x)) && Int(y) == Int(round(metadata.rightEyePosition.y)) {
-//                    print("Near Right eye landmark point x: \(x), y: \(y), z: \(depthValue * scaleFactor)")
-//                }
-//                
                 vertices.append(vertex)
                 
                 let colorOffset = y * bytesPerRow + x * 4 // Assuming BGRA format
@@ -520,36 +508,7 @@ struct ExternalData {
                                             bytesPerComponent: MemoryLayout<CGFloat>.size,
                                             dataOffset: 0,
                                             dataStride: MemoryLayout<CGFloat>.size * 4)
-        
-        // Combine Vertex and Color Sources
-        let geometrySources = [vertexSource, colorSource]
-        
-        // Create the geometry element
-        let indices: [Int32] = Array(0..<Int32(vertices.count))
-        let indexData = Data(bytes: indices, count: indices.count * MemoryLayout<Int32>.size)
-        let element = SCNGeometryElement(data: indexData,
-                                         primitiveType: .point,
-                                         primitiveCount: vertices.count,
-                                         bytesPerIndex: MemoryLayout<Int32>.size)
-        
-        // Create the point cloud geometry
-        let pointCloudGeometry = SCNGeometry(sources: [vertexSource, colorSource], elements: [element])
-        
-        // Set the lighting model to constant to ensure the points are fully lit
-        pointCloudGeometry.firstMaterial?.lightingModel = .constant
-        
-        // Set additional material properties as needed, for example, to make the points more visible
-        pointCloudGeometry.firstMaterial?.isDoubleSided = true
-        
-        var pointCloudNode = SCNNode(geometry: pointCloudGeometry)
-        
-        pointCloudNode = updateNodePivot(node: pointCloudNode, usingDepthData: depthData, withMetadata: metadata)
-        
-        pointCloudGeometries.append(pointCloudGeometry)
-        pointCloudNodes.append(pointCloudNode)
-        
-        // alignPointClouds(scaleX: scaleX, scaleY: scaleY, scaleZ: scaleZ)
-        
+   
         // For saving as .BIN file...
         let convertedDepthMap = convertDepthData(depthMap: depthData.depthDataMap)
         var depthRawData = Data()

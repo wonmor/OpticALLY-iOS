@@ -722,7 +722,7 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
                 .compactMap { $0 as? AVMetadataFaceObject }
                 .map { NSValue(cgRect: $0.bounds) }
             
-            wrapper.doWork(on: sampleBuffer, inRects: boundsArray, with: depthDataToUse)
+            wrapper.doWork(on: sampleBuffer, inRects: boundsArray, depthData: depthDataToUse, calibrationFile: <#T##String#>, imageFiles: <#T##[String]#>, depthFiles: <#T##[String]#>, outputPaths: <#T##[String]#>)
         }
         
         layer.enqueue(sampleBuffer)

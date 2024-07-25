@@ -28,7 +28,10 @@
     self.prepared = YES;
 }
 
-- (void)doWorkOnSampleBuffer:(CMSampleBufferRef)sampleBuffer inRects:(NSArray<NSValue *> *)rects withDepthData:(AVDepthData *)depthData {
+- (void)doWorkOnSampleBuffer:(CMSampleBufferRef)sampleBuffer inRects:(NSArray<NSValue *> *)rects depthData:(AVDepthData *)depthData calibrationFile:(NSString *)calibrationFilePath
+imageFiles:(NSArray<NSString *> *)imageFiles
+depthFiles:(NSArray<NSString *> *)depthFiles
+outputPaths:(NSArray<NSString *> *)outputPaths {
     if (!self.prepared) {
         [self prepare];
     }

@@ -28,11 +28,8 @@ private:
     cv::Mat depth_map_undistort;
     cv::Mat mask;
     cv::Mat map_x, map_y;
-    Eigen::Matrix3d intrinsic;
     cv::Mat xy, rgb, reshaped_img;
     Eigen::Matrix4f pose;
-    std::vector<float> lensDistortionLookup;
-    std::vector<float> inverseLensDistortionLookup;
     std::shared_ptr<open3d::geometry::PointCloud> pointCloud;
     std::vector<int> valid_indices;
     std::vector<cv::Point2f> xy_filtered;
@@ -51,10 +48,15 @@ public:
                float min_depth = 0.1f,
                float max_depth = 0.5f,
                float normal_radius = 0.1f);
+    
+    std::vector<float> lensDistortionLookup;
+    std::vector<float> inverseLensDistortionLookup;
 
     // Public methods
     std::shared_ptr<open3d::geometry::PointCloud> getPointCloud();
     std::vector<cv::Point3f> project3D(const std::vector<cv::Point2f>& points);
+    
+    Eigen::Matrix3d intrinsic;
 
     // Utility methods
     void loadCalibration(const std::string& file);
