@@ -455,11 +455,10 @@ struct ExternalData {
                 if depthValue > depthThreshold {
                     continue // Skip this point
                 }
-                
-                let scaleFactor = Float(1.5) // Custom value for depth exaggeration
+
                 let xrw = (Float(x) - cameraIntrinsics.columns.2.x) * depthValue / cameraIntrinsics.columns.0.x
                 let yrw = (Float(y) - cameraIntrinsics.columns.2.y) * depthValue / cameraIntrinsics.columns.1.y
-                let zrw =  depthValue * scaleFactor
+                let zrw =  depthValue
                 
                 let vertex = SCNVector3(x: xrw, y: yrw, z: zrw)
                 

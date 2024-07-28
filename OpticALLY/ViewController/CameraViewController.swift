@@ -716,13 +716,112 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         
         depthDataToUse = depthData.converting(toDepthDataType: kCVPixelFormatType_DepthFloat32)
         
+        let depthPixelBuffer = depthDataToUse.depthDataMap
+        
+        let depthWidth = CVPixelBufferGetWidth(depthPixelBuffer)
+        let depthHeight = CVPixelBufferGetHeight(depthPixelBuffer)
+        
+        CVPixelBufferLockBaseAddress(depthPixelBuffer, .readOnly)
+
+        defer {
+            CVPixelBufferUnlockBaseAddress(depthPixelBuffer, .readOnly)
+        }
+        
+        let depthPixelFormatType = CVPixelBufferGetPixelFormatType(depthPixelBuffer)
+        
+        // Convert depthPixelFormatType to a string
+        let depthPixelFormatTypeString = FourCharCodeToString(depthPixelFormatType)
+        print("Depth Pixel Format Type: \(depthPixelFormatTypeString)")  // Log the pixel format type
+        
+        var depthBytesPerPixel: Int = 0 // Initialize with zero
+        
+        switch depthPixelFormatType {
+        case kCVPixelFormatType_DepthFloat32:
+            depthBytesPerPixel = 4
+        case kCVPixelFormatType_DepthFloat16:
+            depthBytesPerPixel = 2
+        default:
+            print("Unsupported depth pixel format type: \(depthPixelFormatTypeString)")
+            return
+        }
+        
+        print("depthBytesPerPixel: \(depthBytesPerPixel)")
+        
+        let cameraIntrinsics = depthData.cameraCalibrationData!.intrinsicMatrix
+        let inverseLensDistortionLookupTable = ExternalData.convertLensDistortionLookupTable(lookupTable: depthData.cameraCalibrationData!.inverseLensDistortionLookupTable!)
+        let lensDistortionLookupTable = ExternalData.convertLensDistortionLookupTable(lookupTable: depthData.cameraCalibrationData!.lensDistortionLookupTable!)
+        let lensDistortionCenter = CGPoint(x: CGFloat(depthData.cameraCalibrationData!.lensDistortionCenter.x), y: CGFloat(depthData.cameraCalibrationData!.lensDistortionCenter.y))
+        
+        let intrinsicWidth = depthData.cameraCalibrationData!.intrinsicMatrixReferenceDimensions.width
+        let intrinsicHeight = depthData.cameraCalibrationData!.intrinsicMatrixReferenceDimensions.height
+        
+        let convertedDepthData = depthData.converting(toDepthDataType: kCVPixelFormatType_DepthFloat16)
+        let depthDataMap = convertedDepthData.depthDataMap
+        CVPixelBufferLockBaseAddress(depthDataMap, .readOnly)
+        defer { CVPixelBufferUnlockBaseAddress(depthDataMap, .readOnly) }
+        
+        // For saving as .BIN file...
+        let convertedDepthMap = ExternalData.convertDepthData(depthMap: depthData.depthDataMap)
+        var depthRawData = Data()
+        for row in convertedDepthMap {
+            for value in row {
+                var val = value // Make a mutable copy
+                depthRawData.append(UnsafeBufferPointer(start: &val, count: 1))
+            }
+        }
+        
+        let folderURL = ExternalData.getFaceScansFolder()
+        let fileManager = FileManager.default
+        
+        // Static counters for depth and color files
+        var depthFileIndex: Int = 1
+        var colorFileIndex: Int = 1
+        var actualColorFileIndex: Int = 1
+
+        // ADD A FOR LOOP HERE?
+        // Choose file base name and increment the appropriate index
+        let baseFileName: String
+        let fileExtension = "bin"
+        
+        baseFileName = "depth\(String(format: "%02d", depthFileIndex))"
+        depthFileIndex += 1
+            
+        let fileURL = folderURL.appendingPathComponent(baseFileName).appendingPathExtension(fileExtension)
+
+        // Write data to the file
+        do {
+            try depthRawData.write(to: fileURL)
+            print("\(baseFileName) data saved successfully to \(fileURL.path)")
+        } catch {
+            print("Error saving \(baseFileName) data: \(error)")
+        }
+        
         // Process metadata
         if !currentMetadata.isEmpty {
             let boundsArray = currentMetadata
                 .compactMap { $0 as? AVMetadataFaceObject }
                 .map { NSValue(cgRect: $0.bounds) }
             
-            wrapper.doWork(on: sampleBuffer, inRects: boundsArray, depthData: depthDataToUse, calibrationFile: <#T##String#>, imageFiles: <#T##[String]#>, depthFiles: <#T##[String]#>, outputPaths: <#T##[String]#>)
+            // Get or create the directory for saving files
+            // TO DO: Set Custom Path that deviates from usual one...
+            let folderURL = ExternalData.getFaceScansFolder()
+
+            // Wrap depth and calibration data into JSON
+            let jsonData = ExternalData.wrapEstimateImageData(depthMap: depthData.depthDataMap, calibration: depthData.cameraCalibrationData!)
+            
+            // Save the calibration JSON data
+            let jsonFileURL = folderURL.appendingPathComponent("calibration.json")
+            
+            let baseFolderName = "bin_json"
+            let documentsDirectory = ExternalData.getDocumentsDirectory()
+            let folderURL2 = documentsDirectory.appendingPathComponent(baseFolderName)
+            let calibrationFileURL = folderURL2.appendingPathComponent("calibration.json")
+            
+            var depthFiles = fileManager.getFilePathsWithPrefix(baseFolder: folderURL2.path, prefix: "depth")
+            
+            print("Swift-side Depth Files Count: \(depthFiles.count)")
+            
+            wrapper.doWork(on: sampleBuffer, inRects: boundsArray, calibrationFilePath: jsonFileURL.path, depthFilePath: depthFiles.last!)
         }
         
         layer.enqueue(sampleBuffer)
