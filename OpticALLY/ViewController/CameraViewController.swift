@@ -830,10 +830,6 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         if ExternalData.isSavingFileAsPLY {
             processFrameAV(depthData: depthData, imageData: videoPixelBuffer)
             
-            // Set cloudView to empty depth data and texture
-            // cloudView?.setDepthFrame(nil, withTexture: nil)
-            // cloudView?.setDepthFrame(depthData, withTexture: videoPixelBuffer)
-            
             ExternalData.isSavingFileAsPLY = false
         }
     }
