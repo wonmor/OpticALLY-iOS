@@ -11,8 +11,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)prepare;
 
 // Method to process the sample buffer and depth data
-- (void)doWorkOnSampleBuffer:(CMSampleBufferRef)sampleBuffer inRects:(NSArray<NSValue *> *)rects calibrationFilePath:(NSString *)calibrationFilePath
-               depthFilePath:(NSString *)depthFilePath;
+- (void)doWorkOnSampleBuffer:(CMSampleBufferRef)sampleBuffer inRects:(NSArray<NSValue *> *)rects withDepthData:(AVDepthData *)depthData;
 
 @end
 

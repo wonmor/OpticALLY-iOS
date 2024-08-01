@@ -28,8 +28,7 @@
     self.prepared = YES;
 }
 
-- (void)doWorkOnSampleBuffer:(CMSampleBufferRef)sampleBuffer inRects:(NSArray<NSValue *> *)rects calibrationFilePath:(NSString *)calibrationFilePath
-depthFilePath:(NSString *)depthFilePath {
+- (void)doWorkOnSampleBuffer:(CMSampleBufferRef)sampleBuffer inRects:(NSArray<NSValue *> *)rects withDepthData:(AVDepthData *)depthData {
     if (!self.prepared) {
         [self prepare];
     }
@@ -74,6 +73,8 @@ depthFilePath:(NSString *)depthFilePath {
     std::vector<dlib::rectangle> convertedRectangles = [DlibWrapper convertCGRectValueArray:rects toVectorWithImageSize:imageSize];
     
     // Get depth data if available
+    NSLog(@"Depth Data Map: %@", depthData.depthDataMap);
+
     CVPixelBufferRef depthPixelBuffer = depthData.depthDataMap;
     CVPixelBufferLockBaseAddress(depthPixelBuffer, kCVPixelBufferLock_ReadOnly);
     float *depthDataPointer = (float *)CVPixelBufferGetBaseAddress(depthPixelBuffer);
@@ -86,19 +87,24 @@ depthFilePath:(NSString *)depthFilePath {
     float minDepth = FLT_MAX, maxDepth = FLT_MIN;
     for (int i = 0; i < height; ++i) {
         for (int j = 0; j < width; ++j) {
-            float depthValue = depthDataPointer[i * width + j];
+            size_t depthOffset = i * CVPixelBufferGetBytesPerRow(depthPixelBuffer) + j * sizeof(UInt16);
+            UInt16 *depthPointer = (UInt16 *)((char *)CVPixelBufferGetBaseAddress(depthPixelBuffer) + depthOffset);
+            float depthValue = (float)(*depthPointer);
             if (depthValue < minDepth) minDepth = depthValue;
             if (depthValue > maxDepth) maxDepth = depthValue;
         }
     }
-    
+
     for (int i = 0; i < height; ++i) {
         for (int j = 0; j < width; ++j) {
-            float depthValue = depthDataPointer[i * width + j];
+            size_t depthOffset = i * CVPixelBufferGetBytesPerRow(depthPixelBuffer) + j * sizeof(UInt16);
+            UInt16 *depthPointer = (UInt16 *)((char *)CVPixelBufferGetBaseAddress(depthPixelBuffer) + depthOffset);
+            float depthValue = (float)(*depthPointer);
             unsigned char intensity = (unsigned char)(255.0 * (depthValue - minDepth) / (maxDepth - minDepth));
             depthMap[i][j] = intensity;
         }
     }
+
 
     // Draw depth map onto the img
     for (long row = 0; row < img.nr(); ++row) {
@@ -127,13 +133,48 @@ depthFilePath:(NSString *)depthFilePath {
         dlib::point rightMouthCorner = shape.part(54);
 
         // Extract depth information for landmarks
-        float noseDepth = depthDataPointer[noseTip.y() * width + noseTip.x()];
+        float noseDepth = 0.0;
+        {
+            size_t depthOffset = noseTip.y() * CVPixelBufferGetBytesPerRow(depthPixelBuffer) + noseTip.x() * sizeof(UInt16);
+            UInt16 *depthPointer = (UInt16 *)((char *)CVPixelBufferGetBaseAddress(depthPixelBuffer) + depthOffset);
+            noseDepth = (float)(*depthPointer);
+        }
 
-        float chinDepth = depthDataPointer[chin.y() * width + chin.x()];
-        float leftEyeDepth = depthDataPointer[leftEyeLeftCorner.y() * width + leftEyeLeftCorner.x()];
-        float rightEyeDepth = depthDataPointer[rightEyeRightCorner.y() * width + rightEyeRightCorner.x()];
-        float leftMouthDepth = depthDataPointer[leftMouthCorner.y() * width + leftMouthCorner.x()];
-        float rightMouthDepth = depthDataPointer[rightMouthCorner.y() * width + rightMouthCorner.x()];
+        float chinDepth = 0.0;
+        {
+            size_t depthOffset = chin.y() * CVPixelBufferGetBytesPerRow(depthPixelBuffer) + chin.x() * sizeof(UInt16);
+            UInt16 *depthPointer = (UInt16 *)((char *)CVPixelBufferGetBaseAddress(depthPixelBuffer) + depthOffset);
+            chinDepth = (float)(*depthPointer);
+        }
+
+        float leftEyeDepth = 0.0;
+        {
+            size_t depthOffset = leftEyeLeftCorner.y() * CVPixelBufferGetBytesPerRow(depthPixelBuffer) + leftEyeLeftCorner.x() * sizeof(UInt16);
+            UInt16 *depthPointer = (UInt16 *)((char *)CVPixelBufferGetBaseAddress(depthPixelBuffer) + depthOffset);
+            leftEyeDepth = (float)(*depthPointer);
+        }
+
+        float rightEyeDepth = 0.0;
+        {
+            size_t depthOffset = rightEyeRightCorner.y() * CVPixelBufferGetBytesPerRow(depthPixelBuffer) + rightEyeRightCorner.x() * sizeof(UInt16);
+            UInt16 *depthPointer = (UInt16 *)((char *)CVPixelBufferGetBaseAddress(depthPixelBuffer) + depthOffset);
+            rightEyeDepth = (float)(*depthPointer);
+        }
+
+        float leftMouthDepth = 0.0;
+        {
+            size_t depthOffset = leftMouthCorner.y() * CVPixelBufferGetBytesPerRow(depthPixelBuffer) + leftMouthCorner.x() * sizeof(UInt16);
+            UInt16 *depthPointer = (UInt16 *)((char *)CVPixelBufferGetBaseAddress(depthPixelBuffer) + depthOffset);
+            leftMouthDepth = (float)(*depthPointer);
+        }
+
+        float rightMouthDepth = 0.0;
+        {
+            size_t depthOffset = rightMouthCorner.y() * CVPixelBufferGetBytesPerRow(depthPixelBuffer) + rightMouthCorner.x() * sizeof(UInt16);
+            UInt16 *depthPointer = (UInt16 *)((char *)CVPixelBufferGetBaseAddress(depthPixelBuffer) + depthOffset);
+            rightMouthDepth = (float)(*depthPointer);
+        }
+
 
         // Print the coordinates and depths
         NSLog(@"Nose Tip: (%ld, %ld) Depth: %f", noseTip.x(), noseTip.y(), noseDepth);
