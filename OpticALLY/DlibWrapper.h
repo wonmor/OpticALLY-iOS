@@ -13,7 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 // Method to process the sample buffer and depth data
 - (void)doWorkOnSampleBuffer:(CMSampleBufferRef)sampleBuffer inRects:(NSArray<NSValue *> *)rects withDepthData:(AVDepthData *)depthData;
 
-+ (float)getDepthValueAtFlippedCoordinate:(int)x y:(int)y depthPixelBuffer:(CVPixelBufferRef)depthPixelBuffer width:(int)width;
++ (float)getDepthValueAtCoordinate:(int)x y:(int)y depthPixelBuffer:(CVPixelBufferRef)depthPixelBuffer;
 
 @end
 
