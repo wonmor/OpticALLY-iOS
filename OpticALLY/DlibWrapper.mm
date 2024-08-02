@@ -81,13 +81,13 @@
 
     // Create a grayscale depth map
     dlib::array2d<unsigned char> depthMap;
-    depthMap.set_size(height, width); // Keeping original height and width
+    depthMap.set_size(width, height); // Transpose x and y coordinates
 
     // Normalize depth values and copy to depthMap
     float minDepth = FLT_MAX, maxDepth = FLT_MIN;
     for (int i = 0; i < height; ++i) {
         for (int j = 0; j < width; ++j) {
-            size_t depthOffset = i * CVPixelBufferGetBytesPerRow(depthPixelBuffer) + j * sizeof(UInt16);
+            size_t depthOffset = j * CVPixelBufferGetBytesPerRow(depthPixelBuffer) + i * sizeof(UInt16); // Transpose i and j
             if (depthOffset >= CVPixelBufferGetDataSize(depthPixelBuffer)) {
                 continue; // Skip if offset is out of bounds
             }
@@ -100,21 +100,21 @@
 
     for (int i = 0; i < height; ++i) {
         for (int j = 0; j < width; ++j) {
-            size_t depthOffset = i * CVPixelBufferGetBytesPerRow(depthPixelBuffer) + j * sizeof(UInt16);
+            size_t depthOffset = j * CVPixelBufferGetBytesPerRow(depthPixelBuffer) + i * sizeof(UInt16); // Transpose i and j
             if (depthOffset >= CVPixelBufferGetDataSize(depthPixelBuffer)) {
                 continue; // Skip if offset is out of bounds
             }
             UInt16 *depthPointer = (UInt16 *)((char *)CVPixelBufferGetBaseAddress(depthPixelBuffer) + depthOffset);
             float depthValue = (float)(*depthPointer);
             unsigned char intensity = (unsigned char)(255.0 * (depthValue - minDepth) / (maxDepth - minDepth));
-            depthMap[i][width - 1 - j] = intensity; // Flip horizontally
+            depthMap[j][i] = intensity; // Flip horizontally after transposing
         }
     }
 
     // Draw depth map onto the img
     for (long row = 0; row < img.nr(); ++row) {
         for (long col = 0; col < img.nc(); ++col) {
-            unsigned char intensity = depthMap[row][col];
+            unsigned char intensity = depthMap[col][row];
             img[row][col].blue = intensity;
             img[row][col].green = intensity;
             img[row][col].red = intensity;
