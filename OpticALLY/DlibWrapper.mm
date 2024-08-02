@@ -81,13 +81,16 @@
 
     // Create a grayscale depth map
     dlib::array2d<unsigned char> depthMap;
-    depthMap.set_size(height, width);
+    depthMap.set_size(height, width); // Keeping original height and width
 
     // Normalize depth values and copy to depthMap
     float minDepth = FLT_MAX, maxDepth = FLT_MIN;
     for (int i = 0; i < height; ++i) {
         for (int j = 0; j < width; ++j) {
             size_t depthOffset = i * CVPixelBufferGetBytesPerRow(depthPixelBuffer) + j * sizeof(UInt16);
+            if (depthOffset >= CVPixelBufferGetDataSize(depthPixelBuffer)) {
+                continue; // Skip if offset is out of bounds
+            }
             UInt16 *depthPointer = (UInt16 *)((char *)CVPixelBufferGetBaseAddress(depthPixelBuffer) + depthOffset);
             float depthValue = (float)(*depthPointer);
             if (depthValue < minDepth) minDepth = depthValue;
@@ -98,13 +101,15 @@
     for (int i = 0; i < height; ++i) {
         for (int j = 0; j < width; ++j) {
             size_t depthOffset = i * CVPixelBufferGetBytesPerRow(depthPixelBuffer) + j * sizeof(UInt16);
+            if (depthOffset >= CVPixelBufferGetDataSize(depthPixelBuffer)) {
+                continue; // Skip if offset is out of bounds
+            }
             UInt16 *depthPointer = (UInt16 *)((char *)CVPixelBufferGetBaseAddress(depthPixelBuffer) + depthOffset);
             float depthValue = (float)(*depthPointer);
             unsigned char intensity = (unsigned char)(255.0 * (depthValue - minDepth) / (maxDepth - minDepth));
-            depthMap[i][j] = intensity;
+            depthMap[i][width - 1 - j] = intensity; // Flip horizontally
         }
     }
-
 
     // Draw depth map onto the img
     for (long row = 0; row < img.nr(); ++row) {
@@ -117,8 +122,7 @@
     }
 
     // for every detected face
-    for (unsigned long j = 0; j < convertedRectangles.size(); ++j)
-    {
+    for (unsigned long j = 0; j < convertedRectangles.size(); ++j) {
         dlib::rectangle oneFaceRect = convertedRectangles[j];
         
         // detect all landmarks
@@ -132,49 +136,21 @@
         dlib::point leftMouthCorner = shape.part(48);
         dlib::point rightMouthCorner = shape.part(54);
 
-        // Extract depth information for landmarks
-        float noseDepth = 0.0;
-        {
-            size_t depthOffset = noseTip.y() * CVPixelBufferGetBytesPerRow(depthPixelBuffer) + noseTip.x() * sizeof(UInt16);
-            UInt16 *depthPointer = (UInt16 *)((char *)CVPixelBufferGetBaseAddress(depthPixelBuffer) + depthOffset);
-            noseDepth = (float)(*depthPointer);
-        }
+        // Adjust coordinates for mirror flip
+        noseTip = dlib::point(width - 1 - noseTip.x(), noseTip.y());
+        chin = dlib::point(width - 1 - chin.x(), chin.y());
+        leftEyeLeftCorner = dlib::point(width - 1 - leftEyeLeftCorner.x(), leftEyeLeftCorner.y());
+        rightEyeRightCorner = dlib::point(width - 1 - rightEyeRightCorner.x(), rightEyeRightCorner.y());
+        leftMouthCorner = dlib::point(width - 1 - leftMouthCorner.x(), leftMouthCorner.y());
+        rightMouthCorner = dlib::point(width - 1 - rightMouthCorner.x(), rightMouthCorner.y());
 
-        float chinDepth = 0.0;
-        {
-            size_t depthOffset = chin.y() * CVPixelBufferGetBytesPerRow(depthPixelBuffer) + chin.x() * sizeof(UInt16);
-            UInt16 *depthPointer = (UInt16 *)((char *)CVPixelBufferGetBaseAddress(depthPixelBuffer) + depthOffset);
-            chinDepth = (float)(*depthPointer);
-        }
-
-        float leftEyeDepth = 0.0;
-        {
-            size_t depthOffset = leftEyeLeftCorner.y() * CVPixelBufferGetBytesPerRow(depthPixelBuffer) + leftEyeLeftCorner.x() * sizeof(UInt16);
-            UInt16 *depthPointer = (UInt16 *)((char *)CVPixelBufferGetBaseAddress(depthPixelBuffer) + depthOffset);
-            leftEyeDepth = (float)(*depthPointer);
-        }
-
-        float rightEyeDepth = 0.0;
-        {
-            size_t depthOffset = rightEyeRightCorner.y() * CVPixelBufferGetBytesPerRow(depthPixelBuffer) + rightEyeRightCorner.x() * sizeof(UInt16);
-            UInt16 *depthPointer = (UInt16 *)((char *)CVPixelBufferGetBaseAddress(depthPixelBuffer) + depthOffset);
-            rightEyeDepth = (float)(*depthPointer);
-        }
-
-        float leftMouthDepth = 0.0;
-        {
-            size_t depthOffset = leftMouthCorner.y() * CVPixelBufferGetBytesPerRow(depthPixelBuffer) + leftMouthCorner.x() * sizeof(UInt16);
-            UInt16 *depthPointer = (UInt16 *)((char *)CVPixelBufferGetBaseAddress(depthPixelBuffer) + depthOffset);
-            leftMouthDepth = (float)(*depthPointer);
-        }
-
-        float rightMouthDepth = 0.0;
-        {
-            size_t depthOffset = rightMouthCorner.y() * CVPixelBufferGetBytesPerRow(depthPixelBuffer) + rightMouthCorner.x() * sizeof(UInt16);
-            UInt16 *depthPointer = (UInt16 *)((char *)CVPixelBufferGetBaseAddress(depthPixelBuffer) + depthOffset);
-            rightMouthDepth = (float)(*depthPointer);
-        }
-
+        // Extract depth information for landmarks with flipped coordinates
+        float noseDepth = [DlibWrapper getDepthValueAtFlippedCoordinate:noseTip.x() y:noseTip.y() depthPixelBuffer:depthPixelBuffer width:width];
+        float chinDepth = [DlibWrapper getDepthValueAtFlippedCoordinate:chin.x() y:chin.y() depthPixelBuffer:depthPixelBuffer width:width];
+        float leftEyeDepth = [DlibWrapper getDepthValueAtFlippedCoordinate:leftEyeLeftCorner.x() y:leftEyeLeftCorner.y() depthPixelBuffer:depthPixelBuffer width:width];
+        float rightEyeDepth = [DlibWrapper getDepthValueAtFlippedCoordinate:rightEyeRightCorner.x() y:rightEyeRightCorner.y() depthPixelBuffer:depthPixelBuffer width:width];
+        float leftMouthDepth = [DlibWrapper getDepthValueAtFlippedCoordinate:leftMouthCorner.x() y:leftMouthCorner.y() depthPixelBuffer:depthPixelBuffer width:width];
+        float rightMouthDepth = [DlibWrapper getDepthValueAtFlippedCoordinate:rightMouthCorner.x() y:rightMouthCorner.y() depthPixelBuffer:depthPixelBuffer width:width];
 
         // Print the coordinates and depths
         NSLog(@"Nose Tip: (%ld, %ld) Depth: %f", noseTip.x(), noseTip.y(), noseDepth);
@@ -187,6 +163,7 @@
         // Draw landmarks onto the image
         for (unsigned long k = 0; k < shape.num_parts(); k++) {
             dlib::point p = shape.part(k);
+            p = dlib::point(width - 1 - p.x(), p.y()); // Adjust coordinate for mirror flip
             draw_solid_circle(img, p, 3, dlib::rgb_pixel(0, 255, 255));
         }
 
@@ -330,6 +307,15 @@
         myConvertedRects.push_back(dlibRect);
     }
     return myConvertedRects;
+}
+
++ (float)getDepthValueAtFlippedCoordinate:(int)x y:(int)y depthPixelBuffer:(CVPixelBufferRef)depthPixelBuffer width:(int)width {
+    size_t depthOffset = y * CVPixelBufferGetBytesPerRow(depthPixelBuffer) + (width - 1 - x) * sizeof(UInt16); // Flip x coordinate
+    if (depthOffset >= CVPixelBufferGetDataSize(depthPixelBuffer)) {
+        return 0.0; // Return a default value if offset is out of bounds
+    }
+    UInt16 *depthPointer = (UInt16 *)((char *)CVPixelBufferGetBaseAddress(depthPixelBuffer) + depthOffset);
+    return (float)(*depthPointer);
 }
 
 @end
