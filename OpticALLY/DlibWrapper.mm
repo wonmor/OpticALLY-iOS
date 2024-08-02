@@ -79,15 +79,20 @@
     CVPixelBufferLockBaseAddress(depthPixelBuffer, kCVPixelBufferLock_ReadOnly);
     float *depthDataPointer = (float *)CVPixelBufferGetBaseAddress(depthPixelBuffer);
 
+    // Ensure the original image is in BGR format (three channels)
+    cv::Mat originalImg(height, width, CV_8UC4, baseBuffer);
+    cv::Mat bgrOriginalImg;
+    cv::cvtColor(originalImg, bgrOriginalImg, cv::COLOR_BGRA2BGR);
+
     // Create a grayscale depth map
     dlib::array2d<unsigned char> depthMap;
-    depthMap.set_size(width, height); // Transpose x and y coordinates
+    depthMap.set_size(height, width); // Note the order: height (rows), width (cols)
 
     // Normalize depth values and copy to depthMap
     float minDepth = FLT_MAX, maxDepth = FLT_MIN;
     for (int i = 0; i < height; ++i) {
         for (int j = 0; j < width; ++j) {
-            size_t depthOffset = j * CVPixelBufferGetBytesPerRow(depthPixelBuffer) + i * sizeof(UInt16); // Transpose i and j
+            size_t depthOffset = i * CVPixelBufferGetBytesPerRow(depthPixelBuffer) + j * sizeof(UInt16); // Note: no transpose
             if (depthOffset >= CVPixelBufferGetDataSize(depthPixelBuffer)) {
                 continue; // Skip if offset is out of bounds
             }
@@ -100,24 +105,43 @@
 
     for (int i = 0; i < height; ++i) {
         for (int j = 0; j < width; ++j) {
-            size_t depthOffset = j * CVPixelBufferGetBytesPerRow(depthPixelBuffer) + i * sizeof(UInt16); // Transpose i and j
+            size_t depthOffset = i * CVPixelBufferGetBytesPerRow(depthPixelBuffer) + j * sizeof(UInt16); // Note: no transpose
             if (depthOffset >= CVPixelBufferGetDataSize(depthPixelBuffer)) {
                 continue; // Skip if offset is out of bounds
             }
             UInt16 *depthPointer = (UInt16 *)((char *)CVPixelBufferGetBaseAddress(depthPixelBuffer) + depthOffset);
             float depthValue = (float)(*depthPointer);
             unsigned char intensity = (unsigned char)(255.0 * (depthValue - minDepth) / (maxDepth - minDepth));
-            depthMap[j][i] = intensity; // Flip horizontally after transposing
+            depthMap[i][j] = intensity; // No transpose
         }
     }
 
-    // Draw depth map onto the img
-//    for (long row = 0; row < img.nr(); ++row) {
-//        for (long col = 0; col < img.nc(); ++col) {
-//            unsigned char intensity = depthMap[col][row];
-//            img[row][col].blue = intensity;
-//            img[row][col].green = intensity;
-//            img[row][col].red = intensity;
+    // Convert dlib::array2d to cv::Mat
+    cv::Mat depthMat(height, width, CV_8UC1); // Single channel grayscale
+    for (int i = 0; i < height; ++i) {
+        for (int j = 0; j < width; ++j) {
+            depthMat.at<unsigned char>(i, j) = depthMap[i][j];
+        }
+    }
+
+    // Flip the depth image horizontally
+    cv::Mat flippedDepthMat;
+    cv::flip(depthMat, flippedDepthMat, 1); // 1 means horizontal flip
+
+    // Convert the flipped depth map to a three-channel BGR image
+    cv::Mat colorDepthMat;
+    cv::cvtColor(flippedDepthMat, colorDepthMat, cv::COLOR_GRAY2BGR);
+
+    // Alpha blend the depth map with the original image
+    cv::Mat blendedImg;
+    cv::addWeighted(bgrOriginalImg, 0.25, colorDepthMat, 0.75, 0.0, blendedImg);
+
+    // Convert cv::Mat blendedImg to dlib::array2d<dlib::bgr_pixel>
+//    img.set_size(height, width);
+//    for (int i = 0; i < height; ++i) {
+//        for (int j = 0; j < width; ++j) {
+//            cv::Vec3b rgb = blendedImg.at<cv::Vec3b>(i, j);
+//            img[i][j] = dlib::bgr_pixel(rgb[0], rgb[1], rgb[2]);
 //        }
 //    }
 
