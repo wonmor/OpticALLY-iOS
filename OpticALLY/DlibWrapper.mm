@@ -112,7 +112,7 @@
             UInt16 *depthPointer = (UInt16 *)((char *)CVPixelBufferGetBaseAddress(depthPixelBuffer) + depthOffset);
             float depthValue = (float)(*depthPointer);
             unsigned char intensity = (unsigned char)(255.0 * (depthValue - minDepth) / (maxDepth - minDepth));
-            depthMap[j][i] = intensity; // Flip horizontally after transposing
+            depthMap[width - 1 - j][i] = intensity; // Flip horizontally after transposing
         }
     }
 
