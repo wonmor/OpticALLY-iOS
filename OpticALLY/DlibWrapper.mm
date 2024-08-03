@@ -124,27 +124,13 @@
         }
     }
 
-    // Flip the depth image horizontally
-    cv::Mat flippedDepthMat;
-    cv::flip(depthMat, flippedDepthMat, 1); // 1 means horizontal flip
-
     // Convert the flipped depth map to a three-channel BGR image
     cv::Mat colorDepthMat;
-    cv::cvtColor(flippedDepthMat, colorDepthMat, cv::COLOR_GRAY2BGR);
+    cv::cvtColor(depthMat, colorDepthMat, cv::COLOR_GRAY2BGR);
 
     // Alpha blend the depth map with the original image
     cv::Mat blendedImg;
     cv::addWeighted(bgrOriginalImg, 0.25, colorDepthMat, 0.75, 0.0, blendedImg);
-
-    // Convert cv::Mat blendedImg to dlib::array2d<dlib::bgr_pixel>
-//    img.set_size(height, width);
-//    for (int i = 0; i < height; ++i) {
-//        for (int j = 0; j < width; ++j) {
-//            cv::Vec3b rgb = blendedImg.at<cv::Vec3b>(i, j);
-//            img[i][j] = dlib::bgr_pixel(rgb[0], rgb[1], rgb[2]);
-//        }
-//    }
-
     // for every detected face
     for (unsigned long j = 0; j < convertedRectangles.size(); ++j) {
         dlib::rectangle oneFaceRect = convertedRectangles[j];
@@ -186,12 +172,6 @@
         NSLog(@"Right Eye Right Corner: (%ld, %ld) Depth: %f", rightEyeRightCorner.x(), rightEyeRightCorner.y(), rightEyeDepth);
         NSLog(@"Left Mouth Corner: (%ld, %ld) Depth: %f", leftMouthCorner.x(), leftMouthCorner.y(), leftMouthDepth);
         NSLog(@"Right Mouth Corner: (%ld, %ld) Depth: %f", rightMouthCorner.x(), rightMouthCorner.y(), rightMouthDepth);
-
-        // Draw landmarks onto the image
-        for (unsigned long k = 0; k < shape.num_parts(); k++) {
-            dlib::point p = shape.part(k);
-            draw_solid_circle(img, p, 3, dlib::rgb_pixel(0, 255, 255));
-        }
 
         // OpenCV head pose estimation
         cv::Mat cvImg(height, width, CV_8UC4, baseBuffer);
@@ -248,11 +228,6 @@
         
         cv::projectPoints(nose_end_point3D, rotation_vector, translation_vector, camera_matrix, dist_coeffs, nose_end_point2D);
         
-        for (int i = 0; i < image_points.size(); i++) {
-            dlib::point p(image_points[i].x, image_points[i].y);
-            draw_solid_circle(img, p, 3, dlib::rgb_pixel(0, 0, 255));
-        }
-        
         // Convert image points and nose end point to dlib points
         dlib::point start_point(image_points[0].x, image_points[0].y);
         dlib::point end_point(nose_end_point2D[0].x, nose_end_point2D[0].y);
@@ -262,14 +237,6 @@
         int num_steps = static_cast<int>(distance / 3); // 3 pixels apart
         double step_x = (end_point.x() - start_point.x()) / num_steps;
         double step_y = (end_point.y() - start_point.y()) / num_steps;
-
-        // Draw circles along the line
-        for (int i = 0; i < num_steps; ++i) {
-            int x = start_point.x() + step_x * i;
-            int y = start_point.y() + step_y * i;
-            dlib::point p(x, y);
-            draw_solid_circle(img, p, 2, dlib::rgb_pixel(255, 0, 0));
-        }
 
         // Draw the coordinate axes
         std::vector<cv::Point3d> axes_points3D;
@@ -290,6 +257,35 @@
 
         // Print nose end point
         NSLog(@"Nose End Point 2D: [%f, %f]", nose_end_point2D[0].x, nose_end_point2D[0].y);
+        
+        // Convert cv::Mat blendedImg to dlib::array2d<dlib::bgr_pixel>
+        // VVIP: THIS HAS TO GO ON THE BOTTOM SO THAT DEBUG_OVERLAY SHOWS UP...
+        img.set_size(height, width);
+        for (int i = 0; i < height; ++i) {
+            for (int j = 0; j < width; ++j) {
+                cv::Vec3b rgb = blendedImg.at<cv::Vec3b>(i, j);
+                img[i][j] = dlib::bgr_pixel(rgb[0], rgb[1], rgb[2]);
+            }
+        }
+        
+        // Draw landmarks onto the image
+        for (unsigned long k = 0; k < shape.num_parts(); k++) {
+            dlib::point p = shape.part(k);
+            draw_solid_circle(img, p, 3, dlib::rgb_pixel(0, 255, 255));
+        }
+        
+        for (int i = 0; i < image_points.size(); i++) {
+            dlib::point p(image_points[i].x, image_points[i].y);
+            draw_solid_circle(img, p, 3, dlib::rgb_pixel(0, 0, 255));
+        }
+
+        // Draw circles along the line
+        for (int i = 0; i < num_steps; ++i) {
+            int x = start_point.x() + step_x * i;
+            int y = start_point.y() + step_y * i;
+            dlib::point p(x, y);
+            draw_solid_circle(img, p, 2, dlib::rgb_pixel(255, 0, 0));
+        }
     }
     
     // unlock depth buffer
