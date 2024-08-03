@@ -86,7 +86,7 @@
 
     // Create a grayscale depth map
     dlib::array2d<unsigned char> depthMap;
-    depthMap.set_size(height, width); // Note the order: height (rows), width (cols)
+    depthMap.set_size(width, height); // Note the order: height (rows), width (cols)
 
     // Normalize depth values and copy to depthMap
     float minDepth = FLT_MAX, maxDepth = FLT_MIN;
@@ -105,14 +105,14 @@
 
     for (int i = 0; i < height; ++i) {
         for (int j = 0; j < width; ++j) {
-            size_t depthOffset = i * CVPixelBufferGetBytesPerRow(depthPixelBuffer) + j * sizeof(UInt16); // Note: no transpose
+            size_t depthOffset = j * CVPixelBufferGetBytesPerRow(depthPixelBuffer) + i * sizeof(UInt16); // Transpose i and j
             if (depthOffset >= CVPixelBufferGetDataSize(depthPixelBuffer)) {
                 continue; // Skip if offset is out of bounds
             }
             UInt16 *depthPointer = (UInt16 *)((char *)CVPixelBufferGetBaseAddress(depthPixelBuffer) + depthOffset);
             float depthValue = (float)(*depthPointer);
             unsigned char intensity = (unsigned char)(255.0 * (depthValue - minDepth) / (maxDepth - minDepth));
-            depthMap[i][j] = intensity; // No transpose
+            depthMap[j][i] = intensity; // Flip horizontally after transposing
         }
     }
 
@@ -120,7 +120,7 @@
     cv::Mat depthMat(height, width, CV_8UC1); // Single channel grayscale
     for (int i = 0; i < height; ++i) {
         for (int j = 0; j < width; ++j) {
-            depthMat.at<unsigned char>(i, j) = depthMap[i][j];
+            depthMat.at<unsigned char>(i, j) = depthMap[j][i];
         }
     }
 
