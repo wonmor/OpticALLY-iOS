@@ -79,58 +79,6 @@
     CVPixelBufferLockBaseAddress(depthPixelBuffer, kCVPixelBufferLock_ReadOnly);
     float *depthDataPointer = (float *)CVPixelBufferGetBaseAddress(depthPixelBuffer);
 
-    // Ensure the original image is in BGR format (three channels)
-    cv::Mat originalImg(height, width, CV_8UC4, baseBuffer);
-    cv::Mat bgrOriginalImg;
-    cv::cvtColor(originalImg, bgrOriginalImg, cv::COLOR_BGRA2BGR);
-
-    // Create a grayscale depth map
-    dlib::array2d<unsigned char> depthMap;
-    depthMap.set_size(width, height); // Note the order: height (rows), width (cols)
-
-    // Normalize depth values and copy to depthMap
-    float minDepth = FLT_MAX, maxDepth = FLT_MIN;
-    for (int i = 0; i < height; ++i) {
-        for (int j = 0; j < width; ++j) {
-            size_t depthOffset = i * CVPixelBufferGetBytesPerRow(depthPixelBuffer) + j * sizeof(UInt16); // Note: no transpose
-            if (depthOffset >= CVPixelBufferGetDataSize(depthPixelBuffer)) {
-                continue; // Skip if offset is out of bounds
-            }
-            UInt16 *depthPointer = (UInt16 *)((char *)CVPixelBufferGetBaseAddress(depthPixelBuffer) + depthOffset);
-            float depthValue = (float)(*depthPointer);
-            if (depthValue < minDepth) minDepth = depthValue;
-            if (depthValue > maxDepth) maxDepth = depthValue;
-        }
-    }
-
-    for (int i = 0; i < height; ++i) {
-        for (int j = 0; j < width; ++j) {
-            size_t depthOffset = j * CVPixelBufferGetBytesPerRow(depthPixelBuffer) + i * sizeof(UInt16); // Transpose i and j
-            if (depthOffset >= CVPixelBufferGetDataSize(depthPixelBuffer)) {
-                continue; // Skip if offset is out of bounds
-            }
-            UInt16 *depthPointer = (UInt16 *)((char *)CVPixelBufferGetBaseAddress(depthPixelBuffer) + depthOffset);
-            float depthValue = (float)(*depthPointer);
-            unsigned char intensity = (unsigned char)(255.0 * (depthValue - minDepth) / (maxDepth - minDepth));
-            depthMap[width - 1 - j][i] = intensity; // Flip horizontally after transposing
-        }
-    }
-
-    // Convert dlib::array2d to cv::Mat
-    cv::Mat depthMat(height, width, CV_8UC1); // Single channel grayscale
-    for (int i = 0; i < height; ++i) {
-        for (int j = 0; j < width; ++j) {
-            depthMat.at<unsigned char>(i, j) = depthMap[j][i];
-        }
-    }
-
-    // Convert the flipped depth map to a three-channel BGR image
-    cv::Mat colorDepthMat;
-    cv::cvtColor(depthMat, colorDepthMat, cv::COLOR_GRAY2BGR);
-
-    // Alpha blend the depth map with the original image
-    cv::Mat blendedImg;
-    cv::addWeighted(bgrOriginalImg, 0.25, colorDepthMat, 0.75, 0.0, blendedImg);
     // for every detected face
     for (unsigned long j = 0; j < convertedRectangles.size(); ++j) {
         dlib::rectangle oneFaceRect = convertedRectangles[j];
@@ -146,16 +94,13 @@
         dlib::point leftMouthCorner = shape.part(48);
         dlib::point rightMouthCorner = shape.part(54);
         
-        // Print out the depth map dimensions
-        NSLog(@"Depth Map Width: %lu, Height: %lu", depthMap.nc(), depthMap.nr());
-
         // Depth deriving algorithm
-       auto safeDepthValueAt = [&](int x, int y, float defaultValue = 0.0f) -> float {
-           if (x < 0 || x >= width || y < 0 || y >= height) {
+        auto safeDepthValueAt = [&](int x, int y, float defaultValue = 0.0f) -> float {
+            if (x < 0 || x >= width || y < 0 || y >= height) {
                return defaultValue;
-           }
-           return depthMap[x][y]; // Note: using depthMap
-       };
+            }
+            return depthDataPointer[y * width + x]; // Using depth data directly
+        };
 
         // Extract depth information for landmarks with null safety and bounds check
         float noseDepth = safeDepthValueAt(noseTip.x(), noseTip.y());
@@ -258,12 +203,12 @@
         // Print nose end point
         NSLog(@"Nose End Point 2D: [%f, %f]", nose_end_point2D[0].x, nose_end_point2D[0].y);
         
-        // Convert cv::Mat blendedImg to dlib::array2d<dlib::bgr_pixel>
+        // Convert cv::Mat cvImg to dlib::array2d<dlib::bgr_pixel>
         // VVIP: THIS HAS TO GO ON THE BOTTOM SO THAT DEBUG_OVERLAY SHOWS UP...
         img.set_size(height, width);
         for (int i = 0; i < height; ++i) {
             for (int j = 0; j < width; ++j) {
-                cv::Vec3b rgb = blendedImg.at<cv::Vec3b>(i, j);
+                cv::Vec3b rgb = cvImg.at<cv::Vec3b>(i, j);
                 img[i][j] = dlib::bgr_pixel(rgb[0], rgb[1], rgb[2]);
             }
         }
