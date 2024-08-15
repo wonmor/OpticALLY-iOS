@@ -687,8 +687,6 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     func dataOutputSynchronizer(_ synchronizer: AVCaptureDataOutputSynchronizer,
                                 didOutput synchronizedDataCollection: AVCaptureSynchronizedDataCollection) {
         
-        print("DATA OUTPUT SYNC")
-        
         // Read all outputs
         guard ExternalData.renderingEnabled,
               let syncedDepthData: AVCaptureSynchronizedDepthData =

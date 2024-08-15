@@ -324,24 +324,6 @@
 			path = ViewController;
 			sourceTree = "<group>";
 		};
-		9679F8EC2AD095F200686F13 /* Shader */ = {
-			isa = PBXGroup;
-			children = (
-				9679F8B92AD0907900686F13 /* Mixer.metal */,
-				9679F8C42AD0907900686F13 /* PassThrough.metal */,
-				9679F8B52AD0907900686F13 /* VideoMixer.swift */,
-				9679F8B42AD0907900686F13 /* HistogramCalculator.h */,
-				9679F8BC2AD0907900686F13 /* HistogramCalculator.m */,
-				9679F8CA2AD0907A00686F13 /* AAPLTransforms.h */,
-				9679F8C72AD0907A00686F13 /* PointCloudMetalView.h */,
-				9679F8C92AD0907A00686F13 /* PointCloudMetalView.mm */,
-				9679F8C82AD0907A00686F13 /* FilterRenderer.swift */,
-				9679F8B82AD0907900686F13 /* AAPLTransforms.mm */,
-				9679F8C12AD0907900686F13 /* PointCloud.metal */,
-			);
-			path = Shader;
-			sourceTree = "<group>";
-		};
 		967EE0582AAE06FB000C4D5F = {
 			isa = PBXGroup;
 			children = (
@@ -381,7 +363,6 @@
 				9671FDC42B5B14F2004DA4C2 /* Python */,
 				969DF1C62B12916900FA9ABE /* GoogleService-Info.plist */,
 				969E42E82ADC9ABD00E77BA7 /* Resources */,
-				9679F8EC2AD095F200686F13 /* Shader */,
 				9679F8EB2AD095AA00686F13 /* ViewController */,
 				9679F8E82AD0956E00686F13 /* Storyboard */,
 				967EE0912AAEDBD2000C4D5F /* ViewModel */,
@@ -416,6 +397,17 @@
 				96E8A65B2BEC480500CCBC18 /* EigenWrapper.mm */,
 				96E8A6672BED575C00CCBC18 /* ImageDepthBridge.h */,
 				96E8A6742BED634E00CCBC18 /* PointCloudProcessingBridge.h */,
+				9679F8B92AD0907900686F13 /* Mixer.metal */,
+				9679F8C42AD0907900686F13 /* PassThrough.metal */,
+				9679F8B52AD0907900686F13 /* VideoMixer.swift */,
+				9679F8B42AD0907900686F13 /* HistogramCalculator.h */,
+				9679F8BC2AD0907900686F13 /* HistogramCalculator.m */,
+				9679F8CA2AD0907A00686F13 /* AAPLTransforms.h */,
+				9679F8C72AD0907A00686F13 /* PointCloudMetalView.h */,
+				9679F8C92AD0907A00686F13 /* PointCloudMetalView.mm */,
+				9679F8C82AD0907A00686F13 /* FilterRenderer.swift */,
+				9679F8B82AD0907900686F13 /* AAPLTransforms.mm */,
+				9679F8C12AD0907900686F13 /* PointCloud.metal */,
 				96E8A6682BED579000CCBC18 /* ImageDepthBridge.mm */,
 				96E8A6752BED637D00CCBC18 /* PointCloudProcessingBridge.mm */,
 				963A88D72BFD9BD200A68720 /* base64.cpp */,

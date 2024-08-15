@@ -55,6 +55,10 @@ simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
     attr = dispatch_queue_attr_make_with_autorelease_frequency(attr, DISPATCH_AUTORELEASE_FREQUENCY_WORK_ITEM);
     attr = dispatch_queue_attr_make_with_qos_class(attr, QOS_CLASS_USER_INITIATED, 0);
     _syncQueue = dispatch_queue_create("PointCloudMetalView sync queue", attr);
+    // Create a buffer to hold the world coordinates
+       NSUInteger numVertices = 640 * 480; // Assuming width and height of the depth texture
+       _worldCoordinatesBuffer = [self.device newBufferWithLength:sizeof(float) * 3 * numVertices
+                                                         options:MTLResourceStorageModeShared];
     
     [self configureMetal];
     
@@ -138,6 +142,19 @@ typedef struct {
     });
 }
 
+- (void)processWorldCoordinates {
+    // Access the world coordinates after rendering
+    float* worldCoordinates = (float*)[_worldCoordinatesBuffer contents];
+
+    // Process the coordinates (example: print or pass them to another function)
+    for (int i = 0; i < numVertices; i++) {
+        float x = worldCoordinates[i * 3];
+        float y = worldCoordinates[i * 3 + 1];
+        float z = worldCoordinates[i * 3 + 2];
+        NSLog(@"World Coordinate [%d]: (%f, %f, %f)", i, x, y, z);
+    }
+}
+
 
 - (void)drawRect:(CGRect)rect {
     if (!_shouldRender3DContent) {
@@ -147,10 +164,15 @@ typedef struct {
         MTLRenderPassDescriptor *renderPassDescriptor = self.currentRenderPassDescriptor;
         if (renderPassDescriptor != nil) {
             id<MTLRenderCommandEncoder> renderEncoder = [commandBuffer renderCommandEncoderWithDescriptor:renderPassDescriptor];
+            [renderEncoder setVertexBuffer:_worldCoordinatesBuffer offset:0 atIndex:2];
             [renderEncoder endEncoding];
             [commandBuffer presentDrawable:self.currentDrawable];
         }
+        // Finalize rendering and process world coordinates
         [commandBuffer commit];
+        [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> buffer) {
+            [self processWorldCoordinates];
+        }];
         return;
     }
     

@@ -17,6 +17,7 @@ A view implementing point cloud rendering
 @interface PointCloudMetalView : MTKView
 
 @property (nonatomic, assign) BOOL shouldRender3DContent;
+@property (nonatomic, strong) id<MTLBuffer> worldCoordinatesBuffer;
 
 // Update depth frame
 - (void)setDepthFrame:(AVDepthData* _Nullable)depth withTexture:(_Nullable CVPixelBufferRef)texture;
@@ -32,6 +33,8 @@ A view implementing point cloud rendering
 
 // Moves the camera towards the center point (or backwards)
 - (void)moveTowardCenter:(float)scale;
+
+- (void)processWorldCoordinates;
 
 @end
 
