@@ -146,6 +146,8 @@ typedef struct {
     // Access the world coordinates after rendering
     float* worldCoordinates = (float*)[_worldCoordinatesBuffer contents];
 
+    NSUInteger numVertices = 640 * 480;
+    
     // Process the coordinates (example: print or pass them to another function)
     for (int i = 0; i < numVertices; i++) {
         float x = worldCoordinates[i * 3];
