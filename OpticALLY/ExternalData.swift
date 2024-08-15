@@ -410,15 +410,8 @@ struct ExternalData {
         var vertices: [SCNVector3] = []
         var colors: [UIColor] = []
         var depthValues: [Float] = []
-        var depthValuesForLandmarks: [Float] = []
         
         let cameraIntrinsics = depthData.cameraCalibrationData!.intrinsicMatrix
-        let inverseLensDistortionLookupTable = convertLensDistortionLookupTable(lookupTable: depthData.cameraCalibrationData!.inverseLensDistortionLookupTable!)
-        let lensDistortionLookupTable = convertLensDistortionLookupTable(lookupTable: depthData.cameraCalibrationData!.lensDistortionLookupTable!)
-        let lensDistortionCenter = CGPoint(x: CGFloat(depthData.cameraCalibrationData!.lensDistortionCenter.x), y: CGFloat(depthData.cameraCalibrationData!.lensDistortionCenter.y))
-        
-        let intrinsicWidth = depthData.cameraCalibrationData!.intrinsicMatrixReferenceDimensions.width
-        let intrinsicHeight = depthData.cameraCalibrationData!.intrinsicMatrixReferenceDimensions.height
         
         let convertedDepthData = depthData.converting(toDepthDataType: kCVPixelFormatType_DepthFloat16)
         let depthDataMap = convertedDepthData.depthDataMap
@@ -433,8 +426,6 @@ struct ExternalData {
                 depthValues.append(depthValue)
             }
         }
-        
-        let unsortedDepthValues = depthValues
         
         // Sort the depth values
         depthValues.sort()
@@ -479,12 +470,6 @@ struct ExternalData {
             }
         }
         
-        // Create the geometry source for vertices
-        let vertexSource = SCNGeometrySource(vertices: vertices)
-        
-        // Assuming the UIColor's data is not properly formatted for the SCNGeometrySource
-        // Instead, create an array of normalized float values representing the color data
-        
         // Convert UIColors to Float Components
         var colorComponents: [CGFloat] = []
         for color in colors {
@@ -499,14 +484,6 @@ struct ExternalData {
         
         // Create the geometry source for colors
         let colorData = NSData(bytes: colorComponents, length: colorComponents.count * MemoryLayout<CGFloat>.size)
-        let colorSource = SCNGeometrySource(data: colorData as Data,
-                                            semantic: .color,
-                                            vectorCount: colors.count,
-                                            usesFloatComponents: true,
-                                            componentsPerVector: 4,
-                                            bytesPerComponent: MemoryLayout<CGFloat>.size,
-                                            dataOffset: 0,
-                                            dataStride: MemoryLayout<CGFloat>.size * 4)
    
         // For saving as .BIN file...
         let convertedDepthMap = convertDepthData(depthMap: depthData.depthDataMap)

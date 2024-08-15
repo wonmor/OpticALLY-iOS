@@ -1,10 +1,14 @@
 #import "DlibWrapper.h"
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
-
+#import <CoreVideo/CoreVideo.h>
+#import <CoreGraphics/CoreGraphics.h>
 #include <dlib/image_processing.h>
 #include <dlib/image_io.h>
 #include <opencv2/opencv.hpp>
+
+#define PHOTO_WIDTH 640
+#define PHOTO_HEIGHT 480
 
 @implementation DlibWrapper {
     dlib::shape_predictor sp;
@@ -26,6 +30,119 @@
     
     // FIXME: test this stuff for memory leaks (cpp object destruction)
     self.prepared = YES;
+}
+
+- (CVPixelBufferRef)rectifyDepthData:(AVDepthData *)depthData {
+    // Get the inverse lens distortion lookup table from the camera calibration data
+    AVCameraCalibrationData *calibrationData = depthData.cameraCalibrationData;
+    if (!calibrationData) {
+        return depthData.depthDataMap; // Return the original depth data if no calibration data is available
+    }
+
+    NSData *lookupTableData = calibrationData.inverseLensDistortionLookupTable;
+    if (!lookupTableData) {
+        return depthData.depthDataMap; // Return the original depth data if no lookup table is available
+    }
+
+    const float *lookupTable = (const float *)lookupTableData.bytes;
+    size_t tableCount = lookupTableData.length / sizeof(float);
+
+    CVPixelBufferRef depthPixelBuffer = depthData.depthDataMap;
+    CVPixelBufferLockBaseAddress(depthPixelBuffer, kCVPixelBufferLock_ReadOnly);
+
+    size_t width = CVPixelBufferGetWidth(depthPixelBuffer);
+    size_t height = CVPixelBufferGetHeight(depthPixelBuffer);
+
+    // Create a new pixel buffer to store the rectified depth data
+    CVPixelBufferRef rectifiedDepthPixelBuffer;
+    CVPixelBufferCreate(kCFAllocatorDefault, width, height, kCVPixelFormatType_DepthFloat32, NULL, &rectifiedDepthPixelBuffer);
+
+    CVPixelBufferLockBaseAddress(rectifiedDepthPixelBuffer, 0);
+
+    float *srcBase = (float *)CVPixelBufferGetBaseAddress(depthPixelBuffer);
+    float *dstBase = (float *)CVPixelBufferGetBaseAddress(rectifiedDepthPixelBuffer);
+
+    for (size_t y = 0; y < height; y++) {
+        for (size_t x = 0; x < width; x++) {
+            size_t index = y * width + x;
+
+            // Lookup the undistorted coordinate from the inverse lens distortion lookup table
+            if (index < tableCount) {
+                float undistortedX = lookupTable[index * 2];
+                float undistortedY = lookupTable[index * 2 + 1];
+
+                // Bilinear interpolation for subpixel precision
+                int srcX = (int)undistortedX;
+                int srcY = (int)undistortedY;
+
+                if (srcX >= 0 && srcX < width - 1 && srcY >= 0 && srcY < height - 1) {
+                    float dx = undistortedX - srcX;
+                    float dy = undistortedY - srcY;
+
+                    float topLeft = srcBase[srcY * width + srcX];
+                    float topRight = srcBase[srcY * width + (srcX + 1)];
+                    float bottomLeft = srcBase[(srcY + 1) * width + srcX];
+                    float bottomRight = srcBase[(srcY + 1) * width + (srcX + 1)];
+
+                    // Interpolate the depth value
+                    float top = topLeft + dx * (topRight - topLeft);
+                    float bottom = bottomLeft + dx * (bottomRight - bottomLeft);
+                    dstBase[index] = top + dy * (bottom - top);
+                } else {
+                    // If the undistorted coordinate is out of bounds, use the original depth value
+                    dstBase[index] = srcBase[index];
+                }
+            } else {
+                // If no valid lookup, copy the original depth value
+                dstBase[index] = srcBase[index];
+            }
+        }
+    }
+
+    CVPixelBufferUnlockBaseAddress(rectifiedDepthPixelBuffer, 0);
+    CVPixelBufferUnlockBaseAddress(depthPixelBuffer, kCVPixelBufferLock_ReadOnly);
+
+    return rectifiedDepthPixelBuffer;
+}
+
+// This is the new method to calculate world coordinates for a given (x, y) point
+- (NSArray<NSNumber *> *)getWorldCoordinateAtPoint:(CGPoint)point withDepthData:(AVDepthData *)depthData {
+    // Below has to be in 32bit format...
+    AVDepthData *convertedDepthData = depthData;
+    AVCameraCalibrationData *cameraCalibrationData = depthData.cameraCalibrationData;
+    if (!cameraCalibrationData) {
+        return @[@0.0f, @0.0f, @0.0f]; // Return an invalid point if no calibration data
+    }
+
+    const matrix_float3x3 intrinsicMatrix = cameraCalibrationData.intrinsicMatrix;
+    CVPixelBufferRef depthDataMap = [self rectifyDepthData:convertedDepthData]; // Assuming rectifyDepthData is implemented
+    
+    if (!depthDataMap) {
+        return @[@0.0f, @0.0f, @0.0f]; // Return an invalid point if depth data is not rectified
+    }
+
+    CVPixelBufferLockBaseAddress(depthDataMap, kCVPixelBufferLock_ReadOnly);
+
+    size_t width = CVPixelBufferGetWidth(depthDataMap);
+    size_t height = CVPixelBufferGetHeight(depthDataMap);
+
+    float focalX = (float)width * (intrinsicMatrix.columns[0][0] / PHOTO_WIDTH);
+    float focalY = (float)height * (intrinsicMatrix.columns[1][1] / PHOTO_HEIGHT);
+    float principalPointX = (float)width * (intrinsicMatrix.columns[2][0] / PHOTO_WIDTH);
+    float principalPointY = (float)height * (intrinsicMatrix.columns[2][1] / PHOTO_HEIGHT);
+
+    float Z = [DlibWrapper getDepthValueAtCoordinate:(int)point.x y:(int)point.y depthPixelBuffer:depthDataMap];
+    if (Z == 0.0f) {
+        CVPixelBufferUnlockBaseAddress(depthDataMap, kCVPixelBufferLock_ReadOnly);
+        return @[@0.0f, @0.0f, @0.0f]; // Return an invalid point if Z is 0
+    }
+
+    float X = ((float)point.x - principalPointX) * Z / focalX;
+    float Y = ((float)point.y - principalPointY) * Z / focalY;
+
+    CVPixelBufferUnlockBaseAddress(depthDataMap, kCVPixelBufferLock_ReadOnly);
+
+    return @[@(X), @(Y), @(Z)];
 }
 
 - (void)doWorkOnSampleBuffer:(CMSampleBufferRef)sampleBuffer inRects:(NSArray<NSValue *> *)rects withDepthData:(AVDepthData *)depthData {
