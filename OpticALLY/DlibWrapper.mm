@@ -94,30 +94,6 @@
         dlib::point leftMouthCorner = shape.part(48);
         dlib::point rightMouthCorner = shape.part(54);
         
-        // Depth deriving algorithm
-        auto safeDepthValueAt = [&](int x, int y, float defaultValue = 0.0f) -> float {
-            if (x < 0 || x >= width || y < 0 || y >= height) {
-               return defaultValue;
-            }
-            return depthDataPointer[y * width + x]; // Using depth data directly
-        };
-
-        // Extract depth information for landmarks with null safety and bounds check
-        float noseDepth = safeDepthValueAt(noseTip.x(), noseTip.y());
-        float chinDepth = safeDepthValueAt(chin.x(), chin.y());
-        float leftEyeDepth = safeDepthValueAt(leftEyeLeftCorner.x(), leftEyeLeftCorner.y());
-        float rightEyeDepth = safeDepthValueAt(rightEyeRightCorner.x(), rightEyeRightCorner.y());
-        float leftMouthDepth = safeDepthValueAt(leftMouthCorner.x(), leftMouthCorner.y());
-        float rightMouthDepth = safeDepthValueAt(rightMouthCorner.x(), rightMouthCorner.y());
-
-        // Print the coordinates and depths
-        NSLog(@"Nose Tip: (%ld, %ld) Depth: %f", noseTip.x(), noseTip.y(), noseDepth);
-        NSLog(@"Chin: (%ld, %ld) Depth: %f", chin.x(), chin.y(), chinDepth);
-        NSLog(@"Left Eye Left Corner: (%ld, %ld) Depth: %f", leftEyeLeftCorner.x(), leftEyeLeftCorner.y(), leftEyeDepth);
-        NSLog(@"Right Eye Right Corner: (%ld, %ld) Depth: %f", rightEyeRightCorner.x(), rightEyeRightCorner.y(), rightEyeDepth);
-        NSLog(@"Left Mouth Corner: (%ld, %ld) Depth: %f", leftMouthCorner.x(), leftMouthCorner.y(), leftMouthDepth);
-        NSLog(@"Right Mouth Corner: (%ld, %ld) Depth: %f", rightMouthCorner.x(), rightMouthCorner.y(), rightMouthDepth);
-
         // OpenCV head pose estimation
         cv::Mat cvImg(height, width, CV_8UC4, baseBuffer);
         cv::cvtColor(cvImg, cvImg, cv::COLOR_BGRA2BGR);
@@ -131,12 +107,12 @@
         image_points.push_back(cv::Point2d(rightMouthCorner.x(), rightMouthCorner.y()));    // Right mouth corner
 
         std::vector<cv::Point3d> model_points;
-        model_points.push_back(cv::Point3d(noseTip.x(), noseTip.y(), noseDepth));    // Nose tip
-        model_points.push_back(cv::Point3d(chin.x(), chin.y(), chinDepth));          // Chin
-        model_points.push_back(cv::Point3d(leftEyeLeftCorner.x(), leftEyeLeftCorner.y(), leftEyeDepth));    // Left eye left corner
-        model_points.push_back(cv::Point3d(rightEyeRightCorner.x(), rightEyeRightCorner.y(), rightEyeDepth));    // Right eye right corner
-        model_points.push_back(cv::Point3d(leftMouthCorner.x(), leftMouthCorner.y(), leftMouthDepth));    // Left Mouth corner
-        model_points.push_back(cv::Point3d(rightMouthCorner.x(), rightMouthCorner.y(), rightMouthDepth));    // Right mouth corner
+        model_points.push_back(cv::Point3d(noseTip.x(), noseTip.y(), 0));    // Nose tip (z replaced with 0)
+        model_points.push_back(cv::Point3d(chin.x(), chin.y(), 0));          // Chin (z replaced with 0)
+        model_points.push_back(cv::Point3d(leftEyeLeftCorner.x(), leftEyeLeftCorner.y(), 0));    // Left eye left corner (z replaced with 0)
+        model_points.push_back(cv::Point3d(rightEyeRightCorner.x(), rightEyeRightCorner.y(), 0));    // Right eye right corner (z replaced with 0)
+        model_points.push_back(cv::Point3d(leftMouthCorner.x(), leftMouthCorner.y(), 0));    // Left Mouth corner (z replaced with 0)
+        model_points.push_back(cv::Point3d(rightMouthCorner.x(), rightMouthCorner.y(), 0));    // Right mouth corner (z replaced with 0)
 
         double focal_length = cvImg.cols;
         cv::Point2d center = cv::Point2d(cvImg.cols / 2, cvImg.rows / 2);
