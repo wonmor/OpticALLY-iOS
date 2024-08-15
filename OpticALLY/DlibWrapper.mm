@@ -149,7 +149,13 @@
         // Print out the depth map dimensions
         NSLog(@"Depth Map Width: %lu, Height: %lu", depthMap.nc(), depthMap.nr());
 
-      
+        // Depth deriving algorithm
+       auto safeDepthValueAt = [&](int x, int y, float defaultValue = 0.0f) -> float {
+           if (x < 0 || x >= width || y < 0 || y >= height) {
+               return defaultValue;
+           }
+           return depthMap[x][y]; // Note: using depthMap
+       };
 
         // Extract depth information for landmarks with null safety and bounds check
         float noseDepth = safeDepthValueAt(noseTip.x(), noseTip.y());
