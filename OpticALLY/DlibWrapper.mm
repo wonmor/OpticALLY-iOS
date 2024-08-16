@@ -113,34 +113,35 @@ struct VertexOut {
         image_points.push_back(cv::Point2d(leftMouthCorner.x(), leftMouthCorner.y()));    // Left Mouth corner
         image_points.push_back(cv::Point2d(rightMouthCorner.x(), rightMouthCorner.y()));    // Right mouth corner
         
-        for (const auto& point : image_points) {
-           uint32_t posX = static_cast<uint32_t>(point.x);
-           uint32_t posY = static_cast<uint32_t>(point.y);
-            // Flip posX and posY if below does not work...
-           uint32_t vertexID = posY * 640 + posX; // Calculate vertexID
-
-           // Access PointCloudMetalView's solvedVertexBuffer
-           VertexOut *solvedVertices = (VertexOut *)[self.pointCloudView.solvedVertexBuffer contents];
-
-           // Get the world coordinates
-           float xrw = solvedVertices[vertexID].x;
-           float yrw = solvedVertices[vertexID].y;
-           float zrw = solvedVertices[vertexID].z;
-
-           NSLog(@"VertexID %u: xrw = %f, yrw = %f, zrw = %f", vertexID, xrw, yrw, zrw);
-           
-           // Use these world coordinates for further processing (e.g., in your model_points)
-           // Update your model_points based on the world coordinates
-       }
-
         std::vector<cv::Point3d> model_points;
-        model_points.push_back(cv::Point3d(noseTip.x(), noseTip.y(), 0));    // Nose tip (z replaced with 0)
-        model_points.push_back(cv::Point3d(chin.x(), chin.y(), 0));          // Chin (z replaced with 0)
-        model_points.push_back(cv::Point3d(leftEyeLeftCorner.x(), leftEyeLeftCorner.y(), 0));    // Left eye left corner (z replaced with 0)
-        model_points.push_back(cv::Point3d(rightEyeRightCorner.x(), rightEyeRightCorner.y(), 0));    // Right eye right corner (z replaced with 0)
-        model_points.push_back(cv::Point3d(leftMouthCorner.x(), leftMouthCorner.y(), 0));    // Left Mouth corner (z replaced with 0)
-        model_points.push_back(cv::Point3d(rightMouthCorner.x(), rightMouthCorner.y(), 0));    // Right mouth corner (z replaced with 0)
-
+        
+        // Assuming the viewport is 640x480
+           int viewportWidth = 640;
+           
+           // Process each landmark point
+           std::vector<dlib::point> landmarks = {noseTip, chin, leftEyeLeftCorner, rightEyeRightCorner, leftMouthCorner, rightMouthCorner};
+        
+        for (const auto& landmark : landmarks) {
+             uint32_t posX = static_cast<uint32_t>(landmark.x());
+             uint32_t posY = static_cast<uint32_t>(landmark.y());
+             
+             // Flip posX and posY if necessary to match orientation
+             uint32_t vertexID = posY * viewportWidth + posX; // Calculate vertexID
+             
+             // Access PointCloudMetalView's solvedVertexBuffer
+             VertexOut *solvedVertices = (VertexOut *)[self.pointCloudView.solvedVertexBuffer contents];
+             
+             // Get the world coordinates
+             float xrw = solvedVertices[vertexID].x;
+             float yrw = solvedVertices[vertexID].y;
+             float zrw = solvedVertices[vertexID].z;
+             
+             NSLog(@"VertexID %u: xrw = %f, yrw = %f, zrw = %f", vertexID, xrw, yrw, zrw);
+             
+             // Update model_points with the world coordinates
+             model_points.push_back(cv::Point3d(xrw, yrw, zrw));
+         }
+  
         double focal_length = cvImg.cols;
         cv::Point2d center = cv::Point2d(cvImg.cols / 2, cvImg.rows / 2);
         cv::Mat camera_matrix = (cv::Mat_<double>(3, 3) << focal_length, 0, center.x, 0, focal_length, center.y, 0, 0, 1);
@@ -195,9 +196,9 @@ struct VertexOut {
         std::vector<cv::Point2d> axes_points2D;
         cv::projectPoints(axes_points3D, rotation_vector, translation_vector, camera_matrix, dist_coeffs, axes_points2D);
 
-        cv::line(cvImg, image_points[0], axes_points2D[0], cv::Scalar(0, 0, 255), 2); // X-axis in red
-        cv::line(cvImg, image_points[0], axes_points2D[1], cv::Scalar(0, 255, 0), 2); // Y-axis in green
-        cv::line(cvImg, image_points[0], axes_points2D[2], cv::Scalar(255, 0, 0), 2); // Z-axis in blue
+//        cv::line(cvImg, image_points[0], axes_points2D[0], cv::Scalar(0, 0, 255), 2); // X-axis in red
+//        cv::line(cvImg, image_points[0], axes_points2D[1], cv::Scalar(0, 255, 0), 2); // Y-axis in green
+//        cv::line(cvImg, image_points[0], axes_points2D[2], cv::Scalar(255, 0, 0), 2); // Z-axis in blue
 
         // Print rotation and translation vectors
         NSLog(@"Rotation Vector: [%f, %f, %f]", rotation_vector.at<double>(0), rotation_vector.at<double>(1), rotation_vector.at<double>(2));
