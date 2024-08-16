@@ -735,5 +735,7 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             
             ExternalData.isSavingFileAsPLY = false
         }
+        
+        cloudView?.setDepthFrame(depthData, withTexture: videoPixelBuffer)
     }
 }

@@ -167,23 +167,25 @@ typedef struct {
 }
 
 - (void)processWorldCoordinates {
-    // Access the world coordinates after rendering
-    float* worldCoordinates = (float*)[_worldCoordinatesBuffer contents];
+    // Access the world coordinates after the compute shader has run
+    VertexOut* solvedVertices = (VertexOut*)[_solvedVertexBuffer contents];
 
+    // Assuming 640x480 resolution, change this if the resolution changes
     NSUInteger numVertices = 640 * 480;
     
-    // Process the coordinates (example: print or pass them to another function)
+    // Process and print the coordinates
     for (int i = 0; i < numVertices; i++) {
-        float x = worldCoordinates[i * 3];
-        float y = worldCoordinates[i * 3 + 1];
-        float z = worldCoordinates[i * 3 + 2];
-        NSLog(@"World Coordinate [%d]: (%f, %f, %f)", i, x, y, z);
+        float xrw = solvedVertices[i].x;
+        float yrw = solvedVertices[i].y;
+        float depth = solvedVertices[i].z;  // Assuming depth is stored in the z component
+
+        NSLog(@"Vertex %d: xrw = %f, yrw = %f, depth = %f", i, xrw, yrw, depth);
     }
 }
 
+
 - (void)drawRect:(CGRect)rect {
     if (!_shouldRender3DContent) {
-        // Clear the view or skip drawing
         return;
     }
 
@@ -235,26 +237,34 @@ typedef struct {
     }
 
     id<MTLTexture> colorTexture = CVMetalTextureGetTexture(cvColorTexture);
-    
+
     // Initialize intrinsics
-        matrix_float3x3 intrinsics = depthData.cameraCalibrationData.intrinsicMatrix;
-        CGSize referenceDimensions = depthData.cameraCalibrationData.intrinsicMatrixReferenceDimensions;
+    matrix_float3x3 intrinsics = depthData.cameraCalibrationData.intrinsicMatrix;
+    CGSize referenceDimensions = depthData.cameraCalibrationData.intrinsicMatrixReferenceDimensions;
 
     // Update _unsolvedVertexBuffer with data from the depth map or any other source
     [self updateUnsolvedVertexBufferWithDepth:depthFrame intrinsics:depthData.cameraCalibrationData.intrinsicMatrix];
 
-    // Create a new command buffer for each renderpass to the current drawable
+    // Create a new command buffer for each render pass to the current drawable
     id <MTLCommandBuffer> commandBuffer = [_commandQueue commandBuffer];
 
     // Encode the compute command
     id<MTLComputeCommandEncoder> computeEncoder = [commandBuffer computeCommandEncoder];
     [computeEncoder setComputePipelineState:_computePipelineState];
-    [computeEncoder setBuffer:_unsolvedVertexBuffer offset:0 atIndex:0];
+    [computeEncoder setTexture:depthTexture atIndex:0];
+    [computeEncoder setBytes:&intrinsics length:sizeof(intrinsics) atIndex:0];
     [computeEncoder setBuffer:_solvedVertexBuffer offset:0 atIndex:1];
 
-    MTLSize gridSize = MTLSizeMake(numVertices, 1, 1);
+    NSUInteger numVertices = 640 * 480;
+
+    MTLSize gridSize = MTLSizeMake(numVertices, 1, 1);  // Ensure numVertices > 0
     NSUInteger threadGroupSize = _computePipelineState.maxTotalThreadsPerThreadgroup;
+
+    // Choose a thread group size that makes sense for your workload
+    threadGroupSize = MIN(threadGroupSize, numVertices);  // Ensure it's <= numVertices
+
     MTLSize threadGroup = MTLSizeMake(threadGroupSize, 1, 1);
+
     [computeEncoder dispatchThreads:gridSize threadsPerThreadgroup:threadGroup];
     [computeEncoder endEncoding];
 
@@ -295,12 +305,17 @@ typedef struct {
         [commandBuffer presentDrawable:self.currentDrawable];
     }
 
+    // Add completion handler to ensure the command buffer is finished before processing
+    [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> buffer) {
+        [self processWorldCoordinates];
+    }];
+
     [commandBuffer commit];
 
     CFRelease(cvDepthTexture);
-    CFRelease(cvColorTexture);
     CVPixelBufferRelease(colorFrame);
 }
+
 
 - (void)updateUnsolvedVertexBufferWithDepth:(CVPixelBufferRef)depthFrame intrinsics:(matrix_float3x3)intrinsics {
     // Example function to populate the unsolvedVertexBuffer with depth data.
