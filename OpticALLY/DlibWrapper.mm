@@ -116,6 +116,7 @@ struct VertexOut {
         for (const auto& point : image_points) {
            uint32_t posX = static_cast<uint32_t>(point.x);
            uint32_t posY = static_cast<uint32_t>(point.y);
+            // Flip posX and posY if below does not work...
            uint32_t vertexID = posY * 640 + posX; // Calculate vertexID
 
            // Access PointCloudMetalView's solvedVertexBuffer
