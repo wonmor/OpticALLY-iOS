@@ -17,6 +17,7 @@ kernel void solve_vertex(texture2d<float, access::read> depthTexture [[ texture(
     float xrw = (pos.x - cameraIntrinsics[2][0]) * depth / cameraIntrinsics[0][0];
     float yrw = (pos.y - cameraIntrinsics[2][1]) * depth / cameraIntrinsics[1][1];
 
+    xyCoords[vid] = float2(pos.x, pos.y);
     worldCoords[vid] = float3(xrw, yrw, depth);
 }
 
