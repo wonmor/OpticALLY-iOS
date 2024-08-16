@@ -232,6 +232,17 @@
     CVPixelBufferUnlockBaseAddress(imageBuffer, 0);
 }
 
+- (simd_float3)convert2DPointTo3D:(simd_float2)point2D depth:(float)depth intrinsics:(simd_float3x3)intrinsics {
+    // Convert the 2D point to normalized camera coordinates
+    float normalizedX = (point2D.x - intrinsics.columns[2].x) / intrinsics.columns[0].x;
+    float normalizedY = (point2D.y - intrinsics.columns[2].y) / intrinsics.columns[1].y;
+
+    // Multiply by depth to get the world coordinates
+    simd_float3 worldCoordinate = simd_make_float3(normalizedX * depth, normalizedY * depth, depth);
+
+    return worldCoordinate;
+}
+
 + (dlib::rectangle)convertScaleCGRect:(CGRect)rect toDlibRectacleWithImageSize:(CGSize)size {
     long right = (1.0 - rect.origin.y ) * size.width;
     long left = right - rect.size.height * size.width;

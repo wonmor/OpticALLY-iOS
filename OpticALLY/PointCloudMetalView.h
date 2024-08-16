@@ -17,6 +17,8 @@ A view implementing point cloud rendering
 
 @interface PointCloudMetalView : MTKView
 @property (nonatomic, assign) BOOL shouldRender3DContent;
+@property (nonatomic, readonly) id<MTLBuffer> solvedVertexBuffer;
+@property (nonatomic, readonly) matrix_float3x3 intrinsics;
 @property (nonatomic, strong) id<MTLBuffer> worldCoordinatesBuffer;
 
 // Update depth frame

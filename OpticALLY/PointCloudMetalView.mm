@@ -189,24 +189,24 @@ typedef struct {
     // Access the world coordinates after the compute shader has run
     VertexOut* solvedVertices = (VertexOut*)[_solvedVertexBuffer contents];
 
-    NSUInteger numVertices = 640 * 480; // Assuming 640x480 resolution
-    
-    // Randomly generate a point within the 640x480 surface
-    uint32_t randomX = arc4random_uniform(640);
-    uint32_t randomY = arc4random_uniform(480);
-    simd_float2 point2D = simd_make_float2(randomX, randomY);
-
-    // Calculate the vertexID corresponding to the random 2D point
-    uint32_t vertexID = randomY * 640 + randomX;
-
-    // Get the depth at the randomly chosen 2D point
-    float depth = solvedVertices[vertexID].z;  // Assuming depth is stored in the z component
-
-    // Convert the 2D point to a 3D world coordinate
-    simd_float3 worldCoordinate = [self convert2DPointTo3D:point2D depth:depth intrinsics:intrinsics];
-
-    NSLog(@"Random Point2D (%f, %f) -> 3D World Coordinate: x = %f, y = %f, z = %f",
-          point2D.x, point2D.y, worldCoordinate.x, worldCoordinate.y, worldCoordinate.z);
+//    NSUInteger numVertices = 640 * 480; // Assuming 640x480 resolution
+//    
+//    // Randomly generate a point within the 640x480 surface
+//    uint32_t randomX = arc4random_uniform(640);
+//    uint32_t randomY = arc4random_uniform(480);
+//    simd_float2 point2D = simd_make_float2(randomX, randomY);
+//
+//    // Calculate the vertexID corresponding to the random 2D point
+//    uint32_t vertexID = randomY * 640 + randomX;
+//
+//    // Get the depth at the randomly chosen 2D point
+//    float depth = solvedVertices[vertexID].z;  // Assuming depth is stored in the z component
+//
+//    // Convert the 2D point to a 3D world coordinate
+//    simd_float3 worldCoordinate = [self convert2DPointTo3D:point2D depth:depth intrinsics:intrinsics];
+//
+//    NSLog(@"Random Point2D (%f, %f) -> 3D World Coordinate: x = %f, y = %f, z = %f",
+//          point2D.x, point2D.y, worldCoordinate.x, worldCoordinate.y, worldCoordinate.z);
 }
 
 
