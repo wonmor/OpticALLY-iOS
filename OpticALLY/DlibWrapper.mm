@@ -6,14 +6,21 @@
 #include <dlib/image_io.h>
 #include <opencv2/opencv.hpp>
 
+struct VertexOut {
+    float x;
+    float y;
+    float z;
+};
+
 @implementation DlibWrapper {
     dlib::shape_predictor sp;
 }
 
-- (instancetype)init {
+- (instancetype)initWithPointCloudView:(PointCloudMetalView *)pointCloudView {
     self = [super init];
     if (self) {
         _prepared = NO;
+        _pointCloudView = pointCloudView;
     }
     return self;
 }
@@ -105,6 +112,25 @@
         image_points.push_back(cv::Point2d(rightEyeRightCorner.x(), rightEyeRightCorner.y()));    // Right eye right corner
         image_points.push_back(cv::Point2d(leftMouthCorner.x(), leftMouthCorner.y()));    // Left Mouth corner
         image_points.push_back(cv::Point2d(rightMouthCorner.x(), rightMouthCorner.y()));    // Right mouth corner
+        
+        for (const auto& point : image_points) {
+           uint32_t posX = static_cast<uint32_t>(point.x);
+           uint32_t posY = static_cast<uint32_t>(point.y);
+           uint32_t vertexID = posY * 640 + posX; // Calculate vertexID
+
+           // Access PointCloudMetalView's solvedVertexBuffer
+           VertexOut *solvedVertices = (VertexOut *)[self.pointCloudView.solvedVertexBuffer contents];
+
+           // Get the world coordinates
+           float xrw = solvedVertices[vertexID].x;
+           float yrw = solvedVertices[vertexID].y;
+           float zrw = solvedVertices[vertexID].z;
+
+           NSLog(@"VertexID %u: xrw = %f, yrw = %f, zrw = %f", vertexID, xrw, yrw, zrw);
+           
+           // Use these world coordinates for further processing (e.g., in your model_points)
+           // Update your model_points based on the world coordinates
+       }
 
         std::vector<cv::Point3d> model_points;
         model_points.push_back(cv::Point3d(noseTip.x(), noseTip.y(), 0));    // Nose tip (z replaced with 0)

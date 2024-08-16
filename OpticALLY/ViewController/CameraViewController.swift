@@ -81,7 +81,6 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     let layer = AVSampleBufferDisplayLayer()
     let sampleQueue = DispatchQueue(label: "com.zweigraf.DisplayLiveSamples.sampleQueue", attributes: [])
     let faceQueue = DispatchQueue(label: "com.zweigraf.DisplayLiveSamples.faceQueue", attributes: [])
-    let wrapper = DlibWrapper()
     
     var currentMetadata: [AnyObject] = []
     
@@ -113,6 +112,8 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     @IBOutlet weak private var touchDepth: UILabel!
     @IBOutlet weak private var smoothDepthLabel: UILabel!
     @IBOutlet weak private var cloudView: PointCloudMetalView!
+    
+    var wrapper: DlibWrapper!
     
     var imageView: UIImageView!
     var session = AVCaptureSession()
@@ -559,6 +560,9 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        
+        // Initialize the DlibWrapper with cloudView
+        wrapper = DlibWrapper(pointCloudView: cloudView)
         
         openSession()
         startAVCaptureSession()

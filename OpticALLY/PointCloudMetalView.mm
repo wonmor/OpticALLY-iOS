@@ -153,23 +153,21 @@ typedef struct {
 - (void)processWorldCoordinates {
     VertexOut* solvedVertices = (VertexOut*)[_solvedVertexBuffer contents];
     simd_float2* xyCoords = (simd_float2*)[_xyCoordsBuffer contents];
-
-    // Below lines are very computationally heavy (printing out)
-    NSUInteger numVertices = 640 * 480; // Assuming 640x480 resolution
-
-    for (int i = 0; i < numVertices; i++) {
-        float xrw = solvedVertices[i].x;
-        float yrw = solvedVertices[i].y;
-        float depth = solvedVertices[i].z;
-
-        simd_float2 xy = xyCoords[i];  // Access the corresponding xy coordinates
-
-        NSLog(@"Vertex %d: xrw = %f, yrw = %f, depth = %f, pos.x = %f, pos.y = %f",
-              i, xrw, yrw, depth, xy.x, xy.y);
-    }
+//
+//    // Below lines are very computationally heavy (printing out)
+//    NSUInteger numVertices = 640 * 480; // Assuming 640x480 resolution
+//
+//    for (int i = 0; i < numVertices; i++) {
+//        float xrw = solvedVertices[i].x;
+//        float yrw = solvedVertices[i].y;
+//        float depth = solvedVertices[i].z;
+//
+//        simd_float2 xy = xyCoords[i];  // Access the corresponding xy coordinates
+//
+//        NSLog(@"Vertex %d: xrw = %f, yrw = %f, depth = %f, pos.x = %f, pos.y = %f",
+//              i, xrw, yrw, depth, xy.x, xy.y);
+//    }
 }
-
-
 
 - (NSString *)documentsPathForFileName:(NSString *)name {
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);

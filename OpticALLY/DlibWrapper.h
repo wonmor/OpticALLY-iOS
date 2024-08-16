@@ -1,11 +1,15 @@
 #import <Foundation/Foundation.h>
 #import <AVFoundation/AVFoundation.h>
+#import "PointCloudMetalView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DlibWrapper : NSObject
 
 @property (assign, nonatomic) BOOL prepared;
+@property (nonatomic, strong) PointCloudMetalView *pointCloudView;
+
+- (instancetype)initWithPointCloudView:(PointCloudMetalView *)pointCloudView;
 
 // Method to prepare the dlib wrapper (load the model)
 - (void)prepare;
