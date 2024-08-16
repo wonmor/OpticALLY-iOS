@@ -13,6 +13,7 @@ A view implementing point cloud rendering
 #import <CoreVideo/CoreVideo.h>
 #import <CoreImage/CoreImage.h>
 #import <AVFoundation/AVDepthData.h>
+#include <simd/simd.h>
 
 @interface PointCloudMetalView : MTKView
 @property (nonatomic, assign) BOOL shouldRender3DContent;
@@ -34,6 +35,10 @@ A view implementing point cloud rendering
 - (void)moveTowardCenter:(float)scale;
 
 - (void)processWorldCoordinates;
+
+- (simd_float3)convert2DPointTo3D:(simd_float2)point2D
+                           depth:(float)depth
+                       intrinsics:(matrix_float3x3)intrinsics;
 
 @end
 

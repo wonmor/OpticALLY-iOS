@@ -41,6 +41,7 @@ simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
     simd::float3 _center;   // current point camera looks at
     simd::float3 _eye;      // current camera position
     simd::float3 _up;       // camera "up" direction
+    matrix_float3x3 intrinsics;
 
     id<MTLCommandQueue> _commandQueue;
     id<MTLDepthStencilState> _depthStencilState;
@@ -49,6 +50,24 @@ simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
       id<MTLBuffer> _unsolvedVertexBuffer;
       id<MTLBuffer> _solvedVertexBuffer;
       NSUInteger numVertices;  // Declare numVertices
+}
+
+- (simd_float3)convert2DPointTo3D:(simd_float2)point2D
+                           depth:(float)depth
+                      intrinsics:(matrix_float3x3)intrinsics {
+    // Extract the intrinsic parameters
+    float fx = intrinsics.columns[0][0];
+    float fy = intrinsics.columns[1][1];
+    float cx = intrinsics.columns[2][0];
+    float cy = intrinsics.columns[2][1];
+
+    // Back-project the 2D point into 3D space
+    float xrw = (point2D.x - cx) * depth / fx;
+    float yrw = (point2D.y - cy) * depth / fy;
+    float zrw = depth;
+
+    // Return the 3D world coordinate
+    return simd_make_float3(xrw, yrw, zrw);
 }
 
 - (nonnull instancetype)initWithFrame:(CGRect)frameRect device:(nullable id<MTLDevice>)device {
@@ -170,18 +189,26 @@ typedef struct {
     // Access the world coordinates after the compute shader has run
     VertexOut* solvedVertices = (VertexOut*)[_solvedVertexBuffer contents];
 
-    // Assuming 640x480 resolution, change this if the resolution changes
-    NSUInteger numVertices = 640 * 480;
+    NSUInteger numVertices = 640 * 480; // Assuming 640x480 resolution
     
-    // Process and print the coordinates
-    for (int i = 0; i < numVertices; i++) {
-        float xrw = solvedVertices[i].x;
-        float yrw = solvedVertices[i].y;
-        float depth = solvedVertices[i].z;  // Assuming depth is stored in the z component
+    // Randomly generate a point within the 640x480 surface
+    uint32_t randomX = arc4random_uniform(640);
+    uint32_t randomY = arc4random_uniform(480);
+    simd_float2 point2D = simd_make_float2(randomX, randomY);
 
-        NSLog(@"Vertex %d: xrw = %f, yrw = %f, depth = %f", i, xrw, yrw, depth);
-    }
+    // Calculate the vertexID corresponding to the random 2D point
+    uint32_t vertexID = randomY * 640 + randomX;
+
+    // Get the depth at the randomly chosen 2D point
+    float depth = solvedVertices[vertexID].z;  // Assuming depth is stored in the z component
+
+    // Convert the 2D point to a 3D world coordinate
+    simd_float3 worldCoordinate = [self convert2DPointTo3D:point2D depth:depth intrinsics:intrinsics];
+
+    NSLog(@"Random Point2D (%f, %f) -> 3D World Coordinate: x = %f, y = %f, z = %f",
+          point2D.x, point2D.y, worldCoordinate.x, worldCoordinate.y, worldCoordinate.z);
 }
+
 
 
 - (void)drawRect:(CGRect)rect {
@@ -239,7 +266,7 @@ typedef struct {
     id<MTLTexture> colorTexture = CVMetalTextureGetTexture(cvColorTexture);
 
     // Initialize intrinsics
-    matrix_float3x3 intrinsics = depthData.cameraCalibrationData.intrinsicMatrix;
+    intrinsics = depthData.cameraCalibrationData.intrinsicMatrix;
     CGSize referenceDimensions = depthData.cameraCalibrationData.intrinsicMatrixReferenceDimensions;
 
     // Update _unsolvedVertexBuffer with data from the depth map or any other source
