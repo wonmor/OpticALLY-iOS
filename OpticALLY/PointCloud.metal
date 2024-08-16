@@ -5,6 +5,7 @@ using namespace metal;
 kernel void solve_vertex(texture2d<float, access::read> depthTexture [[ texture(0) ]],
                          constant float3x3& cameraIntrinsics [[ buffer(0) ]],
                          device float3* worldCoords [[ buffer(1) ]],
+                         device float2* xyCoords [[ buffer(2) ]],
                          uint vid [[ thread_position_in_grid ]])
 {
     uint2 pos;
