@@ -15,7 +15,6 @@ A view implementing point cloud rendering
 #import <AVFoundation/AVDepthData.h>
 
 @interface PointCloudMetalView : MTKView
-
 @property (nonatomic, assign) BOOL shouldRender3DContent;
 @property (nonatomic, strong) id<MTLBuffer> worldCoordinatesBuffer;
 

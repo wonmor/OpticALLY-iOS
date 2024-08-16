@@ -16,6 +16,16 @@ A view implementing point cloud rendering
 #import <CoreVideo/CoreVideo.h>
 #import <CoreImage/CoreImage.h>
 
+typedef struct {
+    float x, y, z;
+} VertexIn;
+
+typedef struct {
+    float x, y, z;
+    float r, g, b;
+} VertexOut;
+
+
 simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
     simd::float4 temp = { v.x, v.y, v.z, 0.0f };
     temp = simd_mul(m, temp);
@@ -33,8 +43,12 @@ simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
     simd::float3 _up;       // camera "up" direction
 
     id<MTLCommandQueue> _commandQueue;
-    id<MTLRenderPipelineState> _renderPipelineState;
     id<MTLDepthStencilState> _depthStencilState;
+    id<MTLComputePipelineState> _computePipelineState;  // Add this line
+      id<MTLRenderPipelineState> _renderPipelineState;
+      id<MTLBuffer> _unsolvedVertexBuffer;
+      id<MTLBuffer> _solvedVertexBuffer;
+      NSUInteger numVertices;  // Declare numVertices
 }
 
 - (nonnull instancetype)initWithFrame:(CGRect)frameRect device:(nullable id<MTLDevice>)device {
@@ -79,8 +93,18 @@ simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
     
     // Load the fragment function from the library
     id <MTLFunction> fragmentFunction = [defaultLibrary newFunctionWithName:@"fragmentShaderPoints"];
+    
+    // Load the compute function from the library
+    id <MTLFunction> computeFunction = [defaultLibrary newFunctionWithName:@"solve_vertex"];
 
-    // Set up a descriptor for creating a pipeline state object
+    // Create a compute pipeline state
+    NSError *error = nil;
+    _computePipelineState = [self.device newComputePipelineStateWithFunction:computeFunction error:&error];
+    if (!_computePipelineState) {
+        NSLog(@"Failed to created compute pipeline state, error %@", error);
+    }
+
+    // Set up the render pipeline
     MTLRenderPipelineDescriptor *pipelineStateDescriptor = [[MTLRenderPipelineDescriptor alloc] init];
     pipelineStateDescriptor.label = @"Texturing Pipeline";
     pipelineStateDescriptor.vertexFunction = vertexFunction;
@@ -88,27 +112,27 @@ simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
     pipelineStateDescriptor.colorAttachments[0].pixelFormat = self.colorPixelFormat;
     pipelineStateDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
     
-    MTLDepthStencilDescriptor *piplineDepthDescriptor = [[MTLDepthStencilDescriptor alloc] init];
-    piplineDepthDescriptor.depthWriteEnabled = true;
-    piplineDepthDescriptor.depthCompareFunction = MTLCompareFunctionLess;
-    _depthStencilState = [self.device newDepthStencilStateWithDescriptor:piplineDepthDescriptor];
+    MTLDepthStencilDescriptor *pipelineDepthDescriptor = [[MTLDepthStencilDescriptor alloc] init];
+    pipelineDepthDescriptor.depthWriteEnabled = true;
+    pipelineDepthDescriptor.depthCompareFunction = MTLCompareFunctionLess;
+    _depthStencilState = [self.device newDepthStencilStateWithDescriptor:pipelineDepthDescriptor];
     
-    NSError *error = NULL;
     _renderPipelineState = [self.device newRenderPipelineStateWithDescriptor:pipelineStateDescriptor
                                                                        error:&error];
 
-    if (!_renderPipelineState)
-    {
-        // Pipeline State creation could fail if we haven't properly set up our pipeline descriptor.
-        // If the Metal API validation is enabled, we can find out more information about what
-        // went wrong.  (Metal API validation is enabled by default when a debug build is run
-        // from Xcode)
+    if (!_renderPipelineState) {
         NSLog(@"Failed to created pipeline state, error %@", error);
     }
     
     // Create the command queue
     _commandQueue = [self.device newCommandQueue];
+
+    // Create buffers for the compute shader
+    NSUInteger numVertices = 640 * 480; // Example vertex count
+    _unsolvedVertexBuffer = [self.device newBufferWithLength:sizeof(VertexIn) * numVertices options:MTLResourceStorageModeShared];
+    _solvedVertexBuffer = [self.device newBufferWithLength:sizeof(VertexOut) * numVertices options:MTLResourceStorageModeShared];
 }
+
 
 // PointXYZ structure
 typedef struct {
@@ -157,36 +181,21 @@ typedef struct {
     }
 }
 
-
 - (void)drawRect:(CGRect)rect {
     if (!_shouldRender3DContent) {
         // Clear the view or skip drawing
-        // For example, you might clear the current drawable:
-        id<MTLCommandBuffer> commandBuffer = [_commandQueue commandBuffer];
-        MTLRenderPassDescriptor *renderPassDescriptor = self.currentRenderPassDescriptor;
-        if (renderPassDescriptor != nil) {
-            id<MTLRenderCommandEncoder> renderEncoder = [commandBuffer renderCommandEncoderWithDescriptor:renderPassDescriptor];
-            [renderEncoder setVertexBuffer:_worldCoordinatesBuffer offset:0 atIndex:2];
-            [renderEncoder endEncoding];
-            [commandBuffer presentDrawable:self.currentDrawable];
-        }
-        // Finalize rendering and process world coordinates
-        [commandBuffer commit];
-        [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> buffer) {
-            [self processWorldCoordinates];
-        }];
         return;
     }
-    
+
     __block AVDepthData* depthData = nil;
     __block CVPixelBufferRef colorFrame = nullptr;
-    
+
     dispatch_sync(_syncQueue, ^{
         depthData = self->_internalDepthFrame;
         colorFrame = self->_internalColorTexture;
         CVPixelBufferRetain(colorFrame);
     });
-    
+
     if (depthData == nil || colorFrame == nullptr)
         return;
 
@@ -206,9 +215,9 @@ typedef struct {
         CVPixelBufferRelease(colorFrame);
         return;
     }
-    
+
     id<MTLTexture> depthTexture = CVMetalTextureGetTexture(cvDepthTexture);
-    
+
     // Create a Metal texture from the color texture
     CVMetalTextureRef cvColorTexture = nullptr;
     if (kCVReturnSuccess != CVMetalTextureCacheCreateTextureFromImage(kCFAllocatorDefault,
@@ -224,68 +233,78 @@ typedef struct {
         CVPixelBufferRelease(colorFrame);
         return;
     }
-    
+
     id<MTLTexture> colorTexture = CVMetalTextureGetTexture(cvColorTexture);
     
-    matrix_float3x3 intrinsics = depthData.cameraCalibrationData.intrinsicMatrix;
-    CGSize referenceDimensions = depthData.cameraCalibrationData.intrinsicMatrixReferenceDimensions;
+    // Initialize intrinsics
+        matrix_float3x3 intrinsics = depthData.cameraCalibrationData.intrinsicMatrix;
+        CGSize referenceDimensions = depthData.cameraCalibrationData.intrinsicMatrixReferenceDimensions;
 
-    float ratio = referenceDimensions.width / CVPixelBufferGetWidth(depthFrame);
-    intrinsics.columns[0][0] /= ratio;
-    intrinsics.columns[1][1] /= ratio;
-    intrinsics.columns[2][0] /= ratio;
-    intrinsics.columns[2][1] /= ratio;
-    
+    // Update _unsolvedVertexBuffer with data from the depth map or any other source
+    [self updateUnsolvedVertexBufferWithDepth:depthFrame intrinsics:depthData.cameraCalibrationData.intrinsicMatrix];
+
     // Create a new command buffer for each renderpass to the current drawable
     id <MTLCommandBuffer> commandBuffer = [_commandQueue commandBuffer];
-    
-    // Obtain a renderPassDescriptor generated from the view's drawable textures
+
+    // Encode the compute command
+    id<MTLComputeCommandEncoder> computeEncoder = [commandBuffer computeCommandEncoder];
+    [computeEncoder setComputePipelineState:_computePipelineState];
+    [computeEncoder setBuffer:_unsolvedVertexBuffer offset:0 atIndex:0];
+    [computeEncoder setBuffer:_solvedVertexBuffer offset:0 atIndex:1];
+
+    MTLSize gridSize = MTLSizeMake(numVertices, 1, 1);
+    NSUInteger threadGroupSize = _computePipelineState.maxTotalThreadsPerThreadgroup;
+    MTLSize threadGroup = MTLSizeMake(threadGroupSize, 1, 1);
+    [computeEncoder dispatchThreads:gridSize threadsPerThreadgroup:threadGroup];
+    [computeEncoder endEncoding];
+
+    // Continue with rendering...
     MTLRenderPassDescriptor *renderPassDescriptor = self.currentRenderPassDescriptor;
-    
-    if(renderPassDescriptor != nil) {
+
+    if (renderPassDescriptor != nil) {
         MTLTextureDescriptor* depthTextureDescriptor = [[MTLTextureDescriptor alloc] init];
         depthTextureDescriptor.width = self.drawableSize.width;
         depthTextureDescriptor.height = self.drawableSize.height;
         depthTextureDescriptor.pixelFormat = MTLPixelFormatDepth32Float;
         depthTextureDescriptor.usage = MTLTextureUsageRenderTarget;
-        
+
         id<MTLTexture> depthTestTexture = [self.device newTextureWithDescriptor:depthTextureDescriptor];
 
         renderPassDescriptor.depthAttachment.loadAction = MTLLoadActionClear;
         renderPassDescriptor.depthAttachment.storeAction = MTLStoreActionStore;
         renderPassDescriptor.depthAttachment.clearDepth = 1.0;
         renderPassDescriptor.depthAttachment.texture = depthTestTexture;
-        
+
         id<MTLRenderCommandEncoder> renderEncoder = [commandBuffer renderCommandEncoderWithDescriptor:renderPassDescriptor];
         [renderEncoder setDepthStencilState:_depthStencilState];
         [renderEncoder setRenderPipelineState:_renderPipelineState];
 
-        // set arguments to shader
+        // Set arguments to the shader
         [renderEncoder setVertexTexture:depthTexture atIndex:0];
+        [renderEncoder setVertexBuffer:_solvedVertexBuffer offset:0 atIndex:2];
 
         simd::float4x4 finalViewMatrix = [self getFinalViewMatrix];
-
         [renderEncoder setVertexBytes:&finalViewMatrix length:sizeof(finalViewMatrix) atIndex:0];
         [renderEncoder setVertexBytes:&intrinsics length:sizeof(intrinsics) atIndex:1];
-
         [renderEncoder setFragmentTexture:colorTexture atIndex:0];
 
-        [renderEncoder drawPrimitives:MTLPrimitiveTypePoint
-                          vertexStart:0
-                          vertexCount:CVPixelBufferGetWidth(depthFrame) * CVPixelBufferGetHeight(depthFrame)];
-        
+        [renderEncoder drawPrimitives:MTLPrimitiveTypePoint vertexStart:0 vertexCount:numVertices];
+
         [renderEncoder endEncoding];
-        
-        // Schedule a present once the framebuffer is complete using the current drawable
+
         [commandBuffer presentDrawable:self.currentDrawable];
     }
-    
-    // Finalize rendering here & push the command buffer to the GPU
+
     [commandBuffer commit];
 
     CFRelease(cvDepthTexture);
     CFRelease(cvColorTexture);
     CVPixelBufferRelease(colorFrame);
+}
+
+- (void)updateUnsolvedVertexBufferWithDepth:(CVPixelBufferRef)depthFrame intrinsics:(matrix_float3x3)intrinsics {
+    // Example function to populate the unsolvedVertexBuffer with depth data.
+    // You would populate _unsolvedVertexBuffer here with your vertex data before running the compute shader.
 }
 
 - (void)rollAroundCenter:(float)angle {

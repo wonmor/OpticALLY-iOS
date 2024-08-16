@@ -8,6 +8,30 @@ Metal shaders used for point-cloud view
 #include <metal_stdlib>
 using namespace metal;
 
+typedef struct {
+    float x, y, z;
+} VertexIn;
+
+typedef struct {
+    float x, y, z;
+    float r, g, b;
+} VertexOut;
+
+kernel void solve_vertex(device VertexIn *unsolved [[ buffer(0) ]],
+                         device VertexOut *solved [[ buffer(1) ]],
+                         uint vid [[ thread_position_in_grid ]])
+{
+    // Example computation: Just copying input to output with some additional data
+    solved[vid].x = unsolved[vid].x;
+    solved[vid].y = unsolved[vid].y;
+    solved[vid].z = unsolved[vid].z;
+
+    // Assign a color for demonstration purposes
+    solved[vid].r = 1.0;
+    solved[vid].g = 0.0;
+    solved[vid].b = 0.0;
+}
+
 typedef struct
 {
     float4 clipSpacePosition [[position]];
