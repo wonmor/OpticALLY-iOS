@@ -33,7 +33,7 @@ typedef struct
 vertex RasterizerDataColor
 vertexShaderPoints(uint vertexID [[ vertex_id ]],
                    constant float4x4& viewMatrix [[ buffer(0) ]],
-                   device float3* worldCoords [[ buffer(1) ]])
+                   constant float3* worldCoords [[ buffer(1) ]])
 {
     RasterizerDataColor out;
 
