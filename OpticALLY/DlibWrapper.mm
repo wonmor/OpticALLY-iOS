@@ -115,32 +115,22 @@ struct VertexOut {
         
         std::vector<cv::Point3d> model_points;
         
-        // Assuming the viewport is 640x480
-           int viewportWidth = 640;
-           
            // Process each landmark point
            std::vector<dlib::point> landmarks = {noseTip, chin, leftEyeLeftCorner, rightEyeRightCorner, leftMouthCorner, rightMouthCorner};
         
         for (const auto& landmark : landmarks) {
-             uint32_t posX = static_cast<uint32_t>(landmark.x());
-             uint32_t posY = static_cast<uint32_t>(landmark.y());
-             
-             // Flip posX and posY if necessary to match orientation
-             uint32_t vertexID = posY * viewportWidth + posX; // Calculate vertexID
-             
-             // Access PointCloudMetalView's solvedVertexBuffer
-             VertexOut *solvedVertices = (VertexOut *)[self.pointCloudView.solvedVertexBuffer contents];
-             
-             // Get the world coordinates
-             float xrw = solvedVertices[vertexID].x;
-             float yrw = solvedVertices[vertexID].y;
-             float zrw = solvedVertices[vertexID].z;
-             
-             NSLog(@"VertexID %u: xrw = %f, yrw = %f, zrw = %f", vertexID, xrw, yrw, zrw);
-             
-             // Update model_points with the world coordinates
-             model_points.push_back(cv::Point3d(xrw, yrw, zrw));
-         }
+              // Create a simd_float2 from the landmark's x and y coordinates
+              simd_float2 point2D = simd_make_float2(landmark.x(), landmark.y());
+
+              // Call the query3DPointFrom2DCoordinates method on _pointCloudView
+              simd_float3 point3D = [_pointCloudView query3DPointFrom2DCoordinates:point2D];
+
+              // Log the result
+              NSLog(@"3D point for landmark (%f, %f) -> (%f, %f, %f)", point2D.x, point2D.y, point3D.x, point3D.y, point3D.z);
+
+              // Add the result to model_points for further processing
+              model_points.push_back(cv::Point3d(point3D.x, point3D.y, point3D.z));
+          }
   
         double focal_length = cvImg.cols;
         cv::Point2d center = cv::Point2d(cvImg.cols / 2, cvImg.rows / 2);
@@ -186,19 +176,6 @@ struct VertexOut {
         int num_steps = static_cast<int>(distance / 3); // 3 pixels apart
         double step_x = (end_point.x() - start_point.x()) / num_steps;
         double step_y = (end_point.y() - start_point.y()) / num_steps;
-
-        // Draw the coordinate axes
-        std::vector<cv::Point3d> axes_points3D;
-        axes_points3D.push_back(cv::Point3d(100, 0, 0)); // X-axis
-        axes_points3D.push_back(cv::Point3d(0, 100, 0)); // Y-axis
-        axes_points3D.push_back(cv::Point3d(0, 0, 100)); // Z-axis
-        
-        std::vector<cv::Point2d> axes_points2D;
-        cv::projectPoints(axes_points3D, rotation_vector, translation_vector, camera_matrix, dist_coeffs, axes_points2D);
-
-//        cv::line(cvImg, image_points[0], axes_points2D[0], cv::Scalar(0, 0, 255), 2); // X-axis in red
-//        cv::line(cvImg, image_points[0], axes_points2D[1], cv::Scalar(0, 255, 0), 2); // Y-axis in green
-//        cv::line(cvImg, image_points[0], axes_points2D[2], cv::Scalar(255, 0, 0), 2); // Z-axis in blue
 
         // Print rotation and translation vectors
         NSLog(@"Rotation Vector: [%f, %f, %f]", rotation_vector.at<double>(0), rotation_vector.at<double>(1), rotation_vector.at<double>(2));

@@ -165,26 +165,6 @@ typedef struct {
 - (void)processWorldCoordinates {
     VertexOut* solvedVertices = (VertexOut*)[_solvedVertexBuffer contents];
     simd_float2* xyCoords = (simd_float2*)[_xyCoordsBuffer contents];
-    
-    // Example: Query the 3D point from a given 2D coordinate
-        simd_float2 exampleCoord = simd_make_float2(320, 240);  // Example 2D point
-        simd_float3 result3D = [self query3DPointFrom2DCoordinates:exampleCoord];
-        
-        NSLog(@"3D point at (%f, %f) -> (%f, %f, %f)", exampleCoord.x, exampleCoord.y, result3D.x, result3D.y, result3D.z);
-//
-//    // Below lines are very computationally heavy (printing out)
-//    NSUInteger numVertices = 640 * 480; // Assuming 640x480 resolution
-//
-//    for (int i = 0; i < numVertices; i++) {
-//        float xrw = solvedVertices[i].x;
-//        float yrw = solvedVertices[i].y;
-//        float depth = solvedVertices[i].z;
-//
-//        simd_float2 xy = xyCoords[i];  // Access the corresponding xy coordinates
-//
-//        NSLog(@"Vertex %d: xrw = %f, yrw = %f, depth = %f, pos.x = %f, pos.y = %f",
-//              i, xrw, yrw, depth, xy.x, xy.y);
-//    }
 }
 
 - (NSString *)documentsPathForFileName:(NSString *)name {
