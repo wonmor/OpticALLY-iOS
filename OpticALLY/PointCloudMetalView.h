@@ -42,6 +42,8 @@ A view implementing point cloud rendering
                            depth:(float)depth
                        intrinsics:(matrix_float3x3)intrinsics;
 
+- (simd_float3)query3DPointFrom2DCoordinates:(simd_float2)xyCoords;
+
 @end
 
 

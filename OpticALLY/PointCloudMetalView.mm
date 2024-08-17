@@ -22,7 +22,6 @@ typedef struct {
 
 typedef struct {
     float x, y, z;
-    float r, g, b;
 } VertexOut;
 
 
@@ -70,6 +69,19 @@ simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
     
     // Return the 3D world coordinate
     return simd_make_float3(xrw, yrw, zrw);
+}
+
+- (simd_float3)query3DPointFrom2DCoordinates:(simd_float2)xyCoords {
+    NSUInteger resolutionWidth = 640;
+    NSUInteger resolutionHeight = 480;
+    NSUInteger flatIndex = xyCoords.y * resolutionWidth + xyCoords.x;
+
+    if (flatIndex < (resolutionWidth * resolutionHeight)) {
+        VertexOut* solvedVertices = (VertexOut*)[_solvedVertexBuffer contents];
+        return simd_make_float3(solvedVertices[flatIndex].x, solvedVertices[flatIndex].y, solvedVertices[flatIndex].z);
+    } else {
+        return simd_make_float3(0, 0, 0);  // Return a default value if the index is out of bounds
+    }
 }
 
 - (nonnull instancetype)initWithFrame:(CGRect)frameRect device:(nullable id<MTLDevice>)device {
@@ -153,6 +165,12 @@ typedef struct {
 - (void)processWorldCoordinates {
     VertexOut* solvedVertices = (VertexOut*)[_solvedVertexBuffer contents];
     simd_float2* xyCoords = (simd_float2*)[_xyCoordsBuffer contents];
+    
+    // Example: Query the 3D point from a given 2D coordinate
+        simd_float2 exampleCoord = simd_make_float2(320, 240);  // Example 2D point
+        simd_float3 result3D = [self query3DPointFrom2DCoordinates:exampleCoord];
+        
+        NSLog(@"3D point at (%f, %f) -> (%f, %f, %f)", exampleCoord.x, exampleCoord.y, result3D.x, result3D.y, result3D.z);
 //
 //    // Below lines are very computationally heavy (printing out)
 //    NSUInteger numVertices = 640 * 480; // Assuming 640x480 resolution
