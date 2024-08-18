@@ -18,8 +18,6 @@
 		963A88DB2C00E84B00A68720 /* test_model in Resources */ = {isa = PBXBuildFile; fileRef = 963A88DA2C00E84B00A68720 /* test_model */; };
 		963DF9B32AFEDAF700E6E589 /* PostScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 963DF9B22AFEDAF600E6E589 /* PostScanView.swift */; };
 		9646DC6C2B1064F500092549 /* glasses.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 9646DC6B2B1064F500092549 /* glasses.mp4 */; };
-		9647457D2C3AA66900263A59 /* dlib in Resources */ = {isa = PBXBuildFile; fileRef = 9647457C2C3AA66900263A59 /* dlib */; };
-		9647457F2C3AA66D00263A59 /* libdlib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9647457E2C3AA66D00263A59 /* libdlib.a */; };
 		96491C5F2AFD746300FD3666 /* ConsoleOutputCatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96491C5E2AFD746300FD3666 /* ConsoleOutputCatcher.swift */; };
 		9663605A2B6E0200001D2119 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 966360592B6E0200001D2119 /* Lottie */; };
 		966360602B6E03FF001D2119 /* face-found-successfully.json in Resources */ = {isa = PBXBuildFile; fileRef = 9663605B2B6E03FF001D2119 /* face-found-successfully.json */; };
@@ -63,11 +61,9 @@
 		9680F7DD2B22D6FD00F38A6F /* ARFaceTrackingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9680F7DC2B22D6FD00F38A6F /* ARFaceTrackingView.swift */; };
 		969AC2802AB7550C0096892E /* IntroductionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 969AC27F2AB7550C0096892E /* IntroductionView.swift */; };
 		969AC2822AB7554C0096892E /* Extensions+Modifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 969AC2812AB7554C0096892E /* Extensions+Modifiers.swift */; };
-		969C3F6F2C420A780088C077 /* shape_predictor_68_face_landmarks.dat in Resources */ = {isa = PBXBuildFile; fileRef = 96D59E7D2C3AA55C00A79563 /* shape_predictor_68_face_landmarks.dat */; };
 		969E42EE2ADC9D9E00E77BA7 /* promo.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 969E42ED2ADC9D9E00E77BA7 /* promo.mp4 */; };
 		969E42EF2ADC9D9E00E77BA7 /* promo.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 969E42ED2ADC9D9E00E77BA7 /* promo.mp4 */; };
 		969E42F02ADC9D9E00E77BA7 /* promo.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 969E42ED2ADC9D9E00E77BA7 /* promo.mp4 */; };
-		96A29DDF2C4B91120063C0D0 /* CameraPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96A29DDE2C4B91110063C0D0 /* CameraPreview.swift */; };
 		96B2A6232B5C5F320031952C /* ObjCBridge.py in Resources */ = {isa = PBXBuildFile; fileRef = 9671FDC52B5B14F2004DA4C2 /* ObjCBridge.py */; };
 		96B64F6B2B3D8AF70003E06D /* VideoTexturedFace.shader in Resources */ = {isa = PBXBuildFile; fileRef = 96B64F6A2B3D8AF70003E06D /* VideoTexturedFace.shader */; };
 		96B64F6D2B3D8FCA0003E06D /* faceTexture.metal in Sources */ = {isa = PBXBuildFile; fileRef = 96B64F6C2B3D8FCA0003E06D /* faceTexture.metal */; };
@@ -89,7 +85,6 @@
 		96BE3DA82BE57C830021EBED /* opencv2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96BE3DA72BE57C830021EBED /* opencv2.framework */; };
 		96C055152BD2F544003981FC /* Open3D-iOS in Frameworks */ = {isa = PBXBuildFile; productRef = 96C055142BD2F544003981FC /* Open3D-iOS */; };
 		96C055192BD2F729003981FC /* CountdownTimerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96C055182BD2F729003981FC /* CountdownTimerView.swift */; };
-		96D59E7C2C3AA54300A79563 /* DlibWrapper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 96D59E7A2C3AA54200A79563 /* DlibWrapper.mm */; };
 		96E3E0042B867684004374D1 /* FaceIDScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E3E0032B867684004374D1 /* FaceIDScanView.swift */; };
 		96E856BB2B6EFFE00037C3BB /* PreviousScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E856BA2B6EFFE00037C3BB /* PreviousScanView.swift */; };
 		96E856BD2B6F0CF90037C3BB /* cargo-loading.json in Resources */ = {isa = PBXBuildFile; fileRef = 96E856BC2B6F0CF90037C3BB /* cargo-loading.json */; };
@@ -149,8 +144,6 @@
 		963DF9B22AFEDAF600E6E589 /* PostScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostScanView.swift; sourceTree = "<group>"; };
 		963FF2822B6316F700B89019 /* OpticALLY.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = OpticALLY.entitlements; sourceTree = "<group>"; };
 		9646DC6B2B1064F500092549 /* glasses.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = glasses.mp4; sourceTree = "<group>"; };
-		9647457C2C3AA66900263A59 /* dlib */ = {isa = PBXFileReference; lastKnownFileType = folder; path = dlib; sourceTree = "<group>"; };
-		9647457E2C3AA66D00263A59 /* libdlib.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libdlib.a; sourceTree = "<group>"; };
 		96491C5E2AFD746300FD3666 /* ConsoleOutputCatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsoleOutputCatcher.swift; sourceTree = "<group>"; };
 		9663605B2B6E03FF001D2119 /* face-found-successfully.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "face-found-successfully.json"; sourceTree = "<group>"; };
 		9663605C2B6E03FF001D2119 /* face-id.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "face-id.json"; sourceTree = "<group>"; };
@@ -200,7 +193,6 @@
 		969AC2812AB7554C0096892E /* Extensions+Modifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Extensions+Modifiers.swift"; sourceTree = "<group>"; };
 		969DF1C62B12916900FA9ABE /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		969E42ED2ADC9D9E00E77BA7 /* promo.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = promo.mp4; sourceTree = "<group>"; };
-		96A29DDE2C4B91110063C0D0 /* CameraPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPreview.swift; sourceTree = "<group>"; };
 		96B64F6A2B3D8AF70003E06D /* VideoTexturedFace.shader */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = VideoTexturedFace.shader; sourceTree = "<group>"; };
 		96B64F6C2B3D8FCA0003E06D /* faceTexture.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = faceTexture.metal; sourceTree = "<group>"; };
 		96B64F6E2B3D90410003E06D /* TextureToImage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TextureToImage.swift; sourceTree = "<group>"; };
@@ -220,9 +212,6 @@
 		96BE3DA12BE579950021EBED /* OpenCVWrapper.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = OpenCVWrapper.mm; sourceTree = "<group>"; };
 		96BE3DA72BE57C830021EBED /* opencv2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = opencv2.framework; sourceTree = "<group>"; };
 		96C055182BD2F729003981FC /* CountdownTimerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountdownTimerView.swift; sourceTree = "<group>"; };
-		96D59E7A2C3AA54200A79563 /* DlibWrapper.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = DlibWrapper.mm; sourceTree = "<group>"; };
-		96D59E7B2C3AA54200A79563 /* DlibWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlibWrapper.h; sourceTree = "<group>"; };
-		96D59E7D2C3AA55C00A79563 /* shape_predictor_68_face_landmarks.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = shape_predictor_68_face_landmarks.dat; sourceTree = "<group>"; };
 		96E3E0032B867684004374D1 /* FaceIDScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceIDScanView.swift; sourceTree = "<group>"; };
 		96E856BA2B6EFFE00037C3BB /* PreviousScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviousScanView.swift; sourceTree = "<group>"; };
 		96E856BC2B6F0CF90037C3BB /* cargo-loading.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "cargo-loading.json"; sourceTree = "<group>"; };
@@ -261,7 +250,6 @@
 			files = (
 				96BE3DA82BE57C830021EBED /* opencv2.framework in Frameworks */,
 				96BE3D9F2BE579450021EBED /* CoreImage.framework in Frameworks */,
-				9647457F2C3AA66D00263A59 /* libdlib.a in Frameworks */,
 				96BE3D9D2BE579400021EBED /* CoreVideo.framework in Frameworks */,
 				96BE3D9B2BE5793B0021EBED /* Foundation.framework in Frameworks */,
 				96BE3D992BE579330021EBED /* UIKit.framework in Frameworks */,
@@ -324,12 +312,27 @@
 			path = ViewController;
 			sourceTree = "<group>";
 		};
+		9679F8EC2AD095F200686F13 /* Shader */ = {
+			isa = PBXGroup;
+			children = (
+				9679F8B92AD0907900686F13 /* Mixer.metal */,
+				9679F8C42AD0907900686F13 /* PassThrough.metal */,
+				9679F8B52AD0907900686F13 /* VideoMixer.swift */,
+				9679F8B42AD0907900686F13 /* HistogramCalculator.h */,
+				9679F8BC2AD0907900686F13 /* HistogramCalculator.m */,
+				9679F8CA2AD0907A00686F13 /* AAPLTransforms.h */,
+				9679F8C72AD0907A00686F13 /* PointCloudMetalView.h */,
+				9679F8C92AD0907A00686F13 /* PointCloudMetalView.mm */,
+				9679F8C82AD0907A00686F13 /* FilterRenderer.swift */,
+				9679F8B82AD0907900686F13 /* AAPLTransforms.mm */,
+				9679F8C12AD0907900686F13 /* PointCloud.metal */,
+			);
+			path = Shader;
+			sourceTree = "<group>";
+		};
 		967EE0582AAE06FB000C4D5F = {
 			isa = PBXGroup;
 			children = (
-				96D59E7D2C3AA55C00A79563 /* shape_predictor_68_face_landmarks.dat */,
-				9647457E2C3AA66D00263A59 /* libdlib.a */,
-				9647457C2C3AA66900263A59 /* dlib */,
 				96E8A6722BED5E1B00CCBC18 /* nlohmann */,
 				96E8A6702BED5B7400CCBC18 /* cppcodec */,
 				96E8A66E2BED59F700CCBC18 /* fmt */,
@@ -363,6 +366,7 @@
 				9671FDC42B5B14F2004DA4C2 /* Python */,
 				969DF1C62B12916900FA9ABE /* GoogleService-Info.plist */,
 				969E42E82ADC9ABD00E77BA7 /* Resources */,
+				9679F8EC2AD095F200686F13 /* Shader */,
 				9679F8EB2AD095AA00686F13 /* ViewController */,
 				9679F8E82AD0956E00686F13 /* Storyboard */,
 				967EE0912AAEDBD2000C4D5F /* ViewModel */,
@@ -372,7 +376,6 @@
 				96F0CF172B12A34400417716 /* ExternalData.swift */,
 				96491C5E2AFD746300FD3666 /* ConsoleOutputCatcher.swift */,
 				96B64F722B3D90490003E06D /* ScnMatrix.swift */,
-				96A29DDE2C4B91110063C0D0 /* CameraPreview.swift */,
 				969AC2812AB7554C0096892E /* Extensions+Modifiers.swift */,
 				96E856C92B7045510037C3BB /* SceneKitPreview.swift */,
 				9680F7DA2B2283B200F38A6F /* CapturedImageSampler.swift */,
@@ -392,22 +395,9 @@
 				96BE3DA02BE579950021EBED /* OpenCVWrapper.h */,
 				96BE3DA12BE579950021EBED /* OpenCVWrapper.mm */,
 				96E8A65A2BEC480500CCBC18 /* EigenWrapper.h */,
-				96D59E7B2C3AA54200A79563 /* DlibWrapper.h */,
-				96D59E7A2C3AA54200A79563 /* DlibWrapper.mm */,
 				96E8A65B2BEC480500CCBC18 /* EigenWrapper.mm */,
 				96E8A6672BED575C00CCBC18 /* ImageDepthBridge.h */,
 				96E8A6742BED634E00CCBC18 /* PointCloudProcessingBridge.h */,
-				9679F8B92AD0907900686F13 /* Mixer.metal */,
-				9679F8C42AD0907900686F13 /* PassThrough.metal */,
-				9679F8B52AD0907900686F13 /* VideoMixer.swift */,
-				9679F8B42AD0907900686F13 /* HistogramCalculator.h */,
-				9679F8BC2AD0907900686F13 /* HistogramCalculator.m */,
-				9679F8CA2AD0907A00686F13 /* AAPLTransforms.h */,
-				9679F8C72AD0907A00686F13 /* PointCloudMetalView.h */,
-				9679F8C92AD0907A00686F13 /* PointCloudMetalView.mm */,
-				9679F8C82AD0907A00686F13 /* FilterRenderer.swift */,
-				9679F8B82AD0907900686F13 /* AAPLTransforms.mm */,
-				9679F8C12AD0907900686F13 /* PointCloud.metal */,
 				96E8A6682BED579000CCBC18 /* ImageDepthBridge.mm */,
 				96E8A6752BED637D00CCBC18 /* PointCloudProcessingBridge.mm */,
 				963A88D72BFD9BD200A68720 /* base64.cpp */,
@@ -653,7 +643,6 @@
 				9663606C2B6E0BD7001D2119 /* right-arrow-2.json in Resources */,
 				96E856BD2B6F0CF90037C3BB /* cargo-loading.json in Resources */,
 				969E42EE2ADC9D9E00E77BA7 /* promo.mp4 in Resources */,
-				969C3F6F2C420A780088C077 /* shape_predictor_68_face_landmarks.dat in Resources */,
 				96E8A6642BEC960A00CCBC18 /* rapidjson in Resources */,
 				963A88DB2C00E84B00A68720 /* test_model in Resources */,
 				967EE06C2AAE06FE000C4D5F /* Preview Assets.xcassets in Resources */,
@@ -665,7 +654,6 @@
 				96E899B22BEAB9D200CCBC18 /* ios.toolchain.cmake in Resources */,
 				966360632B6E03FF001D2119 /* face-scan-2.json in Resources */,
 				967EE0692AAE06FE000C4D5F /* Assets.xcassets in Resources */,
-				9647457D2C3AA66900263A59 /* dlib in Resources */,
 				96E8A66F2BED59F700CCBC18 /* fmt in Resources */,
 				966360602B6E03FF001D2119 /* face-found-successfully.json in Resources */,
 				9614F0AF2ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */,
@@ -737,7 +725,6 @@
 				9679F8E12AD0907A00686F13 /* CameraView.swift in Sources */,
 				966360662B6E064B001D2119 /* LottieView.swift in Sources */,
 				96E856C22B7041E60037C3BB /* FilesViewModel.swift in Sources */,
-				96D59E7C2C3AA54300A79563 /* DlibWrapper.mm in Sources */,
 				9680F7DD2B22D6FD00F38A6F /* ARFaceTrackingView.swift in Sources */,
 				96E856C62B70441C0037C3BB /* FolderDetailView.swift in Sources */,
 				9679F8D52AD0907A00686F13 /* HistogramCalculator.m in Sources */,
@@ -752,7 +739,6 @@
 				9679F8D92AD0907A00686F13 /* PointCloud.metal in Sources */,
 				962058102BB2209F00F9084F /* SignalStrengthView.swift in Sources */,
 				96E8A6692BED579000CCBC18 /* ImageDepthBridge.mm in Sources */,
-				96A29DDF2C4B91120063C0D0 /* CameraPreview.swift in Sources */,
 				9679F8CE2AD0907A00686F13 /* AppDelegate.swift in Sources */,
 				96F0CF182B12A34400417716 /* ExternalData.swift in Sources */,
 				96E8A65C2BEC480500CCBC18 /* EigenWrapper.mm in Sources */,
@@ -939,16 +925,6 @@
 					"$(PROJECT_DIR)",
 				);
 				GCC_PREFIX_HEADER = "/Users/johnseong/Documents/GitHub/OpticALLY-iOS/OpticALLY/PrefixHeader.pch";
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-					DLIB_NO_GUI_SUPPORT,
-					DLIB_JPEG_SUPPORT,
-					NDEBUG,
-					DLIB_USE_BLAS,
-					DLIB_USE_LAPACK,
-					DLIB_PNG_SUPPORT,
-				);
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = "";
 				"HEADER_SEARCH_PATHS[arch=*]" = "";
@@ -972,10 +948,6 @@
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
-				);
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)",
 				);
 				MARKETING_VERSION = 1.0;
 				MTL_HEADER_SEARCH_PATHS = "";
@@ -1018,14 +990,6 @@
 					"$(PROJECT_DIR)",
 				);
 				GCC_PREFIX_HEADER = "/Users/johnseong/Documents/GitHub/OpticALLY-iOS/OpticALLY/PrefixHeader.pch";
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					DLIB_NO_GUI_SUPPORT,
-					DLIB_JPEG_SUPPORT,
-					NDEBUG,
-					DLIB_USE_BLAS,
-					DLIB_USE_LAPACK,
-					DLIB_PNG_SUPPORT,
-				);
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = OpticALLY/Info.plist;
@@ -1048,10 +1012,6 @@
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
-				);
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)",
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.theoptically.optically;

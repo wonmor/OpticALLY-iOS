@@ -32,6 +32,10 @@ struct PointCloudMetadata {
     
     var image: CVPixelBuffer
     var depth: AVDepthData
+    
+    var faceNode: SCNNode
+    var faceAnchor: ARFaceAnchor?
+    var faceTexture: UIImage
 }
 
 /// ExternalData is a central repository for managing and processing 3D depth and color data, primarily focusing on creating point cloud geometries and exporting them in PLY format. It enables the integration of various sensory data inputs and computational geometry processing.
@@ -410,8 +414,15 @@ struct ExternalData {
         var vertices: [SCNVector3] = []
         var colors: [UIColor] = []
         var depthValues: [Float] = []
+        var depthValuesForLandmarks: [Float] = []
         
         let cameraIntrinsics = depthData.cameraCalibrationData!.intrinsicMatrix
+        let inverseLensDistortionLookupTable = convertLensDistortionLookupTable(lookupTable: depthData.cameraCalibrationData!.inverseLensDistortionLookupTable!)
+        let lensDistortionLookupTable = convertLensDistortionLookupTable(lookupTable: depthData.cameraCalibrationData!.lensDistortionLookupTable!)
+        let lensDistortionCenter = CGPoint(x: CGFloat(depthData.cameraCalibrationData!.lensDistortionCenter.x), y: CGFloat(depthData.cameraCalibrationData!.lensDistortionCenter.y))
+        
+        let intrinsicWidth = depthData.cameraCalibrationData!.intrinsicMatrixReferenceDimensions.width
+        let intrinsicHeight = depthData.cameraCalibrationData!.intrinsicMatrixReferenceDimensions.height
         
         let convertedDepthData = depthData.converting(toDepthDataType: kCVPixelFormatType_DepthFloat16)
         let depthDataMap = convertedDepthData.depthDataMap
@@ -426,6 +437,8 @@ struct ExternalData {
                 depthValues.append(depthValue)
             }
         }
+        
+        let unsortedDepthValues = depthValues
         
         // Sort the depth values
         depthValues.sort()
@@ -446,13 +459,26 @@ struct ExternalData {
                 if depthValue > depthThreshold {
                     continue // Skip this point
                 }
-
+                
+                let scaleFactor = Float(1.5) // Custom value for depth exaggeration
                 let xrw = (Float(x) - cameraIntrinsics.columns.2.x) * depthValue / cameraIntrinsics.columns.0.x
                 let yrw = (Float(y) - cameraIntrinsics.columns.2.y) * depthValue / cameraIntrinsics.columns.1.y
-                let zrw =  depthValue
+                let zrw =  depthValue * scaleFactor
                 
                 let vertex = SCNVector3(x: xrw, y: yrw, z: zrw)
                 
+//                print("Coordinate Check (\(round(metadata.leftEyePosition.x)), \(round(metadata.leftEyePosition.y))) VS. (\(x), \(y))")
+//                
+//                // Check if within threshold range for left eye
+//                if Int(x) == Int(round(metadata.leftEyePosition.x)) && Int(y) == Int(round(metadata.leftEyePosition.y)) {
+//                    print("Near Left eye landmark point x: \(x), y: \(y), z: \(depthValue * scaleFactor)")
+//                }
+//                
+//                // Check if within threshold range for right eye
+//                if Int(x) == Int(round(metadata.rightEyePosition.x)) && Int(y) == Int(round(metadata.rightEyePosition.y)) {
+//                    print("Near Right eye landmark point x: \(x), y: \(y), z: \(depthValue * scaleFactor)")
+//                }
+//                
                 vertices.append(vertex)
                 
                 let colorOffset = y * bytesPerRow + x * 4 // Assuming BGRA format
@@ -470,6 +496,12 @@ struct ExternalData {
             }
         }
         
+        // Create the geometry source for vertices
+        let vertexSource = SCNGeometrySource(vertices: vertices)
+        
+        // Assuming the UIColor's data is not properly formatted for the SCNGeometrySource
+        // Instead, create an array of normalized float values representing the color data
+        
         // Convert UIColors to Float Components
         var colorComponents: [CGFloat] = []
         for color in colors {
@@ -484,7 +516,44 @@ struct ExternalData {
         
         // Create the geometry source for colors
         let colorData = NSData(bytes: colorComponents, length: colorComponents.count * MemoryLayout<CGFloat>.size)
-   
+        let colorSource = SCNGeometrySource(data: colorData as Data,
+                                            semantic: .color,
+                                            vectorCount: colors.count,
+                                            usesFloatComponents: true,
+                                            componentsPerVector: 4,
+                                            bytesPerComponent: MemoryLayout<CGFloat>.size,
+                                            dataOffset: 0,
+                                            dataStride: MemoryLayout<CGFloat>.size * 4)
+        
+        // Combine Vertex and Color Sources
+        let geometrySources = [vertexSource, colorSource]
+        
+        // Create the geometry element
+        let indices: [Int32] = Array(0..<Int32(vertices.count))
+        let indexData = Data(bytes: indices, count: indices.count * MemoryLayout<Int32>.size)
+        let element = SCNGeometryElement(data: indexData,
+                                         primitiveType: .point,
+                                         primitiveCount: vertices.count,
+                                         bytesPerIndex: MemoryLayout<Int32>.size)
+        
+        // Create the point cloud geometry
+        let pointCloudGeometry = SCNGeometry(sources: [vertexSource, colorSource], elements: [element])
+        
+        // Set the lighting model to constant to ensure the points are fully lit
+        pointCloudGeometry.firstMaterial?.lightingModel = .constant
+        
+        // Set additional material properties as needed, for example, to make the points more visible
+        pointCloudGeometry.firstMaterial?.isDoubleSided = true
+        
+        var pointCloudNode = SCNNode(geometry: pointCloudGeometry)
+        
+        pointCloudNode = updateNodePivot(node: pointCloudNode, usingDepthData: depthData, withMetadata: metadata)
+        
+        pointCloudGeometries.append(pointCloudGeometry)
+        pointCloudNodes.append(pointCloudNode)
+        
+        // alignPointClouds(scaleX: scaleX, scaleY: scaleY, scaleZ: scaleZ)
+        
         // For saving as .BIN file...
         let convertedDepthMap = convertDepthData(depthMap: depthData.depthDataMap)
         var depthRawData = Data()
@@ -676,6 +745,159 @@ struct ExternalData {
         } catch {
             print("Failed to write PLY file: \(error)")
         }
+    }
+    
+    static func exportFaceNodesToFolderPath(to folderURL: URL) {
+        let fileManager = FileManager.default
+        var fileURLs = [URL]()
+
+        // Export PLY files
+        for (index, geometry) in pointCloudGeometries.enumerated() {
+            let plyString = createPLYString(for: geometry)
+            let plyFileName = "geometry_\(index).ply"
+            let plyFileURL = folderURL.appendingPathComponent(plyFileName)
+
+            do {
+                try plyString.write(to: plyFileURL, atomically: true, encoding: .ascii)
+                fileURLs.append(plyFileURL)
+            } catch {
+                print("Failed to write PLY file: \(error)")
+            }
+        }
+
+        // Export OBJ files for faceNodes using MDLAsset
+        for (index, metadata) in pointCloudDataArray.enumerated() {
+            let objFileName = "faceNode_\(index).obj"
+            let objFileURL = folderURL.appendingPathComponent(objFileName)
+
+            if let device = MTLCreateSystemDefaultDevice(),
+               let mesh: MDLMesh? = MDLMesh(scnGeometry: metadata.faceNode.geometry!, bufferAllocator: MTKMeshBufferAllocator(device: device)) {
+                let asset = MDLAsset()
+                asset.add(mesh!)
+                do {
+                    try asset.export(to: objFileURL)
+                    fileURLs.append(objFileURL)
+
+                    // Append the MTL reference to the OBJ file
+                    let mtlFileName = "material_\(index).mtl"
+                    let mtlReference = "mtllib \(mtlFileName)\n"
+                    if var objContent = try? String(contentsOf: objFileURL) {
+                        objContent = mtlReference + objContent
+                        try objContent.write(to: objFileURL, atomically: true, encoding: .utf8)
+                    }
+                } catch {
+                    print("Failed to write OBJ file: \(error)")
+                }
+            }
+
+            // Export the texture image
+            let textureFileName = "texture_\(index).png"
+            let textureFileURL = folderURL.appendingPathComponent(textureFileName)
+            if let textureData = metadata.faceTexture.pngData() {
+                do {
+                    try textureData.write(to: textureFileURL)
+                    fileURLs.append(textureFileURL)
+                } catch {
+                    print("Failed to write texture file: \(error)")
+                }
+            }
+
+            // Create and export the MTL file
+            let mtlFileName = "material_\(index).mtl"
+            let mtlFileURL = folderURL.appendingPathComponent(mtlFileName)
+            let mtlContent = createMTLString(textureFileName: textureFileName)
+            do {
+                try mtlContent.write(to: mtlFileURL, atomically: true, encoding: .utf8)
+                fileURLs.append(mtlFileURL)
+            } catch {
+                print("Failed to write MTL file: \(error)")
+            }
+        }
+
+        print("All files were successfully exported to: \(folderURL.path)")
+    }
+    
+    static func exportFaceNodesAsZIP(to url: URL) {
+        let fileManager = FileManager.default
+        let tempDirectoryURL = fileManager.temporaryDirectory
+        var fileURLs = [URL]()
+        
+        // Export PLY files
+        for (index, geometry) in pointCloudGeometries.enumerated() {
+            let plyString = createPLYString(for: geometry)
+            let plyFileName = "geometry_\(index).ply"
+            let plyFileURL = tempDirectoryURL.appendingPathComponent(plyFileName)
+            
+            do {
+                try plyString.write(to: plyFileURL, atomically: true, encoding: .ascii)
+                fileURLs.append(plyFileURL)
+            } catch {
+                print("Failed to write PLY file: \(error)")
+            }
+        }
+        
+        // Export OBJ files for faceNodes using MDLAsset
+        for (index, metadata) in pointCloudDataArray.enumerated() {
+            let objFileName = "faceNode_\(index).obj"
+            let objFileURL = tempDirectoryURL.appendingPathComponent(objFileName)
+            
+            if let device = MTLCreateSystemDefaultDevice(),
+               let mesh: MDLMesh? = MDLMesh(scnGeometry: metadata.faceNode.geometry!, bufferAllocator: MTKMeshBufferAllocator(device: device)) {
+                let asset = MDLAsset()
+                asset.add(mesh!)
+                do {
+                    try asset.export(to: objFileURL)
+                    fileURLs.append(objFileURL)
+                    
+                    // Append the MTL reference to the OBJ file
+                    let mtlFileName = "material_\(index).mtl"
+                    let mtlReference = "mtllib \(mtlFileName)\n"
+                    if var objContent = try? String(contentsOf: objFileURL) {
+                        objContent = mtlReference + objContent
+                        try objContent.write(to: objFileURL, atomically: true, encoding: .utf8)
+                    }
+                } catch {
+                    print("Failed to write OBJ file: \(error)")
+                }
+            }
+            
+            // Export the texture image
+            let textureFileName = "texture_\(index).png"
+            let textureFileURL = tempDirectoryURL.appendingPathComponent(textureFileName)
+            if let textureData = metadata.faceTexture.pngData() {
+                do {
+                    try textureData.write(to: textureFileURL)
+                    fileURLs.append(textureFileURL)
+                } catch {
+                    print("Failed to write texture file: \(error)")
+                }
+            }
+            
+            // Create and export the MTL file
+            let mtlFileName = "material_\(index).mtl"
+            let mtlFileURL = tempDirectoryURL.appendingPathComponent(mtlFileName)
+            let mtlContent = "newmtl Material\nmap_Kd \(textureFileName)\n"
+            do {
+                try mtlContent.write(to: mtlFileURL, atomically: true, encoding: .utf8)
+                fileURLs.append(mtlFileURL)
+            } catch {
+                print("Failed to write MTL file: \(error)")
+            }
+        }
+        
+        // Create a ZIP file using SSZipArchive
+        SSZipArchive.createZipFile(atPath: url.path, withFilesAtPaths: fileURLs.map { $0.path })
+        
+        do {
+            let zipData = try Data(contentsOf: url)
+            saveLandmark3DMM(data: zipData)
+            
+        } catch {
+            print("Error reading back ZIP data: \(error)")
+        }
+        
+        // Cleanup temporary files
+        fileURLs.forEach { try? fileManager.removeItem(at: $0) }
     }
     
     static func exportUsingMultiwayRegistrationAsPLY(to url: URL) {

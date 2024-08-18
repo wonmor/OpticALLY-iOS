@@ -86,7 +86,7 @@ struct BackgroundVideoPlayer: UIViewControllerRepresentable {
     
     func makeUIViewController(context: Context) -> AVPlayerViewController {
         let playerViewController = AVPlayerViewController()
-        setupPlayer(for: playerViewController, with: videoName, playMuted: true)
+        setupPlayer(for: playerViewController, with: videoName, playMuted: false)
         return playerViewController
     }
     

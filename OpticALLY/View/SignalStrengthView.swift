@@ -19,6 +19,8 @@ struct SignalStrengthView: View {
             case .left:
                 let delta = abs(20 - cameraViewController.faceYawAngle)
                 
+                print("Delta left: \(delta)")
+                
                 if delta >= 14 {
                     return 3
                     
@@ -52,6 +54,8 @@ struct SignalStrengthView: View {
                 
             case .right where cameraViewController.faceYawAngle < -20:
                 let delta = abs(cameraViewController.faceYawAngle - 20)
+                
+                print("Delta right: \(delta)")
                 
                 if delta >= 14 {
                     return 3

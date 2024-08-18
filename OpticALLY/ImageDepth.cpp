@@ -480,6 +480,22 @@ void ImageDepth::loadDepth(const std::string& file) {
         std::cout << "xy shape: (" << xy.rows << ", " << xy.cols << ")" << std::endl;
         std::cout << "img_undistort shape: (" << img_undistort.rows << ", " << img_undistort.cols << ")" << std::endl;
         std::cout << "idx size: " << idx.size() << std::endl;
+
+    // Filter xy and img_undistort based on idx
+        
+    
+    
+//    if (img_undistort.channels() == 1) {
+//           img_undistort = img_undistort.reshape(1, img_undistort.total());
+//       } else if (img_undistort.channels() == 3) {
+//           img_undistort = img_undistort.reshape(3, img_undistort.total() / 3);
+//       }
+    
+    //img_undistort.convertTo(img_undistort, CV_32F, 1);
+    
+   
+    
+    // img_undistort = img_undistort.reshape(1, height * width);
     
         for (size_t i = 0; i < idx.size(); i++) {
             if (idx[i]) {
@@ -621,29 +637,6 @@ void ImageDepth::loadDepth(const std::string& file) {
         std::cout << "Max value of undistorted depth map: " << max_value << std::endl;
         std::cout << "Min value of undistorted depth map: " << min_value << std::endl;
         std::cout << "Average value of undistorted depth map: " << average_value << std::endl;
-}
-
-std::tuple<float, float, float> ImageDepth::projectTo3D(int x, int y) const {
-    double fx = intrinsic(0, 0);
-    double fy = intrinsic(1, 1);
-    double cx = intrinsic(0, 2);
-    double cy = intrinsic(1, 2);
-
-    // Extract depth using (x, y) coordinates
-    float depth = depth_map_undistort.at<float>(y, x);
-    
-    // Check if depth is within valid range
-    if (depth <= min_depth || depth >= max_depth) {
-        return std::make_tuple(std::numeric_limits<float>::quiet_NaN(),
-                               std::numeric_limits<float>::quiet_NaN(),
-                               std::numeric_limits<float>::quiet_NaN());
-    }
-
-    // Project to 3D point
-    float px = (x - cx) / fx * depth;
-    float py = (y - cy) / fy * depth;
-
-    return std::make_tuple(px, py, depth);
 }
 
 void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask) {

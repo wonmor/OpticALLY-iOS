@@ -7,10 +7,14 @@
 
 import SwiftUI
 import UIKit
+import ARKit
 import SceneKit
 import AVFoundation
+import Vision
 import CoreImage
 import CoreVideo
+
+let showVisionLandmarkPoints = false
 
 /// CameraViewController manages the camera and AR functionalities within the OpticALLY app.
 /// It utilizes ARKit for face tracking and AVFoundation for depth data processing.
@@ -55,12 +59,115 @@ private let faceTextureSize = 1024 //px
 /// Should the face mesh be filled in? (i.e. fill in the eye and mouth holes with geometry)
 private let fillMesh = true
 
-class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDelegate, ObservableObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureMetadataOutputObjectsDelegate {
-    var contentNode: SCNNode?
+extension CameraViewController {
+    func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
+        //1. Setup The FaceNode & Add The Eyes
+        faceNode = node
+        faceNode!.addChildNode(leftEye)
+        faceNode!.addChildNode(rightEye)
+        faceNode!.transform = node.transform
+        
+        //2. Get The Distance Of The Eyes From The Camera
+        trackDistance()
+    }
     
+    func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
+        guard let faceAnchor = anchor as? ARFaceAnchor else {
+            return
+        }
+        
+        guard let faceAnchor = anchor as? ARFaceAnchor,
+              let frame = arSCNView!.session.currentFrame
+        else {
+            return
+        }
+        
+        let leftEyeTransform = faceAnchor.leftEyeTransform
+        let rightEyeTransform = faceAnchor.rightEyeTransform
+        
+        DispatchQueue.main.async { [self] in
+            // Convert the transform to an SCNVector3 for position
+            leftEyePosition3D = SCNVector3(leftEyeTransform.columns.3.x, leftEyeTransform.columns.3.y, leftEyeTransform.columns.3.z)
+            rightEyePosition3D = SCNVector3(rightEyeTransform.columns.3.x, rightEyeTransform.columns.3.y, rightEyeTransform.columns.3.z)
+            
+            updatePupillaryDistance()
+        }
+        
+        // Update face geometry
+        self.previewFaceGeometry.update(from: faceAnchor.geometry)
+        
+        // Extract the Euler angles from the viewModel
+        let yawAngle = faceYawAngle
+        let pitchAngle = facePitchAngle
+        let rollAngle = faceRollAngle
+        
+        // Convert angles to radians and then to Float (the actual values used for vector transformations as they only accept radians, not degrees)
+        let yaw = Float(yawAngle * .pi / 180)
+        let pitch = Float(pitchAngle * .pi / 180)
+        let roll = Float(rollAngle * .pi / 180)
+        
+        // Create rotation matrices
+        let rotationY = SCNMatrix4MakeRotation(yaw, 0, 1, 0)
+        let rotationX = SCNMatrix4MakeRotation(pitch, 1, 0, 0)
+        let rotationZ = SCNMatrix4MakeRotation(roll, 0, 0, 1)
+        
+        // Combine rotations
+        let rotation = SCNMatrix4Mult(SCNMatrix4Mult(rotationZ, rotationX), rotationY)
+        
+        // Set the transform of the previewFaceNode
+        self.previewFaceNode.transform = rotation
+        
+        // Match the world position of the faceAnchor
+        let worldTransform = SCNMatrix4(faceAnchor.transform)// Convert simd_float4x4 to SCNMatrix4
+        self.previewFaceNode.worldPosition = SCNVector3(worldTransform.m41, worldTransform.m42, worldTransform.m43)
+        
+        scnFaceGeometry.update(from: faceAnchor.geometry)
+        faceUvGenerator.update(frame: frame, scene: self.arSCNView!.scene, headNode: node, geometry: scnFaceGeometry)
+        
+        self.previewFaceAnchor = faceAnchor
+        self.previewFaceAnchors.append(faceAnchor)
+        
+        self.previewYaws.append(yaw)
+        self.previewPitches.append(pitch)
+        self.previewRolls.append(roll)
+        
+        faceNode!.transform = node.transform
+        
+        //2. Check We Have A Valid ARFaceAnchor
+        guard let faceAnchor = anchor as? ARFaceAnchor else { return }
+        
+        //3. Update The Transform Of The Left & Right Eyes From The Anchor Transform
+        leftEye.simdTransform = faceAnchor.leftEyeTransform
+        rightEye.simdTransform = faceAnchor.rightEyeTransform
+        
+        //4. Get The Distance Of The Eyes From The Camera
+        trackDistance()
+    }
+    
+    /// Tracks The Distance Of The Eyes From The Camera
+    func trackDistance() {
+        DispatchQueue.main.async {
+            //4. Get The Distance Of The Eyes From The Camera
+            let leftEyeDistanceFromCamera = self.leftEye.worldPosition - SCNVector3Zero
+            let rightEyeDistanceFromCamera = self.rightEye.worldPosition - SCNVector3Zero
+            
+            //5. Calculate The Average Distance Of The Eyes To The Camera
+            let averageDistance = (leftEyeDistanceFromCamera.length() + rightEyeDistanceFromCamera.length()) / 2
+            let averageDistanceCM = (Int(round(averageDistance * 100)))
+            
+            self.faceDistance = averageDistanceCM
+        }
+    }
+}
+
+class CameraViewController: UIViewController, ARSessionDelegate, ARSCNViewDelegate, AVCaptureDataOutputSynchronizerDelegate, ObservableObject {
+    var contentNode: SCNNode?
+
     // MARK: - Properties
+    @Published var arSCNView: ARSCNView?
     @Published var currentImage: UIImage!
     @Published var faceDistance: Int?
+    @Published var faceAnchor: ARFaceAnchor?
     
     @Published var faceYawAngle: Double = 0.0
     @Published var facePitchAngle: Double = 0.0
@@ -78,15 +185,21 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     var leftEye = SCNNode()
     var rightEye = SCNNode()
     
-    let layer = AVSampleBufferDisplayLayer()
-    let sampleQueue = DispatchQueue(label: "com.zweigraf.DisplayLiveSamples.sampleQueue", attributes: [])
-    let faceQueue = DispatchQueue(label: "com.zweigraf.DisplayLiveSamples.faceQueue", attributes: [])
-    
-    var currentMetadata: [AnyObject] = []
-    
+    private var avCaptureSession: AVCaptureSession = AVCaptureSession()
     private var outputSynchronizer: AVCaptureDataOutputSynchronizer?
-    private var output = AVCaptureVideoDataOutput()
+    private var videoDataOutput = AVCaptureVideoDataOutput()
     private var depthDataOutput = AVCaptureDepthDataOutput()
+    
+    private var faceUvGenerator: FaceTextureGenerator!
+    private var scnFaceGeometry: ARSCNFaceGeometry!
+    
+    /// Secondary scene view that shows the captured face
+    private var previewSceneView: SCNView!
+    private var previewFaceNode: SCNNode!
+    private var previewFaceGeometry: ARSCNFaceGeometry!
+    private var previewFaceAnchor: ARFaceAnchor!
+    
+    private var previewFaceAnchors: [ARFaceAnchor] = []
     
     private var previewYaws: [Float] = []
     private var previewPitches: [Float] = []
@@ -95,17 +208,23 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     private var sessionQueue = DispatchQueue(label: "session queue")
     private var dataOutputQueue = DispatchQueue(label: "data output queue")
     
+    private var isUsingARSession: Bool = true
+    
     private var synchronizedDepthData: AVDepthData?
+    
     private var synchronizedVideoPixelBuffer: CVPixelBuffer?
     
-    private var input: AVCaptureDeviceInput? = nil
+    private let faceDetectionRequest = VNDetectFaceLandmarksRequest()
+    private let faceDetectionHandler = VNSequenceRequestHandler()
+    
+    private var faceGeometry: ARSCNFaceGeometry?
+    private var faceNode: SCNNode?
     
     private var scaleX: Float = 1.0
     private var scaleY: Float = 1.0
     private var scaleZ: Float = 1.0
     
     // MARK: - UI Bindings
-    @IBOutlet weak private var preview: UIView!
     @IBOutlet weak private var cameraUnavailableLabel: UILabel!
     @IBOutlet weak private var depthSmoothingSwitch: UISwitch!
     @IBOutlet weak private var mixFactorSlider: UISlider!
@@ -113,93 +232,23 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     @IBOutlet weak private var smoothDepthLabel: UILabel!
     @IBOutlet weak private var cloudView: PointCloudMetalView!
     
-    var wrapper: DlibWrapper!
-    
     var imageView: UIImageView!
-    var session = AVCaptureSession()
     
-    func openSession() {
-        // Use AVCaptureDeviceDiscoverySession to find the front camera
-        let discoverySession = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInTrueDepthCamera], mediaType: .video, position: .front)
-        
-        guard let device = discoverySession.devices.first else {
-            print("No front camera found.")
-            return
-        }
-        
-        do {
-            input = try AVCaptureDeviceInput(device: device)
-            
-            output = AVCaptureVideoDataOutput()
-            output.setSampleBufferDelegate(self, queue: sampleQueue)
-            
-            let metaOutput = AVCaptureMetadataOutput()
-            metaOutput.setMetadataObjectsDelegate(self, queue: faceQueue)
-            
-            session.beginConfiguration()
-            
-            if session.canAddInput(input!) {
-                session.addInput(input!)
-            }
-            if session.canAddOutput(output) {
-                session.addOutput(output)
-            }
-            if session.canAddOutput(metaOutput) {
-                session.addOutput(metaOutput)
-            }
-            
-            if session.canAddOutput(depthDataOutput) {
-                session.addOutput(depthDataOutput)
-            }
-            
-            session.commitConfiguration()
-            
-            let settings: [AnyHashable: Any] = [kCVPixelBufferPixelFormatTypeKey as AnyHashable: Int(kCVPixelFormatType_32BGRA)]
-            output.videoSettings = settings as? [String : Any]
-            
-            // availableMetadataObjectTypes change when output is added to session.
-            // before it is added, availableMetadataObjectTypes is empty
-            metaOutput.metadataObjectTypes = [AVMetadataObject.ObjectType.face]
-            
-            wrapper.prepare()
-            session.sessionPreset = AVCaptureSession.Preset.vga640x480
-            
-            print("Session configured!")
-            
-            // Start the session on a background thread
-            DispatchQueue.global(qos: .userInitiated).async {
-                self.session.startRunning()
-            }
-        } catch {
-            print("Error configuring AVCaptureSession: \(error)")
+    deinit {
+        if self.arSCNView != nil {
+            pauseARSession()
+            print("ARSession Paused")
         }
     }
     
-    // MARK: AVCaptureVideoDataOutputSampleBufferDelegate
-    /*
-     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-     connection.videoOrientation = AVCaptureVideoOrientation.portrait
-     
-     if !currentMetadata.isEmpty {
-     let boundsArray = currentMetadata
-     .compactMap { $0 as? AVMetadataFaceObject }
-     .map { NSValue(cgRect: $0.bounds) }
-     
-     wrapper?.doWork(on: sampleBuffer, inRects: boundsArray)
-     }
-     
-     layer.enqueue(sampleBuffer)
-     }
-     
-     func captureOutput(_ output: AVCaptureOutput, didDrop sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-     print("DidDropSampleBuffer")
-     }
-     */
-    
-     // MARK: AVCaptureMetadataOutputObjectsDelegate
-    
-    func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
-        currentMetadata = metadataObjects // Update metadata
+    public func renderer(_: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
+        guard anchor is ARFaceAnchor else {
+            return nil
+        }
+        
+        let node = SCNNode(geometry: scnFaceGeometry)
+        scnFaceGeometry.firstMaterial?.diffuse.contents = faceUvGenerator.texture
+        return node
     }
     
     func updatePupillaryDistance() {
@@ -337,17 +386,12 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     private func processFrameAV(depthData: AVDepthData, imageData: CVImageBuffer) {
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self = self else { return }
-            
-            var depthDataToUse = depthData
-            
-            depthDataToUse = depthData.converting(toDepthDataType: kCVPixelFormatType_DepthFloat32)
-            
-            let depthPixelBuffer = depthDataToUse.depthDataMap
+            let depthPixelBuffer = depthData.depthDataMap
             
             let depthWidth = CVPixelBufferGetWidth(depthPixelBuffer)
             let depthHeight = CVPixelBufferGetHeight(depthPixelBuffer)
             
-            let colorPixelBuffer = self.resizePixelBuffer(imageData, width: depthWidth, height: depthHeight)
+            let colorPixelBuffer = resizePixelBuffer(imageData, width: depthWidth, height: depthHeight)
             
             CVPixelBufferLockBaseAddress(depthPixelBuffer, .readOnly)
             CVPixelBufferLockBaseAddress(colorPixelBuffer!, .readOnly)
@@ -365,11 +409,6 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             let colorBytesPerRow = CVPixelBufferGetBytesPerRow(colorPixelBuffer!)
             
             let depthPixelFormatType = CVPixelBufferGetPixelFormatType(depthPixelBuffer)
-            
-            // Convert depthPixelFormatType to a string
-            let depthPixelFormatTypeString = FourCharCodeToString(depthPixelFormatType)
-            print("Depth Pixel Format Type: \(depthPixelFormatTypeString)")  // Log the pixel format type
-            
             var depthBytesPerPixel: Int = 0 // Initialize with zero
             
             switch depthPixelFormatType {
@@ -377,12 +416,11 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
                 depthBytesPerPixel = 4
             case kCVPixelFormatType_DepthFloat16:
                 depthBytesPerPixel = 2
+                // Add more cases as necessary for different formats
             default:
-                print("Unsupported depth pixel format type: \(depthPixelFormatTypeString)")
+                print("Unsupported depth pixel format type")
                 return
             }
-            
-            print("depthBytesPerPixel: \(depthBytesPerPixel)")
             
             // Ensure that you're iterating within the bounds of both buffers
             let commonWidth = min(colorWidth, depthWidth)
@@ -392,46 +430,38 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             let colorBaseAddress = CVPixelBufferGetBaseAddress(colorPixelBuffer!)!.assumingMemoryBound(to: UInt8.self)
             
             let metadata = PointCloudMetadata(
-                yaw: Double(self.previewYaws.last ?? 0.0),
-                pitch: Double(self.previewRolls.last ?? 0.0),
-                roll: Double(self.previewPitches.last ?? 0.0),
-                leftEyePosition: self.leftEyePosition,
-                rightEyePosition: self.rightEyePosition,
-                chinPosition: self.chinPosition,
-                leftEyePosition3D: self.leftEyePosition3D,
-                rightEyePosition3D: self.rightEyePosition3D,
-                chinPosition3D: self.chinPosition3D,
+                yaw: Double(previewYaws.last ?? 0.0),
+                pitch: Double(previewRolls.last ?? 0.0),
+                roll: Double(previewPitches.last ?? 0.0),
+                leftEyePosition: leftEyePosition,
+                rightEyePosition: rightEyePosition,
+                chinPosition: chinPosition,
+                leftEyePosition3D: leftEyePosition3D,
+                rightEyePosition3D: rightEyePosition3D,
+                chinPosition3D: chinPosition3D,
                 image: imageData,
-                depth: depthDataToUse
+                depth: depthData,
+                faceNode: previewFaceNode,
+                faceAnchor: previewFaceAnchors.last ?? nil,
+                faceTexture: textureToImage(self.faceUvGenerator.texture)!
             )
             
             ExternalData.pointCloudDataArray.append(metadata)
             
             // Call the point cloud creation function
             ExternalData.convertToSceneKitModel(
-                depthData: depthDataToUse,
+                depthData: depthData,
                 colorPixelBuffer: colorPixelBuffer!,
                 colorData: colorBaseAddress,
                 metadata: metadata,
                 width: commonWidth,
                 height: commonHeight,
                 bytesPerRow: colorBytesPerRow, // Use the correct bytes per row for color data,
-                scaleX: self.scaleX,
-                scaleY: self.scaleY,
-                scaleZ: self.scaleZ
+                scaleX: scaleX,
+                scaleY: scaleY,
+                scaleZ: scaleZ
             )
         }
-    }
-    
-    // Function to convert FourCharCode to String
-    func FourCharCodeToString(_ code: FourCharCode) -> String {
-        let bytes: [UInt8] = [
-            UInt8((code >> 24) & 0xff),
-            UInt8((code >> 16) & 0xff),
-            UInt8((code >> 8) & 0xff),
-            UInt8(code & 0xff)
-        ]
-        return String(bytes: bytes, encoding: .ascii) ?? "????"
     }
     
     func drawEyePositionsOnImage(image: UIImage, leftEyePosition: CGPoint, rightEyePosition: CGPoint) -> UIImage? {
@@ -529,6 +559,75 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     
     private var landmarkNodes = [SCNNode]() // Add this property to your class
     
+    private func detectFaceLandmarks(in pixelBuffer: CVPixelBuffer, sceneView: SCNView, depthData: AVDepthData) {
+        // Use the flipped pixel buffer for face landmark detection
+        try? faceDetectionHandler.perform([faceDetectionRequest], on: pixelBuffer, orientation: .right)
+        
+        guard let observations = faceDetectionRequest.results else {
+            return
+        }
+        
+        // Remove previously added landmark nodes
+        for node in landmarkNodes {
+            node.removeFromParentNode()
+        }
+        landmarkNodes.removeAll() // Clear the array
+        
+        for observation in observations {
+            guard let landmarks = observation.landmarks else {
+                continue
+            }
+            
+            // Process each landmark region and add a node for it
+            func processLandmarkRegion(_ region: VNFaceLandmarkRegion2D?) {
+                guard let region = region else { return }
+                let points = region.normalizedPoints.map { normalizedPoint in
+                    averagePoint(from: [normalizedPoint], in: observation.boundingBox, pixelBuffer: pixelBuffer)
+                }
+                
+                for point in points {
+                    let hitTestResults = arSCNView?.hitTest(point, options: nil) ?? []
+                    
+                    for result in hitTestResults {
+                        if let node: SCNNode? = result.node, node!.geometry is ARSCNFaceGeometry {
+                            let sphere = SCNNode(geometry: SCNSphere(radius: 0.005))
+                            let localCoordinates = node!.convertPosition(result.worldCoordinates, from: nil)
+                            sphere.position = localCoordinates
+                            
+                            if showVisionLandmarkPoints {
+                                // Add the sphere as a child of the face node and keep a reference to it
+                                node!.addChildNode(sphere)
+                                landmarkNodes.append(sphere)
+                                
+                                let previewSphere = SCNNode(geometry: SCNSphere(radius: 0.005))
+                                let localCoordinatesPreview = previewFaceNode!.convertPosition(result.worldCoordinates, from: nil)
+                                previewSphere.position = localCoordinatesPreview
+                                
+                                // Add the sphere as a child of the preview face node and keep a reference to it
+                                previewFaceNode!.addChildNode(previewSphere)
+                                landmarkNodes.append(previewSphere)
+                            }
+                            
+                            break
+                        }
+                    }
+                }
+            }
+            
+            // Process all the different landmarks
+            processLandmarkRegion(landmarks.leftEye)
+            processLandmarkRegion(landmarks.rightEye)
+            processLandmarkRegion(landmarks.leftEyebrow)
+            processLandmarkRegion(landmarks.rightEyebrow)
+            processLandmarkRegion(landmarks.nose)
+            processLandmarkRegion(landmarks.noseCrest)
+            processLandmarkRegion(landmarks.medianLine)
+            processLandmarkRegion(landmarks.outerLips)
+            processLandmarkRegion(landmarks.innerLips)
+            processLandmarkRegion(landmarks.faceContour)
+        }
+    }
+    
     private func averagePoint(from normalizedPoints: [CGPoint], in boundingBox: CGRect, pixelBuffer: CVPixelBuffer) -> CGPoint {
         // Calculate the average point in normalized Vision coordinates
         let viewSize = UIScreen.main.bounds.size
@@ -558,36 +657,120 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         return finalPoint
     }
     
+    private func configureARSCNView() {
+        arSCNView = ARSCNView(frame: view.bounds)
+        arSCNView!.isHidden = false
+        view.addSubview(arSCNView!) // Add to view hierarchy
+        arSCNView!.session.delegate = self
+        arSCNView!.delegate = self
+        
+        // Initialize face geometry
+        if let device = arSCNView?.device {
+            self.scnFaceGeometry = ARSCNFaceGeometry(device: self.arSCNView!.device!, fillMesh: fillMesh)
+            
+            self.faceUvGenerator = FaceTextureGenerator(
+                device: self.arSCNView!.device!,
+                library: self.arSCNView!.device!.makeDefaultLibrary()!,
+                viewportSize: self.view.bounds.size,
+                face: self.scnFaceGeometry,
+                textureSize: faceTextureSize)
+            
+            // Initialize and configure previewSceneView
+            previewSceneView = SCNView()
+            previewSceneView.translatesAutoresizingMaskIntoConstraints = false
+            previewSceneView.rendersContinuously = true
+            previewSceneView.backgroundColor = UIColor.clear
+            previewSceneView.allowsCameraControl = true
+            self.view.addSubview(previewSceneView)
+            previewSceneView.scene = SCNScene()
+            
+            // Setup constraints for previewSceneView
+            NSLayoutConstraint.activate([
+                previewSceneView.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
+                previewSceneView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 20), // Align to top with 20 points of padding
+                previewSceneView.widthAnchor.constraint(equalToConstant: 200),
+                previewSceneView.heightAnchor.constraint(equalToConstant: 200)
+            ])
+            
+            let camera = SCNCamera()
+            camera.fieldOfView = 30
+            camera.zNear = 0.001
+            camera.zFar = 1000
+            
+            let cameraNode = SCNNode()
+            cameraNode.camera = camera
+            cameraNode.position = SCNVector3Make(0, 0, 0.5) // Adjust the z-position to bring the camera closer
+            previewSceneView.scene!.rootNode.addChildNode(cameraNode)
+            cameraNode.look(at: SCNVector3Zero)
+            
+            self.previewFaceGeometry = ARSCNFaceGeometry(device: self.arSCNView!.device!, fillMesh: true)
+            self.previewFaceNode = SCNNode(geometry: self.previewFaceGeometry)
+            let faceScale = Float(4.0)
+            self.previewFaceNode.scale = SCNVector3(x: faceScale, y: faceScale, z: faceScale)
+            self.previewFaceGeometry.firstMaterial!.diffuse.contents = faceUvGenerator.texture
+            self.previewFaceGeometry.firstMaterial!.isDoubleSided = true
+            self.previewFaceAnchor = faceAnchor
+            
+            if showVisionLandmarkPoints {
+                previewSceneView.scene!.rootNode.addChildNode(self.previewFaceNode!)
+            }
+        }
+    }
+    
+    private func startARSession() {
+        let configuration = ARFaceTrackingConfiguration()
+        if ARFaceTrackingConfiguration.supportsFrameSemantics(.personSegmentation) {
+            configuration.frameSemantics.insert(.personSegmentation)
+        }
+        configuration.isLightEstimationEnabled = true
+        arSCNView!.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
+        print("ARSession Running")
+        
+        // Create a node with face geometry and add it to the scene
+        if let faceNode: SCNNode? = SCNNode(geometry: faceGeometry) {
+            arSCNView?.scene.rootNode.addChildNode(faceNode!)
+        }
+    }
+    
+    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
-        // Initialize the DlibWrapper with cloudView
-        wrapper = DlibWrapper(pointCloudView: cloudView)
+        let configuration = ARFaceTrackingConfiguration()
+        if ARFaceTrackingConfiguration.supportsFrameSemantics(.personSegmentation) {
+            configuration.frameSemantics.insert(.personSegmentation)
+        }
         
-        openSession()
-        startAVCaptureSession()
-        
-        configureCloudView()
-        //addAndConfigureSwiftUIView()
-        
-        // Configure imageView
-        // configureImageView()
-        
-        setupEyeNode()
-        
-        layer.frame = preview.bounds
-        
-        preview.layer.addSublayer(layer)
-        preview.transform = CGAffineTransformMakeRotation(CGFloat(Double.pi))
-        preview.transform = CGAffineTransformScale(preview.transform, 1, -1)
-        
-        self.view.bringSubviewToFront(preview)
-        
-        view.layoutIfNeeded()
+        arSCNView!.session.run(configuration,
+                               options: [.removeExistingAnchors,
+                                         .resetTracking,
+                                         .resetSceneReconstruction,
+                                         .stopTrackedRaycasts])
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        configureARSCNView()
+        configureAVCaptureSession()
+        switchSession(toARSession: true)
+        
+        configureCloudView()
+        addAndConfigureSwiftUIView()
+        
+        // Configure imageView
+        // configureImageView()
+        
+        // Add gesture recognizer for taps
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTapGesture(_:)))
+        arSCNView?.addGestureRecognizer(tapGesture)
+        
+        // self.view.bringSubviewToFront(arSCNView!)
+        self.view.bringSubviewToFront(previewSceneView)
+        // self.view.bringSubviewToFront(imageView)
+        
+        //2. Setup The Eye Nodes
+        setupEyeNode()
     }
     
     /// Creates To SCNSpheres To Loosely Represent The Eyes
@@ -625,7 +808,38 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         imageView.backgroundColor = .clear // Set background color as needed
     }
     
-    @objc private func handleTapGesture(_ gesture: UITapGestureRecognizer) {}
+    // This method is used to test SceneKit's hit-testing feature alongside ARKit FaceTrackingConfiguration...
+    @objc private func handleTapGesture(_ gesture: UITapGestureRecognizer) {
+        let location = gesture.location(in: arSCNView)
+        
+        let hitTestResults = arSCNView?.hitTest(location, options: nil) ?? []
+        
+        if showVisionLandmarkPoints {
+            for result in hitTestResults {
+                if let node: SCNNode? = result.node, node!.geometry is ARSCNFaceGeometry {
+                    let sphere = SCNNode(geometry: SCNSphere(radius: 0.005))
+                    
+                    // Convert hit test result to face node's local coordinate system
+                    let localCoordinates = node!.convertPosition(result.worldCoordinates, from: nil)
+                    sphere.position = localCoordinates
+                    
+                    // Add the sphere as a child of the face node
+                    node!.addChildNode(sphere)
+                    
+                    let previewSphere = SCNNode(geometry: SCNSphere(radius: 0.005))
+                    
+                    // Convert hit test result to face node's local coordinate system
+                    let localCoordinatesPreview = previewFaceNode!.convertPosition(result.worldCoordinates, from: nil)
+                    previewSphere.position = localCoordinatesPreview
+                    
+                    // Add the sphere as a child of the face node
+                    previewFaceNode!.addChildNode(previewSphere)
+                    
+                    break
+                }
+            }
+        }
+    }
     
     private func configureCloudView() {
         cloudView.translatesAutoresizingMaskIntoConstraints = false
@@ -658,6 +872,57 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         ])
     }
     
+    // MARK: - ARSessionDelegate Methods
+    func session(_ session: ARSession, didUpdate frame: ARFrame) {
+        if ExternalData.isSavingFileAsPLY && isUsingARSession {
+            switchSession(toARSession: false)
+        }
+        // Store frame data for processing
+        do {
+            let imageSampler = try CapturedImageSampler(arSession: session, viewController: self)
+            
+            guard let faceAnchor = frame.anchors.compactMap({ $0 as? ARFaceAnchor }).first else { return }
+            
+            self.faceAnchor = faceAnchor
+            
+            DispatchQueue.main.async { [self] in
+                self.synchronizedDepthData = frame.capturedDepthData
+                self.synchronizedVideoPixelBuffer = frame.capturedImage
+                
+                DispatchQueue.main.async { [self] in
+                    self.faceAnchor = faceAnchor
+                    
+                    // Extract the Euler angles from the faceAnchor's transform
+                    let transform = faceAnchor.transform
+                    let pitchRadians = atan2(transform.columns.1.z, transform.columns.1.y)
+                    let yawRadians = atan2(transform.columns.0.z, sqrt(pow(transform.columns.1.z, 2) + pow(transform.columns.1.y, 2)))
+                    let rollRadians = atan2(-transform.columns.2.x, transform.columns.2.z)
+                    
+                    // Convert radians to degrees
+                    let pitchDegrees = pitchRadians * 180 / .pi
+                    let yawDegrees = yawRadians * 180 / .pi
+                    let rollDegrees = rollRadians * 180 / .pi
+                    
+                    self.faceYawAngle = Double(yawDegrees)
+                    self.facePitchAngle = Double(pitchDegrees)
+                    self.faceRollAngle = Double(rollDegrees)
+                }
+                
+                if self.synchronizedVideoPixelBuffer != nil {
+                    // Perform processing if both depth and video data are available
+                    if let depthData = self.synchronizedDepthData,
+                       let videoPixelBuffer = self.synchronizedVideoPixelBuffer {
+                        self.detectFaceLandmarks(in: videoPixelBuffer, sceneView: arSCNView!, depthData: depthData)
+                        self.currentImage = convert(pixelBuffer: videoPixelBuffer)
+                        // cloudView.setDepthFrame(depthData, withTexture: videoPixelBuffer)
+                    }
+                }
+            }
+        } catch {
+            print("Error creating CapturedImageSampler: \(error)")
+        }
+    }
+    
     func convert(pixelBuffer: CVPixelBuffer) -> UIImage? {
         let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
         let context = CIContext(options: nil)
@@ -667,36 +932,112 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         return UIImage(cgImage: cgImage)
     }
     
-    private func startAVCaptureSession() {
-        outputSynchronizer = AVCaptureDataOutputSynchronizer(dataOutputs: [output, depthDataOutput])
-        outputSynchronizer?.setDelegate(self, queue: dataOutputQueue)
+    func session(_ session: ARSession, didUpdate anchors: [ARAnchor]) {
+        guard let faceAnchor = anchors.compactMap({ $0 as? ARFaceAnchor }).first else { return }
         
-        // Set the video orientation for each connection in the output
-           for connection in output.connections {
-               if connection.isVideoOrientationSupported {
-                   connection.videoOrientation = .portrait
-               }
-           }
-           
+        DispatchQueue.main.async {
+            self.faceAnchor = faceAnchor
+        }
+        
+        for anchor in anchors {
+            if let faceAnchor = anchor as? ARFaceAnchor, let faceGeometry = self.faceGeometry {
+                faceGeometry.update(from: faceAnchor.geometry)
+            }
+        }
+    }
+    
+    private func configureARSession() {
+        // Setup ARSession configuration
+        let configuration = ARFaceTrackingConfiguration()
+        if ARFaceTrackingConfiguration.supportsFrameSemantics(.personSegmentation) {
+            configuration.frameSemantics.insert(.personSegmentation)
+        }
+        configuration.isLightEstimationEnabled = true
+        // Additional ARSession configuration
+    }
+    
+    private func configureAVCaptureSession() {
+        // Setup AVCaptureSession but don't start it yet
+        guard let videoDevice = AVCaptureDevice.default(.builtInTrueDepthCamera, for: .video, position: .front) else {
+            print("TrueDepth camera is not available.")
+            return
+        }
+        
+        do {
+            let videoDeviceInput = try AVCaptureDeviceInput(device: videoDevice)
+            if avCaptureSession.canAddInput(videoDeviceInput) {
+                avCaptureSession.addInput(videoDeviceInput)
+            }
+            
+            videoDataOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA]
+            if avCaptureSession.canAddOutput(videoDataOutput) {
+                avCaptureSession.addOutput(videoDataOutput)
+            }
+            
+            if avCaptureSession.canAddOutput(depthDataOutput) {
+                avCaptureSession.addOutput(depthDataOutput)
+            }
+            
+            // Additional AVCaptureSession configuration
+        } catch {
+            print("Error configuring AVCaptureSession: \(error)")
+        }
+    }
+    
+    func pauseAllStreams() {
+        pauseARSession()
+        pauseAVCaptureSession()
+        // Add any other stream or session you might need to pause here.
+    }
+    
+    func resumeAllStreams() {
+        switchSession(toARSession: true)
+    }
+    
+    // MARK: - ARSession and AVCaptureSession Management
+    
+    private func switchSession(toARSession useARSession: Bool) {
+        if useARSession {
+            pauseAVCaptureSession()
+            startARSession()
+        } else {
+            pauseARSession()
+            startAVCaptureSession()
+        }
+        isUsingARSession = useARSession
+    }
+    
+    private func pauseARSession() {
+        arSCNView?.session.pause()
+        print("ARSession Paused")
+    }
+    
+    private func startAVCaptureSession() {
+        DispatchQueue.global(qos: .userInitiated).async {
+            self.avCaptureSession.startRunning()
+        }
+        
+        outputSynchronizer = AVCaptureDataOutputSynchronizer(dataOutputs: [videoDataOutput, depthDataOutput])
+        outputSynchronizer?.setDelegate(self, queue: dataOutputQueue)
         print("AVCaptureSession Running")
     }
     
     private func pauseAVCaptureSession() {
-        session.stopRunning()
+        avCaptureSession.stopRunning()
         outputSynchronizer?.setDelegate(nil, queue: nil)
         print("AVCaptureSession Paused")
     }
     
     // MARK: - Video + Depth Frame Processing (AVCaptureSession)
+    
     func dataOutputSynchronizer(_ synchronizer: AVCaptureDataOutputSynchronizer,
                                 didOutput synchronizedDataCollection: AVCaptureSynchronizedDataCollection) {
-        
         // Read all outputs
         guard ExternalData.renderingEnabled,
               let syncedDepthData: AVCaptureSynchronizedDepthData =
                 synchronizedDataCollection.synchronizedData(for: depthDataOutput) as? AVCaptureSynchronizedDepthData,
               let syncedVideoData: AVCaptureSynchronizedSampleBufferData =
-                synchronizedDataCollection.synchronizedData(for: output) as? AVCaptureSynchronizedSampleBufferData else {
+                synchronizedDataCollection.synchronizedData(for: videoDataOutput) as? AVCaptureSynchronizedSampleBufferData else {
             // only work on synced pairs
             return
         }
@@ -705,41 +1046,24 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             return
         }
         
-        // Process video sample buffer
-            let sampleBuffer = syncedVideoData.sampleBuffer
-        
-        // Process depth data and video pixel buffer
         let depthData = syncedDepthData.depthData
+        let sampleBuffer = syncedVideoData.sampleBuffer
         guard let videoPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
             return
         }
         
-        var depthDataToUse = depthData
+        print("ExternalData.isSavingFileAsPLY: \(ExternalData.isSavingFileAsPLY)")
         
-        depthDataToUse = depthData.converting(toDepthDataType: kCVPixelFormatType_DepthFloat16)
+        processFrameAV(depthData: depthData, imageData: videoPixelBuffer)
         
-        // Process metadata
-        if !currentMetadata.isEmpty {
-            let boundsArray = currentMetadata
-                .compactMap { $0 as? AVMetadataFaceObject }
-                .map { NSValue(cgRect: $0.bounds) }
-            
-            wrapper.doWork(on: sampleBuffer, inRects: boundsArray, with: depthDataToUse)
+        // Set cloudView to empty depth data and texture
+        // cloudView?.setDepthFrame(nil, withTexture: nil)
+        // cloudView?.setDepthFrame(depthData, withTexture: videoPixelBuffer)
+        
+        ExternalData.isSavingFileAsPLY = false
+        
+        if !ExternalData.isSavingFileAsPLY && !isUsingARSession {
+            switchSession(toARSession: true)
         }
-        
-        layer.enqueue(sampleBuffer)
-
-        
-        if ExternalData.isSavingFileAsPLY {
-            processFrameAV(depthData: depthData, imageData: videoPixelBuffer)
-            
-            // Set cloudView to empty depth data and texture
-            // cloudView?.setDepthFrame(nil, withTexture: nil)
-            // cloudView?.setDepthFrame(depthData, withTexture: videoPixelBuffer)
-            
-            ExternalData.isSavingFileAsPLY = false
-        }
-        
-        cloudView?.setDepthFrame(depthData, withTexture: videoPixelBuffer)
     }
 }

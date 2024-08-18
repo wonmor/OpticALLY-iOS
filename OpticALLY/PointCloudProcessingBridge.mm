@@ -1,6 +1,5 @@
 #import "PointCloudProcessingBridge.h"
 #include <open3d/Open3D.h>
-#import <Vision/Vision.h>
 #include <vector>
 #include <memory>
 #include <fstream>
@@ -8,23 +7,7 @@
 #include <filesystem>
 #include <regex>
 #include <future>
-#import <UIKit/UIKit.h>
 #include "ImageDepth.hpp"
-
-// Function to get texture images from a TriangleMesh
-std::vector<open3d::geometry::Image> GetTextureImages(const open3d::geometry::TriangleMesh &mesh) {
-    std::vector<open3d::geometry::Image> texture_images;
-    if (mesh.textures_.empty()) {
-        std::cerr << "No textures found in the mesh." << std::endl;
-        return texture_images;
-    }
-
-    for (const auto &texture : mesh.textures_) {
-        texture_images.push_back(texture);
-    }
-
-    return texture_images;
-}
 
 @implementation PointCloudProcessingBridge
 
@@ -188,44 +171,11 @@ std::vector<open3d::geometry::Image> GetTextureImages(const open3d::geometry::Tr
             std::cerr << "Exception occurred while writing OBJ file: " << e.what() << std::endl;
             return NO;
         }
-
-        // Extract texture images from the mesh
-        std::vector<open3d::geometry::Image> textureImages = GetTextureImages(*mesh);
-        for (size_t j = 0; j < textureImages.size(); ++j) {
-
-        }
     }
 
     NSLog(@"Successfully exported OBJ files.");
 
     return YES;
-}
-
-- (UIImage *)convertOpen3DImageToUIImage:(const open3d::geometry::Image &)open3dImage {
-    int width = open3dImage.width_;
-    int height = open3dImage.height_;
-    int bytesPerPixel = 4; // Assuming RGBA format
-
-    // Create a CGImage from Open3D image data
-    CGDataProviderRef provider = CGDataProviderCreateWithData(NULL, open3dImage.data_.data(), width * height * bytesPerPixel, NULL);
-    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-    CGImageRef cgImage = CGImageCreate(width, height, 8, 32, width * bytesPerPixel, colorSpace, kCGBitmapByteOrderDefault, provider, NULL, NO, kCGRenderingIntentDefault);
-
-    UIImage *uiImage = [UIImage imageWithCGImage:cgImage];
-
-    // Release the created resources
-    CGColorSpaceRelease(colorSpace);
-    CGImageRelease(cgImage);
-    CGDataProviderRelease(provider);
-
-    return uiImage;
-}
-
-- (void)saveUIImage:(UIImage *)image toPath:(NSString *)path {
-    NSData *imageData = UIImageJPEGRepresentation(image, 1.0);
-    if (![imageData writeToFile:path atomically:YES]) {
-        NSLog(@"Failed to save image at path: %@", path);
-    }
 }
 
 @end
