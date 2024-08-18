@@ -53,9 +53,35 @@ simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
     id<MTLDepthStencilState> _depthStencilState;
 }
 
-- (simd_float3)convert2DPointTo3D:(simd_float2)point2D
-                           depth:(float)depth
-                       intrinsics:(matrix_float3x3)intrinsics {
+- (simd_float3)convert2DPointTo3D:(simd_float2)point2D {
+    // Ensure the depth data is available
+    if (!_internalDepthFrame) {
+        NSLog(@"No depth data available.");
+        return simd_make_float3(0, 0, 0);
+    }
+
+    // Get the depth data map (CVPixelBufferRef)
+    CVPixelBufferRef depthFrame = _internalDepthFrame.depthDataMap;
+    CVPixelBufferLockBaseAddress(depthFrame, kCVPixelBufferLock_ReadOnly);
+    
+    // Get the width and height of the depth frame
+    size_t depthWidth = CVPixelBufferGetWidth(depthFrame);
+    size_t depthHeight = CVPixelBufferGetHeight(depthFrame);
+
+    // Calculate the x and y indices within the depth map
+    NSUInteger xIndex = MIN(MAX(point2D.x, 0), depthWidth - 1);
+    NSUInteger yIndex = MIN(MAX(point2D.y, 0), depthHeight - 1);
+
+    // Calculate the byte offset for the depth value at the given 2D point
+    size_t bytesPerRow = CVPixelBufferGetBytesPerRow(depthFrame);
+    float *depthDataPointer = (float *)CVPixelBufferGetBaseAddress(depthFrame);
+    size_t offset = yIndex * (bytesPerRow / sizeof(float)) + xIndex;
+
+    // Get the depth value
+    float depth = depthDataPointer[offset];
+
+    CVPixelBufferUnlockBaseAddress(depthFrame, kCVPixelBufferLock_ReadOnly);
+
     // Extract the intrinsic parameters
     float fx = intrinsics.columns[0][0];
     float fy = intrinsics.columns[1][1];
@@ -255,7 +281,7 @@ typedef struct {
 
     id<MTLTexture> colorTexture = CVMetalTextureGetTexture(cvColorTexture);
 
-    matrix_float3x3 intrinsics = depthData.cameraCalibrationData.intrinsicMatrix;
+    intrinsics = depthData.cameraCalibrationData.intrinsicMatrix;
     CGSize referenceDimensions = depthData.cameraCalibrationData.intrinsicMatrixReferenceDimensions;
 
     float ratio = referenceDimensions.width / CVPixelBufferGetWidth(depthFrame);

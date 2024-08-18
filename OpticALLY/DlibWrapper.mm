@@ -119,18 +119,12 @@ struct VertexOut {
            std::vector<dlib::point> landmarks = {noseTip, chin, leftEyeLeftCorner, rightEyeRightCorner, leftMouthCorner, rightMouthCorner};
         
         for (const auto& landmark : landmarks) {
-              // Create a simd_float2 from the landmark's x and y coordinates
-              simd_float2 point2D = simd_make_float2(landmark.x(), landmark.y());
-
-              // Call the query3DPointFrom2DCoordinates method on _pointCloudView
-              simd_float3 point3D = [_pointCloudView query3DPointFrom2DCoordinates:point2D];
-
-              // Log the result
-              NSLog(@"3D point for landmark (%f, %f) -> (%f, %f, %f)", point2D.x, point2D.y, point3D.x, point3D.y, point3D.z);
-
-              // Add the result to model_points for further processing
-              model_points.push_back(cv::Point3d(point3D.x, point3D.y, point3D.z));
-          }
+            simd_float2 point2D = simd_make_float2(landmark.x(), landmark.y());
+            simd_float3 point3D = [_pointCloudView convert2DPointTo3D:point2D];
+            // Log the result
+            NSLog(@"3D point for landmark (%f, %f) -> (%f, %f, %f)", point2D.x, point2D.y, point3D.x, point3D.y, point3D.z);
+            model_points.push_back(cv::Point3d(point3D.x, point3D.y, point3D.z));
+        }
   
         double focal_length = cvImg.cols;
         cv::Point2d center = cv::Point2d(cvImg.cols / 2, cvImg.rows / 2);
@@ -235,17 +229,6 @@ struct VertexOut {
         position++;
     }
     CVPixelBufferUnlockBaseAddress(imageBuffer, 0);
-}
-
-- (simd_float3)convert2DPointTo3D:(simd_float2)point2D depth:(float)depth intrinsics:(simd_float3x3)intrinsics {
-    // Convert the 2D point to normalized camera coordinates
-    float normalizedX = (point2D.x - intrinsics.columns[2].x) / intrinsics.columns[0].x;
-    float normalizedY = (point2D.y - intrinsics.columns[2].y) / intrinsics.columns[1].y;
-
-    // Multiply by depth to get the world coordinates
-    simd_float3 worldCoordinate = simd_make_float3(normalizedX * depth, normalizedY * depth, depth);
-
-    return worldCoordinate;
 }
 
 + (dlib::rectangle)convertScaleCGRect:(CGRect)rect toDlibRectacleWithImageSize:(CGSize)size {

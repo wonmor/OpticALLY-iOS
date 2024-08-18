@@ -38,9 +38,7 @@ A view implementing point cloud rendering
 
 - (void)processWorldCoordinates;
 
-- (simd_float3)convert2DPointTo3D:(simd_float2)point2D
-                           depth:(float)depth
-                       intrinsics:(matrix_float3x3)intrinsics;
+- (simd_float3)convert2DPointTo3D:(simd_float2)point2D;
 
 - (simd_float3)query3DPointFrom2DCoordinates:(simd_float2)xyCoords;
 
