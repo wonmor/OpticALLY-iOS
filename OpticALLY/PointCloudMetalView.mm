@@ -67,18 +67,22 @@ simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
     // Get the width and height of the depth frame
     size_t depthWidth = CVPixelBufferGetWidth(depthFrame);
     size_t depthHeight = CVPixelBufferGetHeight(depthFrame);
+    NSLog(@"Depth frame size: %zu x %zu", depthWidth, depthHeight);
 
     // Calculate the x and y indices within the depth map
     NSUInteger xIndex = MIN(MAX(point2D.x, 0), depthWidth - 1);
     NSUInteger yIndex = MIN(MAX(point2D.y, 0), depthHeight - 1);
+    NSLog(@"2D Point: (%f, %f), Depth map indices: xIndex = %lu, yIndex = %lu", point2D.x, point2D.y, (unsigned long)xIndex, (unsigned long)yIndex);
 
     // Calculate the byte offset for the depth value at the given 2D point
     size_t bytesPerRow = CVPixelBufferGetBytesPerRow(depthFrame);
     float *depthDataPointer = (float *)CVPixelBufferGetBaseAddress(depthFrame);
     size_t offset = yIndex * (bytesPerRow / sizeof(float)) + xIndex;
+    NSLog(@"Bytes per row: %zu, Offset in depth buffer: %zu", bytesPerRow, offset);
 
     // Get the depth value
     float depth = depthDataPointer[offset];
+    NSLog(@"Depth value at (%lu, %lu): %f", (unsigned long)xIndex, (unsigned long)yIndex, depth);
 
     CVPixelBufferUnlockBaseAddress(depthFrame, kCVPixelBufferLock_ReadOnly);
 
@@ -87,11 +91,13 @@ simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
     float fy = intrinsics.columns[1][1];
     float cx = intrinsics.columns[2][0];
     float cy = intrinsics.columns[2][1];
+    NSLog(@"Intrinsic parameters: fx = %f, fy = %f, cx = %f, cy = %f", fx, fy, cx, cy);
     
     // Back-project the 2D point into 3D space
     float xrw = (point2D.x - cx) * depth / fx;
     float yrw = (point2D.y - cy) * depth / fy;
     float zrw = depth;
+    NSLog(@"3D World Coordinates: (%f, %f, %f)", xrw, yrw, zrw);
     
     // Return the 3D world coordinate
     return simd_make_float3(xrw, yrw, zrw);
