@@ -480,22 +480,6 @@ void ImageDepth::loadDepth(const std::string& file) {
         std::cout << "xy shape: (" << xy.rows << ", " << xy.cols << ")" << std::endl;
         std::cout << "img_undistort shape: (" << img_undistort.rows << ", " << img_undistort.cols << ")" << std::endl;
         std::cout << "idx size: " << idx.size() << std::endl;
-
-    // Filter xy and img_undistort based on idx
-        
-    
-    
-//    if (img_undistort.channels() == 1) {
-//           img_undistort = img_undistort.reshape(1, img_undistort.total());
-//       } else if (img_undistort.channels() == 3) {
-//           img_undistort = img_undistort.reshape(3, img_undistort.total() / 3);
-//       }
-    
-    //img_undistort.convertTo(img_undistort, CV_32F, 1);
-    
-   
-    
-    // img_undistort = img_undistort.reshape(1, height * width);
     
         for (size_t i = 0; i < idx.size(); i++) {
             if (idx[i]) {
