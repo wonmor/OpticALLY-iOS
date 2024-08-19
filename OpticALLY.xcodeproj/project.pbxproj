@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		960ABDCD2C73BBA5002B85A0 /* eigen-3.4.0 in Resources */ = {isa = PBXBuildFile; fileRef = 960ABDCC2C73BBA5002B85A0 /* eigen-3.4.0 */; };
 		9614F0AF2ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */; };
 		9614F0B02ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */; };
 		9614F0B12ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */; };
@@ -101,12 +102,9 @@
 		96E899B22BEAB9D200CCBC18 /* ios.toolchain.cmake in Resources */ = {isa = PBXBuildFile; fileRef = 96E899B12BEAB9D200CCBC18 /* ios.toolchain.cmake */; };
 		96E89A352BEC469A00CCBC18 /* ImageDepth.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 96E89A332BEC469A00CCBC18 /* ImageDepth.cpp */; };
 		96E8A65C2BEC480500CCBC18 /* EigenWrapper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 96E8A65B2BEC480500CCBC18 /* EigenWrapper.mm */; };
-		96E8A6622BEC4DF100CCBC18 /* eigen-3.4.0 in Resources */ = {isa = PBXBuildFile; fileRef = 96E8A6612BEC4DF100CCBC18 /* eigen-3.4.0 */; };
 		96E8A6642BEC960A00CCBC18 /* rapidjson in Resources */ = {isa = PBXBuildFile; fileRef = 96E8A6632BEC960A00CCBC18 /* rapidjson */; };
 		96E8A6662BED344A00CCBC18 /* pybind11 in Resources */ = {isa = PBXBuildFile; fileRef = 96E8A6652BED344A00CCBC18 /* pybind11 */; };
 		96E8A6692BED579000CCBC18 /* ImageDepthBridge.mm in Sources */ = {isa = PBXBuildFile; fileRef = 96E8A6682BED579000CCBC18 /* ImageDepthBridge.mm */; };
-		96E8A66A2BED591300CCBC18 /* eigen-3.4.0 in Resources */ = {isa = PBXBuildFile; fileRef = 96E8A6612BEC4DF100CCBC18 /* eigen-3.4.0 */; };
-		96E8A66B2BED591300CCBC18 /* eigen-3.4.0 in Resources */ = {isa = PBXBuildFile; fileRef = 96E8A6612BEC4DF100CCBC18 /* eigen-3.4.0 */; };
 		96E8A66F2BED59F700CCBC18 /* fmt in Resources */ = {isa = PBXBuildFile; fileRef = 96E8A66E2BED59F700CCBC18 /* fmt */; };
 		96E8A6712BED5B7400CCBC18 /* cppcodec in Resources */ = {isa = PBXBuildFile; fileRef = 96E8A6702BED5B7400CCBC18 /* cppcodec */; };
 		96E8A6732BED5E1B00CCBC18 /* nlohmann in Resources */ = {isa = PBXBuildFile; fileRef = 96E8A6722BED5E1B00CCBC18 /* nlohmann */; };
@@ -137,6 +135,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		960ABDCC2C73BBA5002B85A0 /* eigen-3.4.0 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "eigen-3.4.0"; sourceTree = "<group>"; };
 		9614F0AE2ADF4EA90046DD11 /* RobotoSlab.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = RobotoSlab.ttf; sourceTree = "<group>"; };
 		961D67E22B12BDFC00DBB883 /* SceneKitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneKitView.swift; sourceTree = "<group>"; };
 		961D67E42B12C64A00DBB883 /* CreditsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditsView.swift; sourceTree = "<group>"; };
@@ -236,7 +235,6 @@
 		96E89A342BEC469A00CCBC18 /* ImageDepth.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ImageDepth.hpp; sourceTree = "<group>"; };
 		96E8A65A2BEC480500CCBC18 /* EigenWrapper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = EigenWrapper.h; sourceTree = "<group>"; };
 		96E8A65B2BEC480500CCBC18 /* EigenWrapper.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = EigenWrapper.mm; sourceTree = "<group>"; };
-		96E8A6612BEC4DF100CCBC18 /* eigen-3.4.0 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "eigen-3.4.0"; sourceTree = "<group>"; };
 		96E8A6632BEC960A00CCBC18 /* rapidjson */ = {isa = PBXFileReference; lastKnownFileType = folder; path = rapidjson; sourceTree = "<group>"; };
 		96E8A6652BED344A00CCBC18 /* pybind11 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = pybind11; sourceTree = "<group>"; };
 		96E8A6672BED575C00CCBC18 /* ImageDepthBridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ImageDepthBridge.h; sourceTree = "<group>"; };
@@ -327,6 +325,7 @@
 		967EE0582AAE06FB000C4D5F = {
 			isa = PBXGroup;
 			children = (
+				960ABDCC2C73BBA5002B85A0 /* eigen-3.4.0 */,
 				96D59E7D2C3AA55C00A79563 /* shape_predictor_68_face_landmarks.dat */,
 				9647457E2C3AA66D00263A59 /* libdlib.a */,
 				9647457C2C3AA66900263A59 /* dlib */,
@@ -336,7 +335,6 @@
 				96E8A6652BED344A00CCBC18 /* pybind11 */,
 				96BE3DA72BE57C830021EBED /* opencv2.framework */,
 				96E8A6632BEC960A00CCBC18 /* rapidjson */,
-				96E8A6612BEC4DF100CCBC18 /* eigen-3.4.0 */,
 				96E899B12BEAB9D200CCBC18 /* ios.toolchain.cmake */,
 				967EE0632AAE06FB000C4D5F /* OpticALLY */,
 				967EE0742AAE06FE000C4D5F /* OpticALLYTests */,
@@ -648,6 +646,7 @@
 				96B2A6232B5C5F320031952C /* ObjCBridge.py in Resources */,
 				963671292BC09312003EC38C /* Process3D.py in Resources */,
 				9671FED82B5B3BCA004DA4C2 /* GoogleService-Info.plist in Resources */,
+				960ABDCD2C73BBA5002B85A0 /* eigen-3.4.0 in Resources */,
 				96B64F6B2B3D8AF70003E06D /* VideoTexturedFace.shader in Resources */,
 				96E8A6712BED5B7400CCBC18 /* cppcodec in Resources */,
 				9663606C2B6E0BD7001D2119 /* right-arrow-2.json in Resources */,
@@ -672,7 +671,6 @@
 				966360642B6E03FF001D2119 /* face-scan.json in Resources */,
 				96BDE6362B7EB4EF00CCEABA /* ImageDepth.py in Resources */,
 				966360612B6E03FF001D2119 /* face-id.json in Resources */,
-				96E8A6622BEC4DF100CCBC18 /* eigen-3.4.0 in Resources */,
 				9646DC6C2B1064F500092549 /* glasses.mp4 in Resources */,
 				96E8A6662BED344A00CCBC18 /* pybind11 in Resources */,
 				9663606B2B6E0BD7001D2119 /* left-arrow-2.json in Resources */,
@@ -685,7 +683,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				96E8A66A2BED591300CCBC18 /* eigen-3.4.0 in Resources */,
 				969E42EF2ADC9D9E00E77BA7 /* promo.mp4 in Resources */,
 				9614F0B02ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */,
 			);
@@ -695,7 +692,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				96E8A66B2BED591300CCBC18 /* eigen-3.4.0 in Resources */,
 				969E42F02ADC9D9E00E77BA7 /* promo.mp4 in Resources */,
 				9614F0B12ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */,
 			);
