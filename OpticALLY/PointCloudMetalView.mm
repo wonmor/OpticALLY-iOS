@@ -115,7 +115,6 @@ simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
     return simd_make_float3(xrw, yrw, zrw);
 }
 
-
 - (simd_float3)query3DPointFrom2DCoordinates:(simd_float2)xyCoords {
     NSUInteger resolutionWidth = 640;
     NSUInteger resolutionHeight = 480;
