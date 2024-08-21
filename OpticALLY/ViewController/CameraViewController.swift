@@ -100,6 +100,8 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     
     private var input: AVCaptureDeviceInput? = nil
     
+    private let videoDepthMixer = VideoMixer()
+    
     private var scaleX: Float = 1.0
     private var scaleY: Float = 1.0
     private var scaleZ: Float = 1.0
@@ -137,6 +139,7 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             metaOutput.setMetadataObjectsDelegate(self, queue: faceQueue)
             
             session.beginConfiguration()
+            session.sessionPreset = AVCaptureSession.Preset.vga640x480
             
             if session.canAddInput(input!) {
                 session.addInput(input!)
@@ -157,6 +160,14 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             let settings: [AnyHashable: Any] = [kCVPixelBufferPixelFormatTypeKey as AnyHashable: Int(kCVPixelFormatType_32BGRA)]
             output.videoSettings = settings as? [String : Any]
             
+            depthDataOutput.isFilteringEnabled = true
+            
+            if let connection = depthDataOutput.connection(with: .depthData) {
+                connection.isEnabled = true
+            } else {
+                print("No AVCaptureConnection")
+            }
+            
             // availableMetadataObjectTypes change when output is added to session.
             // before it is added, availableMetadataObjectTypes is empty
             metaOutput.metadataObjectTypes = [AVMetadataObject.ObjectType.face]
@@ -165,6 +176,26 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             session.sessionPreset = AVCaptureSession.Preset.vga640x480
             
             print("Session configured!")
+            
+            // Search for highest resolution with half-point depth values
+            let depthFormats = device.activeFormat.supportedDepthDataFormats
+            let filtered = depthFormats.filter({
+                CMFormatDescriptionGetMediaSubType($0.formatDescription) == kCVPixelFormatType_DepthFloat16
+            })
+            let selectedFormat = filtered.max(by: {
+                first, second in CMVideoFormatDescriptionGetDimensions(first.formatDescription).width < CMVideoFormatDescriptionGetDimensions(second.formatDescription).width
+            })
+            
+            do {
+                try device.lockForConfiguration()
+                device.activeDepthDataFormat = selectedFormat
+                device.unlockForConfiguration()
+            } catch {
+                print("Could not lock device for configuration: \(error)")
+              
+                session.commitConfiguration()
+                return
+            }
             
             // Start the session on a background thread
             DispatchQueue.global(qos: .userInitiated).async {
