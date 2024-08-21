@@ -24,6 +24,8 @@ A view implementing point cloud rendering
 // Update depth frame
 - (void)setDepthFrame:(AVDepthData* _Nullable)depth withTexture:(_Nullable CVPixelBufferRef)texture;
 
+- (void)performVertexComputationWithDepthTexture:(id<MTLTexture>)depthTexture;
+
 // Rotate around the Y axis
 - (void)yawAroundCenter:(float)angle;
 

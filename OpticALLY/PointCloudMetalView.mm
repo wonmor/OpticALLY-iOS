@@ -12,6 +12,19 @@ A view implementing point cloud rendering
 #include "PointCloudMetalView.h"
 #import "AAPLTransforms.h"
 #include <simd/simd.h>
+#import <AVFoundation/AVFoundation.h>
+#import <CoreVideo/CoreVideo.h>
+#import <CoreImage/CoreImage.h>
+
+typedef struct {
+    float x, y, z;
+} VertexIn;
+
+typedef struct {
+    float x, y, z;
+} VertexOut;
+
+
 
 simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
     simd::float4 temp = { v.x, v.y, v.z, 0.0f };
@@ -28,10 +41,91 @@ simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
     simd::float3 _center;   // current point camera looks at
     simd::float3 _eye;      // current camera position
     simd::float3 _up;       // camera "up" direction
+    matrix_float3x3 intrinsics;
 
     id<MTLCommandQueue> _commandQueue;
-    id<MTLRenderPipelineState> _renderPipelineState;
+    id<MTLComputePipelineState> _computePipelineState;  // Add this line
+       id<MTLRenderPipelineState> _renderPipelineState;
+       id<MTLBuffer> _unsolvedVertexBuffer;
+       id<MTLBuffer> _solvedVertexBuffer;
+    id<MTLBuffer> _xyCoordsBuffer;
+       NSUInteger numVertices;  // Declare numVertices
     id<MTLDepthStencilState> _depthStencilState;
+}
+
+- (simd_float3)convert2DPointTo3D:(simd_float2)point2D {
+    // Ensure the depth data is available
+    if (!_internalDepthFrame) {
+        NSLog(@"No depth data available.");
+        return simd_make_float3(0, 0, 0);
+    }
+
+    // Get the depth data map (CVPixelBufferRef)
+    CVPixelBufferRef depthFrame = _internalDepthFrame.depthDataMap;
+    CVPixelBufferLockBaseAddress(depthFrame, kCVPixelBufferLock_ReadOnly);
+    float *depthDataPointer = (float *)CVPixelBufferGetBaseAddress(depthFrame);
+
+    // Get the width and height of the depth frame
+    size_t depthWidth = CVPixelBufferGetWidth(depthFrame);
+    size_t depthHeight = CVPixelBufferGetHeight(depthFrame);
+    NSLog(@"Depth frame size: %zu x %zu", depthWidth, depthHeight);
+
+    // Calculate the x and y indices within the depth map
+    NSUInteger xIndex = MIN(MAX(point2D.x, 0), depthWidth - 1);
+    NSUInteger yIndex = MIN(MAX(point2D.y, 0), depthHeight - 1);
+    NSLog(@"2D Point: (%f, %f), Depth map indices: xIndex = %lu, yIndex = %lu", point2D.x, point2D.y, (unsigned long)xIndex, (unsigned long)yIndex);
+
+    // Calculate the byte offset for the depth value at the given 2D point
+    size_t bytesPerRow = CVPixelBufferGetBytesPerRow(depthFrame);
+    size_t depthOffset = yIndex * bytesPerRow + xIndex * sizeof(float);
+    if (depthOffset >= CVPixelBufferGetDataSize(depthFrame)) {
+        NSLog(@"Offset out of bounds");
+        CVPixelBufferUnlockBaseAddress(depthFrame, kCVPixelBufferLock_ReadOnly);
+        return simd_make_float3(0, 0, 0);
+    }
+
+    // Get the depth value (assume it's float16)
+    float depthValue = 0.0f;
+    if (CVPixelBufferGetPixelFormatType(depthFrame) == kCVPixelFormatType_DepthFloat16) {
+        UInt16 *depthPointer = (UInt16 *)((char *)CVPixelBufferGetBaseAddress(depthFrame) + depthOffset);
+        depthValue = (float)(*depthPointer) / 65535.0f; // Normalize 16-bit depth to [0, 1]
+    } else {
+        float *depthPointer = (float *)((char *)CVPixelBufferGetBaseAddress(depthFrame) + depthOffset);
+        depthValue = *depthPointer;
+    }
+
+    NSLog(@"Depth value at (%lu, %lu): %f", (unsigned long)xIndex, (unsigned long)yIndex, depthValue);
+
+    CVPixelBufferUnlockBaseAddress(depthFrame, kCVPixelBufferLock_ReadOnly);
+
+    // Extract the intrinsic parameters
+    float fx = intrinsics.columns[0][0];
+    float fy = intrinsics.columns[1][1];
+    float cx = intrinsics.columns[2][0];
+    float cy = intrinsics.columns[2][1];
+    NSLog(@"Intrinsic parameters: fx = %f, fy = %f, cx = %f, cy = %f", fx, fy, cx, cy);
+    
+    // Back-project the 2D point into 3D space
+    float xrw = (point2D.x - cx) * depthValue / fx;
+    float yrw = (point2D.y - cy) * depthValue / fy;
+    float zrw = depthValue;
+    NSLog(@"3D World Coordinates: (%f, %f, %f)", xrw, yrw, zrw);
+    
+    // Return the 3D world coordinate
+    return simd_make_float3(xrw, yrw, zrw);
+}
+
+- (simd_float3)query3DPointFrom2DCoordinates:(simd_float2)xyCoords {
+    NSUInteger resolutionWidth = 640;
+    NSUInteger resolutionHeight = 480;
+    NSUInteger flatIndex = xyCoords.y * resolutionWidth + xyCoords.x;
+
+    if (flatIndex < (resolutionWidth * resolutionHeight)) {
+        VertexOut* solvedVertices = (VertexOut*)[_solvedVertexBuffer contents];
+        return simd_make_float3(solvedVertices[flatIndex].x, solvedVertices[flatIndex].y, solvedVertices[flatIndex].z);
+    } else {
+        return simd_make_float3(0, 0, 0);  // Return a default value if the index is out of bounds
+    }
 }
 
 - (nonnull instancetype)initWithFrame:(CGRect)frameRect device:(nullable id<MTLDevice>)device {
@@ -52,65 +146,92 @@ simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
     attr = dispatch_queue_attr_make_with_autorelease_frequency(attr, DISPATCH_AUTORELEASE_FREQUENCY_WORK_ITEM);
     attr = dispatch_queue_attr_make_with_qos_class(attr, QOS_CLASS_USER_INITIATED, 0);
     _syncQueue = dispatch_queue_create("PointCloudMetalView sync queue", attr);
-    
+
+    NSUInteger numVertices = 640 * 480;
+    _worldCoordinatesBuffer = [self.device newBufferWithLength:sizeof(float) * 3 * numVertices
+                                                       options:MTLResourceStorageModeShared];
+
     [self configureMetal];
-    
+
     CVMetalTextureCacheCreate(NULL, NULL, self.device, NULL, &_depthTextureCache);
     CVMetalTextureCacheCreate(NULL, NULL, self.device, NULL, &_colorTextureCache);
 
     self.colorPixelFormat = MTLPixelFormatBGRA8Unorm;
-    
+
     [self resetView];
 }
 
 - (void)configureMetal {
-    // Load all the shader files with a metal file extension in the project
     id<MTLLibrary> defaultLibrary = [self.device newDefaultLibrary];
 
-    // Load the vertex function from the library
     id <MTLFunction> vertexFunction = [defaultLibrary newFunctionWithName:@"vertexShaderPoints"];
-    
-    // Load the fragment function from the library
     id <MTLFunction> fragmentFunction = [defaultLibrary newFunctionWithName:@"fragmentShaderPoints"];
+    id <MTLFunction> computeFunction = [defaultLibrary newFunctionWithName:@"solve_vertex"];
 
-    // Set up a descriptor for creating a pipeline state object
+    NSError *error = nil;
+    _computePipelineState = [self.device newComputePipelineStateWithFunction:computeFunction error:&error];
+    if (!_computePipelineState) {
+        NSLog(@"Failed to create compute pipeline state, error %@", error);
+    }
+
     MTLRenderPipelineDescriptor *pipelineStateDescriptor = [[MTLRenderPipelineDescriptor alloc] init];
     pipelineStateDescriptor.label = @"Texturing Pipeline";
     pipelineStateDescriptor.vertexFunction = vertexFunction;
     pipelineStateDescriptor.fragmentFunction = fragmentFunction;
     pipelineStateDescriptor.colorAttachments[0].pixelFormat = self.colorPixelFormat;
     pipelineStateDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
-    
-    MTLDepthStencilDescriptor *piplineDepthDescriptor = [[MTLDepthStencilDescriptor alloc] init];
-    piplineDepthDescriptor.depthWriteEnabled = true;
-    piplineDepthDescriptor.depthCompareFunction = MTLCompareFunctionLess;
-    _depthStencilState = [self.device newDepthStencilStateWithDescriptor:piplineDepthDescriptor];
-    
-    NSError *error = NULL;
-    _renderPipelineState = [self.device newRenderPipelineStateWithDescriptor:pipelineStateDescriptor
-                                                                       error:&error];
 
-    if (!_renderPipelineState)
-    {
-        // Pipeline State creation could fail if we haven't properly set up our pipeline descriptor.
-        // If the Metal API validation is enabled, we can find out more information about what
-        // went wrong.  (Metal API validation is enabled by default when a debug build is run
-        // from Xcode)
-        NSLog(@"Failed to created pipeline state, error %@", error);
+    MTLDepthStencilDescriptor *pipelineDepthDescriptor = [[MTLDepthStencilDescriptor alloc] init];
+    pipelineDepthDescriptor.depthWriteEnabled = true;
+    pipelineDepthDescriptor.depthCompareFunction = MTLCompareFunctionLess;
+    _depthStencilState = [self.device newDepthStencilStateWithDescriptor:pipelineDepthDescriptor];
+
+    _renderPipelineState = [self.device newRenderPipelineStateWithDescriptor:pipelineStateDescriptor error:&error];
+
+    if (!_renderPipelineState) {
+        NSLog(@"Failed to create pipeline state, error %@", error);
     }
-    
-    // Create the command queue
+
     _commandQueue = [self.device newCommandQueue];
+
+    NSUInteger numVertices = 640 * 480;
+    _unsolvedVertexBuffer = [self.device newBufferWithLength:sizeof(VertexIn) * numVertices options:MTLResourceStorageModeShared];
+    _solvedVertexBuffer = [self.device newBufferWithLength:sizeof(VertexOut) * numVertices options:MTLResourceStorageModeShared];
+    _xyCoordsBuffer = [self.device newBufferWithLength:sizeof(float) * 2 * numVertices options:MTLResourceStorageModeShared];  // Initialize new buffer
 }
 
-- (void)setDepthFrame:(AVDepthData* _Nonnull)depth withTexture:(_Nonnull CVPixelBufferRef)unormTexture {
+
+// PointXYZ structure
+typedef struct {
+    float x, y, z;
+} PointXYZ;
+
+- (void)processWorldCoordinates {
+    VertexOut* solvedVertices = (VertexOut*)[_solvedVertexBuffer contents];
+    simd_float2* xyCoords = (simd_float2*)[_xyCoordsBuffer contents];
+}
+
+- (NSString *)documentsPathForFileName:(NSString *)name {
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *documentsPath = [paths objectAtIndex:0];
+    return [documentsPath stringByAppendingPathComponent:name];
+}
+
+- (void)setDepthFrame:(AVDepthData* _Nullable)depth withTexture:(CVPixelBufferRef _Nullable)texture {
     dispatch_sync(_syncQueue, ^{
-        self->_internalDepthFrame = depth;
-        CVPixelBufferRelease(self->_internalColorTexture);
-        self->_internalColorTexture = unormTexture;
-        CVPixelBufferRetain(self->_internalColorTexture);
+
+            // Handle non-nil depth and texture as before
+            self->_shouldRender3DContent = YES;
+            self->_internalDepthFrame = depth;
+            if (self->_internalColorTexture) {
+                CVPixelBufferRelease(self->_internalColorTexture);
+            }
+            self->_internalColorTexture = texture;
+            CVPixelBufferRetain(self->_internalColorTexture);
+        
     });
-    
+
+    // Trigger a redraw of the view
     dispatch_async(dispatch_get_main_queue(), ^{
         [self setNeedsDisplay];
     });
@@ -147,6 +268,9 @@ simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
     }
     
     id<MTLTexture> depthTexture = CVMetalTextureGetTexture(cvDepthTexture);
+    
+    // Perform the compute pass to solve the vertices
+        [self performVertexComputationWithDepthTexture:depthTexture];
     
     // Create a Metal texture from the color texture
     CVMetalTextureRef cvColorTexture = nullptr;
@@ -205,7 +329,8 @@ simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
         simd::float4x4 finalViewMatrix = [self getFinalViewMatrix];
 
         [renderEncoder setVertexBytes:&finalViewMatrix length:sizeof(finalViewMatrix) atIndex:0];
-        [renderEncoder setVertexBytes:&intrinsics length:sizeof(intrinsics) atIndex:1];
+        [renderEncoder setVertexBuffer:_worldCoordinatesBuffer offset:0 atIndex:1]; // Correctly bind the world coordinates buffer to index 1
+        [renderEncoder setVertexBytes:&intrinsics length:sizeof(intrinsics) atIndex:2]; // Correctly bind the intrinsics buffer to index 2
 
         [renderEncoder setFragmentTexture:colorTexture atIndex:0];
 
@@ -226,6 +351,39 @@ simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
     CFRelease(cvColorTexture);
     CVPixelBufferRelease(colorFrame);
 }
+
+- (void)performVertexComputationWithDepthTexture:(id<MTLTexture>)depthTexture {
+    id<MTLCommandBuffer> commandBuffer = [_commandQueue commandBuffer];
+    id<MTLComputeCommandEncoder> computeEncoder = [commandBuffer computeCommandEncoder];
+
+    // Set the compute pipeline state
+    [computeEncoder setComputePipelineState:_computePipelineState];
+
+    // Bind the depth texture to index 0
+    [computeEncoder setTexture:depthTexture atIndex:0];
+
+    // Bind the camera intrinsics to buffer index 0
+    [computeEncoder setBytes:&intrinsics length:sizeof(intrinsics) atIndex:0];
+
+    // Bind the world coordinates buffer to buffer index 1
+    [computeEncoder setBuffer:_worldCoordinatesBuffer offset:0 atIndex:1];
+
+    // Bind the xy coordinates buffer to buffer index 2
+    [computeEncoder setBuffer:_xyCoordsBuffer offset:0 atIndex:2];
+
+    // Set the number of threads per threadgroup and the number of threadgroups
+    MTLSize threadsPerThreadgroup = MTLSizeMake(16, 16, 1);
+    MTLSize threadgroups = MTLSizeMake((numVertices + threadsPerThreadgroup.width - 1) / threadsPerThreadgroup.width, 1, 1);
+
+    // Dispatch the compute kernel
+    [computeEncoder dispatchThreadgroups:threadgroups threadsPerThreadgroup:threadsPerThreadgroup];
+
+    // End encoding and commit the command buffer
+    [computeEncoder endEncoding];
+    [commandBuffer commit];
+}
+
+
 
 - (void)rollAroundCenter:(float)angle {
     dispatch_sync(_syncQueue, ^{
@@ -316,7 +474,6 @@ simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
 }
 
 @end
-
 
 
 

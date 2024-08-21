@@ -577,11 +577,11 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         
         layer.frame = preview.bounds
         
-        preview.layer.addSublayer(layer)
-        preview.transform = CGAffineTransformMakeRotation(CGFloat(Double.pi))
-        preview.transform = CGAffineTransformScale(preview.transform, 1, -1)
-        
-        self.view.bringSubviewToFront(preview)
+//        preview.layer.addSublayer(layer)
+//        preview.transform = CGAffineTransformMakeRotation(CGFloat(Double.pi))
+//        preview.transform = CGAffineTransformScale(preview.transform, 1, -1)
+//        
+//        self.view.bringSubviewToFront(preview)
         
         view.layoutIfNeeded()
     }
@@ -728,18 +728,14 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         }
         
         layer.enqueue(sampleBuffer)
+        cloudView?.setDepthFrame(nil, withTexture: nil)
+        cloudView?.setDepthFrame(depthData, withTexture: videoPixelBuffer)
 
         
         if ExternalData.isSavingFileAsPLY {
             processFrameAV(depthData: depthData, imageData: videoPixelBuffer)
             
-            // Set cloudView to empty depth data and texture
-            // cloudView?.setDepthFrame(nil, withTexture: nil)
-            // cloudView?.setDepthFrame(depthData, withTexture: videoPixelBuffer)
-            
             ExternalData.isSavingFileAsPLY = false
         }
-        
-        cloudView?.setDepthFrame(depthData, withTexture: videoPixelBuffer)
     }
 }
