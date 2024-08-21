@@ -86,7 +86,10 @@ fragment float4 fragmentShaderPoints(RasterizerDataColor in [[stage_in]],
         return float4(0, 0, 0, 0); // transparent color
     }
 
-    constexpr sampler textureSampler (mag_filter::linear, min_filter::linear);
-    const float4 colorSample = colorTexture.sample(textureSampler, in.coor);
-    return colorSample;
+    // Swap the x and y coordinates
+       float2 swappedCoor = float2(in.coor.y, in.coor.x);
+
+       constexpr sampler textureSampler (mag_filter::linear, min_filter::linear);
+       const float4 colorSample = colorTexture.sample(textureSampler, swappedCoor);
+       return colorSample;
 }
