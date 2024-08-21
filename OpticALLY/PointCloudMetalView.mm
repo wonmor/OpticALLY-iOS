@@ -249,19 +249,19 @@ typedef struct {
     
     if (depthData == nil || colorFrame == nullptr)
         return;
-
+    
     // Create a Metal texture from the depth frame
     CVPixelBufferRef depthFrame = depthData.depthDataMap;
     CVMetalTextureRef cvDepthTexture = nullptr;
     if (kCVReturnSuccess != CVMetalTextureCacheCreateTextureFromImage(kCFAllocatorDefault,
-                            _depthTextureCache,
-                            depthFrame,
-                            nil,
-                            MTLPixelFormatR16Float,
-                            CVPixelBufferGetWidth(depthFrame),
-                            CVPixelBufferGetHeight(depthFrame),
-                            0,
-                            &cvDepthTexture)) {
+                                                                      _depthTextureCache,
+                                                                      depthFrame,
+                                                                      nil,
+                                                                      MTLPixelFormatR16Float,
+                                                                      CVPixelBufferGetWidth(depthFrame),
+                                                                      CVPixelBufferGetHeight(depthFrame),
+                                                                      0,
+                                                                      &cvDepthTexture)) {
         NSLog(@"Failed to create depth texture");
         CVPixelBufferRelease(colorFrame);
         return;
@@ -269,20 +269,17 @@ typedef struct {
     
     id<MTLTexture> depthTexture = CVMetalTextureGetTexture(cvDepthTexture);
     
-    // Perform the compute pass to solve the vertices
-        [self performVertexComputationWithDepthTexture:depthTexture];
-    
     // Create a Metal texture from the color texture
     CVMetalTextureRef cvColorTexture = nullptr;
     if (kCVReturnSuccess != CVMetalTextureCacheCreateTextureFromImage(kCFAllocatorDefault,
-                            _colorTextureCache,
-                            colorFrame,
-                            nil,
-                            MTLPixelFormatBGRA8Unorm,
-                            CVPixelBufferGetWidth(colorFrame),
-                            CVPixelBufferGetHeight(colorFrame),
-                            0,
-                            &cvColorTexture)) {
+                                                                      _colorTextureCache,
+                                                                      colorFrame,
+                                                                      nil,
+                                                                      MTLPixelFormatBGRA8Unorm,
+                                                                      CVPixelBufferGetWidth(colorFrame),
+                                                                      CVPixelBufferGetHeight(colorFrame),
+                                                                      0,
+                                                                      &cvColorTexture)) {
         NSLog(@"Failed to create color texture");
         CVPixelBufferRelease(colorFrame);
         return;
@@ -292,7 +289,7 @@ typedef struct {
     
     matrix_float3x3 intrinsics = depthData.cameraCalibrationData.intrinsicMatrix;
     CGSize referenceDimensions = depthData.cameraCalibrationData.intrinsicMatrixReferenceDimensions;
-
+    
     float ratio = referenceDimensions.width / CVPixelBufferGetWidth(depthFrame);
     intrinsics.columns[0][0] /= ratio;
     intrinsics.columns[1][1] /= ratio;
@@ -313,7 +310,7 @@ typedef struct {
         depthTextureDescriptor.usage = MTLTextureUsageRenderTarget;
         
         id<MTLTexture> depthTestTexture = [self.device newTextureWithDescriptor:depthTextureDescriptor];
-
+        
         renderPassDescriptor.depthAttachment.loadAction = MTLLoadActionClear;
         renderPassDescriptor.depthAttachment.storeAction = MTLStoreActionStore;
         renderPassDescriptor.depthAttachment.clearDepth = 1.0;
@@ -322,18 +319,18 @@ typedef struct {
         id<MTLRenderCommandEncoder> renderEncoder = [commandBuffer renderCommandEncoderWithDescriptor:renderPassDescriptor];
         [renderEncoder setDepthStencilState:_depthStencilState];
         [renderEncoder setRenderPipelineState:_renderPipelineState];
-
+        
         // set arguments to shader
         [renderEncoder setVertexTexture:depthTexture atIndex:0];
-
+        
         simd::float4x4 finalViewMatrix = [self getFinalViewMatrix];
-
+        
         [renderEncoder setVertexBytes:&finalViewMatrix length:sizeof(finalViewMatrix) atIndex:0];
         [renderEncoder setVertexBuffer:_worldCoordinatesBuffer offset:0 atIndex:1]; // Correctly bind the world coordinates buffer to index 1
         [renderEncoder setVertexBytes:&intrinsics length:sizeof(intrinsics) atIndex:2]; // Correctly bind the intrinsics buffer to index 2
-
+        
         [renderEncoder setFragmentTexture:colorTexture atIndex:0];
-
+        
         [renderEncoder drawPrimitives:MTLPrimitiveTypePoint
                           vertexStart:0
                           vertexCount:CVPixelBufferGetWidth(depthFrame) * CVPixelBufferGetHeight(depthFrame)];
@@ -346,43 +343,11 @@ typedef struct {
     
     // Finalize rendering here & push the command buffer to the GPU
     [commandBuffer commit];
-
+    
     CFRelease(cvDepthTexture);
     CFRelease(cvColorTexture);
     CVPixelBufferRelease(colorFrame);
 }
-
-- (void)performVertexComputationWithDepthTexture:(id<MTLTexture>)depthTexture {
-    id<MTLCommandBuffer> commandBuffer = [_commandQueue commandBuffer];
-    id<MTLComputeCommandEncoder> computeEncoder = [commandBuffer computeCommandEncoder];
-
-    // Set the compute pipeline state
-    [computeEncoder setComputePipelineState:_computePipelineState];
-
-    // Bind the depth texture to index 0
-    [computeEncoder setTexture:depthTexture atIndex:0];
-
-    // Bind the camera intrinsics to buffer index 0
-    [computeEncoder setBytes:&intrinsics length:sizeof(intrinsics) atIndex:0];
-
-    // Bind the world coordinates buffer to buffer index 1
-    [computeEncoder setBuffer:_worldCoordinatesBuffer offset:0 atIndex:1];
-
-    // Bind the xy coordinates buffer to buffer index 2
-    [computeEncoder setBuffer:_xyCoordsBuffer offset:0 atIndex:2];
-
-    // Set the number of threads per threadgroup and the number of threadgroups
-    MTLSize threadsPerThreadgroup = MTLSizeMake(16, 16, 1);
-    MTLSize threadgroups = MTLSizeMake((numVertices + threadsPerThreadgroup.width - 1) / threadsPerThreadgroup.width, 1, 1);
-
-    // Dispatch the compute kernel
-    [computeEncoder dispatchThreadgroups:threadgroups threadsPerThreadgroup:threadsPerThreadgroup];
-
-    // End encoding and commit the command buffer
-    [computeEncoder endEncoding];
-    [commandBuffer commit];
-}
-
 
 
 - (void)rollAroundCenter:(float)angle {
