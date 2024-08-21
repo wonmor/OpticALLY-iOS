@@ -106,6 +106,14 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     private var scaleY: Float = 1.0
     private var scaleZ: Float = 1.0
     
+    private var lastScale = Float(1.0)
+    private var lastScaleDiff = Float(0.0)
+    private var lastZoom = Float(0.0)
+    private var lastXY = CGPoint(x: 0, y: 0)
+    
+    private var viewFrameSize = CGSize()
+    private var autoPanningIndex = Int(-1) // start with auto-panning off
+    
     // MARK: - UI Bindings
     @IBOutlet weak private var preview: UIView!
     @IBOutlet weak private var cameraUnavailableLabel: UILabel!
@@ -619,6 +627,20 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        viewFrameSize = self.view.frame.size
+        
+        // Comment the line below to disable orbit controls in DEBUG...
+        let pinchGesture = UIPinchGestureRecognizer(target: self, action: #selector(handlePinch))
+        cloudView.addGestureRecognizer(pinchGesture)
+        
+        let rotateGesture = UIRotationGestureRecognizer(target: self, action: #selector(handleRotate))
+        cloudView.addGestureRecognizer(rotateGesture)
+        
+        let panOneFingerGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePanOneFinger))
+        panOneFingerGesture.maximumNumberOfTouches = 1
+        panOneFingerGesture.minimumNumberOfTouches = 1
+        cloudView.addGestureRecognizer(panOneFingerGesture)
     }
     
     /// Creates To SCNSpheres To Loosely Represent The Eyes
@@ -718,6 +740,67 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         print("AVCaptureSession Paused")
     }
     
+    // MARK: - Point cloud view gestures
+    
+    @IBAction private func handlePinch(_ gesture: UIPinchGestureRecognizer) {
+        if gesture.numberOfTouches != 2 {
+            return
+        }
+        if gesture.state == .began {
+            lastScale = 1
+        } else if gesture.state == .changed {
+            let scale = Float(gesture.scale)
+            let diff: Float = scale - lastScale
+            let factor: Float = 1e3
+            if scale < lastScale {
+                lastZoom = diff * factor
+            } else {
+                lastZoom = diff * factor
+            }
+            DispatchQueue.main.async {
+                self.autoPanningIndex = -1
+            }
+            cloudView.moveTowardCenter(lastZoom)
+            lastScale = scale
+        } else if gesture.state == .ended {
+        } else {
+        }
+    }
+    
+    @IBAction private func handlePanOneFinger(gesture: UIPanGestureRecognizer) {
+        if gesture.numberOfTouches != 1 {
+            return
+        }
+        
+        if gesture.state == .began {
+            let pnt: CGPoint = gesture.translation(in: cloudView)
+            lastXY = pnt
+        } else if (.failed != gesture.state) && (.cancelled != gesture.state) {
+            let pnt: CGPoint = gesture.translation(in: cloudView)
+            DispatchQueue.main.async {
+                self.autoPanningIndex = -1
+            }
+            cloudView.yawAroundCenter(Float((pnt.x - lastXY.x) * 0.1))
+            cloudView.pitchAroundCenter(Float((pnt.y - lastXY.y) * 0.1))
+            lastXY = pnt
+        }
+    }
+    
+    @IBAction private func handleRotate(gesture: UIRotationGestureRecognizer) {
+        if gesture.numberOfTouches != 2 {
+            return
+        }
+        
+        if gesture.state == .changed {
+            let rot = Float(gesture.rotation)
+            DispatchQueue.main.async {
+                self.autoPanningIndex = -1
+            }
+            cloudView.rollAroundCenter(rot * 60)
+            gesture.rotation = 0
+        }
+    }
+    
     // MARK: - Video + Depth Frame Processing (AVCaptureSession)
     func dataOutputSynchronizer(_ synchronizer: AVCaptureDataOutputSynchronizer,
                                 didOutput synchronizedDataCollection: AVCaptureSynchronizedDataCollection) {
@@ -741,9 +824,6 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         
         // Process depth data and video pixel buffer
         let depthData = syncedDepthData.depthData
-        guard let videoPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
-            return
-        }
         
         var depthDataToUse = depthData
         
@@ -756,6 +836,10 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
                 .map { NSValue(cgRect: $0.bounds) }
             
             wrapper.doWork(on: sampleBuffer, inRects: boundsArray, with: depthDataToUse)
+        }
+        
+        guard let videoPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
+            return
         }
         
         layer.enqueue(sampleBuffer)
