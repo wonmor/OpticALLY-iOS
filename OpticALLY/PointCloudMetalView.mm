@@ -54,6 +54,7 @@ simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
     id<MTLDepthStencilState> _depthStencilState;
 }
 
+// Uses GPU (Metal) for processing
 - (void)updatePoint2DWithX:(float)x Y:(float)y {
     point2D = simd_make_float2(x, y);
     
@@ -68,59 +69,19 @@ simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
         return simd_make_float3(0, 0, 0);
     }
 
-    // Get the depth data map (CVPixelBufferRef)
-    CVPixelBufferRef depthFrame = _internalDepthFrame.depthDataMap;
-    CVPixelBufferLockBaseAddress(depthFrame, kCVPixelBufferLock_ReadOnly);
-    float *depthDataPointer = (float *)CVPixelBufferGetBaseAddress(depthFrame);
+    // Update the point2D using the provided coordinates
+    [self updatePoint2DWithX:point2D.x Y:point2D.y];
 
-    // Get the width and height of the depth frame
-    size_t depthWidth = CVPixelBufferGetWidth(depthFrame);
-    size_t depthHeight = CVPixelBufferGetHeight(depthFrame);
-    NSLog(@"Depth frame size: %zu x %zu", depthWidth, depthHeight);
-
-    // Calculate the x and y indices within the depth map
-    NSUInteger xIndex = MIN(MAX(point2D.x, 0), depthWidth - 1);
-    NSUInteger yIndex = MIN(MAX(point2D.y, 0), depthHeight - 1);
-    NSLog(@"2D Point: (%f, %f), Depth map indices: xIndex = %lu, yIndex = %lu", point2D.x, point2D.y, (unsigned long)xIndex, (unsigned long)yIndex);
-
-    // Calculate the byte offset for the depth value at the given 2D point
-    size_t bytesPerRow = CVPixelBufferGetBytesPerRow(depthFrame);
-    size_t depthOffset = yIndex * bytesPerRow + xIndex * sizeof(float);
-    if (depthOffset >= CVPixelBufferGetDataSize(depthFrame)) {
-        NSLog(@"Offset out of bounds");
-        CVPixelBufferUnlockBaseAddress(depthFrame, kCVPixelBufferLock_ReadOnly);
-        return simd_make_float3(0, 0, 0);
-    }
-
-    // Get the depth value (assume it's float16)
-    float depthValue = 0.0f;
-    if (CVPixelBufferGetPixelFormatType(depthFrame) == kCVPixelFormatType_DepthFloat16) {
-        UInt16 *depthPointer = (UInt16 *)((char *)CVPixelBufferGetBaseAddress(depthFrame) + depthOffset);
-        depthValue = (float)(*depthPointer) / 65535.0f; // Normalize 16-bit depth to [0, 1]
-    } else {
-        float *depthPointer = (float *)((char *)CVPixelBufferGetBaseAddress(depthFrame) + depthOffset);
-        depthValue = *depthPointer;
-    }
-
-    NSLog(@"Depth value at (%lu, %lu): %f", (unsigned long)xIndex, (unsigned long)yIndex, depthValue);
-
-    CVPixelBufferUnlockBaseAddress(depthFrame, kCVPixelBufferLock_ReadOnly);
-
-    // Extract the intrinsic parameters
-    float fx = intrinsics.columns[0][0];
-    float fy = intrinsics.columns[1][1];
-    float cx = intrinsics.columns[2][0];
-    float cy = intrinsics.columns[2][1];
-    NSLog(@"Intrinsic parameters: fx = %f, fy = %f, cx = %f, cy = %f", fx, fy, cx, cy);
+    // Manually trigger a redraw and wait for the drawing to complete
+    [self setNeedsDisplay];
     
-    // Back-project the 2D point into 3D space
-    float xrw = (point2D.x - cx) * depthValue / fx;
-    float yrw = (point2D.y - cy) * depthValue / fy;
-    float zrw = depthValue;
-    NSLog(@"3D World Coordinates: (%f, %f, %f)", xrw, yrw, zrw);
-    
-    // Return the 3D world coordinate
-    return simd_make_float3(xrw, yrw, zrw);
+    // Synchronize to ensure the drawRect execution has completed
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        // The _result3DPoint should now be updated with the latest data
+    });
+
+    // Return the updated _result3DPoint
+    return _result3DPoint;
 }
 
 - (simd_float3)query3DPointFrom2DCoordinates:(simd_float2)xyCoords {
