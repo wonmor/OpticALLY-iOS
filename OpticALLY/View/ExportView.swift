@@ -163,6 +163,7 @@ struct ExportView: View {
     @State private var scanState: ScanState = .ready
     @State private var scanDirection: ScanDirection = .left
     @State private var showScanCompleteView: Bool = false
+    @State private var isVisible = false
     
     @State private var showLog: Bool = false
     @State private var hideMoveOnButton: Bool = false
@@ -289,8 +290,8 @@ struct ExportView: View {
                     }
                 }
                 
-                if !hideFaceIDScanView {
-                    ZStack {
+                ZStack {
+                    if !hideFaceIDScanView {
                         SignalStrengthView(scanState: $scanState, scanDirection: $scanDirection, cameraViewController: cameraViewController)
                             .frame(width: 300, height: 300)
                             .blur(radius: 5.0)
@@ -300,7 +301,6 @@ struct ExportView: View {
                             .frame(width: 220, height: 220) // Adjust the size as needed
                         
                         // FaceIDScanView in the front
-                        //FaceIDScanView(cameraViewController: cameraViewController)
                         if let pixelBuffer = videoFrameData.pixelBuffer {
                             VideoPixelBufferView(pixelBuffer: pixelBuffer)
                                 .frame(width: 200, height: 200)
@@ -308,12 +308,30 @@ struct ExportView: View {
                                 .padding()
                         }
                     }
-                    .onChange(of: cameraViewController.faceYawAngle) { newValue in
-                        handleFaceDirectionChange(yawAngle: newValue)
-                    }
-                    
-                    Spacer()
                 }
+                .opacity(isVisible ? 1 : 0) // Control the opacity based on the `isVisible` state
+                .onAppear {
+                    // Make the view appear with animation if it's supposed to be visible
+                    if !hideFaceIDScanView {
+                        withAnimation(.easeIn(duration: 0.5)) {
+                            isVisible = true
+                        }
+                    }
+                }
+                .onChange(of: cameraViewController.faceYawAngle) { newValue in
+                    handleFaceDirectionChange(yawAngle: newValue)
+                }
+                .onChange(of: hideFaceIDScanView) { newValue in
+                    withAnimation(.easeInOut(duration: 0.5)) {
+                        isVisible = !newValue
+                    }
+                }
+                .onDisappear {
+                    withAnimation(.easeOut(duration: 0.5)) {
+                        isVisible = false
+                    }
+                }
+                Spacer()
                 
                 if scanState != .scanning {
                     if let lastLog = logManager.latestLog {
