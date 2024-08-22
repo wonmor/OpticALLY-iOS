@@ -41,6 +41,9 @@ simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
     simd::float3 _up;       // camera "up" direction
     simd::float2 point2D;
     matrix_float3x3 intrinsics;
+    
+    // Declare global simd::float3 to store the result of 2D -> 3D landmark projection
+    simd::float3 _result3DPoint;
 
     id<MTLCommandQueue> _commandQueue;
     id<MTLComputePipelineState> _computePipelineState;  // Add this line
@@ -342,7 +345,13 @@ typedef struct {
         [renderEncoder endEncoding];
         
         // Schedule a present once the framebuffer is complete using the current drawable
-        [commandBuffer presentDrawable:self.currentDrawable];
+       [commandBuffer presentDrawable:self.currentDrawable];
+
+       // Add a completion handler to copy the result from the GPU to the CPU
+       [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> commandBuffer) {
+           simd::float3* resultPointer = (simd::float3*)[resultBuffer contents];
+           self->_result3DPoint = *resultPointer;
+       }];
     }
     
     // Finalize rendering here & push the command buffer to the GPU
