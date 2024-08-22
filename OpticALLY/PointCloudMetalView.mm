@@ -41,6 +41,7 @@ simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
     simd::float3 _center;   // current point camera looks at
     simd::float3 _eye;      // current camera position
     simd::float3 _up;       // camera "up" direction
+    simd::float2 point2D;
     matrix_float3x3 intrinsics;
 
     id<MTLCommandQueue> _commandQueue;
@@ -48,9 +49,15 @@ simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
        id<MTLRenderPipelineState> _renderPipelineState;
        id<MTLBuffer> _unsolvedVertexBuffer;
        id<MTLBuffer> _solvedVertexBuffer;
-    id<MTLBuffer> _xyCoordsBuffer;
        NSUInteger numVertices;  // Declare numVertices
     id<MTLDepthStencilState> _depthStencilState;
+}
+
+- (void)updatePoint2DWithX:(float)x Y:(float)y {
+    point2D = simd::float2(x, y);
+    
+    // Manually trigger a redraw to see the update
+    [self setNeedsDisplay];
 }
 
 - (simd_float3)convert2DPointTo3D:(simd_float2)point2D {
@@ -192,7 +199,6 @@ simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
     NSUInteger numVertices = 640 * 480;
     _unsolvedVertexBuffer = [self.device newBufferWithLength:sizeof(VertexIn) * numVertices options:MTLResourceStorageModeShared];
     _solvedVertexBuffer = [self.device newBufferWithLength:sizeof(VertexOut) * numVertices options:MTLResourceStorageModeShared];
-    _xyCoordsBuffer = [self.device newBufferWithLength:sizeof(float) * 2 * numVertices options:MTLResourceStorageModeShared];  // Initialize new buffer
 }
 
 
@@ -203,7 +209,6 @@ typedef struct {
 
 - (void)processWorldCoordinates {
     VertexOut* solvedVertices = (VertexOut*)[_solvedVertexBuffer contents];
-    simd_float2* xyCoords = (simd_float2*)[_xyCoordsBuffer contents];
 }
 
 - (NSString *)documentsPathForFileName:(NSString *)name {
@@ -317,6 +322,13 @@ typedef struct {
         
         // set arguments to shader
         [renderEncoder setVertexTexture:depthTexture atIndex:0];
+        
+        simd::uint2 queryPos = {(uint)point2D.x, (uint)point2D.y};
+                [renderEncoder setFragmentBytes:&queryPos length:sizeof(simd::uint2) atIndex:0];
+        
+        // Buffer to store the result
+                id<MTLBuffer> resultBuffer = [self.device newBufferWithLength:sizeof(simd_float3) options:MTLResourceStorageModeShared];
+                [renderEncoder setFragmentBuffer:resultBuffer offset:0 atIndex:1];
         
         simd::float4x4 finalViewMatrix = [self getFinalViewMatrix];
         

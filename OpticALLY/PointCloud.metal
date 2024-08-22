@@ -21,54 +21,57 @@ vertexShaderPoints(uint vertexID [[ vertex_id ]],
     // Depth thresholds
     const float minDepthThreshold = 200.0f;
     const float maxDepthThreshold = 800.0f;
-
+    
     // Calculate position without downsampling
     uint2 pos;
     pos.y = vertexID / depthTexture.get_width();
     pos.x = vertexID % depthTexture.get_width();
-
+    
     // Ensure pos does not exceed texture bounds
     pos.x = min(pos.x, depthTexture.get_width() - 1);
     pos.y = min(pos.y, depthTexture.get_height() - 1);
-
+    
     // Read depth and apply depth threshold
     float depth = depthTexture.read(pos).x * 1000.0f;
     if (depth < minDepthThreshold || depth > maxDepthThreshold) {
         return RasterizerDataColor();
     }
-
+    
     // Convert to world coordinates
     float xrw = (pos.x - cameraIntrinsics[2][0]) * depth / cameraIntrinsics[0][0];
     float yrw = (pos.y - cameraIntrinsics[2][1]) * depth / cameraIntrinsics[1][1];
-
+    
     // Create clip space position
     float4 xyzw = { xrw, yrw, depth, 1.f };
     RasterizerDataColor out;
+    out.worldPosition = { xrw, yrw, depth };
     out.clipSpacePosition = viewMatrix * xyzw;
     out.coor = { pos.x / (float)(depthTexture.get_width() - 1),
-                 pos.y / (float)(depthTexture.get_height() - 1) };
+        pos.y / (float)(depthTexture.get_height() - 1) };
     out.depth = depth;
     out.pSize = 5.0f; // Point size
-
+    
     return out;
 }
 
 
 fragment float4 fragmentShaderPoints(RasterizerDataColor in [[stage_in]],
-                                     texture2d<float> colorTexture [[ texture(0) ]]) {
+                                     texture2d<float> colorTexture [[ texture(0) ]],
+                                     constant uint2& queryPos [[ buffer(0) ]],
+                                     device float3* resultCoords [[ buffer(1) ]]) {
     const float faceMinDepth = 1.0;
     const float faceMaxDepth = 1000.0;
-
+    
     // Discard fragment if outside the depth range for the face
     if (in.depth < faceMinDepth || in.depth > faceMaxDepth) {
         discard_fragment();
         return float4(0, 0, 0, 0); // transparent color
     }
-
+    
     // Swap the x and y coordinates
-       float2 swappedCoor = float2(1.0 - in.coor.y, in.coor.x);
-
-       constexpr sampler textureSampler (mag_filter::linear, min_filter::linear);
-       const float4 colorSample = colorTexture.sample(textureSampler, swappedCoor);
-       return colorSample;
+    float2 swappedCoor = float2(1.0 - in.coor.y, in.coor.x);
+    
+    constexpr sampler textureSampler (mag_filter::linear, min_filter::linear);
+    const float4 colorSample = colorTexture.sample(textureSampler, swappedCoor);
+    return colorSample;
 }
