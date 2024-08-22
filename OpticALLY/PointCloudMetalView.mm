@@ -296,9 +296,15 @@ typedef struct {
         // set arguments to shader
         [renderEncoder setVertexTexture:depthTexture atIndex:0];
         
-        NSLog(@"Query Pos (drawRect) Running Again");
-        simd::uint2 queryPos = {(uint)point2D.x, (uint)point2D.y};
-                [renderEncoder setFragmentBytes:&queryPos length:sizeof(simd::uint2) atIndex:0];
+        // Log that drawRect is running again
+         NSLog(@"[DRAWRECT] Query Pos (drawRect) Running Again");
+
+         // Set up queryPos with the updated point2D values
+         simd::uint2 queryPos = {(uint)point2D.x, (uint)point2D.y};
+         NSLog(@"[DRAWRECT] queryPos: x = %u, y = %u", queryPos.x, queryPos.y);
+        
+        [renderEncoder setFragmentBytes:&queryPos length:sizeof(simd::uint2) atIndex:0];
+
         
         // Buffer to store the result
                 id<MTLBuffer> resultBuffer = [self.device newBufferWithLength:sizeof(simd_float3) options:MTLResourceStorageModeShared];
@@ -320,12 +326,11 @@ typedef struct {
         // Schedule a present once the framebuffer is complete using the current drawable
        [commandBuffer presentDrawable:self.currentDrawable];
 
-       // Add a completion handler to copy the result from the GPU to the CPU
-       [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> commandBuffer) {
-           simd::float3* resultPointer = (simd::float3*)[resultBuffer contents];
-           NSLog(@"Result 3D Point Completion Handler");
-           self->_result3DPoint = *resultPointer;
-       }];
+        // After the command buffer has completed, retrieve and log the result
+           [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> buffer) {
+               simd_float3* result = (simd_float3*)[resultBuffer contents];
+               NSLog(@"[DRAWRECT] Resulting 3D Point: x = %f, y = %f, z = %f", result->x, result->y, result->z);
+           }];
     }
     
     // Finalize rendering here & push the command buffer to the GPU
