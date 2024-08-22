@@ -39,11 +39,7 @@ simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
     simd::float3 _center;   // current point camera looks at
     simd::float3 _eye;      // current camera position
     simd::float3 _up;       // camera "up" direction
-    simd::float2 point2D;
     matrix_float3x3 intrinsics;
-    
-    // Declare global simd::float3 to store the result of 2D -> 3D landmark projection
-    simd::float3 _result3DPoint;
 
     id<MTLCommandQueue> _commandQueue;
     id<MTLComputePipelineState> _computePipelineState;  // Add this line
@@ -52,60 +48,6 @@ simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
        id<MTLBuffer> _solvedVertexBuffer;
        NSUInteger numVertices;  // Declare numVertices
     id<MTLDepthStencilState> _depthStencilState;
-}
-
-// Uses GPU (Metal) for processing
-- (void)updatePoint2DWithX:(float)x Y:(float)y {
-    point2D = simd_make_float2(x, y);
-    
-    // Ensure setNeedsDisplay is called on the main thread
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self setNeedsDisplay];
-    });
-}
-
-- (simd_float3)convert2DPointTo3D:(simd_float2)point2D {
-    // Ensure the depth data is available
-    if (!_internalDepthFrame) {
-        NSLog(@"[DEBUG] No depth data available.");
-        return simd_make_float3(0, 0, 0);
-    }
-
-    // Log the incoming 2D point coordinates
-    NSLog(@"[DEBUG] Converting 2D Point: (%f, %f)", point2D.x, point2D.y);
-
-    // Update the point2D using the provided coordinates
-    [self updatePoint2DWithX:point2D.x Y:point2D.y];
-
-    // Log that the point2D update has been triggered
-    NSLog(@"[DEBUG] Point2D updated. Waiting for drawRect to complete...");
-
-    // Synchronize to ensure the drawRect execution has completed
-    dispatch_sync(dispatch_get_main_queue(), ^{
-        // The _result3DPoint should now be updated with the latest data
-        NSLog(@"[DEBUG] drawRect execution completed. Resulting 3D Point: (%f, %f, %f)",
-              _result3DPoint.x, _result3DPoint.y, _result3DPoint.z);
-    });
-
-    // Log the final 3D point before returning
-    NSLog(@"[DEBUG] Returning 3D Point: (%f, %f, %f)",
-          _result3DPoint.x, _result3DPoint.y, _result3DPoint.z);
-
-    // Return the updated _result3DPoint
-    return _result3DPoint;
-}
-
-- (simd_float3)query3DPointFrom2DCoordinates:(simd_float2)xyCoords {
-    NSUInteger resolutionWidth = 640;
-    NSUInteger resolutionHeight = 480;
-    NSUInteger flatIndex = xyCoords.y * resolutionWidth + xyCoords.x;
-
-    if (flatIndex < (resolutionWidth * resolutionHeight)) {
-        VertexOut* solvedVertices = (VertexOut*)[_solvedVertexBuffer contents];
-        return simd_make_float3(solvedVertices[flatIndex].x, solvedVertices[flatIndex].y, solvedVertices[flatIndex].z);
-    } else {
-        return simd_make_float3(0, 0, 0);  // Return a default value if the index is out of bounds
-    }
 }
 
 - (nonnull instancetype)initWithFrame:(CGRect)frameRect device:(nullable id<MTLDevice>)device {
@@ -173,7 +115,6 @@ simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
     _unsolvedVertexBuffer = [self.device newBufferWithLength:sizeof(VertexIn) * numVertices options:MTLResourceStorageModeShared];
     _solvedVertexBuffer = [self.device newBufferWithLength:sizeof(VertexOut) * numVertices options:MTLResourceStorageModeShared];
 }
-
 
 // PointXYZ structure
 typedef struct {
@@ -296,20 +237,6 @@ typedef struct {
         // set arguments to shader
         [renderEncoder setVertexTexture:depthTexture atIndex:0];
         
-        // Log that drawRect is running again
-         NSLog(@"[DRAWRECT] Query Pos (drawRect) Running Again");
-
-         // Set up queryPos with the updated point2D values
-         simd::uint2 queryPos = {(uint)point2D.x, (uint)point2D.y};
-         NSLog(@"[DRAWRECT] queryPos: x = %u, y = %u", queryPos.x, queryPos.y);
-        
-        [renderEncoder setFragmentBytes:&queryPos length:sizeof(simd::uint2) atIndex:0];
-
-        
-        // Buffer to store the result
-                id<MTLBuffer> resultBuffer = [self.device newBufferWithLength:sizeof(simd_float3) options:MTLResourceStorageModeShared];
-                [renderEncoder setFragmentBuffer:resultBuffer offset:0 atIndex:1];
-        
         simd::float4x4 finalViewMatrix = [self getFinalViewMatrix];
         
         [renderEncoder setVertexBytes:&finalViewMatrix length:sizeof(finalViewMatrix) atIndex:0];
@@ -324,13 +251,7 @@ typedef struct {
         [renderEncoder endEncoding];
         
         // Schedule a present once the framebuffer is complete using the current drawable
-       [commandBuffer presentDrawable:self.currentDrawable];
-
-        // After the command buffer has completed, retrieve and log the result
-           [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> buffer) {
-               simd_float3* result = (simd_float3*)[resultBuffer contents];
-               NSLog(@"[DRAWRECT] Resulting 3D Point: x = %f, y = %f, z = %f", result->x, result->y, result->z);
-           }];
+        [commandBuffer presentDrawable:self.currentDrawable];
     }
     
     // Finalize rendering here & push the command buffer to the GPU
