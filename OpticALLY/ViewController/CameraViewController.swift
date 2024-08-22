@@ -54,18 +54,6 @@ private let faceTextureSize = 1024 //px
 /// Should the face mesh be filled in? (i.e. fill in the eye and mouth holes with geometry)
 private let fillMesh = true
 
-struct PreviewUIViewRepresentable: UIViewRepresentable {
-    var previewView: UIView
-    
-    func makeUIView(context: Context) -> UIView {
-        return previewView
-    }
-    
-    func updateUIView(_ uiView: UIView, context: Context) {
-        // You can update the view here if needed
-    }
-}
-
 class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDelegate, ObservableObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureMetadataOutputObjectsDelegate {
     var contentNode: SCNNode?
     
@@ -85,6 +73,8 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     @Published var leftEyePosition3D = SCNVector3(0, 0, 0)
     @Published var rightEyePosition3D = SCNVector3(0, 0, 0)
     @Published var chinPosition3D = SCNVector3(0, 0, 0)
+    
+    @ObservedObject var videoFrameData = VideoFrameData()
     
     var leftEye = SCNNode()
     var rightEye = SCNNode()
@@ -196,25 +186,25 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             
             print("Session configured!")
             
-            //            // Search for highest resolution with half-point depth values
-            //            let depthFormats = device.activeFormat.supportedDepthDataFormats
-            //            let filtered = depthFormats.filter({
-            //                CMFormatDescriptionGetMediaSubType($0.formatDescription) == kCVPixelFormatType_DepthFloat16
-            //            })
-            //            let selectedFormat = filtered.max(by: {
-            //                first, second in CMVideoFormatDescriptionGetDimensions(first.formatDescription).width < CMVideoFormatDescriptionGetDimensions(second.formatDescription).width
-            //            })
-            //
-            //            do {
-            //                try device.lockForConfiguration()
-            //                device.activeDepthDataFormat = selectedFormat
-            //                device.unlockForConfiguration()
-            //            } catch {
-            //                print("Could not lock device for configuration: \(error)")
-            //
-            //                session.commitConfiguration()
-            //                return
-            //            }
+//            // Search for highest resolution with half-point depth values
+//            let depthFormats = device.activeFormat.supportedDepthDataFormats
+//            let filtered = depthFormats.filter({
+//                CMFormatDescriptionGetMediaSubType($0.formatDescription) == kCVPixelFormatType_DepthFloat16
+//            })
+//            let selectedFormat = filtered.max(by: {
+//                first, second in CMVideoFormatDescriptionGetDimensions(first.formatDescription).width < CMVideoFormatDescriptionGetDimensions(second.formatDescription).width
+//            })
+//            
+//            do {
+//                try device.lockForConfiguration()
+//                device.activeDepthDataFormat = selectedFormat
+//                device.unlockForConfiguration()
+//            } catch {
+//                print("Could not lock device for configuration: \(error)")
+//              
+//                session.commitConfiguration()
+//                return
+//            }
             
             // Start the session on a background thread
             DispatchQueue.global(qos: .userInitiated).async {
@@ -246,7 +236,7 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
      }
      */
     
-    // MARK: AVCaptureMetadataOutputObjectsDelegate
+     // MARK: AVCaptureMetadataOutputObjectsDelegate
     
     func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
         currentMetadata = metadataObjects // Update metadata
@@ -530,11 +520,10 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         // configureImageView()
         
         setupEyeNode()
-        layer.videoGravity = .resizeAspectFill
+        
         layer.frame = preview.bounds
         
         preview.layer.addSublayer(layer)
-        preview.layer.masksToBounds = true
         preview.transform = CGAffineTransformMakeRotation(CGFloat(Double.pi))
         preview.transform = CGAffineTransformScale(preview.transform, 1, -1)
         
@@ -610,15 +599,7 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     }
     
     private func addAndConfigureSwiftUIView() {
-        // Wrap the preview view
-        let previewUIViewRepresentable = PreviewUIViewRepresentable(previewView: preview)
-        
-        // Pass it to ExportView
-        let exportView = ExportView(previewUIView: previewUIViewRepresentable)
-        
-        // Create a hosting controller for the SwiftUI view
-        let hostingController = UIHostingController(rootView: exportView)
-        
+        let hostingController = UIHostingController(rootView: ExportView(videoFrameData: videoFrameData))
         addChild(hostingController)
         hostingController.didMove(toParent: self)
         
@@ -651,12 +632,12 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         outputSynchronizer?.setDelegate(self, queue: dataOutputQueue)
         
         // Set the video orientation for each connection in the output
-        for connection in output.connections {
-            if connection.isVideoOrientationSupported {
-                connection.videoOrientation = .portrait
-            }
-        }
-        
+           for connection in output.connections {
+               if connection.isVideoOrientationSupported {
+                   connection.videoOrientation = .portrait
+               }
+           }
+           
         print("AVCaptureSession Running")
     }
     
@@ -746,7 +727,7 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         }
         
         // Process video sample buffer
-        let sampleBuffer = syncedVideoData.sampleBuffer
+            let sampleBuffer = syncedVideoData.sampleBuffer
         
         // Process depth data and video pixel buffer
         let depthData = syncedDepthData.depthData
@@ -767,11 +748,15 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         guard let videoPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
             return
         }
+      
+        DispatchQueue.main.async {
+            self.videoFrameData.pixelBuffer = videoPixelBuffer
+        }
         
         layer.enqueue(sampleBuffer)
-        //        cloudView?.setDepthFrame(nil, withTexture: nil)
-        //        cloudView?.setDepthFrame(depthData, withTexture: videoPixelBuffer)
-        
+//        cloudView?.setDepthFrame(nil, withTexture: nil)
+//        cloudView?.setDepthFrame(depthData, withTexture: videoPixelBuffer)
+
         
         if ExternalData.isSavingFileAsPLY {
             processFrameAV(depthData: depthData, imageData: videoPixelBuffer)

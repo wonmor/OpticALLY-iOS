@@ -27,7 +27,7 @@
                                             <segue destination="SdH-M6-O1j" kind="embed" destinationCreationSelector="embedSwiftUIView:" id="Oj6-J0-qsT"/>
                                         </connections>
                                     </containerView>
-                                    <view contentMode="scaleToFill" id="Cfc-J0-sBh">
+                                    <view hidden="YES" contentMode="scaleToFill" id="Cfc-J0-sBh">
                                         <rect key="frame" x="-93" y="74" width="560" height="580"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <viewLayoutGuide key="safeArea" id="EWj-mC-W5I"/>

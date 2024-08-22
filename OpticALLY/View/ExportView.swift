@@ -1,6 +1,32 @@
 import SwiftUI
 import Lottie
 import ARKit
+import UIKit
+import CoreImage
+
+struct VideoPixelBufferView: UIViewRepresentable {
+    var pixelBuffer: CVPixelBuffer
+
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView()
+        view.contentMode = .scaleAspectFill
+        return view
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {
+          let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
+          
+          // Apply a horizontal flip transformation
+          let flippedImage = ciImage.transformed(by: CGAffineTransform(scaleX: -1, y: 1).translatedBy(x: -ciImage.extent.width, y: 0))
+          
+          let context = CIContext()
+          
+          if let cgImage = context.createCGImage(flippedImage, from: flippedImage.extent) {
+              uiView.layer.contents = cgImage
+              uiView.layer.contentsGravity = .resizeAspectFill // Maintain aspect fill
+          }
+      }
+}
 
 enum ScanState {
     case ready, scanning, completed
@@ -16,6 +42,10 @@ enum ScanDirection {
         default: self = .right
         }
     }
+}
+
+class VideoFrameData: ObservableObject {
+    @Published var pixelBuffer: CVPixelBuffer?
 }
 
 struct CompassView: View {
@@ -123,13 +153,12 @@ struct CompassView: View {
 }
 
 struct ExportView: View {
-    var previewUIView: PreviewUIViewRepresentable
-    
     @EnvironmentObject var globalState: GlobalState
     
     @StateObject private var exportViewModel = ExportViewModel()
     
     @ObservedObject var logManager = LogManager.shared
+    @ObservedObject var videoFrameData: VideoFrameData
     
     @State private var scanState: ScanState = .ready
     @State private var scanDirection: ScanDirection = .left
@@ -242,10 +271,13 @@ struct ExportView: View {
                         .frame(width: 220, height: 220) // Adjust the size as needed
                     
                     // FaceIDScanView in the front
-                    previewUIView
-                        .frame(width: 200, height: 200)
-                        .clipShape(Circle())
-                        .padding()
+                    //FaceIDScanView(cameraViewController: cameraViewController)
+                    if let pixelBuffer = videoFrameData.pixelBuffer {
+                        VideoPixelBufferView(pixelBuffer: pixelBuffer)
+                            .frame(width: 200, height: 200)
+                            .clipShape(Circle())
+                            .padding()
+                    }
                 }
                 .onChange(of: cameraViewController.faceYawAngle) { newValue in
                     handleFaceDirectionChange(yawAngle: newValue)
