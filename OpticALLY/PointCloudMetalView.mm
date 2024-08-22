@@ -54,7 +54,7 @@ simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
 }
 
 - (void)updatePoint2DWithX:(float)x Y:(float)y {
-    point2D = simd::float2(x, y);
+    point2D = simd_make_float2(x, y);
     
     // Manually trigger a redraw to see the update
     [self setNeedsDisplay];
