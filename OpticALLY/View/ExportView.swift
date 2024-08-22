@@ -183,7 +183,15 @@ struct ExportView: View {
             VStack(spacing: 20) {
                 Spacer()
                 
-                DistanceIndicator(cameraViewController: cameraViewController)
+                //DistanceIndicator(cameraViewController: cameraViewController)
+                
+                if scanState == .ready {
+                    Text("WELCOME TO\nOPTICALLY")
+                        .font(.title3)
+                        .bold()
+                        .monospaced()
+                        .multilineTextAlignment(.center)
+                }
                 
                 if showLog {
                     if let lastLog = logManager.latestLog {
@@ -292,34 +300,43 @@ struct ExportView: View {
                         }
                         
                     } else {
-                        if determineStatus().text.contains("OPTIMAL") {
-                            Button(action: startScanning) {
-                                Text("Start Scanning")
-                                    .font(.headline)
-                                    .foregroundColor(.white)
-                                    .padding()
-                                    .frame(maxWidth: .infinity)
-                                    .background(Capsule().fill(Color.gray.opacity(0.4)))
-                            }
-                            .padding(.horizontal)
-                            
-                        } else {
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.white, lineWidth: 2) // Create a white border
-                                    .frame(height: 50) // Adjust this to fit your text size
-                                    .padding(.horizontal)
-
-                                Text("MOVE WITHIN RANGE")
-                                    .monospaced()
-                                    .font(.title3)
-                                    .fontWeight(.medium)
-                                    .foregroundColor(.white)
-                                    .multilineTextAlignment(.center)
-                                    .padding(.horizontal)
-                            }
-                            .opacity(0.7)
+                        Button(action: startScanning) {
+                            Text("Start Scanning")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .padding()
+                                .frame(maxWidth: .infinity)
+                                .background(Capsule().fill(Color.gray.opacity(0.4)))
                         }
+                        .padding(.horizontal)
+//                        if determineStatus().text.contains("OPTIMAL") {
+//                            Button(action: startScanning) {
+//                                Text("Start Scanning")
+//                                    .font(.headline)
+//                                    .foregroundColor(.white)
+//                                    .padding()
+//                                    .frame(maxWidth: .infinity)
+//                                    .background(Capsule().fill(Color.gray.opacity(0.4)))
+//                            }
+//                            .padding(.horizontal)
+//                            
+//                        } else {
+//                            ZStack {
+//                                RoundedRectangle(cornerRadius: 12)
+//                                    .stroke(Color.white, lineWidth: 2) // Create a white border
+//                                    .frame(height: 50) // Adjust this to fit your text size
+//                                    .padding(.horizontal)
+//
+//                                Text("MOVE WITHIN RANGE")
+//                                    .monospaced()
+//                                    .font(.title3)
+//                                    .fontWeight(.medium)
+//                                    .foregroundColor(.white)
+//                                    .multilineTextAlignment(.center)
+//                                    .padding(.horizontal)
+//                            }
+//                            .opacity(0.7)
+//                        }
                     }
                 }
                 

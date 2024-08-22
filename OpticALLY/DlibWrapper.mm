@@ -1,4 +1,6 @@
 #import "DlibWrapper.h"
+#import "OpticALLY-Swift.h"
+
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
 
@@ -16,10 +18,12 @@ struct VertexOut {
     dlib::shape_predictor sp;
 }
 
-- (instancetype)initWithPointCloudView:(PointCloudMetalView *)pointCloudView {
+- (instancetype)initWithCameraViewController:(CameraViewController *)cameraViewController
+                              pointCloudView:(PointCloudMetalView *)pointCloudView {
     self = [super init];
     if (self) {
         _prepared = NO;
+        _cameraViewController = cameraViewController;
         _pointCloudView = pointCloudView;
     }
     return self;
@@ -45,7 +49,7 @@ struct VertexOut {
     // MARK: magic
     CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
     CVPixelBufferLockBaseAddress(imageBuffer, kCVPixelBufferLock_ReadOnly);
-
+    
     size_t width = CVPixelBufferGetWidth(imageBuffer);
     size_t height = CVPixelBufferGetHeight(imageBuffer);
     char *baseBuffer = (char *)CVPixelBufferGetBaseAddress(imageBuffer);
@@ -58,7 +62,7 @@ struct VertexOut {
     long position = 0;
     while (img.move_next()) {
         dlib::bgr_pixel& pixel = img.element();
-
+        
         // assuming bgra format here
         long bufferLocation = position * 4; //(row * width + column) * 4;
         char b = baseBuffer[bufferLocation];
@@ -73,19 +77,12 @@ struct VertexOut {
     
     // unlock buffer again until we need it again
     CVPixelBufferUnlockBaseAddress(imageBuffer, kCVPixelBufferLock_ReadOnly);
-
+    
     CGSize imageSize = CGSizeMake(width, height);
     
     // convert the face bounds list to dlib format
     std::vector<dlib::rectangle> convertedRectangles = [DlibWrapper convertCGRectValueArray:rects toVectorWithImageSize:imageSize];
     
-    // Get depth data if available
-    NSLog(@"Depth Data Map: %@", depthData.depthDataMap);
-
-    CVPixelBufferRef depthPixelBuffer = depthData.depthDataMap;
-    CVPixelBufferLockBaseAddress(depthPixelBuffer, kCVPixelBufferLock_ReadOnly);
-    float *depthDataPointer = (float *)CVPixelBufferGetBaseAddress(depthPixelBuffer);
-
     // for every detected face
     for (unsigned long j = 0; j < convertedRectangles.size(); ++j) {
         dlib::rectangle oneFaceRect = convertedRectangles[j];
@@ -115,38 +112,38 @@ struct VertexOut {
         
         std::vector<cv::Point3d> model_points;
         
-           // Process each landmark point
-           std::vector<dlib::point> landmarks = {noseTip, chin, leftEyeLeftCorner, rightEyeRightCorner, leftMouthCorner, rightMouthCorner};
+        // Process each landmark point
+        std::vector<dlib::point> landmarks = {noseTip, chin, leftEyeLeftCorner, rightEyeRightCorner, leftMouthCorner, rightMouthCorner};
         
-//        for (const auto& landmark : landmarks) {
-//            simd_float2 point2D = simd_make_float2(landmark.x(), landmark.y());
-//            simd_float3 point3D = [_pointCloudView convert2DPointTo3D:point2D];
-//            // Log the result
-//            NSLog(@"3D point for landmark (%f, %f) -> (%f, %f, %f)", point2D.x, point2D.y, point3D.x, point3D.y, point3D.z);
-//            model_points.push_back(cv::Point3d(point3D.x, point3D.y, point3D.z));
-//        }
+        //        for (const auto& landmark : landmarks) {
+        //            simd_float2 point2D = simd_make_float2(landmark.x(), landmark.y());
+        //            simd_float3 point3D = [_pointCloudView convert2DPointTo3D:point2D];
+        //            // Log the result
+        //            NSLog(@"3D point for landmark (%f, %f) -> (%f, %f, %f)", point2D.x, point2D.y, point3D.x, point3D.y, point3D.z);
+        //            model_points.push_back(cv::Point3d(point3D.x, point3D.y, point3D.z));
+        //        }
         
         model_points.push_back(cv::Point3d(0.0f, 0.0f, 0.0f));               // Nose tip
-           model_points.push_back(cv::Point3d(0.0f, -330.0f, -65.0f));          // Chin
-           model_points.push_back(cv::Point3d(-225.0f, 170.0f, -135.0f));       // Left eye left corner
-           model_points.push_back(cv::Point3d(225.0f, 170.0f, -135.0f));        // Right eye right corner
-           model_points.push_back(cv::Point3d(-150.0f, -150.0f, -125.0f));      // Left Mouth corner
-           model_points.push_back(cv::Point3d(150.0f, -150.0f, -125.0f));  
-  
+        model_points.push_back(cv::Point3d(0.0f, -330.0f, -65.0f));          // Chin
+        model_points.push_back(cv::Point3d(-225.0f, 170.0f, -135.0f));       // Left eye left corner
+        model_points.push_back(cv::Point3d(225.0f, 170.0f, -135.0f));        // Right eye right corner
+        model_points.push_back(cv::Point3d(-150.0f, -150.0f, -125.0f));      // Left Mouth corner
+        model_points.push_back(cv::Point3d(150.0f, -150.0f, -125.0f));
+        
         double focal_length = cvImg.cols;
         cv::Point2d center = cv::Point2d(cvImg.cols / 2, cvImg.rows / 2);
         cv::Mat camera_matrix = (cv::Mat_<double>(3, 3) << focal_length, 0, center.x, 0, focal_length, center.y, 0, 0, 1);
         cv::Mat dist_coeffs = cv::Mat::zeros(4, 1, cv::DataType<double>::type); // Assuming no lens distortion
-
+        
         cv::Mat rotation_vector;
         cv::Mat translation_vector;
-
+        
         cv::solvePnP(model_points, image_points, camera_matrix, dist_coeffs, rotation_vector, translation_vector);
-
+        
         // Convert rotation vector to rotation matrix
         cv::Mat rotation_matrix;
         cv::Rodrigues(rotation_vector, rotation_matrix);
-
+        
         // Extract Euler angles from the rotation matrix
         cv::Vec3d euler_angles;
         cv::Mat R;
@@ -154,27 +151,19 @@ struct VertexOut {
         euler_angles[0] = atan2(R.at<double>(2,1), R.at<double>(2,2));
         euler_angles[1] = atan2(-R.at<double>(2,0), sqrt(R.at<double>(2,1)*R.at<double>(2,1) + R.at<double>(2,2)*R.at<double>(2,2)));
         euler_angles[2] = atan2(R.at<double>(1,0), R.at<double>(0,0));
-        
-        // Get depth data if available
-            CVPixelBufferRef depthPixelBuffer = depthData.depthDataMap;
-            CVPixelBufferLockBaseAddress(depthPixelBuffer, kCVPixelBufferLock_ReadOnly);
-            float *depthDataPointer = (float *)CVPixelBufferGetBaseAddress(depthPixelBuffer);
-            
-            // Get the depth value at the nose tip
-            float depthValueAtNoseTip = [DlibWrapper getDepthValueAtCoordinate:noseTip.x() y:noseTip.y() depthPixelBuffer:depthPixelBuffer];
-            
-            // Unlock the depth buffer
-            CVPixelBufferUnlockBaseAddress(depthPixelBuffer, kCVPixelBufferLock_ReadOnly);
-            
-            // Now you have the depth value at the nose tip in meters
-            NSLog(@"Distance from camera to face (at nose tip): %f meters", depthValueAtNoseTip);
-
+       
         // Convert to degrees
         euler_angles *= (180.0 / CV_PI);
-
+        
         // Print Euler angles in degrees
         NSLog(@"Euler Angles (degrees): Pitch: %f, Yaw: %f, Roll: %f", euler_angles[0], euler_angles[1], euler_angles[2]);
+        
+        // After calculating euler_angles[1]
+        double yawAngle = euler_angles[1];
 
+        // Assuming `_pointCloudView` has a reference to the `CameraViewController`
+        [_cameraViewController updateYawAngle:yawAngle];
+        
         // Project a 3D point (0, 0, 1000.0) onto the image plane.
         std::vector<cv::Point3d> nose_end_point3D;
         std::vector<cv::Point2d> nose_end_point2D;
@@ -185,17 +174,17 @@ struct VertexOut {
         // Convert image points and nose end point to dlib points
         dlib::point start_point(image_points[0].x, image_points[0].y);
         dlib::point end_point(nose_end_point2D[0].x, nose_end_point2D[0].y);
-
+        
         // Calculate the distance and step size
         double distance = sqrt(pow(end_point.x() - start_point.x(), 2) + pow(end_point.y() - start_point.y(), 2));
         int num_steps = static_cast<int>(distance / 3); // 3 pixels apart
         double step_x = (end_point.x() - start_point.x()) / num_steps;
         double step_y = (end_point.y() - start_point.y()) / num_steps;
-
+        
         // Print rotation and translation vectors
         NSLog(@"Rotation Vector: [%f, %f, %f]", rotation_vector.at<double>(0), rotation_vector.at<double>(1), rotation_vector.at<double>(2));
         NSLog(@"Translation Vector: [%f, %f, %f]", translation_vector.at<double>(0), translation_vector.at<double>(1), translation_vector.at<double>(2));
-
+        
         // Print nose end point
         NSLog(@"Nose End Point 2D: [%f, %f]", nose_end_point2D[0].x, nose_end_point2D[0].y);
         
@@ -219,7 +208,7 @@ struct VertexOut {
             dlib::point p(image_points[i].x, image_points[i].y);
             draw_solid_circle(img, p, 3, dlib::rgb_pixel(0, 0, 255));
         }
-
+        
         // Draw circles along the line
         for (int i = 0; i < num_steps; ++i) {
             int x = start_point.x() + step_x * i;
@@ -229,12 +218,9 @@ struct VertexOut {
         }
     }
     
-    // unlock depth buffer
-    CVPixelBufferUnlockBaseAddress(depthPixelBuffer, kCVPixelBufferLock_ReadOnly);
-
     // lets put everything back where it belongs
     CVPixelBufferLockBaseAddress(imageBuffer, 0);
-
+    
     // copy dlib image data back into samplebuffer
     img.reset();
     position = 0;
@@ -270,15 +256,6 @@ struct VertexOut {
         myConvertedRects.push_back(dlibRect);
     }
     return myConvertedRects;
-}
-
-+ (float)getDepthValueAtCoordinate:(int)x y:(int)y depthPixelBuffer:(CVPixelBufferRef)depthPixelBuffer {
-    size_t depthOffset = y * CVPixelBufferGetBytesPerRow(depthPixelBuffer) + x * sizeof(UInt16); // No flip
-    if (depthOffset >= CVPixelBufferGetDataSize(depthPixelBuffer)) {
-        return 0.0; // Return a default value if offset is out of bounds
-    }
-    UInt16 *depthPointer = (UInt16 *)((char *)CVPixelBufferGetBaseAddress(depthPixelBuffer) + depthOffset);
-    return (float)(*depthPointer);
 }
 
 

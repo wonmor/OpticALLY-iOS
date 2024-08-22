@@ -508,7 +508,7 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         super.viewDidAppear(animated)
         
         // Initialize the DlibWrapper with cloudView
-        wrapper = DlibWrapper(pointCloudView: cloudView)
+        wrapper = DlibWrapper(cameraViewController: self, pointCloudView: cloudView)
         
         openSession()
         startAVCaptureSession()
@@ -548,6 +548,14 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         panOneFingerGesture.maximumNumberOfTouches = 1
         panOneFingerGesture.minimumNumberOfTouches = 1
         cloudView.addGestureRecognizer(panOneFingerGesture)
+    }
+    
+    // Method to update the yaw angle from external sources
+    @objc
+    func updateYawAngle(_ yawAngle: Double) {
+        DispatchQueue.main.async {
+            self.faceYawAngle = yawAngle
+        }
     }
     
     /// Creates To SCNSpheres To Loosely Represent The Eyes
