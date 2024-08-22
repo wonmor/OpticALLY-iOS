@@ -338,6 +338,36 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         return resizedPixelBuffer
     }
     
+    func rotateImageData90DegreesCounterClockwise(imageData: CVPixelBuffer) -> CVPixelBuffer? {
+        let ciImage = CIImage(cvPixelBuffer: imageData)
+
+        // Rotate the CIImage 90 degrees counterclockwise
+        let rotatedCIImage = ciImage.oriented(.left)
+
+        // Create a CIContext for rendering the CIImage to a CVPixelBuffer
+        let ciContext = CIContext()
+
+        // Create a new CVPixelBuffer for the rotated image
+        var rotatedPixelBuffer: CVPixelBuffer?
+        let options: [String: Any] = [
+            kCVPixelBufferCGImageCompatibilityKey as String: true,
+            kCVPixelBufferCGBitmapContextCompatibilityKey as String: true
+        ]
+        let width = Int(rotatedCIImage.extent.width)
+        let height = Int(rotatedCIImage.extent.height)
+        CVPixelBufferCreate(kCFAllocatorDefault, width, height, CVPixelBufferGetPixelFormatType(imageData), options as CFDictionary, &rotatedPixelBuffer)
+
+        guard let outputBuffer = rotatedPixelBuffer else {
+            print("Failed to create rotated CVPixelBuffer")
+            return nil
+        }
+
+        // Render the rotated CIImage to the new CVPixelBuffer
+        ciContext.render(rotatedCIImage, to: outputBuffer)
+
+        return outputBuffer
+    }
+    
     private func processFrameAV(depthData: AVDepthData, imageData: CVImageBuffer) {
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self = self else { return }
@@ -351,7 +381,9 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             let depthWidth = CVPixelBufferGetWidth(depthPixelBuffer)
             let depthHeight = CVPixelBufferGetHeight(depthPixelBuffer)
             
-            let colorPixelBuffer = self.resizePixelBuffer(imageData, width: depthWidth, height: depthHeight)
+            let rotatedPixelBuffer = rotateImageData90DegreesCounterClockwise(imageData: imageData)
+                
+            let colorPixelBuffer = self.resizePixelBuffer(rotatedPixelBuffer!, width: depthWidth, height: depthHeight)
             
             CVPixelBufferLockBaseAddress(depthPixelBuffer, .readOnly)
             CVPixelBufferLockBaseAddress(colorPixelBuffer!, .readOnly)
