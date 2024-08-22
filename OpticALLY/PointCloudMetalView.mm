@@ -73,9 +73,6 @@ simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
 
     // Update the point2D using the provided coordinates
     [self updatePoint2DWithX:point2D.x Y:point2D.y];
-
-    // Manually trigger a redraw and wait for the drawing to complete
-    [self setNeedsDisplay];
     
     // Synchronize to ensure the drawRect execution has completed
     dispatch_sync(dispatch_get_main_queue(), ^{
