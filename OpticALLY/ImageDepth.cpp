@@ -296,7 +296,7 @@ void ImageDepth::loadImage(const std::string& file) {
     // Rotate image by transposing and flipping along the y-axis
        cv::Mat img_rotated;
        cv::transpose(img_swapped, img_rotated);  // Transpose the image
-       cv::flip(img_rotated, img_rotated, 1);    // Flip along the y-axis to rotate 90 degrees counterclockwise
+       cv::flip(img_rotated, img_rotated, 0);    // Flip
 
        // Convert to float32 and normalize
        cv::Mat img_float;
