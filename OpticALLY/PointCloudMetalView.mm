@@ -24,8 +24,6 @@ typedef struct {
     float x, y, z;
 } VertexOut;
 
-
-
 simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
     simd::float4 temp = { v.x, v.y, v.z, 0.0f };
     temp = simd_mul(m, temp);
