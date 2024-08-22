@@ -62,7 +62,7 @@ struct CompassView: View {
 
     private var compassIndicatorPosition: CGFloat {
         // Mapping yawAngle to screen width
-        let position = ((-viewModel.faceYawAngle + 90) / 360) * screenWidth
+        let position = ((viewModel.faceYawAngle + 90) / 360) * screenWidth
         
         return position
     }
@@ -97,13 +97,13 @@ struct CompassView: View {
                             guard scanState == .scanning else { return }
                             
                             switch scanDirection {
-                            case .left where newFaceYawAngle > 20:
+                            case .left where newFaceYawAngle < -20:
                                 let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
                                 impactGenerator.impactOccurred(intensity: 1.00)
                                 
                                 barColor = .green.opacity(0.5)
                                 
-                            case .right where newFaceYawAngle < -20:
+                            case .right where newFaceYawAngle > 20:
                                 let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
                                 impactGenerator.impactOccurred(intensity: 1.00)
                                 
@@ -411,13 +411,13 @@ struct ExportView: View {
         guard scanState == .scanning else { return }
         
         switch scanDirection {
-        case .left where yawAngle > 20:
+        case .left where yawAngle < -20:
             captureFrame()
             
             withAnimation {
                 scanDirection = .right
             }
-        case .right where yawAngle < -20:
+        case .right where yawAngle > 20:
             captureFrame()
             
             withAnimation {
@@ -479,7 +479,7 @@ struct DirectionIndicatorView: View {
                 path.addLine(to: CGPoint(x: 110, y: 110))
                 path.closeSubpath()
             }
-            .fill(self.scanDirection == .right && cameraViewController.faceYawAngle < -20 ? Color.green : Color.gray.opacity(0.5))
+            .fill(self.scanDirection == .right && cameraViewController.faceYawAngle > 20 ? Color.green : Color.gray.opacity(0.5))
             
             // Right half
             Path { path in
@@ -487,7 +487,7 @@ struct DirectionIndicatorView: View {
                 path.addLine(to: CGPoint(x: 110, y: 110))
                 path.closeSubpath()
             }
-            .fill(self.scanDirection == .left && cameraViewController.faceYawAngle > 20 ? Color.green : Color.gray.opacity(0.5))
+            .fill(self.scanDirection == .left && cameraViewController.faceYawAngle < -20 ? Color.green : Color.gray.opacity(0.5))
         }
     }
 }

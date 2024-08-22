@@ -158,11 +158,42 @@ struct VertexOut {
         // Print Euler angles in degrees
         NSLog(@"Euler Angles (degrees): Pitch: %f, Yaw: %f, Roll: %f", euler_angles[0], euler_angles[1], euler_angles[2]);
         
-        // After calculating euler_angles[1]
-        double yawAngle = euler_angles[1];
+        // Moving Average Filter Variables
+        static const int windowSize = 10;
+        static double yawAngleWindow[windowSize] = {0};
+        static int yawAngleIndex = 0;
+        static double yawAngleSum = 0;
 
-        // Assuming `_pointCloudView` has a reference to the `CameraViewController`
-        [_cameraViewController updateYawAngle:yawAngle];
+        // Exponential Moving Average Variables
+        static const double alpha = 0.2;
+        static double previousEMA = 0;
+        static BOOL hasPreviousEMA = NO;
+
+        // After calculating euler_angles[1]
+        double rawYawAngle = euler_angles[1];
+
+        // Step 1: Moving Average Filter
+        yawAngleSum -= yawAngleWindow[yawAngleIndex];  // Subtract the oldest value from the sum
+        yawAngleWindow[yawAngleIndex] = rawYawAngle;   // Add the new yaw angle to the window
+        yawAngleSum += rawYawAngle;                    // Add the new value to the sum
+
+        yawAngleIndex = (yawAngleIndex + 1) % windowSize;  // Increment the index in a circular manner
+
+        double smoothedYawAngleMA = yawAngleSum / windowSize;  // Calculate the moving average
+
+        // Step 2: Exponential Moving Average (EMA) Filter
+        double finalSmoothedYawAngle;
+        if (hasPreviousEMA) {
+            finalSmoothedYawAngle = alpha * smoothedYawAngleMA + (1 - alpha) * previousEMA;
+        } else {
+            finalSmoothedYawAngle = smoothedYawAngleMA;
+            hasPreviousEMA = YES;
+        }
+
+        previousEMA = finalSmoothedYawAngle;  // Store the current EMA for the next iteration
+
+        // Update the yaw angle in the CameraViewController
+        [_cameraViewController updateYawAngle:finalSmoothedYawAngle];
         
         // Project a 3D point (0, 0, 1000.0) onto the image plane.
         std::vector<cv::Point3d> nose_end_point3D;
