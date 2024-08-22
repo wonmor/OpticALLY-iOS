@@ -381,6 +381,7 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             let depthWidth = CVPixelBufferGetWidth(depthPixelBuffer)
             let depthHeight = CVPixelBufferGetHeight(depthPixelBuffer)
             
+            // VERY IMPORTANT LINE! THIS IS BECAUSE WE SET THE CONNECTION MODE TO PORTRAIT FROM LANDSCAPE IN CAMERAVIEWCONTROLLER...
             let rotatedPixelBuffer = rotateImageData90DegreesCounterClockwise(imageData: imageData)
                 
             let colorPixelBuffer = self.resizePixelBuffer(rotatedPixelBuffer!, width: depthWidth, height: depthHeight)
