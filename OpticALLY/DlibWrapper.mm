@@ -251,23 +251,23 @@ struct VertexOut {
     }
     
     // lets put everything back where it belongs
-    CVPixelBufferLockBaseAddress(imageBuffer, 0);
-    
-    // copy dlib image data back into samplebuffer
-    img.reset();
-    position = 0;
-    while (img.move_next()) {
-        dlib::bgr_pixel& pixel = img.element();
-        
-        // assuming bgra format here
-        long bufferLocation = position * 4; //(row * width + column) * 4;
-        baseBuffer[bufferLocation] = pixel.blue;
-        baseBuffer[bufferLocation + 1] = pixel.green;
-        baseBuffer[bufferLocation + 2] = pixel.red;
-        
-        position++;
-    }
-    CVPixelBufferUnlockBaseAddress(imageBuffer, 0);
+//    CVPixelBufferLockBaseAddress(imageBuffer, 0);
+//    
+//    // copy dlib image data back into samplebuffer
+//    img.reset();
+//    position = 0;
+//    while (img.move_next()) {
+//        dlib::bgr_pixel& pixel = img.element();
+//        
+//        // assuming bgra format here
+//        long bufferLocation = position * 4; //(row * width + column) * 4;
+//        baseBuffer[bufferLocation] = pixel.blue;
+//        baseBuffer[bufferLocation + 1] = pixel.green;
+//        baseBuffer[bufferLocation + 2] = pixel.red;
+//        
+//        position++;
+//    }
+//    CVPixelBufferUnlockBaseAddress(imageBuffer, 0);
 }
 
 + (dlib::rectangle)convertScaleCGRect:(CGRect)rect toDlibRectacleWithImageSize:(CGSize)size {
