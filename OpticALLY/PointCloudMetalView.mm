@@ -67,17 +67,29 @@ simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
 - (simd_float3)convert2DPointTo3D:(simd_float2)point2D {
     // Ensure the depth data is available
     if (!_internalDepthFrame) {
-        NSLog(@"No depth data available.");
+        NSLog(@"[DEBUG] No depth data available.");
         return simd_make_float3(0, 0, 0);
     }
 
+    // Log the incoming 2D point coordinates
+    NSLog(@"[DEBUG] Converting 2D Point: (%f, %f)", point2D.x, point2D.y);
+
     // Update the point2D using the provided coordinates
     [self updatePoint2DWithX:point2D.x Y:point2D.y];
-    
+
+    // Log that the point2D update has been triggered
+    NSLog(@"[DEBUG] Point2D updated. Waiting for drawRect to complete...");
+
     // Synchronize to ensure the drawRect execution has completed
     dispatch_sync(dispatch_get_main_queue(), ^{
         // The _result3DPoint should now be updated with the latest data
+        NSLog(@"[DEBUG] drawRect execution completed. Resulting 3D Point: (%f, %f, %f)",
+              _result3DPoint.x, _result3DPoint.y, _result3DPoint.z);
     });
+
+    // Log the final 3D point before returning
+    NSLog(@"[DEBUG] Returning 3D Point: (%f, %f, %f)",
+          _result3DPoint.x, _result3DPoint.y, _result3DPoint.z);
 
     // Return the updated _result3DPoint
     return _result3DPoint;
