@@ -299,6 +299,10 @@ void ImageDepth::loadImage(const std::string& file) {
 
         // Apply sRGB to linear conversion
         img_linear = srgb_to_linear(img_float);
+    
+    cout << "Linear image dimensions: " << endl;
+       cout << "Rows: " << img_linear.rows << endl;
+       cout << "Cols: " << img_linear.cols << endl;
 
         // Debug print (first 10 values)
         cout << "Linear image (first 10 values):" << endl;
@@ -709,6 +713,9 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
        std::cout << std::endl;
 
         img_undistort.convertTo(img_undistort, CV_32F, 1 / 255.0f);
+    
+    // Transpose the matrix (REMOVE THIS LINE IF IT DOES NOT WORK!)
+    cv::transpose(img_undistort, img_undistort);
     
        // Project to 3D points
        std::vector<cv::Point3f> pts;
