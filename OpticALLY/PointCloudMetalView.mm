@@ -166,13 +166,8 @@ simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
 
     id <MTLFunction> vertexFunction = [defaultLibrary newFunctionWithName:@"vertexShaderPoints"];
     id <MTLFunction> fragmentFunction = [defaultLibrary newFunctionWithName:@"fragmentShaderPoints"];
-    id <MTLFunction> computeFunction = [defaultLibrary newFunctionWithName:@"solve_vertex"];
 
     NSError *error = nil;
-    _computePipelineState = [self.device newComputePipelineStateWithFunction:computeFunction error:&error];
-    if (!_computePipelineState) {
-        NSLog(@"Failed to create compute pipeline state, error %@", error);
-    }
 
     MTLRenderPipelineDescriptor *pipelineStateDescriptor = [[MTLRenderPipelineDescriptor alloc] init];
     pipelineStateDescriptor.label = @"Texturing Pipeline";
@@ -326,8 +321,7 @@ typedef struct {
         simd::float4x4 finalViewMatrix = [self getFinalViewMatrix];
         
         [renderEncoder setVertexBytes:&finalViewMatrix length:sizeof(finalViewMatrix) atIndex:0];
-        [renderEncoder setVertexBuffer:_worldCoordinatesBuffer offset:0 atIndex:1]; // Correctly bind the world coordinates buffer to index 1
-        [renderEncoder setVertexBytes:&intrinsics length:sizeof(intrinsics) atIndex:2]; // Correctly bind the intrinsics buffer to index 2
+        [renderEncoder setVertexBytes:&intrinsics length:sizeof(intrinsics) atIndex:1]; // Correctly bind the intrinsics buffer to index 2
         
         [renderEncoder setFragmentTexture:colorTexture atIndex:0];
         

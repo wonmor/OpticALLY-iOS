@@ -1,26 +1,6 @@
 #include <metal_stdlib>
 using namespace metal;
 
-// Compute Kernel Function
-kernel void solve_vertex(texture2d<float, access::read> depthTexture [[ texture(0) ]],
-                         constant float3x3& cameraIntrinsics [[ buffer(0) ]],
-                         device float3* worldCoords [[ buffer(1) ]],
-                         device float2* xyCoords [[ buffer(2) ]],
-                         uint vid [[ thread_position_in_grid ]])
-{
-    uint2 pos;
-    pos.y = vid / depthTexture.get_width();
-    pos.x = vid % depthTexture.get_width();
-
-    float depth = depthTexture.read(pos).x * 1000.0f;
-
-    float xrw = (pos.x - cameraIntrinsics[2][0]) * depth / cameraIntrinsics[0][0];
-    float yrw = (pos.y - cameraIntrinsics[2][1]) * depth / cameraIntrinsics[1][1];
-
-    xyCoords[vid] = float2(pos.x, pos.y);
-    worldCoords[vid] = float3(xrw, yrw, depth);
-}
-
 typedef struct
 {
     float4 clipSpacePosition [[position]];
@@ -36,8 +16,7 @@ vertex RasterizerDataColor
 vertexShaderPoints(uint vertexID [[ vertex_id ]],
                    texture2d<float, access::read> depthTexture [[ texture(0) ]],
                    constant float4x4& viewMatrix [[ buffer(0) ]],
-                   constant float3* worldCoords [[ buffer(1) ]],
-                   constant float3x3& cameraIntrinsics [[ buffer(2) ]])
+                   constant float3x3& cameraIntrinsics [[ buffer(1) ]])
 {
     // Depth thresholds
     const float minDepthThreshold = 200.0f;
