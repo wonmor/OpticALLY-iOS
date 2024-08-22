@@ -67,11 +67,26 @@ fragment float4 fragmentShaderPoints(RasterizerDataColor in [[stage_in]],
         discard_fragment();
         return float4(0, 0, 0, 0); // transparent color
     }
-    
-    // Swap the x and y coordinates
+
+    // Swap the x and y coordinates in the normalized texture space
     float2 swappedCoor = float2(1.0 - in.coor.y, in.coor.x);
+    
+    // Convert queryPos to normalized coordinates
+    float2 normalizedQueryPos = float2((float)queryPos.x / (float)(colorTexture.get_width() - 1),
+                                       (float)queryPos.y / (float)(colorTexture.get_height() - 1));
+    
+    // Define a small threshold for comparing floating-point values
+    const float epsilon = 0.001;
+
+    // Compare the normalized query position with swappedCoor
+    if (abs(normalizedQueryPos.x - swappedCoor.x) < epsilon &&
+        abs(normalizedQueryPos.y - swappedCoor.y) < epsilon) {
+        // If the positions match, store the world position in the result buffer
+        *resultCoords = in.worldPosition;
+    }
     
     constexpr sampler textureSampler (mag_filter::linear, min_filter::linear);
     const float4 colorSample = colorTexture.sample(textureSampler, swappedCoor);
     return colorSample;
 }
+
