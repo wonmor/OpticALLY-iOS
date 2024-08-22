@@ -123,6 +123,8 @@ struct CompassView: View {
 }
 
 struct ExportView: View {
+    var previewUIView: PreviewUIViewRepresentable
+    
     @EnvironmentObject var globalState: GlobalState
     
     @StateObject private var exportViewModel = ExportViewModel()
@@ -240,7 +242,7 @@ struct ExportView: View {
                         .frame(width: 220, height: 220) // Adjust the size as needed
                     
                     // FaceIDScanView in the front
-                    FaceIDScanView(cameraViewController: cameraViewController)
+                    previewUIView
                         .frame(width: 200, height: 200)
                         .clipShape(Circle())
                         .padding()
