@@ -166,6 +166,7 @@ struct ExportView: View {
     
     @State private var showLog: Bool = false
     @State private var hideMoveOnButton: Bool = false
+    @State private var hideFaceIDScanView: Bool = false
     
     @State private var lastHapticTime: Date? = nil
     @State private var lastFeedbackAngle: Double? = nil
@@ -233,6 +234,17 @@ struct ExportView: View {
                                     .bold()
                                     .monospaced()
                                     .foregroundColor(.white)
+                                
+                                Spacer()
+                                
+                                Text("WE CARE ABOUT YOUR PRIVACY.")
+                                    .monospaced()
+                                    .bold()
+                                    .foregroundColor(Color(.lightGray))
+                                
+                                Text("OPTICALLY USES FULLY ON-DEVICE MESHING AND MACHINE LEARNING ALGORITHMS TO EVALUATE YOUR SCANS.")
+                                    .monospaced()
+                                    .foregroundColor(Color(.lightGray))
                             }
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 30) // Adjust horizontal padding for wider background
@@ -245,6 +257,7 @@ struct ExportView: View {
                                 exportViewModel.hasTurnedCenter = true
                                 
                                 hideMoveOnButton = false
+                                hideFaceIDScanView = true
                                 
                                 // Important part!
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.25) { // Assuming animation duration is 2 seconds
@@ -276,29 +289,31 @@ struct ExportView: View {
                     }
                 }
                 
-                ZStack {
-                    SignalStrengthView(scanState: $scanState, scanDirection: $scanDirection, cameraViewController: cameraViewController)
-                        .frame(width: 300, height: 300)
-                        .blur(radius: 5.0)
-                    
-                    // Segmented circle behind the FaceIDScanView
-                    DirectionIndicatorView(scanDirection: $scanDirection, cameraViewController: cameraViewController)
-                        .frame(width: 220, height: 220) // Adjust the size as needed
-                    
-                    // FaceIDScanView in the front
-                    //FaceIDScanView(cameraViewController: cameraViewController)
-                    if let pixelBuffer = videoFrameData.pixelBuffer {
-                        VideoPixelBufferView(pixelBuffer: pixelBuffer)
-                            .frame(width: 200, height: 200)
-                            .clipShape(Circle())
-                            .padding()
+                if !hideFaceIDScanView {
+                    ZStack {
+                        SignalStrengthView(scanState: $scanState, scanDirection: $scanDirection, cameraViewController: cameraViewController)
+                            .frame(width: 300, height: 300)
+                            .blur(radius: 5.0)
+                        
+                        // Segmented circle behind the FaceIDScanView
+                        DirectionIndicatorView(scanDirection: $scanDirection, cameraViewController: cameraViewController)
+                            .frame(width: 220, height: 220) // Adjust the size as needed
+                        
+                        // FaceIDScanView in the front
+                        //FaceIDScanView(cameraViewController: cameraViewController)
+                        if let pixelBuffer = videoFrameData.pixelBuffer {
+                            VideoPixelBufferView(pixelBuffer: pixelBuffer)
+                                .frame(width: 200, height: 200)
+                                .clipShape(Circle())
+                                .padding()
+                        }
                     }
+                    .onChange(of: cameraViewController.faceYawAngle) { newValue in
+                        handleFaceDirectionChange(yawAngle: newValue)
+                    }
+                    
+                    Spacer()
                 }
-                .onChange(of: cameraViewController.faceYawAngle) { newValue in
-                    handleFaceDirectionChange(yawAngle: newValue)
-                }
-                
-                Spacer()
                 
                 if scanState != .scanning {
                     if let lastLog = logManager.latestLog {
