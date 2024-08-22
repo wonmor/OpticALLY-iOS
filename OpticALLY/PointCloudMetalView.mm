@@ -58,8 +58,10 @@ simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
 - (void)updatePoint2DWithX:(float)x Y:(float)y {
     point2D = simd_make_float2(x, y);
     
-    // Manually trigger a redraw to see the update
-    [self setNeedsDisplay];
+    // Ensure setNeedsDisplay is called on the main thread
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self setNeedsDisplay];
+    });
 }
 
 - (simd_float3)convert2DPointTo3D:(simd_float2)point2D {
