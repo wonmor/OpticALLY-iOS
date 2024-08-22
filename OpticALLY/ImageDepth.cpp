@@ -292,13 +292,10 @@ void ImageDepth::loadImage(const std::string& file) {
         // Swap RB channels
         cv::Mat img_swapped;
         cv::cvtColor(img_rgb, img_swapped, cv::COLOR_BGR2RGB);
-
-    cv::Mat img_rotated;
-    cv::rotate(img_swapped, img_rotated, cv::ROTATE_90_COUNTERCLOCKWISE); // Rotate by 90 degrees counter clockwise
     
        // Convert to float32 and normalize
        cv::Mat img_float;
-       img_rotated.convertTo(img_float, CV_32F, 1.0 / 255.0);
+       img_swapped.convertTo(img_float, CV_32F, 1.0 / 255.0);
 
         // Apply sRGB to linear conversion
         img_linear = srgb_to_linear(img_float);

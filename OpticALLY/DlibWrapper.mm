@@ -219,34 +219,35 @@ struct VertexOut {
         // Print nose end point
         NSLog(@"Nose End Point 2D: [%f, %f]", nose_end_point2D[0].x, nose_end_point2D[0].y);
         
+        // BELOW LINES WILL AFFECT FINAL OUTPUT... TURN THEM ON ONLY ON DEBUG MODE...
         // Convert cv::Mat cvImg to dlib::array2d<dlib::bgr_pixel>
         // VVIP: THIS HAS TO GO ON THE BOTTOM SO THAT DEBUG_OVERLAY SHOWS UP...
-        img.set_size(height, width);
-        for (int i = 0; i < height; ++i) {
-            for (int j = 0; j < width; ++j) {
-                cv::Vec3b rgb = cvImg.at<cv::Vec3b>(i, j);
-                img[i][j] = dlib::bgr_pixel(rgb[0], rgb[1], rgb[2]);
-            }
-        }
-        
-        // Draw landmarks onto the image
-        for (unsigned long k = 0; k < shape.num_parts(); k++) {
-            dlib::point p = shape.part(k);
-            draw_solid_circle(img, p, 3, dlib::rgb_pixel(0, 255, 255));
-        }
-        
-        for (int i = 0; i < image_points.size(); i++) {
-            dlib::point p(image_points[i].x, image_points[i].y);
-            draw_solid_circle(img, p, 3, dlib::rgb_pixel(0, 0, 255));
-        }
-        
-        // Draw circles along the line
-        for (int i = 0; i < num_steps; ++i) {
-            int x = start_point.x() + step_x * i;
-            int y = start_point.y() + step_y * i;
-            dlib::point p(x, y);
-            draw_solid_circle(img, p, 2, dlib::rgb_pixel(255, 0, 0));
-        }
+//        img.set_size(height, width);
+//        for (int i = 0; i < height; ++i) {
+//            for (int j = 0; j < width; ++j) {
+//                cv::Vec3b rgb = cvImg.at<cv::Vec3b>(i, j);
+//                img[i][j] = dlib::bgr_pixel(rgb[0], rgb[1], rgb[2]);
+//            }
+//        }
+//        
+//        // Draw landmarks onto the image
+//        for (unsigned long k = 0; k < shape.num_parts(); k++) {
+//            dlib::point p = shape.part(k);
+//            draw_solid_circle(img, p, 3, dlib::rgb_pixel(0, 255, 255));
+//        }
+//        
+//        for (int i = 0; i < image_points.size(); i++) {
+//            dlib::point p(image_points[i].x, image_points[i].y);
+//            draw_solid_circle(img, p, 3, dlib::rgb_pixel(0, 0, 255));
+//        }
+//        
+//        // Draw circles along the line
+//        for (int i = 0; i < num_steps; ++i) {
+//            int x = start_point.x() + step_x * i;
+//            int y = start_point.y() + step_y * i;
+//            dlib::point p(x, y);
+//            draw_solid_circle(img, p, 2, dlib::rgb_pixel(255, 0, 0));
+//        }
     }
     
     // lets put everything back where it belongs
