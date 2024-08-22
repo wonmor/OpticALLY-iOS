@@ -185,25 +185,25 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             
             print("Session configured!")
             
-            // Search for highest resolution with half-point depth values
-            let depthFormats = device.activeFormat.supportedDepthDataFormats
-            let filtered = depthFormats.filter({
-                CMFormatDescriptionGetMediaSubType($0.formatDescription) == kCVPixelFormatType_DepthFloat16
-            })
-            let selectedFormat = filtered.max(by: {
-                first, second in CMVideoFormatDescriptionGetDimensions(first.formatDescription).width < CMVideoFormatDescriptionGetDimensions(second.formatDescription).width
-            })
-            
-            do {
-                try device.lockForConfiguration()
-                device.activeDepthDataFormat = selectedFormat
-                device.unlockForConfiguration()
-            } catch {
-                print("Could not lock device for configuration: \(error)")
-              
-                session.commitConfiguration()
-                return
-            }
+//            // Search for highest resolution with half-point depth values
+//            let depthFormats = device.activeFormat.supportedDepthDataFormats
+//            let filtered = depthFormats.filter({
+//                CMFormatDescriptionGetMediaSubType($0.formatDescription) == kCVPixelFormatType_DepthFloat16
+//            })
+//            let selectedFormat = filtered.max(by: {
+//                first, second in CMVideoFormatDescriptionGetDimensions(first.formatDescription).width < CMVideoFormatDescriptionGetDimensions(second.formatDescription).width
+//            })
+//            
+//            do {
+//                try device.lockForConfiguration()
+//                device.activeDepthDataFormat = selectedFormat
+//                device.unlockForConfiguration()
+//            } catch {
+//                print("Could not lock device for configuration: \(error)")
+//              
+//                session.commitConfiguration()
+//                return
+//            }
             
             // Start the session on a background thread
             DispatchQueue.global(qos: .userInitiated).async {
@@ -286,42 +286,6 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         
         context.render(mirroredImage, to: mirroredPixelBuffer!)
         return mirroredPixelBuffer
-    }
-    
-    
-    func drawEyePositionsOnPixelBuffer(pixelBuffer: CVPixelBuffer, leftEyePosition: CGPoint, rightEyePosition: CGPoint) -> CVPixelBuffer? {
-        let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
-        let temporaryContext = CIContext(options: nil)
-        guard let cgImage = temporaryContext.createCGImage(ciImage, from: ciImage.extent) else { return nil }
-        
-        // Begin a graphics context to draw on
-        UIGraphicsBeginImageContext(CGSize(width: cgImage.width, height: cgImage.height))
-        guard let context = UIGraphicsGetCurrentContext() else { return nil }
-        
-        // Draw the original image as the background
-        context.draw(cgImage, in: CGRect(x: 0, y: 0, width: cgImage.width, height: cgImage.height))
-        
-        // Set up the circle properties
-        let circleRadius: CGFloat = 10 // Radius of the circles
-        let circleColor = UIColor.red.cgColor
-        
-        // Function to draw a circle at a given point
-        func drawCircle(at point: CGPoint, color: CGColor, radius: CGFloat) {
-            let circleRect = CGRect(x: point.x - radius, y: point.y - radius, width: radius * 2, height: radius * 2)
-            context.setFillColor(color)
-            context.fillEllipse(in: circleRect)
-        }
-        
-        // Draw the left and right eye positions
-        drawCircle(at: leftEyePosition, color: circleColor, radius: circleRadius)
-        drawCircle(at: rightEyePosition, color: circleColor, radius: circleRadius)
-        
-        // Get the final image
-        guard let finalImage = UIGraphicsGetImageFromCurrentImageContext() else { return nil }
-        UIGraphicsEndImageContext()
-        
-        // Convert UIImage back to CVPixelBuffer
-        return finalImage.toCVPixelBuffer()
     }
     
     func convertToMatrix4(_ transform: CGAffineTransform) -> matrix_float4x4 {
@@ -473,64 +437,6 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         return String(bytes: bytes, encoding: .ascii) ?? "????"
     }
     
-    func drawEyePositionsOnImage(image: UIImage, leftEyePosition: CGPoint, rightEyePosition: CGPoint) -> UIImage? {
-        // Begin a graphics context to draw on
-        UIGraphicsBeginImageContextWithOptions(image.size, false, 0)
-        image.draw(at: .zero) // Draw the original image as the background
-        
-        // Set up the circle properties
-        let circleRadius: CGFloat = 10 // Radius of the circles
-        let circleColor = UIColor.red
-        
-        // Function to draw a circle at a given point
-        func drawCircle(at point: CGPoint, color: UIColor, radius: CGFloat) {
-            let circleRect = CGRect(x: point.x - radius, y: point.y - radius, width: radius * 2, height: radius * 2)
-            color.setFill()
-            UIRectFill(circleRect)
-        }
-        
-        // Draw the left and right eye positions
-        drawCircle(at: leftEyePosition, color: circleColor, radius: circleRadius)
-        drawCircle(at: rightEyePosition, color: circleColor, radius: circleRadius)
-        
-        // Get the final image
-        let finalImage = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        
-        return finalImage
-    }
-    
-    func findClosest3DPoint(to point2D: CGPoint, within threshold: CGFloat, in depthData: AVDepthData) -> SCNVector3? {
-        guard let depthPixelBuffer: CVPixelBuffer? = depthData.depthDataMap,
-              let cameraCalibrationData = depthData.cameraCalibrationData else { return nil }
-        
-        let depthWidth = CVPixelBufferGetWidth(depthPixelBuffer!)
-        let depthHeight = CVPixelBufferGetHeight(depthPixelBuffer!)
-        
-        let scaledPointX = point2D.x * CGFloat(depthWidth)
-        let scaledPointY = point2D.y * CGFloat(depthHeight)
-        
-        scaleX = Float(depthWidth)
-        scaleY = Float(depthHeight)
-        
-        ExternalData.scaleX = scaleX
-        ExternalData.scaleY = scaleY
-        
-        let xInt = min(max(Int(scaledPointX), 0), depthWidth - 1)
-        let yInt = min(max(Int(scaledPointY), 0), depthHeight - 1)
-        
-        let result = calculateClosest3DPoint(xInt: xInt, yInt: yInt, threshold: threshold, depthWidth: depthWidth, depthHeight: depthHeight, depthPixelBuffer: depthPixelBuffer!, cameraIntrinsics: cameraCalibrationData.intrinsicMatrix)
-        
-        if let result = result {
-            return result
-        } else {
-            // Fallback: trying with inverted signs
-            let invertedXInt = depthWidth - 1 - xInt
-            let invertedYInt = depthHeight - 1 - yInt
-            return calculateClosest3DPoint(xInt: invertedXInt, yInt: invertedYInt, threshold: threshold, depthWidth: depthWidth, depthHeight: depthHeight, depthPixelBuffer: depthPixelBuffer!, cameraIntrinsics: cameraCalibrationData.intrinsicMatrix)
-        }
-    }
-    
     private func calculateClosest3DPoint(xInt: Int, yInt: Int, threshold: CGFloat, depthWidth: Int, depthHeight: Int, depthPixelBuffer: CVPixelBuffer, cameraIntrinsics: matrix_float3x3) -> SCNVector3? {
         CVPixelBufferLockBaseAddress(depthPixelBuffer, .readOnly)
         defer { CVPixelBufferUnlockBaseAddress(depthPixelBuffer, .readOnly) }
@@ -616,11 +522,11 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         
         layer.frame = preview.bounds
         
-//        preview.layer.addSublayer(layer)
-//        preview.transform = CGAffineTransformMakeRotation(CGFloat(Double.pi))
-//        preview.transform = CGAffineTransformScale(preview.transform, 1, -1)
-//        
-//        self.view.bringSubviewToFront(preview)
+        preview.layer.addSublayer(layer)
+        preview.transform = CGAffineTransformMakeRotation(CGFloat(Double.pi))
+        preview.transform = CGAffineTransformScale(preview.transform, 1, -1)
+        
+        self.view.bringSubviewToFront(preview)
         
         view.layoutIfNeeded()
     }
@@ -843,8 +749,8 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         }
         
         layer.enqueue(sampleBuffer)
-        cloudView?.setDepthFrame(nil, withTexture: nil)
-        cloudView?.setDepthFrame(depthData, withTexture: videoPixelBuffer)
+//        cloudView?.setDepthFrame(nil, withTexture: nil)
+//        cloudView?.setDepthFrame(depthData, withTexture: videoPixelBuffer)
 
         
         if ExternalData.isSavingFileAsPLY {
