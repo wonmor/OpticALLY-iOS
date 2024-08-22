@@ -193,24 +193,47 @@ struct ExportView: View {
                 //DistanceIndicator(cameraViewController: cameraViewController)
                 
                 if scanState == .ready {
-                    Text("WELCOME TO\nOPTICALLY")
-                        .font(.title3)
-                        .bold()
-                        .monospaced()
-                        .multilineTextAlignment(.center)
-                        .padding()
+                    VStack {
+                        Text("WELCOME TO")
+                            .font(.title3)
+                            .bold()
+                            .monospaced()
+                            .multilineTextAlignment(.center)
+                        
+                        Text("OPTICALLY")
+                            .font(.title)
+                            .bold()
+                            .monospaced()
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                    }
                 }
                 
                 if showLog {
                     if let lastLog = logManager.latestLog {
-                        Text(lastLog.uppercased())
-                            .padding()
-                            .frame(maxWidth: .infinity, alignment: .center)
-                            .multilineTextAlignment(.center)
-                            .monospaced()
-                            .onAppear {
-                                hideMoveOnButton = true
-                            }
+                        VStack {
+                            Text("DESIGNED IN")
+                                .font(.title3)
+                                .bold()
+                                .monospaced()
+                                .multilineTextAlignment(.center)
+                            
+                            Text("LOS ANGELES")
+                                .font(.title)
+                                .bold()
+                                .monospaced()
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal)
+                            
+                            Text(lastLog.uppercased())
+                                .padding()
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .multilineTextAlignment(.center)
+                                .monospaced()
+                                .onAppear {
+                                    hideMoveOnButton = true
+                                }
+                        }
                         
                         if lastLog.contains("Capturing") {
                             LottieView(animationFileName: "face-id-2", loopMode: .loop)
