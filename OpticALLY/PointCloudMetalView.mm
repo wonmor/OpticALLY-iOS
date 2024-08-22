@@ -296,6 +296,7 @@ typedef struct {
         // set arguments to shader
         [renderEncoder setVertexTexture:depthTexture atIndex:0];
         
+        NSLog(@"Query Pos (drawRect) Running Again");
         simd::uint2 queryPos = {(uint)point2D.x, (uint)point2D.y};
                 [renderEncoder setFragmentBytes:&queryPos length:sizeof(simd::uint2) atIndex:0];
         
@@ -322,6 +323,7 @@ typedef struct {
        // Add a completion handler to copy the result from the GPU to the CPU
        [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> commandBuffer) {
            simd::float3* resultPointer = (simd::float3*)[resultBuffer contents];
+           NSLog(@"Result 3D Point Completion Handler");
            self->_result3DPoint = *resultPointer;
        }];
     }
