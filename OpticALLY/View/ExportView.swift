@@ -183,6 +183,12 @@ struct ExportView: View {
             VStack(spacing: 20) {
                 Spacer()
                 
+                if scanState == .scanning {
+                    CompassView(viewModel: cameraViewController, scanState: $scanState, scanDirection: $scanDirection)
+                        .frame(height: 20)
+                        .padding()
+                }
+                
                 //DistanceIndicator(cameraViewController: cameraViewController)
                 
                 if scanState == .ready {
@@ -191,6 +197,7 @@ struct ExportView: View {
                         .bold()
                         .monospaced()
                         .multilineTextAlignment(.center)
+                        .padding()
                 }
                 
                 if showLog {
@@ -342,10 +349,6 @@ struct ExportView: View {
                 
                 if scanState == .scanning {
                     Spacer()
-                    
-                    CompassView(viewModel: cameraViewController, scanState: $scanState, scanDirection: $scanDirection)
-                        .frame(height: 20)
-                        .padding()
                 }
             }
             .padding()
