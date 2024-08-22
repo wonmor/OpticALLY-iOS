@@ -154,6 +154,20 @@ struct VertexOut {
         euler_angles[0] = atan2(R.at<double>(2,1), R.at<double>(2,2));
         euler_angles[1] = atan2(-R.at<double>(2,0), sqrt(R.at<double>(2,1)*R.at<double>(2,1) + R.at<double>(2,2)*R.at<double>(2,2)));
         euler_angles[2] = atan2(R.at<double>(1,0), R.at<double>(0,0));
+        
+        // Get depth data if available
+            CVPixelBufferRef depthPixelBuffer = depthData.depthDataMap;
+            CVPixelBufferLockBaseAddress(depthPixelBuffer, kCVPixelBufferLock_ReadOnly);
+            float *depthDataPointer = (float *)CVPixelBufferGetBaseAddress(depthPixelBuffer);
+            
+            // Get the depth value at the nose tip
+            float depthValueAtNoseTip = [DlibWrapper getDepthValueAtCoordinate:noseTip.x() y:noseTip.y() depthPixelBuffer:depthPixelBuffer];
+            
+            // Unlock the depth buffer
+            CVPixelBufferUnlockBaseAddress(depthPixelBuffer, kCVPixelBufferLock_ReadOnly);
+            
+            // Now you have the depth value at the nose tip in meters
+            NSLog(@"Distance from camera to face (at nose tip): %f meters", depthValueAtNoseTip);
 
         // Convert to degrees
         euler_angles *= (180.0 / CV_PI);
