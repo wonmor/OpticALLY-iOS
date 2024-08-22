@@ -118,13 +118,20 @@ struct VertexOut {
            // Process each landmark point
            std::vector<dlib::point> landmarks = {noseTip, chin, leftEyeLeftCorner, rightEyeRightCorner, leftMouthCorner, rightMouthCorner};
         
-        for (const auto& landmark : landmarks) {
-            simd_float2 point2D = simd_make_float2(landmark.x(), landmark.y());
-            simd_float3 point3D = [_pointCloudView convert2DPointTo3D:point2D];
-            // Log the result
-            NSLog(@"3D point for landmark (%f, %f) -> (%f, %f, %f)", point2D.x, point2D.y, point3D.x, point3D.y, point3D.z);
-            model_points.push_back(cv::Point3d(point3D.x, point3D.y, point3D.z));
-        }
+//        for (const auto& landmark : landmarks) {
+//            simd_float2 point2D = simd_make_float2(landmark.x(), landmark.y());
+//            simd_float3 point3D = [_pointCloudView convert2DPointTo3D:point2D];
+//            // Log the result
+//            NSLog(@"3D point for landmark (%f, %f) -> (%f, %f, %f)", point2D.x, point2D.y, point3D.x, point3D.y, point3D.z);
+//            model_points.push_back(cv::Point3d(point3D.x, point3D.y, point3D.z));
+//        }
+        
+        model_points.push_back(cv::Point3d(0.0f, 0.0f, 0.0f));               // Nose tip
+           model_points.push_back(cv::Point3d(0.0f, -330.0f, -65.0f));          // Chin
+           model_points.push_back(cv::Point3d(-225.0f, 170.0f, -135.0f));       // Left eye left corner
+           model_points.push_back(cv::Point3d(225.0f, 170.0f, -135.0f));        // Right eye right corner
+           model_points.push_back(cv::Point3d(-150.0f, -150.0f, -125.0f));      // Left Mouth corner
+           model_points.push_back(cv::Point3d(150.0f, -150.0f, -125.0f));  
   
         double focal_length = cvImg.cols;
         cv::Point2d center = cv::Point2d(cvImg.cols / 2, cvImg.rows / 2);
