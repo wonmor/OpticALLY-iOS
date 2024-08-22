@@ -715,7 +715,7 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
         img_undistort.convertTo(img_undistort, CV_32F, 1 / 255.0f);
     
     // Transpose the matrix (REMOVE THIS LINE IF IT DOES NOT WORK!)
-    cv::transpose(img_undistort, img_undistort);
+    //cv::rotate(img_undistort, img_undistort, cv::ROTATE_90_COUNTERCLOCKWISE);
     
        // Project to 3D points
        std::vector<cv::Point3f> pts;
