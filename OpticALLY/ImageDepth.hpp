@@ -83,9 +83,13 @@ public:
     void loadImage(const std::string& file);
     void processImage();
     void loadDepth(const std::string& file);
+    
     float linearInterpolate(const std::vector<float>& lookup, float x);
+    float distance(const cv::Point3f& p1, const cv::Point3f& p2);
+    
     void createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask);
     void debugImageStats(const cv::Mat& image, const std::string& name);
+    void dbscan(const std::vector<cv::Point3f>& points, float epsilon, int min_points, std::vector<std::vector<cv::Point3f>>& clusters);
     
     cv::Mat srgb_to_linear(const cv::Mat& srgb_img);
     

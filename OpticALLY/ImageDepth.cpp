@@ -22,6 +22,10 @@ using namespace Eigen;
 using namespace std;
 using namespace cv;
 
+// Parameters for DBSCAN
+const float EPSILON = 0.1f;  // Maximum distance for points to be considered in the same neighborhood
+const int MIN_POINTS = 3;    // Minimum number of points to form a cluster
+
 // Linear interpolation function
 double interpolate(double x, const std::vector<double>& xp, const std::vector<double>& fp) {
     auto it = std::upper_bound(xp.begin(), xp.end(), x);
@@ -834,6 +838,19 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
               // Otherwise, use the pixel color from the image
               color = Eigen::Vector3d(pixel_color[0], pixel_color[1], pixel_color[2]);
           }
+        
+        // Run DBScan to group close proximity points together...
+        std::vector<std::vector<cv::Point3f>> clusters;
+            dbscan(blue_pts, EPSILON, MIN_POINTS, clusters);
+
+            // Output the clusters
+            for (size_t i = 0; i < clusters.size(); ++i) {
+                std::cout << "Cluster " << i + 1 << ":" << std::endl;
+                for (const auto& pt : clusters[i]) {
+                    std::cout << "(" << pt.x << ", " << pt.y << ", " << pt.z << ")" << std::endl;
+                }
+                std::cout << std::endl;
+            }
 
         colors.push_back(color);
     }
@@ -863,4 +880,58 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
         open3d::geometry::KDTreeSearchParamHybrid(normal_radius, 30)
     );
     pointCloud->OrientNormalsTowardsCameraLocation();
+}
+
+// Function to compute the Euclidean distance between two 3D points
+float ImageDepth::distance(const cv::Point3f& p1, const cv::Point3f& p2) {
+    return std::sqrt(std::pow(p1.x - p2.x, 2) + std::pow(p1.y - p2.y, 2) + std::pow(p1.z - p2.z, 2));
+}
+
+// DBSCAN algorithm to group points based on proximity
+void ImageDepth::dbscan(const std::vector<cv::Point3f>& points, float epsilon, int min_points, std::vector<std::vector<cv::Point3f>>& clusters) {
+    std::vector<bool> visited(points.size(), false);
+    std::vector<bool> noise(points.size(), false);
+
+    for (size_t i = 0; i < points.size(); ++i) {
+        if (visited[i]) continue;
+
+        visited[i] = true;
+        std::vector<size_t> neighbors;
+
+        // Find neighbors
+        for (size_t j = 0; j < points.size(); ++j) {
+            if (distance(points[i], points[j]) <= epsilon) {
+                neighbors.push_back(j);
+            }
+        }
+
+        if (neighbors.size() < min_points) {
+            noise[i] = true;  // Mark as noise
+        } else {
+            std::vector<cv::Point3f> cluster;
+            cluster.push_back(points[i]);
+
+            for (size_t j = 0; j < neighbors.size(); ++j) {
+                size_t idx = neighbors[j];
+                if (!visited[idx]) {
+                    visited[idx] = true;
+
+                    std::vector<size_t> new_neighbors;
+                    for (size_t k = 0; k < points.size(); ++k) {
+                        if (distance(points[idx], points[k]) <= epsilon) {
+                            new_neighbors.push_back(k);
+                        }
+                    }
+
+                    if (new_neighbors.size() >= min_points) {
+                        neighbors.insert(neighbors.end(), new_neighbors.begin(), new_neighbors.end());
+                    }
+                }
+
+                // Add the point to the cluster
+                cluster.push_back(points[idx]);
+            }
+            clusters.push_back(cluster);
+        }
+    }
 }
