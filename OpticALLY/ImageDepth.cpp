@@ -851,7 +851,7 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
         std::vector<std::vector<cv::Point3f>> clusters;
 
         // Number of clusters
-        int num_clusters = 5;
+        int num_clusters = 3;
 
         // Run K-means clustering on blue_pts
         kmeans_clustering(blue_pts, num_clusters, clusters);
