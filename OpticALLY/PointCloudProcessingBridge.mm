@@ -273,9 +273,25 @@ static NSMutableArray<NSMutableArray<NSValue *> *> *centroids2DArray = nil;
 
     // Objective-C++ TIPS & TRICKS
     // & means "Method Signature"
-    // Method Signature
+    // (It's like a memory address)
     // If your method rigidTransform3DWithMatrixA:matrixB:rotation:translation: expects void* pointers (which is the case if you're trying to avoid including Eigen in the header file), you'll need to pass the address of the Eigen objects.
     [self rigidTransform3DWithMatrixA: &matrixA matrixB: &matrixB rotation: &R translation: &t];
+    
+    // Apply the rigid transformation to each point in pointClouds[0]
+    if (!pointClouds.empty()) {
+        auto& pointCloud = pointClouds[0]; // Assuming pointClouds[0] is the point cloud to transform
+
+        for (auto& point : pointCloud->points_) {
+            // Apply the rotation and translation
+            Eigen::Vector3d pointVec(point.x(), point.y(), point.z());
+            Eigen::Vector3d transformedPoint = R * pointVec + t;
+
+            // Update the point in the point cloud
+            point.x() = transformedPoint.x();
+            point.y() = transformedPoint.y();
+            point.z() = transformedPoint.z();
+        }
+    }
 
     // Combine all point clouds into a single point cloud
     auto combinedPointCloud = std::make_shared<PointCloud>();
