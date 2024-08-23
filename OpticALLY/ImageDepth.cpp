@@ -797,6 +797,8 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
     std::cout << std::endl;
 
     img_undistort.convertTo(img_undistort, CV_32F, 1 / 255.0f);
+    
+    std::vector<cv::Point3f> blue_pts; // New array for storing blue points
 
     // Project to 3D points
     std::vector<cv::Point3f> pts;
@@ -825,6 +827,9 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
               static_cast<int>(pixel_color[1]) == 0.0 &&
               static_cast<int>(pixel_color[2]) == 1.0) {
               color = Eigen::Vector3d(1.0, 0.0, 0.0); // Set to red if the condition is met
+              
+              // If color is blue, append the point to the blue_pts array
+                      blue_pts.emplace_back(px, py, depth);
           } else {
               // Otherwise, use the pixel color from the image
               color = Eigen::Vector3d(pixel_color[0], pixel_color[1], pixel_color[2]);
