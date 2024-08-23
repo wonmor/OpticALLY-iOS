@@ -3,6 +3,9 @@
 
 @interface PointCloudProcessingBridge : NSObject
 
++ (SCNMatrix4)rotationMatrix;
++ (SCNVector3)translationVector;
+
 + (NSArray<NSValue *> *)getCentroids2DArrayAtIndex:(NSUInteger)index;
 
 + (BOOL)processPointCloudsWithCalibrationFile:(NSString *)calibrationFilePath
@@ -23,5 +26,11 @@
                             matrixB:(void *)B
                            rotation:(void *)R
                         translation:(void *)t;
+
++ (void)rigidTransformSceneKit3DWithMatrixA:(NSArray<NSValue *> *)matrixA
+                           matrixB:(NSArray<NSValue *> *)matrixB
+                          rotation:(SCNMatrix4 *)rotation
+                        translation:(SCNVector3 *)translation;
+
 
 @end

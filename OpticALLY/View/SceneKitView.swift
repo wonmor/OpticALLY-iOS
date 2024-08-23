@@ -222,28 +222,24 @@ struct SceneKitMDLView: UIViewRepresentable {
                 material.isDoubleSided = true
             }
             
-            if let material = geometry!.firstMaterial {
-                if let texture = material.diffuse.contents as? MDLTexture {
-                    // Ensure the texture is treated in sRGB color space
-                    material.diffuse.contents = texture
-                    material.diffuse.mappingChannel = 0
-                    material.diffuse.contentsTransform = SCNMatrix4MakeScale(1, 1, 1)
-                    material.diffuse.intensity = 1.0
-                    material.diffuse.minificationFilter = .linear
-                    material.diffuse.magnificationFilter = .linear
-                    material.diffuse.mipFilter = .linear
-                    material.diffuse.wrapS = .repeat
-                    material.diffuse.wrapT = .repeat
-                    // Set the texture's color space to sRGB if it's not already
-                    material.diffuse.textureComponents = .all
-                    material.lightingModel = .phong // or another lighting model as needed
-                }
+            if let material = geometry!.firstMaterial, let texture = material.diffuse.contents as? MDLTexture {
+                // Ensure the texture is treated in sRGB color space
+                material.diffuse.contents = texture
+                material.diffuse.mappingChannel = 0
+                material.diffuse.contentsTransform = SCNMatrix4MakeScale(1, 1, 1)
+                material.diffuse.intensity = 1.0
+                material.diffuse.minificationFilter = .linear
+                material.diffuse.magnificationFilter = .linear
+                material.diffuse.mipFilter = .linear
+                material.diffuse.wrapS = .repeat
+                material.diffuse.wrapT = .repeat
+                material.diffuse.textureComponents = .all
+                material.lightingModel = .phong // or another lighting model as needed
             }
             
             ExternalData.verticesCount = object.vertexCount
             
             let objectNode = SCNNode(geometry: geometry)
-            
             objectNode.position = SCNVector3(x: 0, y: 0, z: 0)
             objectNode.eulerAngles.z = .pi / 2
             objectNode.eulerAngles.y = .pi
@@ -251,8 +247,9 @@ struct SceneKitMDLView: UIViewRepresentable {
             scene.rootNode.addChildNode(objectNode)
         }
         
-        // If a centroids node is provided, add it to the scene
+        // If a centroids node is provided, add it to the scene and apply transformations
         if let nodeFirst = nodeFirst {
+            applyTransformations(nodeFirst: nodeFirst, node: node!)
             scene.rootNode.addChildNode(nodeFirst)
         }
         
@@ -268,9 +265,52 @@ struct SceneKitMDLView: UIViewRepresentable {
     }
     
     func updateUIView(_ scnView: SCNView, context: Context) {
-        // Ensure that the node remains updated
+        // Ensure that the node remains updated and transformations are reapplied
+        if let nodeFirst = nodeFirst {
+            applyTransformations(nodeFirst: nodeFirst, node: node!)
+            if scnView.scene?.rootNode.childNodes.contains(nodeFirst) == false {
+                scnView.scene?.rootNode.addChildNode(nodeFirst)
+            }
+        }
+        
         if let node = node, scnView.scene?.rootNode.childNodes.contains(node) == false {
             scnView.scene?.rootNode.addChildNode(node)
         }
     }
+    
+    private func applyTransformations(nodeFirst: SCNNode, node: SCNNode) {
+        // Extract positions from nodeFirst and node for matrixA and matrixB
+        // Assuming both nodes have the same number of identifiable points/child nodes
+        
+        // This example assumes that each node has a series of child nodes or identifiable key points
+        let childNodesFirst = nodeFirst.childNodes // Get child nodes of nodeFirst
+        let childNodesSecond = node.childNodes // Get child nodes of node
+        
+        guard childNodesFirst.count == childNodesSecond.count else {
+            print("The nodes must have the same number of points for transformation.")
+            return
+        }
+        
+        var matrixA: [NSValue] = []
+        var matrixB: [NSValue] = []
+        
+        for i in 0..<childNodesFirst.count {
+            let pointA = childNodesFirst[i].position
+            let pointB = childNodesSecond[i].position
+            
+            // Add positions to matrixA and matrixB as NSValue(SCNVector3)
+            matrixA.append(NSValue(scnVector3: pointA))
+            matrixB.append(NSValue(scnVector3: pointB))
+        }
+
+        var rotation = SCNMatrix4Identity
+        var translation = SCNVector3Zero
+
+        // Call the Objective-C method
+        PointCloudProcessingBridge.rigidTransformSceneKit3D(withMatrixA: matrixA, matrixB: matrixB, rotation: &rotation, translation: &translation)
+
+        // Apply the transformations to the nodes
+        nodeFirst.transform = SCNMatrix4Mult(SCNMatrix4MakeTranslation(translation.x, translation.y, translation.z), rotation)
+    }
+
 }

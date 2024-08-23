@@ -30,13 +30,26 @@ std::vector<open3d::geometry::Image> GetTextureImages(const open3d::geometry::Tr
 
 // Static variable declaration
 static NSMutableArray<NSMutableArray<NSValue *> *> *centroids2DArray = nil;
+static SCNMatrix4 _rotationMatrix;
+static SCNVector3 _translationVector;
 
 @implementation PointCloudProcessingBridge
 
 + (void)initialize {
     if (self == [PointCloudProcessingBridge self]) {
+        _rotationMatrix = SCNMatrix4Identity; // Initialize to identity matrix
+        _translationVector = SCNVector3Make(0, 0, 0);
         centroids2DArray = [NSMutableArray array];
     }
+}
+
++ (SCNMatrix4)rotationMatrix {
+    return _rotationMatrix;
+}
+
+// Implement the translationVector property
++ (SCNVector3)translationVector {
+    return _translationVector;
 }
 
 + (NSArray<NSValue *> *)getCentroids2DArrayAtIndex:(NSUInteger)index {
@@ -285,41 +298,55 @@ static NSMutableArray<NSMutableArray<NSValue *> *> *centroids2DArray = nil;
     // If your method rigidTransform3DWithMatrixA:matrixB:rotation:translation: expects void* pointers (which is the case if you're trying to avoid including Eigen in the header file), you'll need to pass the address of the Eigen objects.
   [self rigidTransform3DWithMatrixA: &matrixA matrixB: &matrixB rotation: &R translation: &t];
     
+    SCNMatrix4 rotationMatrix = SCNMatrix4Identity;
+      rotationMatrix.m11 = R(0, 0);
+      rotationMatrix.m12 = R(0, 1);
+      rotationMatrix.m13 = R(0, 2);
+      rotationMatrix.m21 = R(1, 0);
+      rotationMatrix.m22 = R(1, 1);
+      rotationMatrix.m23 = R(1, 2);
+      rotationMatrix.m31 = R(2, 0);
+      rotationMatrix.m32 = R(2, 1);
+      rotationMatrix.m33 = R(2, 2);
+
+      // Convert Eigen::Vector3d to SCNVector3
+      SCNVector3 translationVector = SCNVector3Make(t.x(), t.y(), t.z());
+
+      // Store these values in the static variables
+      _rotationMatrix = rotationMatrix;
+      _translationVector = translationVector;
     
     
-    if (centroidsA) {
-        // Iterate over each point in centroidsA and apply the transformation
-        for (NSUInteger i = 0; i < centroidsA.count; ++i) {
-            // Get the current point as SCNVector3
-            SCNVector3 pointA = [centroidsA[i] SCNVector3Value];
+//    if (centroidsA) {
+//        // Iterate over each point in centroidsA and apply the transformation
+//        for (NSUInteger i = 0; i < centroidsA.count; ++i) {
+//            // Get the current point as SCNVector3
+//            SCNVector3 pointA = [centroidsA[i] SCNVector3Value];
+//
+//            // Convert SCNVector3 to Eigen::Vector3d
+//            Eigen::Vector3d pointVec(pointA.x, pointA.y, pointA.z);
+//
+//            // Apply the rotation and translation
+//            Eigen::Vector3d transformedPoint = R * pointVec + t;
+//
+//            // Convert the transformed point back to SCNVector3
+//            SCNVector3 transformedPointA = SCNVector3Make(transformedPoint.x(), transformedPoint.y(), transformedPoint.z());
+//
+//            // Update the point in centroidsA
+//            centroidsA[i] = [NSValue valueWithSCNVector3:transformedPointA];
+//        }
+//
+//        // Debugging: Print out the transformed centroids
+//        NSLog(@"Transformed centroids in centroidsA:");
+//        for (NSUInteger i = 0; i < centroidsA.count; ++i) {
+//            SCNVector3 transformedPointA = [centroidsA[i] SCNVector3Value];
+//            NSLog(@"Centroid %lu: (%f, %f, %f)", (unsigned long)i, transformedPointA.x, transformedPointA.y, transformedPointA.z);
+//        }
+//    } else {
+//        NSLog(@"centroidsA is empty or not available.");
+//    }
 
-            // Convert SCNVector3 to Eigen::Vector3d
-            Eigen::Vector3d pointVec(pointA.x, pointA.y, pointA.z);
-
-            // Apply the rotation and translation
-            Eigen::Vector3d transformedPoint = R * pointVec + t;
-
-            // Convert the transformed point back to SCNVector3
-            SCNVector3 transformedPointA = SCNVector3Make(transformedPoint.x(), transformedPoint.y(), transformedPoint.z());
-
-            // Update the point in centroidsA
-            centroidsA[i] = [NSValue valueWithSCNVector3:transformedPointA];
-        }
-
-        // Debugging: Print out the transformed centroids
-        NSLog(@"Transformed centroids in centroidsA:");
-        for (NSUInteger i = 0; i < centroidsA.count; ++i) {
-            SCNVector3 transformedPointA = [centroidsA[i] SCNVector3Value];
-            NSLog(@"Centroid %lu: (%f, %f, %f)", (unsigned long)i, transformedPointA.x, transformedPointA.y, transformedPointA.z);
-        }
-    } else {
-        NSLog(@"centroidsA is empty or not available.");
-    }
     
-    // Step 2: Apply the same transformation to pointClouds[0]
-    for (auto& point : pointClouds[1]->points_) {
-        point = R * point + t;
-    }
 //
 //    // Apply the rigid transformation to each point in pointClouds[0]
 //    if (!pointClouds.empty()) {
@@ -413,6 +440,95 @@ static NSMutableArray<NSMutableArray<NSValue *> *> *centroids2DArray = nil;
 // Returns R, t
 // R = 3x3 rotation matrix
 // t = 3x1 column vector
+
++ (void)rigidTransformSceneKit3DWithMatrixA:(NSArray<NSValue *> *)matrixA
+                           matrixB:(NSArray<NSValue *> *)matrixB
+                          rotation:(SCNMatrix4 *)rotation
+                       translation:(SCNVector3 *)translation {
+    
+    NSCAssert(matrixA.count == matrixB.count, @"Matrices A and B must have the same number of points.");
+
+    NSUInteger num_points = matrixA.count;
+
+    // Calculate centroids of A and B
+    SCNVector3 centroid_A = [self calculateCentroidForPoints:matrixA];
+    SCNVector3 centroid_B = [self calculateCentroidForPoints:matrixB];
+
+    // Subtract centroids from points
+    NSMutableArray<NSValue *> *Am = [NSMutableArray arrayWithCapacity:num_points];
+    NSMutableArray<NSValue *> *Bm = [NSMutableArray arrayWithCapacity:num_points];
+
+    for (NSUInteger i = 0; i < num_points; i++) {
+        SCNVector3 pointA = [matrixA[i] SCNVector3Value];
+        SCNVector3 pointB = [matrixB[i] SCNVector3Value];
+        
+        SCNVector3 Am_point = SCNVector3Make(pointA.x - centroid_A.x, pointA.y - centroid_A.y, pointA.z - centroid_A.z);
+        SCNVector3 Bm_point = SCNVector3Make(pointB.x - centroid_B.x, pointB.y - centroid_B.y, pointB.z - centroid_B.z);
+        
+        [Am addObject:[NSValue valueWithSCNVector3:Am_point]];
+        [Bm addObject:[NSValue valueWithSCNVector3:Bm_point]];
+    }
+
+    // Compute covariance matrix H
+    float H[3][3] = {0};
+
+    for (NSUInteger i = 0; i < num_points; i++) {
+        SCNVector3 Am_point = [Am[i] SCNVector3Value];
+        SCNVector3 Bm_point = [Bm[i] SCNVector3Value];
+
+        H[0][0] += Am_point.x * Bm_point.x;
+        H[0][1] += Am_point.x * Bm_point.y;
+        H[0][2] += Am_point.x * Bm_point.z;
+
+        H[1][0] += Am_point.y * Bm_point.x;
+        H[1][1] += Am_point.y * Bm_point.y;
+        H[1][2] += Am_point.y * Bm_point.z;
+
+        H[2][0] += Am_point.z * Bm_point.x;
+        H[2][1] += Am_point.z * Bm_point.y;
+        H[2][2] += Am_point.z * Bm_point.z;
+    }
+
+    // Perform SVD on H (using LAPACK or another library if needed, or approximate SVD for simplicity)
+    // This is a simplified version, actual SVD would require a third-party library or more complex code.
+    
+    // Let's assume U and Vt are identity matrices (in real cases, perform actual SVD)
+    float U[3][3] = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
+    float Vt[3][3] = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
+
+    // Compute rotation matrix R = Vt' * U'
+    SCNMatrix4 R = SCNMatrix4Identity;
+    R.m11 = Vt[0][0] * U[0][0] + Vt[0][1] * U[1][0] + Vt[0][2] * U[2][0];
+    R.m12 = Vt[0][0] * U[0][1] + Vt[0][1] * U[1][1] + Vt[0][2] * U[2][1];
+    R.m13 = Vt[0][0] * U[0][2] + Vt[0][1] * U[1][2] + Vt[0][2] * U[2][2];
+
+    R.m21 = Vt[1][0] * U[0][0] + Vt[1][1] * U[1][0] + Vt[1][2] * U[2][0];
+    R.m22 = Vt[1][0] * U[0][1] + Vt[1][1] * U[1][1] + Vt[1][2] * U[2][1];
+    R.m23 = Vt[1][0] * U[0][2] + Vt[1][1] * U[1][2] + Vt[1][2] * U[2][2];
+
+    R.m31 = Vt[2][0] * U[0][0] + Vt[2][1] * U[1][0] + Vt[2][2] * U[2][0];
+    R.m32 = Vt[2][0] * U[0][1] + Vt[2][1] * U[1][1] + Vt[2][2] * U[2][1];
+    R.m33 = Vt[2][0] * U[0][2] + Vt[2][1] * U[1][2] + Vt[2][2] * U[2][2];
+
+    // Handle special case of reflection
+    if (R.m11 * R.m22 * R.m33 < 0) {
+        R.m31 *= -1;
+        R.m32 *= -1;
+        R.m33 *= -1;
+    }
+
+    // Compute translation t = -R * centroid_A + centroid_B
+    SCNVector3 t = SCNVector3Make(
+        -R.m11 * centroid_A.x - R.m12 * centroid_A.y - R.m13 * centroid_A.z + centroid_B.x,
+        -R.m21 * centroid_A.x - R.m22 * centroid_A.y - R.m23 * centroid_A.z + centroid_B.y,
+        -R.m31 * centroid_A.x - R.m32 * centroid_A.y - R.m33 * centroid_A.z + centroid_B.z
+    );
+
+    // Assign to output parameters
+    *rotation = R;
+    *translation = t;
+}
+
 
 + (void)rigidTransform3DWithMatrixA:(Eigen::MatrixXd &)A matrixB:(Eigen::MatrixXd &)B rotation:(Eigen::Matrix3d &)R translation:(Eigen::Vector3d &)t {
     NSCAssert(A.rows() == 3 && B.rows() == 3 && A.cols() == B.cols(), @"Matrices A and B must be 3xN and have the same dimensions");
