@@ -18,19 +18,12 @@ import ZipArchive
 import ModelIO
 
 struct PointCloudMetadata {
-    var yaw: Double
-    var pitch: Double
-    var roll: Double
-    
     var noseTip: CGPoint
    var chin: CGPoint
    var leftEyeLeftCorner: CGPoint
    var rightEyeRightCorner: CGPoint
    var leftMouthCorner: CGPoint
    var rightMouthCorner: CGPoint
-    
-    var image: CVPixelBuffer
-    var depth: AVDepthData
 }
 
 /// ExternalData is a central repository for managing and processing 3D depth and color data, primarily focusing on creating point cloud geometries and exporting them in PLY format. It enables the integration of various sensory data inputs and computational geometry processing.
@@ -71,6 +64,7 @@ struct ExternalData {
     static var pointCloudGeometries: [SCNGeometry] = []
     static var pointCloudNodes: [SCNNode] = []
     static var pointCloudDataArray: [PointCloudMetadata] = []
+    static var currentMetadata: PointCloudMetadata? = nil
     static var landmarkMultiNodes: [[SCNNode]] = []
     static var verticesCount: Int = 0
     static var faceAnchor: ARFaceAnchor?
@@ -551,82 +545,6 @@ struct ExternalData {
             print("3D Mapping Complete!")
             LogManager.shared.log("3D Mapping Complete!")
         }
-    }
-    
-    static func updateNodePivot(node: SCNNode, usingDepthData depthData: AVDepthData, withMetadata metadata: PointCloudMetadata) -> SCNNode {
-        // Convert yaw, pitch, and roll to radians
-        let yawRad = Float(metadata.yaw) * (Float.pi / 180)
-        let pitchRad = Float(metadata.pitch) * (Float.pi / 180)
-        let rollRad = Float(metadata.roll) * (Float.pi / 180)
-        
-        // Create rotation matrices
-        let rotationY = SCNMatrix4MakeRotation(yawRad, 0, 1, 0)
-        let rotationX = SCNMatrix4MakeRotation(pitchRad, 1, 0, 0)
-        let rotationZ = SCNMatrix4MakeRotation(rollRad, 0, 0, 1)
-        
-        // Combine rotations into a single matrix
-        let combinedRotation = SCNMatrix4Mult(SCNMatrix4Mult(rotationZ, rotationX), rotationY)
-        
-        // Assuming the pivot should be at the center of the geometry
-        if let geometry = node.geometry {
-            let (minBound, maxBound) = geometry.boundingBox
-            let center = SCNVector3Make(
-                minBound.x + (maxBound.x - minBound.x) / 2,
-                minBound.y + (maxBound.y - minBound.y) / 2,
-                minBound.z + (maxBound.z - minBound.z) / 2
-            )
-            
-            // Set the pivot to be the center of the geometry after applying the combined rotation
-            node.pivot = SCNMatrix4Mult(SCNMatrix4MakeTranslation(center.x, center.y, center.z), combinedRotation)
-        }
-        
-        return node
-    }
-    
-    static func calculatePivotForNodes(nodes: [SCNNode], withMetadata metadataArray: [PointCloudMetadata]) -> SCNVector3 {
-        guard !nodes.isEmpty && nodes.count == metadataArray.count else {
-            return SCNVector3(0, 0, 0) // Return a default pivot if arrays are empty or mismatched
-        }
-        
-        // Calculate the average position of all nodes
-        var averagePosition = SCNVector3(0, 0, 0)
-        for node in nodes {
-            averagePosition.x += node.position.x
-            averagePosition.y += node.position.y
-            averagePosition.z += node.position.z
-        }
-        averagePosition.x /= Float(nodes.count)
-        averagePosition.y /= Float(nodes.count)
-        averagePosition.z /= Float(nodes.count)
-        
-        // Calculate the average orientation (yaw, pitch, roll) of all nodes
-        var averageYaw: Float = 0, averagePitch: Float = 0, averageRoll: Float = 0
-        for metadata in metadataArray {
-            averageYaw += Float(metadata.yaw)
-            averagePitch += Float(metadata.pitch)
-            averageRoll += Float(metadata.roll)
-        }
-        averageYaw /= Float(metadataArray.count)
-        averagePitch /= Float(metadataArray.count)
-        averageRoll /= Float(metadataArray.count)
-        
-        // Convert average yaw, pitch, and roll to radians
-        averageYaw *= (Float.pi / 180)
-        averagePitch *= (Float.pi / 180)
-        averageRoll *= (Float.pi / 180)
-        
-        // Apply an arbitrary formula to adjust the pivot based on the average orientation
-        // This is a simple example and might need to be adjusted for your specific requirements
-        let pivotAdjustment = SCNVector3(averageYaw * 5, averagePitch * 5, averageRoll * 5)
-        
-        // Calculate the final pivot point
-        let finalPivot = SCNVector3(
-            averagePosition.x + pivotAdjustment.x,
-            averagePosition.y + pivotAdjustment.y,
-            averagePosition.z + pivotAdjustment.z
-        )
-        
-        return finalPivot
     }
     
     static func adjustARKitMatrixForSceneKit(_ matrix: simd_float4x4) -> simd_float4x4 {

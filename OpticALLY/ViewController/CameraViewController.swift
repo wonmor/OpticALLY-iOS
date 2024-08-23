@@ -409,28 +409,14 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             // Assuming colorData is the base address for the BGRA image buffer
             let colorBaseAddress = CVPixelBufferGetBaseAddress(colorPixelBuffer!)!.assumingMemoryBound(to: UInt8.self)
             
-            let metadata = PointCloudMetadata(
-                yaw: Double(self.previewYaws.last ?? 0.0),
-                pitch: Double(self.previewRolls.last ?? 0.0),
-                roll: Double(self.previewPitches.last ?? 0.0),
-                noseTip: noseTip,
-                chin: chin,
-                leftEyeLeftCorner: leftEyeLeftCorner,
-                rightEyeRightCorner: rightEyeRightCorner,
-                leftMouthCorner: leftMouthCorner,
-                rightMouthCorner: rightMouthCorner,
-                image: imageData,
-                depth: depthDataToUse
-            )
-            
-            ExternalData.pointCloudDataArray.append(metadata)
+            ExternalData.pointCloudDataArray.append(ExternalData.currentMetadata!)
             
             // Call the point cloud creation function
             ExternalData.convertToSceneKitModel(
                 depthData: depthDataToUse,
                 colorPixelBuffer: colorPixelBuffer!,
                 colorData: colorBaseAddress,
-                metadata: metadata,
+                metadata: ExternalData.currentMetadata!,
                 width: commonWidth,
                 height: commonHeight,
                 bytesPerRow: colorBytesPerRow, // Use the correct bytes per row for color data,
@@ -792,6 +778,15 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
 
         
         if ExternalData.isSavingFileAsPLY {
+            ExternalData.currentMetadata = PointCloudMetadata(
+                noseTip: noseTip,
+                chin: chin,
+                leftEyeLeftCorner: leftEyeLeftCorner,
+                rightEyeRightCorner: rightEyeRightCorner,
+                leftMouthCorner: leftMouthCorner,
+                rightMouthCorner: rightMouthCorner
+            )
+            
             processFrameAV(depthData: depthData, imageData: videoPixelBuffer)
             
             ExternalData.isSavingFileAsPLY = false

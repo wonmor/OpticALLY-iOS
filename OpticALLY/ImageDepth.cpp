@@ -699,6 +699,46 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
     std::cout << "[IMAGEDEPTH] Right Mouth Corner 2D Position: (" << rightMouthCorner.x << ", " << rightMouthCorner.y << ")" << std::endl;
     auto [rightMouthX, rightMouthY, rightMouthZ] = projectTo3D(static_cast<int>(rightMouthCorner.y), static_cast<int>(rightMouthCorner.x));
     std::cout << "[IMAGEDEPTH] Right Mouth Corner 3D Position: (" << rightMouthX << ", " << rightMouthY << ", " << rightMouthZ << ")" << std::endl;
+    
+    // Create spheres at the landmark locations
+        auto createSphereAt = [&](float x, float y, float z, const Eigen::Vector3d& color, float radius = 0.01) {
+            auto sphere = open3d::geometry::TriangleMesh::CreateSphere(radius);
+            sphere->Translate(Eigen::Vector3d(x, y, z));
+            sphere->PaintUniformColor(color);
+            return sphere;
+        };
+
+        auto noseSphere = createSphereAt(noseX, noseY, noseZ, Eigen::Vector3d(1.0, 0.0, 0.0));
+        auto chinSphere = createSphereAt(chinX, chinY, chinZ, Eigen::Vector3d(0.0, 1.0, 0.0));
+        auto leftEyeSphere = createSphereAt(leftEyeX, leftEyeY, leftEyeZ, Eigen::Vector3d(0.0, 0.0, 1.0));
+        auto rightEyeSphere = createSphereAt(rightEyeX, rightEyeY, rightEyeZ, Eigen::Vector3d(1.0, 1.0, 0.0));
+        auto leftMouthSphere = createSphereAt(leftMouthX, leftMouthY, leftMouthZ, Eigen::Vector3d(0.0, 1.0, 1.0));
+        auto rightMouthSphere = createSphereAt(rightMouthX, rightMouthY, rightMouthZ, Eigen::Vector3d(1.0, 0.0, 1.0));
+
+        // Add the spheres to the point cloud or a separate mesh
+        auto landmarkMesh = std::make_shared<open3d::geometry::TriangleMesh>();
+    
+    // Function to append one mesh to another
+    auto append_mesh = [](std::shared_ptr<open3d::geometry::TriangleMesh> &mesh, const std::shared_ptr<open3d::geometry::TriangleMesh> &to_add) {
+        if (!to_add->vertices_.empty()) {
+            size_t vertex_offset = mesh->vertices_.size();
+            mesh->vertices_.insert(mesh->vertices_.end(), to_add->vertices_.begin(), to_add->vertices_.end());
+            mesh->vertex_colors_.insert(mesh->vertex_colors_.end(), to_add->vertex_colors_.begin(), to_add->vertex_colors_.end());
+
+            for (const auto& triangle : to_add->triangles_) {
+                mesh->triangles_.emplace_back(Eigen::Vector3i(triangle(0) + vertex_offset, triangle(1) + vertex_offset, triangle(2) + vertex_offset));
+            }
+        }
+    };
+
+    
+    // Append each sphere to the landmarkMesh
+    append_mesh(landmarkMesh, noseSphere);
+    append_mesh(landmarkMesh, chinSphere);
+    append_mesh(landmarkMesh, leftEyeSphere);
+    append_mesh(landmarkMesh, rightEyeSphere);
+    append_mesh(landmarkMesh, leftMouthSphere);
+    append_mesh(landmarkMesh, rightMouthSphere);
 
     // Expect pts to be Nx2
     cv::Mat xy_converted;
@@ -801,6 +841,16 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
 
     pointCloud->points_ = points;
     pointCloud->colors_ = colors;
+    
+//    // Convert the landmark mesh vertices to a point cloud and append to the main point cloud
+//    for (const auto& vertex : landmarkMesh->vertices_) {
+//        pointCloud->points_.push_back(vertex);
+//    }
+//
+//    // Append the colors of the landmark mesh vertices to the main point cloud
+//    for (const auto& color : landmarkMesh->vertex_colors_) {
+//        pointCloud->colors_.push_back(color);
+//    }
 
     // Calculate normals
     pointCloud->EstimateNormals(
