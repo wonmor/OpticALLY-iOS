@@ -257,17 +257,6 @@ struct ExportView: View {
                                     .bold()
                                     .monospaced()
                                     .foregroundColor(.white)
-                                
-                                Spacer()
-                                
-                                Text("WE CARE ABOUT YOUR PRIVACY.")
-                                    .monospaced()
-                                    .bold()
-                                    .foregroundColor(Color(.lightGray))
-                                
-                                Text("OPTICALLY USES FULLY ON-DEVICE MESHING AND MACHINE LEARNING ALGORITHMS TO EVALUATE YOUR SCANS.")
-                                    .monospaced()
-                                    .foregroundColor(Color(.lightGray))
                             }
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 30) // Adjust horizontal padding for wider background
