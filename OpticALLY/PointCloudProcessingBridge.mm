@@ -190,12 +190,12 @@ std::vector<open3d::geometry::Image> GetTextureImages(const open3d::geometry::Tr
             }
 
             // Retrieve and print centroids
-            NSArray<NSValue *> *centroids = [PointCloudProcessingBridge retrieveCentroidsForImageDepth:imageDepth.get()]; // Use get() for shared_ptr
+            NSArray<NSValue *> *centroids = [PointCloudProcessingBridge retrieveCentroidsForImageDepth:imageDepth.get()];
 
             // Print the centroids
             for (NSValue *centroidValue in centroids) {
-                CGPoint centroid = [centroidValue CGPointValue];
-                NSLog(@"[POINTCLOUDPROCESSING] Centroid: (%f, %f)", centroid.x, centroid.y);
+                SCNVector3 centroid = [centroidValue SCNVector3Value];
+                NSLog(@"[POINTCLOUDPROCESSING] Centroid: (%f, %f, %f)", centroid.x, centroid.y, centroid.z);
             }
 
             return pointCloud;
@@ -322,8 +322,8 @@ std::vector<open3d::geometry::Image> GetTextureImages(const open3d::geometry::Tr
     // Convert the centroids to an NSArray of NSValue objects
     NSMutableArray<NSValue *> *centroidArray = [NSMutableArray arrayWithCapacity:centroids.size()];
     for (const auto &centroid : centroids) {
-        CGPoint centroidPoint = CGPointMake(centroid.x, centroid.y);
-        [centroidArray addObject:[NSValue valueWithCGPoint:centroidPoint]];
+        SCNVector3 centroidVector = SCNVector3Make(centroid.x, centroid.y, centroid.z);
+        [centroidArray addObject:[NSValue valueWithSCNVector3:centroidVector]];
     }
     
     return centroidArray;
