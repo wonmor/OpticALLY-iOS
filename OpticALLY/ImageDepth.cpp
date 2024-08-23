@@ -669,35 +669,35 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
     std::vector<Eigen::Vector3d> colors;
     
     // Print the 2D and 3D positions of the facial landmarks
-
+    // VERY IMPORTANT. FOR 3D POINTS I FLIPPED X AND Y SINCE THE FEED HAS X AND Y TRANSPOSED SO NEED TO REVERSE THAT.
     // Nose Tip
     std::cout << "[IMAGEDEPTH] Nose Tip 2D Position: (" << noseTip.x << ", " << noseTip.y << ")" << std::endl;
-    auto [noseX, noseY, noseZ] = projectTo3D(static_cast<int>(noseTip.x), static_cast<int>(noseTip.y));
+    auto [noseX, noseY, noseZ] = projectTo3D(static_cast<int>(noseTip.y), static_cast<int>(noseTip.x));
     std::cout << "[IMAGEDEPTH] Nose Tip 3D Position: (" << noseX << ", " << noseY << ", " << noseZ << ")" << std::endl;
 
     // Chin
     std::cout << "[IMAGEDEPTH] Chin 2D Position: (" << chin.x << ", " << chin.y << ")" << std::endl;
-    auto [chinX, chinY, chinZ] = projectTo3D(static_cast<int>(chin.x), static_cast<int>(chin.y));
+    auto [chinX, chinY, chinZ] = projectTo3D(static_cast<int>(chin.y), static_cast<int>(chin.x));
     std::cout << "[IMAGEDEPTH] Chin 3D Position: (" << chinX << ", " << chinY << ", " << chinZ << ")" << std::endl;
 
     // Left Eye Left Corner
     std::cout << "[IMAGEDEPTH] Left Eye Left Corner 2D Position: (" << leftEyeLeftCorner.x << ", " << leftEyeLeftCorner.y << ")" << std::endl;
-    auto [leftEyeX, leftEyeY, leftEyeZ] = projectTo3D(static_cast<int>(leftEyeLeftCorner.x), static_cast<int>(leftEyeLeftCorner.y));
+    auto [leftEyeX, leftEyeY, leftEyeZ] = projectTo3D(static_cast<int>(leftEyeLeftCorner.y), static_cast<int>(leftEyeLeftCorner.x));
     std::cout << "[IMAGEDEPTH] Left Eye Left Corner 3D Position: (" << leftEyeX << ", " << leftEyeY << ", " << leftEyeZ << ")" << std::endl;
 
     // Right Eye Right Corner
     std::cout << "[IMAGEDEPTH] Right Eye Right Corner 2D Position: (" << rightEyeRightCorner.x << ", " << rightEyeRightCorner.y << ")" << std::endl;
-    auto [rightEyeX, rightEyeY, rightEyeZ] = projectTo3D(static_cast<int>(rightEyeRightCorner.x), static_cast<int>(rightEyeRightCorner.y));
+    auto [rightEyeX, rightEyeY, rightEyeZ] = projectTo3D(static_cast<int>(rightEyeRightCorner.y), static_cast<int>(rightEyeRightCorner.x));
     std::cout << "[IMAGEDEPTH] Right Eye Right Corner 3D Position: (" << rightEyeX << ", " << rightEyeY << ", " << rightEyeZ << ")" << std::endl;
 
     // Left Mouth Corner
     std::cout << "[IMAGEDEPTH] Left Mouth Corner 2D Position: (" << leftMouthCorner.x << ", " << leftMouthCorner.y << ")" << std::endl;
-    auto [leftMouthX, leftMouthY, leftMouthZ] = projectTo3D(static_cast<int>(leftMouthCorner.x), static_cast<int>(leftMouthCorner.y));
+    auto [leftMouthX, leftMouthY, leftMouthZ] = projectTo3D(static_cast<int>(leftMouthCorner.y), static_cast<int>(leftMouthCorner.x));
     std::cout << "[IMAGEDEPTH] Left Mouth Corner 3D Position: (" << leftMouthX << ", " << leftMouthY << ", " << leftMouthZ << ")" << std::endl;
 
     // Right Mouth Corner
     std::cout << "[IMAGEDEPTH] Right Mouth Corner 2D Position: (" << rightMouthCorner.x << ", " << rightMouthCorner.y << ")" << std::endl;
-    auto [rightMouthX, rightMouthY, rightMouthZ] = projectTo3D(static_cast<int>(rightMouthCorner.x), static_cast<int>(rightMouthCorner.y));
+    auto [rightMouthX, rightMouthY, rightMouthZ] = projectTo3D(static_cast<int>(rightMouthCorner.y), static_cast<int>(rightMouthCorner.x));
     std::cout << "[IMAGEDEPTH] Right Mouth Corner 3D Position: (" << rightMouthX << ", " << rightMouthY << ", " << rightMouthZ << ")" << std::endl;
     
     // Expect pts to be Nx2
