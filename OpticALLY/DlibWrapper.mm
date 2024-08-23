@@ -217,18 +217,7 @@ struct VertexOut {
         nose_end_point3D.push_back(cv::Point3d(0, 0, 1000.0));
         
         cv::projectPoints(nose_end_point3D, rotation_vector, translation_vector, camera_matrix, dist_coeffs, nose_end_point2D);
-        
-        // Iterate through each pixel in the image and change blue pixels to white, this is so that the if someone wears red clothes it won't make a mistake of recognizing it as a landmark point instead
-        for (int i = 0; i < height; ++i) {
-            for (int j = 0; j < width; ++j) {
-                dlib::bgr_pixel& pixel = img[i][j];
-                if (pixel.blue == 255 && pixel.green == 0 && pixel.red == 0) {
-                    // If the pixel is red, change it to white
-                    pixel = dlib::bgr_pixel(255, 255, 255);
-                }
-            }
-        }
-        
+
         // Convert image points and nose end point to dlib points
         dlib::point start_point(image_points[0].x, image_points[0].y);
         dlib::point end_point(nose_end_point2D[0].x, nose_end_point2D[0].y);
@@ -268,8 +257,8 @@ struct VertexOut {
                 continue; // Skip the point at index 1
             }
             dlib::point p(image_points[i].x, image_points[i].y);
-            // Red marker for landmark points
-            draw_solid_circle(img, p, 5, dlib::rgb_pixel(255, 0, 0));
+            // Green marker for landmark points
+            draw_solid_circle(img, p, 5, dlib::rgb_pixel(0, 255, 0));
         }
 
         
