@@ -31,10 +31,23 @@ std::vector<open3d::geometry::Image> GetTextureImages(const open3d::geometry::Tr
 + (BOOL)processPointCloudsWithCalibrationFile:(NSString *)calibrationFilePath
                                    imageFiles:(NSArray<NSString *> *)imageFiles
                                    depthFiles:(NSArray<NSString *> *)depthFiles
-                                  outputPaths:(NSArray<NSString *> *)outputPaths {
+                                  outputPaths:(NSArray<NSString *> *)outputPaths
+                                      noseTip:(CGPoint)noseTip
+                                         chin:(CGPoint)chin
+                              leftEyeLeftCorner:(CGPoint)leftEyeLeftCorner
+                             rightEyeRightCorner:(CGPoint)rightEyeRightCorner
+                              leftMouthCorner:(CGPoint)leftMouthCorner
+                             rightMouthCorner:(CGPoint)rightMouthCorner {
     using namespace open3d;
     using namespace geometry;
     namespace fs = std::filesystem;
+    
+    NSLog(@"[POINTCLOUDPROCESSING] Nose Tip: %@", NSStringFromCGPoint(noseTip));
+    NSLog(@"[POINTCLOUDPROCESSING] Chin: %@", NSStringFromCGPoint(chin));
+    NSLog(@"[POINTCLOUDPROCESSING] Left Eye Left Corner: %@", NSStringFromCGPoint(leftEyeLeftCorner));
+    NSLog(@"[POINTCLOUDPROCESSING] Right Eye Right Corner: %@", NSStringFromCGPoint(rightEyeRightCorner));
+    NSLog(@"[POINTCLOUDPROCESSING] Left Mouth Corner: %@", NSStringFromCGPoint(leftMouthCorner));
+    NSLog(@"[POINTCLOUDPROCESSING] Right Mouth Corner: %@", NSStringFromCGPoint(rightMouthCorner));
 
     // Helper function to extract numeric part from filename
     auto extractNumber = [](const std::string &filename) -> int {

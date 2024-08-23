@@ -149,7 +149,20 @@ struct PostScanView: View {
         }
 
         // Process point clouds for the matching pairs
-        PointCloudProcessingBridge.processPointClouds(withCalibrationFile: calibrationFileURL.path, imageFiles: videoFiles, depthFiles: depthFiles, outputPaths: outputPaths)
+        if let lastMetadata = ExternalData.pointCloudDataArray.last {
+            PointCloudProcessingBridge.processPointClouds(
+                withCalibrationFile: calibrationFileURL.path,
+                imageFiles: videoFiles,
+                depthFiles: depthFiles,
+                outputPaths: outputPaths,
+                noseTip: lastMetadata.noseTip,
+                chin: lastMetadata.chin,
+                leftEyeLeftCorner: lastMetadata.leftEyeLeftCorner,
+                rightEyeRightCorner: lastMetadata.rightEyeRightCorner,
+                leftMouthCorner: lastMetadata.leftMouthCorner,
+                rightMouthCorner: lastMetadata.rightMouthCorner
+            )
+        }
 
         for path in outputPaths {
             let objURL = URL(fileURLWithPath: path)
