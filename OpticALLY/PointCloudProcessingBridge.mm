@@ -32,22 +32,53 @@ std::vector<open3d::geometry::Image> GetTextureImages(const open3d::geometry::Tr
                                    imageFiles:(NSArray<NSString *> *)imageFiles
                                    depthFiles:(NSArray<NSString *> *)depthFiles
                                   outputPaths:(NSArray<NSString *> *)outputPaths
-                                      noseTip:(CGPoint)noseTip
-                                         chin:(CGPoint)chin
-                              leftEyeLeftCorner:(CGPoint)leftEyeLeftCorner
-                             rightEyeRightCorner:(CGPoint)rightEyeRightCorner
-                              leftMouthCorner:(CGPoint)leftMouthCorner
-                             rightMouthCorner:(CGPoint)rightMouthCorner {
+                                 noseTipArray:(NSArray<NSValue *> *)noseTipArray
+                                    chinArray:(NSArray<NSValue *> *)chinArray
+                          leftEyeLeftCornerArray:(NSArray<NSValue *> *)leftEyeLeftCornerArray
+                         rightEyeRightCornerArray:(NSArray<NSValue *> *)rightEyeRightCornerArray
+                          leftMouthCornerArray:(NSArray<NSValue *> *)leftMouthCornerArray
+                         rightMouthCornerArray:(NSArray<NSValue *> *)rightMouthCornerArray {
+
     using namespace open3d;
     using namespace geometry;
     namespace fs = std::filesystem;
     
-    NSLog(@"[POINTCLOUDPROCESSING] Nose Tip: %@", NSStringFromCGPoint(noseTip));
-    NSLog(@"[POINTCLOUDPROCESSING] Chin: %@", NSStringFromCGPoint(chin));
-    NSLog(@"[POINTCLOUDPROCESSING] Left Eye Left Corner: %@", NSStringFromCGPoint(leftEyeLeftCorner));
-    NSLog(@"[POINTCLOUDPROCESSING] Right Eye Right Corner: %@", NSStringFromCGPoint(rightEyeRightCorner));
-    NSLog(@"[POINTCLOUDPROCESSING] Left Mouth Corner: %@", NSStringFromCGPoint(leftMouthCorner));
-    NSLog(@"[POINTCLOUDPROCESSING] Right Mouth Corner: %@", NSStringFromCGPoint(rightMouthCorner));
+    if (imageFiles.count != depthFiles.count || imageFiles.count != outputPaths.count) {
+           NSLog(@"Mismatch between the number of image files, depth files, and output paths");
+           return NO;
+       }
+
+       if (imageFiles.count != noseTipArray.count ||
+           imageFiles.count != chinArray.count ||
+           imageFiles.count != leftEyeLeftCornerArray.count ||
+           imageFiles.count != rightEyeRightCornerArray.count ||
+           imageFiles.count != leftMouthCornerArray.count ||
+           imageFiles.count != rightMouthCornerArray.count) {
+           NSLog(@"Mismatch between the number of files and the facial landmark arrays");
+           return NO;
+       }
+    
+    for (NSUInteger i = 0; i < imageFiles.count; i++) {
+        NSString *imageFile = imageFiles[i];
+        NSString *depthFile = depthFiles[i];
+        NSString *outputPath = outputPaths[i];
+
+        CGPoint noseTip = [noseTipArray[i] CGPointValue];
+        CGPoint chin = [chinArray[i] CGPointValue];
+        CGPoint leftEyeLeftCorner = [leftEyeLeftCornerArray[i] CGPointValue];
+        CGPoint rightEyeRightCorner = [rightEyeRightCornerArray[i] CGPointValue];
+        CGPoint leftMouthCorner = [leftMouthCornerArray[i] CGPointValue];
+        CGPoint rightMouthCorner = [rightMouthCornerArray[i] CGPointValue];
+
+        NSLog(@"[POINTCLOUDPROCESSING][Index %lu] Nose Tip: %@", (unsigned long)i, NSStringFromCGPoint(noseTip));
+        NSLog(@"[POINTCLOUDPROCESSING][Index %lu] Chin: %@", (unsigned long)i, NSStringFromCGPoint(chin));
+        NSLog(@"[POINTCLOUDPROCESSING][Index %lu] Left Eye Left Corner: %@", (unsigned long)i, NSStringFromCGPoint(leftEyeLeftCorner));
+        NSLog(@"[POINTCLOUDPROCESSING][Index %lu] Right Eye Right Corner: %@", (unsigned long)i, NSStringFromCGPoint(rightEyeRightCorner));
+        NSLog(@"[POINTCLOUDPROCESSING][Index %lu] Left Mouth Corner: %@", (unsigned long)i, NSStringFromCGPoint(leftMouthCorner));
+        NSLog(@"[POINTCLOUDPROCESSING][Index %lu] Right Mouth Corner: %@", (unsigned long)i, NSStringFromCGPoint(rightMouthCorner));
+
+        // Add more
+    }
 
     // Helper function to extract numeric part from filename
     auto extractNumber = [](const std::string &filename) -> int {

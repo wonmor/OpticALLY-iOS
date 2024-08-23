@@ -147,22 +147,36 @@ struct PostScanView: View {
             let objPath = folderURL.appendingPathComponent(objFileName).path
             outputPaths.append(objPath)
         }
+        
+        // Prepare the arrays of CGPoint for each facial landmark
+        let noseTipArray = ExternalData.pointCloudDataArray.map { NSValue(cgPoint: $0.noseTip) }
+        let chinArray = ExternalData.pointCloudDataArray.map { NSValue(cgPoint: $0.chin) }
+        let leftEyeLeftCornerArray = ExternalData.pointCloudDataArray.map { NSValue(cgPoint: $0.leftEyeLeftCorner) }
+        let rightEyeRightCornerArray = ExternalData.pointCloudDataArray.map { NSValue(cgPoint: $0.rightEyeRightCorner) }
+        let leftMouthCornerArray = ExternalData.pointCloudDataArray.map { NSValue(cgPoint: $0.leftMouthCorner) }
+        let rightMouthCornerArray = ExternalData.pointCloudDataArray.map { NSValue(cgPoint: $0.rightMouthCorner) }
+
+        // Generate output paths for the OBJ files
+        for index in 0..<minCount {
+            let objFileName = "output_\(index).obj"
+            let objPath = folderURL.appendingPathComponent(objFileName).path
+            outputPaths.append(objPath)
+        }
 
         // Process point clouds for the matching pairs
-        if let lastMetadata = ExternalData.pointCloudDataArray.last {
-            PointCloudProcessingBridge.processPointClouds(
-                withCalibrationFile: calibrationFileURL.path,
-                imageFiles: videoFiles,
-                depthFiles: depthFiles,
-                outputPaths: outputPaths,
-                noseTip: lastMetadata.noseTip,
-                chin: lastMetadata.chin,
-                leftEyeLeftCorner: lastMetadata.leftEyeLeftCorner,
-                rightEyeRightCorner: lastMetadata.rightEyeRightCorner,
-                leftMouthCorner: lastMetadata.leftMouthCorner,
-                rightMouthCorner: lastMetadata.rightMouthCorner
-            )
-        }
+        PointCloudProcessingBridge.processPointClouds(
+            withCalibrationFile: calibrationFileURL.path,
+            imageFiles: videoFiles,
+            depthFiles: depthFiles,
+            outputPaths: outputPaths,
+            noseTip: noseTipArray,
+            chinArray: chinArray,
+            leftEyeLeftCornerArray: leftEyeLeftCornerArray,
+            rightEyeRightCornerArray: rightEyeRightCornerArray,
+            leftMouthCornerArray: leftMouthCornerArray,
+            rightMouthCornerArray: rightMouthCornerArray
+        )
+
 
         for path in outputPaths {
             let objURL = URL(fileURLWithPath: path)

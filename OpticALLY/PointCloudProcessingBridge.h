@@ -6,11 +6,11 @@
                                    imageFiles:(NSArray<NSString *> *)imageFiles
                                    depthFiles:(NSArray<NSString *> *)depthFiles
                                   outputPaths:(NSArray<NSString *> *)outputPaths
-                                      noseTip:(CGPoint)noseTip
-                                         chin:(CGPoint)chin
-                              leftEyeLeftCorner:(CGPoint)leftEyeLeftCorner
-                             rightEyeRightCorner:(CGPoint)rightEyeRightCorner
-                              leftMouthCorner:(CGPoint)leftMouthCorner
-                             rightMouthCorner:(CGPoint)rightMouthCorner;
+                                 noseTipArray:(NSArray<NSValue *> *)noseTipArray
+                                    chinArray:(NSArray<NSValue *> *)chinArray
+                          leftEyeLeftCornerArray:(NSArray<NSValue *> *)leftEyeLeftCornerArray
+                         rightEyeRightCornerArray:(NSArray<NSValue *> *)rightEyeRightCornerArray
+                          leftMouthCornerArray:(NSArray<NSValue *> *)leftMouthCornerArray
+                        rightMouthCornerArray:(NSArray<NSValue *> *)rightMouthCornerArray;
 
 @end
