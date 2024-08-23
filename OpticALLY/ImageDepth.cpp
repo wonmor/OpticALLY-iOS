@@ -820,11 +820,11 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
         // Get the pixel color from the undistorted image
           cv::Vec3f pixel_color = img_undistort.at<cv::Vec3f>(y, x);
 
-        // Check if color is green...
+        // Check if color is blue...
           if (static_cast<int>(pixel_color[0]) == 0.0 &&
-              static_cast<int>(pixel_color[1]) == 1.0 &&
-              static_cast<int>(pixel_color[2]) == 0.0) {
-              color = Eigen::Vector3d(0.0, 0.0, 1.0); // Set to blue if the condition is met
+              static_cast<int>(pixel_color[1]) == 0.0 &&
+              static_cast<int>(pixel_color[2]) == 1.0) {
+              color = Eigen::Vector3d(1.0, 0.0, 0.0); // Set to red if the condition is met
           } else {
               // Otherwise, use the pixel color from the image
               color = Eigen::Vector3d(pixel_color[0], pixel_color[1], pixel_color[2]);
