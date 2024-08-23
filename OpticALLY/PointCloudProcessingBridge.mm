@@ -28,7 +28,16 @@ std::vector<open3d::geometry::Image> GetTextureImages(const open3d::geometry::Tr
     return texture_images;
 }
 
+// Static variable declaration
+static NSMutableArray<NSMutableArray<NSValue *> *> *centroids2DArray = nil;
+
 @implementation PointCloudProcessingBridge
+
++ (void)initialize {
+    if (self == [PointCloudProcessingBridge self]) {
+        centroids2DArray = [NSMutableArray array];
+    }
+}
 
 + (BOOL)processPointCloudsWithCalibrationFile:(NSString *)calibrationFilePath
                                    imageFiles:(NSArray<NSString *> *)imageFiles
@@ -328,6 +337,12 @@ std::vector<open3d::geometry::Image> GetTextureImages(const open3d::geometry::Tr
         SCNVector3 centroidVector = SCNVector3Make(centroid.x, centroid.y, centroid.z);
         [centroidArray addObject:[NSValue valueWithSCNVector3:centroidVector]];
     }
+    
+    // Add the centroid array to the static centroids2DArray
+    [centroids2DArray addObject:centroidArray];
+    
+    // Print the size of centroids2DArray
+    NSLog(@"Size of centroids2DArray after adding: %lu", (unsigned long)centroids2DArray.count);
     
     return centroidArray;
 }

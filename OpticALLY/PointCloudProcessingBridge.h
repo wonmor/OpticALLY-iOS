@@ -13,7 +13,7 @@ class ImageDepth;
                           leftEyeLeftCornerArray:(NSArray<NSValue *> *)leftEyeLeftCornerArray
                          rightEyeRightCornerArray:(NSArray<NSValue *> *)rightEyeRightCornerArray
                           leftMouthCornerArray:(NSArray<NSValue *> *)leftMouthCornerArray
-                        rightMouthCornerArray:(NSArray<NSValue *> *)rightMouthCornerArray;
+                         rightMouthCornerArray:(NSArray<NSValue *> *)rightMouthCornerArray;
 
 + (NSArray<NSValue *> *)retrieveCentroidsForImageDepth:(ImageDepth *)imageDepth;
 
