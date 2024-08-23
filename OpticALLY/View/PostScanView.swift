@@ -213,20 +213,27 @@ struct PostScanView: View {
           }
       }
        
-   func createNodeFromCentroids() -> SCNNode? {
-       guard !centroids.isEmpty else { return nil }
-       
-       let node = SCNNode()
-       let sphereGeometry = SCNSphere(radius: 0.001) // Small sphere to represent each centroid
-       
-       for centroid in centroids {
-           let centroidNode = SCNNode(geometry: sphereGeometry)
-           centroidNode.position = centroid
-           node.addChildNode(centroidNode)
-       }
-       
-       return node
-   }
+    func createNodeFromCentroids() -> SCNNode? {
+        guard !centroids.isEmpty else { return nil }
+        
+        let node = SCNNode()
+        let sphereGeometry = SCNSphere(radius: 0.001) // Small sphere to represent each centroid
+        
+        // Create a material with an orange color
+        let orangeMaterial = SCNMaterial()
+        orangeMaterial.diffuse.contents = UIColor.orange
+        
+        // Apply the material to the sphere geometry
+        sphereGeometry.materials = [orangeMaterial]
+        
+        for centroid in centroids {
+            let centroidNode = SCNNode(geometry: sphereGeometry)
+            centroidNode.position = centroid
+            node.addChildNode(centroidNode)
+        }
+        
+        return node
+    }
     
     func initialize() {
         isProcessing = true
