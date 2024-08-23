@@ -11,6 +11,7 @@ import ModelIO
 import SceneKit.ModelIO
 import ARKit
 import Accelerate
+import simd
 
 let drawSphere = false // For visualizing landmark points
 

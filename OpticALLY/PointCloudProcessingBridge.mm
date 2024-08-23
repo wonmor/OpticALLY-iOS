@@ -283,7 +283,36 @@ static NSMutableArray<NSMutableArray<NSValue *> *> *centroids2DArray = nil;
     // & means "Method Signature"
     // (It's like a memory address)
     // If your method rigidTransform3DWithMatrixA:matrixB:rotation:translation: expects void* pointers (which is the case if you're trying to avoid including Eigen in the header file), you'll need to pass the address of the Eigen objects.
-//    [self rigidTransform3DWithMatrixA: &matrixA matrixB: &matrixB rotation: &R translation: &t];
+  [self rigidTransform3DWithMatrixA: &matrixA matrixB: &matrixB rotation: &R translation: &t];
+    
+    if (centroidsA) {
+        // Iterate over each point in centroidsA and apply the transformation
+        for (NSUInteger i = 0; i < centroidsA.count; ++i) {
+            // Get the current point as SCNVector3
+            SCNVector3 pointA = [centroidsA[i] SCNVector3Value];
+
+            // Convert SCNVector3 to Eigen::Vector3d
+            Eigen::Vector3d pointVec(pointA.x, pointA.y, pointA.z);
+
+            // Apply the rotation and translation
+            Eigen::Vector3d transformedPoint = R * pointVec + t;
+
+            // Convert the transformed point back to SCNVector3
+            SCNVector3 transformedPointA = SCNVector3Make(transformedPoint.x(), transformedPoint.y(), transformedPoint.z());
+
+            // Update the point in centroidsA
+            centroidsA[i] = [NSValue valueWithSCNVector3:transformedPointA];
+        }
+
+        // Debugging: Print out the transformed centroids
+        NSLog(@"Transformed centroids in centroidsA:");
+        for (NSUInteger i = 0; i < centroidsA.count; ++i) {
+            SCNVector3 transformedPointA = [centroidsA[i] SCNVector3Value];
+            NSLog(@"Centroid %lu: (%f, %f, %f)", (unsigned long)i, transformedPointA.x, transformedPointA.y, transformedPointA.z);
+        }
+    } else {
+        NSLog(@"centroidsA is empty or not available.");
+    }
 //
 //    // Apply the rigid transformation to each point in pointClouds[0]
 //    if (!pointClouds.empty()) {

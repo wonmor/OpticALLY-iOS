@@ -69,6 +69,7 @@
 		969E42EF2ADC9D9E00E77BA7 /* promo.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 969E42ED2ADC9D9E00E77BA7 /* promo.mp4 */; };
 		969E42F02ADC9D9E00E77BA7 /* promo.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 969E42ED2ADC9D9E00E77BA7 /* promo.mp4 */; };
 		96A29DDF2C4B91120063C0D0 /* CameraPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96A29DDE2C4B91110063C0D0 /* CameraPreview.swift */; };
+		96A71A0D2C78B1BC009F515B /* rigid_transform_3D.py in Resources */ = {isa = PBXBuildFile; fileRef = 96A71A0C2C78B1BC009F515B /* rigid_transform_3D.py */; };
 		96B2A6232B5C5F320031952C /* ObjCBridge.py in Resources */ = {isa = PBXBuildFile; fileRef = 9671FDC52B5B14F2004DA4C2 /* ObjCBridge.py */; };
 		96B64F6B2B3D8AF70003E06D /* VideoTexturedFace.shader in Resources */ = {isa = PBXBuildFile; fileRef = 96B64F6A2B3D8AF70003E06D /* VideoTexturedFace.shader */; };
 		96B64F6D2B3D8FCA0003E06D /* faceTexture.metal in Sources */ = {isa = PBXBuildFile; fileRef = 96B64F6C2B3D8FCA0003E06D /* faceTexture.metal */; };
@@ -200,6 +201,7 @@
 		969DF1C62B12916900FA9ABE /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		969E42ED2ADC9D9E00E77BA7 /* promo.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = promo.mp4; sourceTree = "<group>"; };
 		96A29DDE2C4B91110063C0D0 /* CameraPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPreview.swift; sourceTree = "<group>"; };
+		96A71A0C2C78B1BC009F515B /* rigid_transform_3D.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = rigid_transform_3D.py; sourceTree = "<group>"; };
 		96B64F6A2B3D8AF70003E06D /* VideoTexturedFace.shader */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = VideoTexturedFace.shader; sourceTree = "<group>"; };
 		96B64F6C2B3D8FCA0003E06D /* faceTexture.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = faceTexture.metal; sourceTree = "<group>"; };
 		96B64F6E2B3D90410003E06D /* TextureToImage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TextureToImage.swift; sourceTree = "<group>"; };
@@ -298,6 +300,7 @@
 		9671FDC42B5B14F2004DA4C2 /* Python */ = {
 			isa = PBXGroup;
 			children = (
+				96A71A0C2C78B1BC009F515B /* rigid_transform_3D.py */,
 				96BDE6352B7EB4EF00CCEABA /* ImageDepth.py */,
 				963671282BC09312003EC38C /* Process3D.py */,
 				9671FDC52B5B14F2004DA4C2 /* ObjCBridge.py */,
@@ -671,6 +674,7 @@
 				966360642B6E03FF001D2119 /* face-scan.json in Resources */,
 				96BDE6362B7EB4EF00CCEABA /* ImageDepth.py in Resources */,
 				966360612B6E03FF001D2119 /* face-id.json in Resources */,
+				96A71A0D2C78B1BC009F515B /* rigid_transform_3D.py in Resources */,
 				9646DC6C2B1064F500092549 /* glasses.mp4 in Resources */,
 				96E8A6662BED344A00CCBC18 /* pybind11 in Resources */,
 				9663606B2B6E0BD7001D2119 /* left-arrow-2.json in Resources */,
