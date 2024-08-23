@@ -344,6 +344,43 @@ static NSMutableArray<NSMutableArray<NSValue *> *> *centroids2DArray = nil;
     return YES;
 }
 
+// Input: expects 3xN matrix of points
+// Returns R, t
+// R = 3x3 rotation matrix
+// t = 3x1 column vector
+
++ (void)rigidTransform3DWithMatrixA:(Eigen::MatrixXd &)A matrixB:(Eigen::MatrixXd &)B rotation:(Eigen::Matrix3d &)R translation:(Eigen::Vector3d &)t {
+    NSCAssert(A.rows() == 3 && B.rows() == 3 && A.cols() == B.cols(), @"Matrices A and B must be 3xN and have the same dimensions");
+
+    int num_cols = static_cast<int>(A.cols());
+
+    // Find mean column-wise
+    Eigen::Vector3d centroid_A = A.rowwise().mean();
+    Eigen::Vector3d centroid_B = B.rowwise().mean();
+
+    // Subtract mean
+    Eigen::MatrixXd Am = A.colwise() - centroid_A;
+    Eigen::MatrixXd Bm = B.colwise() - centroid_B;
+
+    Eigen::Matrix3d H = Am * Bm.transpose();
+
+    // Perform SVD
+    Eigen::JacobiSVD<Eigen::MatrixXd> svd(H, Eigen::ComputeFullU | Eigen::ComputeFullV);
+    Eigen::Matrix3d U = svd.matrixU();
+    Eigen::Matrix3d Vt = svd.matrixV().transpose();
+    
+    R = Vt.transpose() * U.transpose();
+
+    // Special reflection case
+    if (R.determinant() < 0) {
+        NSLog(@"det(R) < 0, reflection detected! Correcting for it ...");
+        Vt.row(2) *= -1;
+        R = Vt.transpose() * U.transpose();
+    }
+
+    t = -R * centroid_A + centroid_B;
+}
+
 + (SCNVector3)calculateCentroidForPoints:(NSArray<NSValue *> *)points {
     // Initialize variables to accumulate the sum of coordinates
     float sumX = 0.0f;
