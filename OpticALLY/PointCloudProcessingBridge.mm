@@ -285,6 +285,8 @@ static NSMutableArray<NSMutableArray<NSValue *> *> *centroids2DArray = nil;
     // If your method rigidTransform3DWithMatrixA:matrixB:rotation:translation: expects void* pointers (which is the case if you're trying to avoid including Eigen in the header file), you'll need to pass the address of the Eigen objects.
   [self rigidTransform3DWithMatrixA: &matrixA matrixB: &matrixB rotation: &R translation: &t];
     
+    
+    
     if (centroidsA) {
         // Iterate over each point in centroidsA and apply the transformation
         for (NSUInteger i = 0; i < centroidsA.count; ++i) {
@@ -312,6 +314,11 @@ static NSMutableArray<NSMutableArray<NSValue *> *> *centroids2DArray = nil;
         }
     } else {
         NSLog(@"centroidsA is empty or not available.");
+    }
+    
+    // Step 2: Apply the same transformation to pointClouds[0]
+    for (auto& point : pointClouds[1]->points_) {
+        point = R * point + t;
     }
 //
 //    // Apply the rigid transformation to each point in pointClouds[0]
