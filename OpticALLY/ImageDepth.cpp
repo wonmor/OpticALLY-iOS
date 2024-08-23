@@ -846,7 +846,6 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
     }
     
     
-    
     // Print the number of blue points
         std::cout << "Number of blue_pts: " << blue_pts.size() << std::endl;
 
