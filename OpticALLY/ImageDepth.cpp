@@ -856,13 +856,40 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
         // Run K-means clustering on blue_pts
         kmeans_clustering(blue_pts, num_clusters, clusters);
 
-        // Output the clusters
-        for (size_t i = 0; i < clusters.size(); ++i) {
-            std::cout << "Cluster " << i + 1 << " has " << clusters[i].size() << " points." << std::endl;
-            for (const auto& pt : clusters[i]) {
-                std::cout << "(" << pt.x << ", " << pt.y << ", " << pt.z << ")" << std::endl;
-            }
+    // Output the clusters
+    std::cout << "Clusters and their centroids:" << std::endl;
+
+    // Declare a vector to store the centroids
+    std::vector<cv::Point3f> centroids;
+
+    for (size_t i = 0; i < clusters.size(); ++i) {
+        // Calculate centroid of the current cluster
+        cv::Point3f centroid(0.0f, 0.0f, 0.0f);
+        for (const auto& pt : clusters[i]) {
+            centroid.x += pt.x;
+            centroid.y += pt.y;
+            centroid.z += pt.z;
         }
+        centroid.x /= clusters[i].size();
+        centroid.y /= clusters[i].size();
+        centroid.z /= clusters[i].size();
+
+        // Append the centroid to the centroids array
+        centroids.push_back(centroid);
+
+        // Print cluster size and centroid
+        std::cout << "Cluster " << i + 1 << " has " << clusters[i].size() << " points." << std::endl;
+        std::cout << "Centroid: (" << centroid.x << ", " << centroid.y << ", " << centroid.z << ")" << std::endl;
+
+        // Print each point in the cluster
+        for (const auto& pt : clusters[i]) {
+            std::cout << "(" << pt.x << ", " << pt.y << ", " << pt.z << ")" << std::endl;
+        }
+    }
+
+    // Print the size of the centroids array
+    std::cout << "Total number of centroids: " << centroids.size() << std::endl;
+
     
     //        // Run DBScan to group close proximity points together...
     //        std::vector<std::vector<cv::Point3f>> clusters;
