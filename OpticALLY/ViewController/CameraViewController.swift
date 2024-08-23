@@ -565,15 +565,13 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     }
     
     // Method to update the yaw angle from external sources
-    @objc
-    func updateYawAngle(_ yawAngle: Double) {
+    @objc func updateYawAngle(_ yawAngle: Double) {
         DispatchQueue.main.async {
             self.faceYawAngle = yawAngle
         }
     }
     
-    @objc
-    func updateFacialLandmarks(noseTip: CGPoint, chin: CGPoint, leftEyeLeftCorner: CGPoint, rightEyeRightCorner: CGPoint, leftMouthCorner: CGPoint, rightMouthCorner: CGPoint) {
+    @objc func updateFacialLandmarks(noseTip: CGPoint, chin: CGPoint, leftEyeLeftCorner: CGPoint, rightEyeRightCorner: CGPoint, leftMouthCorner: CGPoint, rightMouthCorner: CGPoint) {
         DispatchQueue.main.async {
             self.noseTip = noseTip
             self.chin = chin
