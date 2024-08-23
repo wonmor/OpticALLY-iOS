@@ -66,13 +66,12 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     @Published var faceRollAngle: Double = 0.0
     @Published var pupilDistance: Double = 0.0
     
-    @Published var leftEyePosition = CGPoint(x: 0, y: 0)
-    @Published var rightEyePosition = CGPoint(x: 0, y: 0)
-    @Published var chinPosition = CGPoint(x: 0, y: 0)
-    
-    @Published var leftEyePosition3D = SCNVector3(0, 0, 0)
-    @Published var rightEyePosition3D = SCNVector3(0, 0, 0)
-    @Published var chinPosition3D = SCNVector3(0, 0, 0)
+    @Published var noseTip: CGPoint = CGPoint(x: 0, y: 0)
+    @Published var chin: CGPoint = CGPoint(x: 0, y: 0)
+    @Published var leftEyeLeftCorner: CGPoint = CGPoint(x: 0, y: 0)
+    @Published var rightEyeRightCorner: CGPoint = CGPoint(x: 0, y: 0)
+    @Published var leftMouthCorner: CGPoint = CGPoint(x: 0, y: 0)
+    @Published var rightMouthCorner: CGPoint = CGPoint(x: 0, y: 0)
     
     @ObservedObject var videoFrameData = VideoFrameData()
     
@@ -240,24 +239,6 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
     
     func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
         currentMetadata = metadataObjects // Update metadata
-    }
-    
-    func updatePupillaryDistance() {
-        // Step 1: Get 3D positions of both eyes
-        // Assuming leftEyePosition3D and rightEyePosition3D are already updated
-        // in the ARSessionDelegate methods
-        
-        // Step 2: Compute the Euclidean distance between the eyes
-        let xDistance = rightEyePosition3D.x - leftEyePosition3D.x
-        let yDistance = rightEyePosition3D.y - leftEyePosition3D.y
-        let zDistance = rightEyePosition3D.z - leftEyePosition3D.z
-        let distanceInMeters = sqrt(pow(xDistance, 2) + pow(yDistance, 2) + pow(zDistance, 2))
-        
-        // Step 3: Convert to millimeters (1 meter = 1000 millimeters)
-        let distanceInMillimeters = distanceInMeters * 1000
-        
-        // Step 4: Update ViewModel
-        pupilDistance = Double(distanceInMillimeters)
     }
     
     func horizontallyMirroredPixelBuffer(from pixelBuffer: CVPixelBuffer) -> CVPixelBuffer? {
@@ -432,12 +413,12 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
                 yaw: Double(self.previewYaws.last ?? 0.0),
                 pitch: Double(self.previewRolls.last ?? 0.0),
                 roll: Double(self.previewPitches.last ?? 0.0),
-                leftEyePosition: self.leftEyePosition,
-                rightEyePosition: self.rightEyePosition,
-                chinPosition: self.chinPosition,
-                leftEyePosition3D: self.leftEyePosition3D,
-                rightEyePosition3D: self.rightEyePosition3D,
-                chinPosition3D: self.chinPosition3D,
+                noseTip: noseTip,
+                chin: chin,
+                leftEyeLeftCorner: leftEyeLeftCorner,
+                rightEyeRightCorner: rightEyeRightCorner,
+                leftMouthCorner: leftMouthCorner,
+                rightMouthCorner: rightMouthCorner,
                 image: imageData,
                 depth: depthDataToUse
             )

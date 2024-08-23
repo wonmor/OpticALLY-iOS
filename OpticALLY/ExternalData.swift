@@ -22,13 +22,12 @@ struct PointCloudMetadata {
     var pitch: Double
     var roll: Double
     
-    var leftEyePosition: CGPoint
-    var rightEyePosition: CGPoint
-    var chinPosition: CGPoint
-    
-    var leftEyePosition3D: SCNVector3
-    var rightEyePosition3D: SCNVector3
-    var chinPosition3D: SCNVector3
+    var noseTip: CGPoint
+   var chin: CGPoint
+   var leftEyeLeftCorner: CGPoint
+   var rightEyeRightCorner: CGPoint
+   var leftMouthCorner: CGPoint
+   var rightMouthCorner: CGPoint
     
     var image: CVPixelBuffer
     var depth: AVDepthData
