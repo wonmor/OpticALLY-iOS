@@ -1,5 +1,6 @@
 #import "PointCloudProcessingBridge.h"
 #include <open3d/Open3D.h>
+#include <opencv2/opencv.hpp>
 #import <Vision/Vision.h>
 #include <vector>
 #include <memory>
@@ -146,8 +147,43 @@ std::vector<open3d::geometry::Image> GetTextureImages(const open3d::geometry::Tr
 
     // Process each point cloud in parallel
     for (size_t i = 0; i < cppImageFiles.size(); ++i) {
-        futures.push_back(std::async(std::launch::async, [&calibrationFilePath, &cppImageFiles, &cppDepthFiles, i]() -> std::shared_ptr<PointCloud> {
-            auto imageDepth = std::make_shared<ImageDepth>([calibrationFilePath UTF8String], cppImageFiles[i], cppDepthFiles[i], 640, 480, 0.1, 0.5, 0.01);
+        // Get the corresponding facial landmark points for the current index
+        CGPoint noseTip = [noseTipArray[i] CGPointValue];
+        CGPoint chin = [chinArray[i] CGPointValue];
+        CGPoint leftEyeLeftCorner = [leftEyeLeftCornerArray[i] CGPointValue];
+        CGPoint rightEyeRightCorner = [rightEyeRightCornerArray[i] CGPointValue];
+        CGPoint leftMouthCorner = [leftMouthCornerArray[i] CGPointValue];
+        CGPoint rightMouthCorner = [rightMouthCornerArray[i] CGPointValue];
+        
+        // Create a future for each point cloud processing task
+        futures.push_back(std::async(std::launch::async, [calibrationFilePath, cppImageFiles, cppDepthFiles, i, noseTip, chin, leftEyeLeftCorner, rightEyeRightCorner, leftMouthCorner, rightMouthCorner]() -> std::shared_ptr<PointCloud> {
+            // Convert CGPoint to cv::Point2f
+            cv::Point2f noseTipCV = cv::Point2f(noseTip.x, noseTip.y);
+            cv::Point2f chinCV = cv::Point2f(chin.x, chin.y);
+            cv::Point2f leftEyeLeftCornerCV = cv::Point2f(leftEyeLeftCorner.x, leftEyeLeftCorner.y);
+            cv::Point2f rightEyeRightCornerCV = cv::Point2f(rightEyeRightCorner.x, rightEyeRightCorner.y);
+            cv::Point2f leftMouthCornerCV = cv::Point2f(leftMouthCorner.x, leftMouthCorner.y);
+            cv::Point2f rightMouthCornerCV = cv::Point2f(rightMouthCorner.x, rightMouthCorner.y);
+
+            // Initialize the ImageDepth object with the calibration file, image, depth file, and additional parameters
+            auto imageDepth = std::make_shared<ImageDepth>(
+                [calibrationFilePath UTF8String],
+                cppImageFiles[i],
+                cppDepthFiles[i],
+                640,
+                480,
+                0.1,
+                0.5,
+                0.01,
+                noseTipCV,   // Pass the converted cv::Point2f
+                chinCV,      // Pass the converted cv::Point2f
+                leftEyeLeftCornerCV,  // Pass the converted cv::Point2f
+                rightEyeRightCornerCV, // Pass the converted cv::Point2f
+                leftMouthCornerCV,  // Pass the converted cv::Point2f
+                rightMouthCornerCV  // Pass the converted cv::Point2f
+            );
+
+            // Get the point cloud from the ImageDepth object
             auto pointCloud = imageDepth->getPointCloud();
             if (!pointCloud || pointCloud->points_.empty()) {
                 return nullptr;

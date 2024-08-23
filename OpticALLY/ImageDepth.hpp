@@ -15,12 +15,15 @@ private:
     std::string image_file;
     std::string calibration_file;
     std::string depth_file;
+    
     int width;
     int height;
+    
     float min_depth;
     float max_depth;
     float normal_radius;
     float scale;
+    
     cv::Mat img;
     cv::Mat img_linear;
     cv::Mat img_undistort;
@@ -29,8 +32,18 @@ private:
     cv::Mat mask;
     cv::Mat map_x, map_y;
     cv::Mat xy, rgb, reshaped_img;
+    
+    cv::Point2f noseTip;
+        cv::Point2f chin;
+        cv::Point2f leftEyeLeftCorner;
+        cv::Point2f rightEyeRightCorner;
+        cv::Point2f leftMouthCorner;
+        cv::Point2f rightMouthCorner;
+    
     Eigen::Matrix4f pose;
+    
     std::shared_ptr<open3d::geometry::PointCloud> pointCloud;
+    
     std::vector<int> valid_indices;
     std::vector<cv::Point2f> xy_filtered;
     std::vector<cv::Vec3f> rgb_filtered;
@@ -47,7 +60,13 @@ public:
                int height = 480,
                float min_depth = 0.1f,
                float max_depth = 0.5f,
-               float normal_radius = 0.1f);
+               float normal_radius = 0.1f,
+               const cv::Point2f& noseTip = cv::Point2f(),
+                          const cv::Point2f& chin = cv::Point2f(),
+                          const cv::Point2f& leftEyeLeftCorner = cv::Point2f(),
+                          const cv::Point2f& rightEyeRightCorner = cv::Point2f(),
+                          const cv::Point2f& leftMouthCorner = cv::Point2f(),
+                          const cv::Point2f& rightMouthCorner = cv::Point2f());
     
     std::vector<float> lensDistortionLookup;
     std::vector<float> inverseLensDistortionLookup;
