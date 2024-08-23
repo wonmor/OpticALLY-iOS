@@ -237,15 +237,11 @@ static NSMutableArray<NSMutableArray<NSValue *> *> *centroids2DArray = nil;
     NSMutableArray<NSValue *> *centroidsA = centroids2DArray.count > 0 ? centroids2DArray[0] : nil;
         NSMutableArray<NSValue *> *centroidsB = centroids2DArray.count > 1 ? centroids2DArray[1] : nil;
 
-        if (centroidsA) {
-            SCNVector3 centroidA = [self calculateCentroidForPoints:centroidsA];
-            NSLog(@"Centroid A: (%f, %f, %f)", centroidA.x, centroidA.y, centroidA.z);
-        }
+        SCNVector3 centroidA = [self calculateCentroidForPoints:centroidsA];
+        NSLog(@"Centroid A: (%f, %f, %f)", centroidA.x, centroidA.y, centroidA.z);
 
-        if (centroidsB) {
-            SCNVector3 centroidB = [self calculateCentroidForPoints:centroidsB];
-            NSLog(@"Centroid B: (%f, %f, %f)", centroidB.x, centroidB.y, centroidB.z);
-        }
+        SCNVector3 centroidB = [self calculateCentroidForPoints:centroidsB];
+        NSLog(@"Centroid B: (%f, %f, %f)", centroidB.x, centroidB.y, centroidB.z);
     
     
 
