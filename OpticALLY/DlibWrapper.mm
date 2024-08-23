@@ -218,6 +218,17 @@ struct VertexOut {
         
         cv::projectPoints(nose_end_point3D, rotation_vector, translation_vector, camera_matrix, dist_coeffs, nose_end_point2D);
         
+        // Iterate through each pixel in the image and change blue pixels to white, this is so that the if someone wears blue clothes it won't make a mistake of recognizing it as a landmark point instead
+        for (int i = 0; i < height; ++i) {
+            for (int j = 0; j < width; ++j) {
+                dlib::bgr_pixel& pixel = img[i][j];
+                if (pixel.blue == 0 && pixel.green == 0 && pixel.red == 255) {
+                    // If the pixel is blue, change it to white
+                    pixel = dlib::bgr_pixel(255, 255, 255);
+                }
+            }
+        }
+        
         // Convert image points and nose end point to dlib points
         dlib::point start_point(image_points[0].x, image_points[0].y);
         dlib::point end_point(nose_end_point2D[0].x, nose_end_point2D[0].y);
