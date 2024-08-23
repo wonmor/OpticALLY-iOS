@@ -832,44 +832,50 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
               static_cast<int>(pixel_color[2]) == 1.0) {
               color = Eigen::Vector3d(1.0, 0.0, 0.0); // Set to red if the condition is met
               
+              // Print the number of blue points
+                  std::cout << "BLUE POINT FOUND!" << std::endl;
+              
               // If color is blue, append the point to the blue_pts array
                       blue_pts.emplace_back(px, py, depth);
           } else {
               // Otherwise, use the pixel color from the image
               color = Eigen::Vector3d(pixel_color[0], pixel_color[1], pixel_color[2]);
           }
- 
-            std::vector<std::vector<cv::Point3f>> clusters;
-
-            // Number of clusters
-            int num_clusters = 5;
-
-            // Run K-means clustering on blue_pts
-            kmeans_clustering(blue_pts, num_clusters, clusters);
-
-            // Output the clusters
-            for (size_t i = 0; i < clusters.size(); ++i) {
-                std::cout << "Cluster " << i + 1 << " has " << clusters[i].size() << " points." << std::endl;
-                for (const auto& pt : clusters[i]) {
-                    std::cout << "(" << pt.x << ", " << pt.y << ", " << pt.z << ")" << std::endl;
-                }
-            }
-        
-//        // Run DBScan to group close proximity points together...
-//        std::vector<std::vector<cv::Point3f>> clusters;
-//            dbscan(blue_pts, EPSILON, MIN_POINTS, clusters);
-//
-//            // Output the clusters
-//            for (size_t i = 0; i < clusters.size(); ++i) {
-//                std::cout << "Cluster " << i + 1 << ":" << std::endl;
-//                for (const auto& pt : clusters[i]) {
-//                    std::cout << "(" << pt.x << ", " << pt.y << ", " << pt.z << ")" << std::endl;
-//                }
-//                std::cout << std::endl;
-//            }
 
         colors.push_back(color);
     }
+    
+    // Print the number of blue points
+        std::cout << "Number of blue_pts: " << blue_pts.size() << std::endl;
+
+        std::vector<std::vector<cv::Point3f>> clusters;
+
+        // Number of clusters
+        int num_clusters = 5;
+
+        // Run K-means clustering on blue_pts
+        kmeans_clustering(blue_pts, num_clusters, clusters);
+
+        // Output the clusters
+        for (size_t i = 0; i < clusters.size(); ++i) {
+            std::cout << "Cluster " << i + 1 << " has " << clusters[i].size() << " points." << std::endl;
+            for (const auto& pt : clusters[i]) {
+                std::cout << "(" << pt.x << ", " << pt.y << ", " << pt.z << ")" << std::endl;
+            }
+        }
+    
+    //        // Run DBScan to group close proximity points together...
+    //        std::vector<std::vector<cv::Point3f>> clusters;
+    //            dbscan(blue_pts, EPSILON, MIN_POINTS, clusters);
+    //
+    //            // Output the clusters
+    //            for (size_t i = 0; i < clusters.size(); ++i) {
+    //                std::cout << "Cluster " << i + 1 << ":" << std::endl;
+    //                for (const auto& pt : clusters[i]) {
+    //                    std::cout << "(" << pt.x << ", " << pt.y << ", " << pt.z << ")" << std::endl;
+    //                }
+    //                std::cout << std::endl;
+    //            }
     
     // Print projected 3D points
     std::cout << "Projected 3D points (first 10 values): ";
