@@ -218,11 +218,11 @@ struct VertexOut {
         
         cv::projectPoints(nose_end_point3D, rotation_vector, translation_vector, camera_matrix, dist_coeffs, nose_end_point2D);
         
-        // Iterate through each pixel in the image and change blue pixels to white, this is so that the if someone wears blue clothes it won't make a mistake of recognizing it as a landmark point instead
+        // Iterate through each pixel in the image and change blue pixels to white, this is so that the if someone wears red clothes it won't make a mistake of recognizing it as a landmark point instead
         for (int i = 0; i < height; ++i) {
             for (int j = 0; j < width; ++j) {
                 dlib::bgr_pixel& pixel = img[i][j];
-                if (pixel.blue == 0 && pixel.green == 0 && pixel.red == 255) {
+                if (pixel.blue == 255 && pixel.green == 0 && pixel.red == 0) {
                     // If the pixel is red, change it to white
                     pixel = dlib::bgr_pixel(255, 255, 255);
                 }
@@ -267,16 +267,11 @@ struct VertexOut {
             if (i == 1) {
                 continue; // Skip the point at index 1
             }
-
-            // Get the coordinates of the point
-            int x = static_cast<int>(image_points[i].x);
-            int y = static_cast<int>(image_points[i].y);
-
-            // Ensure the coordinates are within the image bounds
-            if (x >= 0 && x < width && y >= 0 && y < height) {
-                img[y][x] = dlib::bgr_pixel(0, 0, 255); // Note the order: (blue, green, red) BGR, color only ONE pixel to make it hidden (almost not visible) to the end user while red being a strong color, definitely recognizable from ImageDepth.cpp
-            }
+            dlib::point p(image_points[i].x, image_points[i].y);
+            // Red marker for landmark points
+            draw_solid_circle(img, p, 5, dlib::rgb_pixel(255, 0, 0));
         }
+
         
                 // Draw circles along the line
 //                for (int i = 0; i < num_steps; ++i) {
