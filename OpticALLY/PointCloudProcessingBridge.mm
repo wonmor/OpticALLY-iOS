@@ -10,7 +10,7 @@
 #include <regex>
 #include <future>
 #import <UIKit/UIKit.h>
-#include "ImageDepth.hpp"
+#import "ImageDepth.hpp"
 
 // Function to get texture images from a TriangleMesh
 std::vector<open3d::geometry::Image> GetTextureImages(const open3d::geometry::TriangleMesh &mesh) {
@@ -188,10 +188,20 @@ std::vector<open3d::geometry::Image> GetTextureImages(const open3d::geometry::Tr
             if (!pointCloud || pointCloud->points_.empty()) {
                 return nullptr;
             }
+
+            // Retrieve and print centroids
+            NSArray<NSValue *> *centroids = [PointCloudProcessingBridge retrieveCentroidsForImageDepth:imageDepth.get()]; // Use get() for shared_ptr
+
+            // Print the centroids
+            for (NSValue *centroidValue in centroids) {
+                CGPoint centroid = [centroidValue CGPointValue];
+                NSLog(@"[POINTCLOUDPROCESSING] Centroid: (%f, %f)", centroid.x, centroid.y);
+            }
+
             return pointCloud;
         }));
     }
-
+    
     // Collect all point clouds
     for (auto &f : futures) {
         auto pointCloud = f.get();
@@ -304,5 +314,20 @@ std::vector<open3d::geometry::Image> GetTextureImages(const open3d::geometry::Tr
         NSLog(@"Failed to save image at path: %@", path);
     }
 }
+
++ (NSArray<NSValue *> *)retrieveCentroidsForImageDepth:(ImageDepth *)imageDepth {
+    // Get the centroids from the ImageDepth instance
+    const std::vector<cv::Point3f>& centroids = imageDepth->getCentroids();
+    
+    // Convert the centroids to an NSArray of NSValue objects
+    NSMutableArray<NSValue *> *centroidArray = [NSMutableArray arrayWithCapacity:centroids.size()];
+    for (const auto &centroid : centroids) {
+        CGPoint centroidPoint = CGPointMake(centroid.x, centroid.y);
+        [centroidArray addObject:[NSValue valueWithCGPoint:centroidPoint]];
+    }
+    
+    return centroidArray;
+}
+
 
 @end

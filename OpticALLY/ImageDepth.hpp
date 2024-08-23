@@ -47,6 +47,7 @@ private:
     std::vector<int> valid_indices;
     std::vector<cv::Point2f> xy_filtered;
     std::vector<cv::Vec3f> rgb_filtered;
+    std::vector<cv::Point3f> centroids_;
 
     // Private utility methods
     void debugPrint(const std::string& msg, const cv::Mat& mat);
@@ -76,6 +77,10 @@ public:
     std::vector<cv::Point3f> project3D(const std::vector<cv::Point2f>& points);
     
     Eigen::Matrix3d intrinsic;
+    
+    const std::vector<cv::Point3f>& getCentroids() const {
+          return centroids_;
+      }
 
     // Utility methods
     void loadCalibration(const std::string& file);

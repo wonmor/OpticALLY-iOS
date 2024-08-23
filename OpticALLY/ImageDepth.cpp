@@ -889,6 +889,8 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
 
     // Print the size of the centroids array
     std::cout << "Total number of centroids: " << centroids.size() << std::endl;
+    
+    centroids_ = centroids;
 
     
     //        // Run DBScan to group close proximity points together...
