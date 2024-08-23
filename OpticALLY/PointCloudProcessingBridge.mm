@@ -39,6 +39,14 @@ static NSMutableArray<NSMutableArray<NSValue *> *> *centroids2DArray = nil;
     }
 }
 
++ (NSArray<NSValue *> *)getCentroids2DArrayAtIndex:(NSUInteger)index {
+    if (index < centroids2DArray.count) {
+        return centroids2DArray[index];
+    }
+    return nil;
+}
+
+
 + (BOOL)processPointCloudsWithCalibrationFile:(NSString *)calibrationFilePath
                                    imageFiles:(NSArray<NSString *> *)imageFiles
                                    depthFiles:(NSArray<NSString *> *)depthFiles

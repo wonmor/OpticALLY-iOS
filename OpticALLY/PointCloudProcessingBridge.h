@@ -3,6 +3,8 @@
 
 @interface PointCloudProcessingBridge : NSObject
 
++ (NSArray<NSValue *> *)getCentroids2DArrayAtIndex:(NSUInteger)index;
+
 + (BOOL)processPointCloudsWithCalibrationFile:(NSString *)calibrationFilePath
                                    imageFiles:(NSArray<NSString *> *)imageFiles
                                    depthFiles:(NSArray<NSString *> *)depthFiles

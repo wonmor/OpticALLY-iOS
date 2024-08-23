@@ -96,6 +96,8 @@ struct PostScanView: View {
     @State private var showDropdown: Bool = false
     
     @State private var snapshot: UIImage?
+        @State private var centroids: [SCNVector3] = []
+        @State private var centroidsNode: SCNNode? = nil
     
     // Retrieve all the output OBJ files
     @State private var objFiles: [String] = []
@@ -192,7 +194,39 @@ struct PostScanView: View {
         
         self.isProcessing = false
         ExternalData.isMeshView = true  // Processing is complete, allow viewing of the mesh
+        
+        loadCentroids()
     }
+    
+    func loadCentroids() {
+          if let centroidValues = PointCloudProcessingBridge.getCentroids2DArray(at: 1) {
+              print("Number of centroids retrieved: \(centroidValues.count)")
+              centroids = centroidValues.map { $0.scnVector3Value }
+              for (index, centroid) in centroids.enumerated() {
+                  print("Centroid \(index): x = \(centroid.x), y = \(centroid.y), z = \(centroid.z)")
+              }
+              
+              // Create node from centroids and store it in centroidsNode
+              centroidsNode = createNodeFromCentroids()
+          } else {
+              print("Failed to retrieve centroids at index 1.")
+          }
+      }
+       
+   func createNodeFromCentroids() -> SCNNode? {
+       guard !centroids.isEmpty else { return nil }
+       
+       let node = SCNNode()
+       let sphereGeometry = SCNSphere(radius: 0.001) // Small sphere to represent each centroid
+       
+       for centroid in centroids {
+           let centroidNode = SCNNode(geometry: sphereGeometry)
+           centroidNode.position = centroid
+           node.addChildNode(centroidNode)
+       }
+       
+       return node
+   }
     
     func initialize() {
         isProcessing = true
@@ -367,9 +401,9 @@ struct PostScanView: View {
                 }
 
                 if let urls = exportViewModel.objURLs {
-                    SceneKitMDLView(snapshot: $snapshot, url: URL(string: urls[0])!)
-                    .padding()
-                }
+                                   SceneKitMDLView(snapshot: $snapshot, url: URL(string: urls[0])!, node: centroidsNode)
+                                       .padding()
+                               }
                 
                 Spacer()
                 

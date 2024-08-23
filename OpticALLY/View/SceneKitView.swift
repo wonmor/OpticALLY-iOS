@@ -199,31 +199,28 @@ struct SceneKitTEMPView: UIViewRepresentable {
     }
 }
 
-
 struct SceneKitMDLView: UIViewRepresentable {
     @Binding var snapshot: UIImage?
     
-    var url: URL
+    var url: URL?
+    var node: SCNNode? // Optional SCNNode to display
     
     func makeUIView(context: Context) -> SCNView {
         let scnView = SCNView()
-        // VERY IMPORTANT LINE BELOW!
-        // scnView.colorPixelFormat = .bgra8Unorm -> immutable error! TEMPORARY FIX: Info.plist -> SCNDisableLinearSpaceRendering = YES
-        // Need to convert .bgra8Unorm_srgb to .bgra8Unorm for accurate colors...
-        // ALSO MAKE SURE YOU DISABLE ALL SHADOWS FROM THE MODEL!
         
         // Configure the scene
         let scene = SCNScene()
         scnView.scene = scene
         
-        if let object = MDLAsset(url: url).object(at: 0) as? MDLMesh, let geometry: SCNGeometry? = SCNGeometry(mdlMesh: object) {
+        // Load the 3D model from the URL if available
+        if let url = url, let object = MDLAsset(url: url).object(at: 0) as? MDLMesh, let geometry: SCNGeometry? = SCNGeometry(mdlMesh: object) {
             // Modify each material to be double-sided
             geometry!.materials.forEach { material in
                 material.lightingModel = .constant // Removes shading and shadows
                 material.isDoubleSided = true
             }
             
-            if let material = geometry?.firstMaterial {
+            if let material = geometry!.firstMaterial {
                 if let texture = material.diffuse.contents as? MDLTexture {
                     // Ensure the texture is treated in sRGB color space
                     material.diffuse.contents = texture
@@ -243,12 +240,17 @@ struct SceneKitMDLView: UIViewRepresentable {
             
             ExternalData.verticesCount = object.vertexCount
             
-            let node = SCNNode(geometry: geometry)
+            let objectNode = SCNNode(geometry: geometry)
             
-            node.position = SCNVector3(x: 0, y: 0, z: 0)
-            node.eulerAngles.z = .pi / 2
-            node.eulerAngles.y = .pi
+            objectNode.position = SCNVector3(x: 0, y: 0, z: 0)
+            objectNode.eulerAngles.z = .pi / 2
+            objectNode.eulerAngles.y = .pi
             
+            scene.rootNode.addChildNode(objectNode)
+        }
+        
+        // If a centroids node is provided, add it to the scene
+        if let node = node {
             scene.rootNode.addChildNode(node)
         }
         
@@ -259,15 +261,10 @@ struct SceneKitMDLView: UIViewRepresentable {
         return scnView
     }
     
-    func updateUIView(_ uiView: SCNView, context: Context) {
-//        func captureSnapshot(from view: SCNView) -> UIImage? {
-//            UIGraphicsBeginImageContextWithOptions(view.bounds.size, false, view.contentScaleFactor)
-//            view.drawHierarchy(in: view.bounds, afterScreenUpdates: true)
-//            let image = UIGraphicsGetImageFromCurrentImageContext()
-//            UIGraphicsEndImageContext()
-//            return image
-//        }
-//
-//        snapshot = captureSnapshot(from: uiView)!
+    func updateUIView(_ scnView: SCNView, context: Context) {
+        // Ensure that the node remains updated
+        if let node = node, scnView.scene?.rootNode.childNodes.contains(node) == false {
+            scnView.scene?.rootNode.addChildNode(node)
+        }
     }
 }
