@@ -667,7 +667,7 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
     pointCloud = std::make_shared<open3d::geometry::PointCloud>();
     std::vector<Eigen::Vector3d> points;
     std::vector<Eigen::Vector3d> colors;
-    
+
     // Print the 2D and 3D positions of the facial landmarks
     // VERY IMPORTANT. FOR 3D POINTS I FLIPPED X AND Y SINCE THE FEED HAS X AND Y TRANSPOSED SO NEED TO REVERSE THAT.
     // Nose Tip
@@ -699,109 +699,102 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
     std::cout << "[IMAGEDEPTH] Right Mouth Corner 2D Position: (" << rightMouthCorner.x << ", " << rightMouthCorner.y << ")" << std::endl;
     auto [rightMouthX, rightMouthY, rightMouthZ] = projectTo3D(static_cast<int>(rightMouthCorner.y), static_cast<int>(rightMouthCorner.x));
     std::cout << "[IMAGEDEPTH] Right Mouth Corner 3D Position: (" << rightMouthX << ", " << rightMouthY << ", " << rightMouthZ << ")" << std::endl;
-    
-    // Expect pts to be Nx2
-       cv::Mat xy_converted;
-       xy.convertTo(xy_converted, CV_32S);
 
-       std::cout << "Rounded xy positions (first 10 values):" << std::endl;
-       for (int i = 0; i < std::min(10, xy_converted.rows); ++i) {
-           std::cout << "(" << xy_converted.at<int>(i, 0) << ", " << xy_converted.at<int>(i, 1) << ")" << std::endl;
-       }
+    // Expect pts to be Nx2
+    cv::Mat xy_converted;
+    xy.convertTo(xy_converted, CV_32S);
+
+    std::cout << "Rounded xy positions (first 10 values):" << std::endl;
+    for (int i = 0; i < std::min(10, xy_converted.rows); ++i) {
+        std::cout << "(" << xy_converted.at<int>(i, 0) << ", " << xy_converted.at<int>(i, 1) << ")" << std::endl;
+    }
 
     double fx = intrinsic(0, 0);
     double fy = intrinsic(1, 1);
     double cx = intrinsic(0, 2);
     double cy = intrinsic(1, 2);
 
-       std::cout << "fx: " << fx << ", fy: " << fy << ", cx: " << cx << ", cy: " << cy << std::endl;
+    std::cout << "fx: " << fx << ", fy: " << fy << ", cx: " << cx << ", cy: " << cy << std::endl;
 
     // Extract depths using xy_converted coordinates
-       std::vector<float> depths;
-       for (int i = 0; i < xy_converted.rows; ++i) {
-           int x = xy_converted.at<int>(i, 0);
-           int y = xy_converted.at<int>(i, 1);
-           depths.push_back(depth_map_undistort.at<float>(y, x));
-       }
+    std::vector<float> depths;
+    for (int i = 0; i < xy_converted.rows; ++i) {
+        int x = xy_converted.at<int>(i, 0);
+        int y = xy_converted.at<int>(i, 1);
+        depths.push_back(depth_map_undistort.at<float>(y, x));
+    }
 
-       // Print the size of depths and xy_converted
-       std::cout << "Depths size: " << depths.size() << std::endl;
-       std::cout << "xy_converted size: " << xy_converted.rows << std::endl;
+    // Print the size of depths and xy_converted
+    std::cout << "Depths size: " << depths.size() << std::endl;
+    std::cout << "xy_converted size: " << xy_converted.rows << std::endl;
 
-       // Print the first 10 values of depths
-       std::cout << "First 10 values of depths: ";
-       for (size_t i = 0; i < std::min(depths.size(), size_t(10)); ++i) {
-           std::cout << depths[i] << " ";
-       }
-       std::cout << std::endl;
+    // Print the first 10 values of depths
+    std::cout << "First 10 values of depths: ";
+    for (size_t i = 0; i < std::min(depths.size(), size_t(10)); ++i) {
+        std::cout << depths[i] << " ";
+    }
+    std::cout << std::endl;
 
-       // Filter valid depths
-       std::vector<int> good_idx;
-       for (size_t i = 0; i < depths.size(); ++i) {
-           if (depths[i] > min_depth && depths[i] < max_depth) {
-               good_idx.push_back(i);
-           }
-       }
+    // Filter valid depths
+    std::vector<int> good_idx;
+    for (size_t i = 0; i < depths.size(); ++i) {
+        if (depths[i] > min_depth && depths[i] < max_depth) {
+            good_idx.push_back(i);
+        }
+    }
 
-       // Print filtered valid depths and good indices
-       std::cout << "Filtered valid depths (first 10 values): ";
-       for (size_t i = 0; i < std::min(depths.size(), size_t(10)); ++i) {
-           std::cout << depths[i] << " ";
-       }
-       std::cout << std::endl;
+    // Print filtered valid depths and good indices
+    std::cout << "Filtered valid depths (first 10 values): ";
+    for (size_t i = 0; i < std::min(depths.size(), size_t(10)); ++i) {
+        std::cout << depths[i] << " ";
+    }
+    std::cout << std::endl;
 
-       std::cout << "Good indices for valid depths (first 10 values): ";
-       for (size_t i = 0; i < std::min(good_idx.size(), size_t(10)); ++i) {
-           std::cout << good_idx[i] << " ";
-       }
-       std::cout << std::endl;
+    std::cout << "Good indices for valid depths (first 10 values): ";
+    for (size_t i = 0; i < std::min(good_idx.size(), size_t(10)); ++i) {
+        std::cout << good_idx[i] << " ";
+    }
+    std::cout << std::endl;
 
-        img_undistort.convertTo(img_undistort, CV_32F, 1 / 255.0f);
-    
-    // Transpose the matrix (REMOVE THIS LINE IF IT DOES NOT WORK!)
-    //cv::rotate(img_undistort, img_undistort, cv::ROTATE_90_COUNTERCLOCKWISE);
-    
-       // Project to 3D points
-       std::vector<cv::Point3f> pts;
-       for (size_t i = 0; i < good_idx.size(); ++i) {
-           int idx = good_idx[i];
-           int x = xy_converted.at<int>(idx, 0);
-           int y = xy_converted.at<int>(idx, 1);
-           float depth = depths[idx];
-           
-           float px = (x - cx) / fx * depth;
-           float py = (y - cy) / fy * depth;
+    img_undistort.convertTo(img_undistort, CV_32F, 1 / 255.0f);
 
-           pts.emplace_back(px, py, depth);
-           points.emplace_back(px, py, depth);
-           
-           cv::Vec3f color = img_undistort.at<cv::Vec3f>(y, x);
-                                    colors.push_back(Eigen::Vector3d(color[0], color[1], color[2]));
-       }
-    
-    // indices between rgb_filtered and xy_converted don't match...
-//    for (size_t i = 0; i < 10 && i < rgb_filtered.size(); ++i) {
-//        std::cout << "(" << rgb_filtered[i][0] << ", " << rgb_filtered[i][1] << ", " << rgb_filtered[i][2] << ")";
-//        if (i < 9 && i < rgb_filtered.size() - 1) {
-//            std::cout << " ";
-//        }
-//        
-//        colors.emplace_back(Eigen::Vector3d(rgb_filtered[i][0], rgb_filtered[i][1], rgb_filtered[i][2]));
-//    }
-    
-//    for (int y = 0; y < height; ++y) {
-//        for (int x = 0; x < width; ++x) {
-//            cv::Vec3b color = img_undistort.at<cv::Vec3b>(y, x);
-//            colors.emplace_back(Eigen::Vector3d(color[0], color[1], color[2]));
-//        }
-//    }
+    // Project to 3D points
+    std::vector<cv::Point3f> pts;
+    for (size_t i = 0; i < good_idx.size(); ++i) {
+        int idx = good_idx[i];
+        int x = xy_converted.at<int>(idx, 0);
+        int y = xy_converted.at<int>(idx, 1);
+        float depth = depths[idx];
 
-       // Print projected 3D points
-       std::cout << "Projected 3D points (first 10 values): ";
-       for (size_t i = 0; i < std::min(pts.size(), size_t(10)); ++i) {
-           std::cout << "(" << pts[i].x << ", " << pts[i].y << ", " << pts[i].z << ") ";
-       }
-       std::cout << std::endl;
+        float px = (x - cx) / fx * depth;
+        float py = (y - cy) / fy * depth;
+
+        pts.emplace_back(px, py, depth);
+        points.emplace_back(px, py, depth);
+
+        // Check if the current point is a landmark
+        Eigen::Vector3d color(1.0, 1.0, 1.0); // Default to white
+        if ((px == noseX && py == noseY && depth == noseZ) ||
+            (px == chinX && py == chinY && depth == chinZ) ||
+            (px == leftEyeX && py == leftEyeY && depth == leftEyeZ) ||
+            (px == rightEyeX && py == rightEyeY && depth == rightEyeZ) ||
+            (px == leftMouthX && py == leftMouthY && depth == leftMouthZ) ||
+            (px == rightMouthX && py == rightMouthY && depth == rightMouthZ)) {
+            color = Eigen::Vector3d(1.0, 0.0, 0.0); // Red color for landmarks
+        } else {
+            cv::Vec3f pixel_color = img_undistort.at<cv::Vec3f>(y, x);
+            color = Eigen::Vector3d(pixel_color[0], pixel_color[1], pixel_color[2]);
+        }
+
+        colors.push_back(color);
+    }
+
+    // Print projected 3D points
+    std::cout << "Projected 3D points (first 10 values): ";
+    for (size_t i = 0; i < std::min(pts.size(), size_t(10)); ++i) {
+        std::cout << "(" << pts[i].x << ", " << pts[i].y << ", " << pts[i].z << ") ";
+    }
+    std::cout << std::endl;
 
     pointCloud->points_ = points;
     pointCloud->colors_ = colors;
