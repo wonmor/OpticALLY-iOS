@@ -1,4 +1,5 @@
 #import <Foundation/Foundation.h>
+#import <SceneKit/SceneKit.h>
 
 @interface PointCloudProcessingBridge : NSObject
 
@@ -12,5 +13,7 @@
                          rightEyeRightCornerArray:(NSArray<NSValue *> *)rightEyeRightCornerArray
                           leftMouthCornerArray:(NSArray<NSValue *> *)leftMouthCornerArray
                          rightMouthCornerArray:(NSArray<NSValue *> *)rightMouthCornerArray;
+
++ (SCNVector3)calculateCentroidForPoints:(NSArray<NSValue *> *)points;
 
 @end

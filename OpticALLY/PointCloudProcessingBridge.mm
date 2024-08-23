@@ -233,6 +233,21 @@ static NSMutableArray<NSMutableArray<NSValue *> *> *centroids2DArray = nil;
         NSLog(@"No valid point clouds generated");
         return NO;
     }
+    
+    NSMutableArray<NSValue *> *centroidsA = centroids2DArray.count > 0 ? centroids2DArray[0] : nil;
+        NSMutableArray<NSValue *> *centroidsB = centroids2DArray.count > 1 ? centroids2DArray[1] : nil;
+
+        if (centroidsA) {
+            SCNVector3 centroidA = [self calculateCentroidForPoints:centroidsA];
+            NSLog(@"Centroid A: (%f, %f, %f)", centroidA.x, centroidA.y, centroidA.z);
+        }
+
+        if (centroidsB) {
+            SCNVector3 centroidB = [self calculateCentroidForPoints:centroidsB];
+            NSLog(@"Centroid B: (%f, %f, %f)", centroidB.x, centroidB.y, centroidB.z);
+        }
+    
+    
 
     // Combine all point clouds into a single point cloud
     auto combinedPointCloud = std::make_shared<PointCloud>();
@@ -306,31 +321,26 @@ static NSMutableArray<NSMutableArray<NSValue *> *> *centroids2DArray = nil;
     return YES;
 }
 
-- (UIImage *)convertOpen3DImageToUIImage:(const open3d::geometry::Image &)open3dImage {
-    int width = open3dImage.width_;
-    int height = open3dImage.height_;
-    int bytesPerPixel = 4; // Assuming RGBA format
++ (SCNVector3)calculateCentroidForPoints:(NSArray<NSValue *> *)points {
+    // Initialize variables to accumulate the sum of coordinates
+    float sumX = 0.0f;
+    float sumY = 0.0f;
+    float sumZ = 0.0f;
 
-    // Create a CGImage from Open3D image data
-    CGDataProviderRef provider = CGDataProviderCreateWithData(NULL, open3dImage.data_.data(), width * height * bytesPerPixel, NULL);
-    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-    CGImageRef cgImage = CGImageCreate(width, height, 8, 32, width * bytesPerPixel, colorSpace, kCGBitmapByteOrderDefault, provider, NULL, NO, kCGRenderingIntentDefault);
-
-    UIImage *uiImage = [UIImage imageWithCGImage:cgImage];
-
-    // Release the created resources
-    CGColorSpaceRelease(colorSpace);
-    CGImageRelease(cgImage);
-    CGDataProviderRelease(provider);
-
-    return uiImage;
-}
-
-- (void)saveUIImage:(UIImage *)image toPath:(NSString *)path {
-    NSData *imageData = UIImageJPEGRepresentation(image, 1.0);
-    if (![imageData writeToFile:path atomically:YES]) {
-        NSLog(@"Failed to save image at path: %@", path);
+    // Iterate over the points to accumulate their coordinates
+    for (NSValue *value in points) {
+        SCNVector3 point = [value SCNVector3Value];
+        sumX += point.x;
+        sumY += point.y;
+        sumZ += point.z;
     }
+
+    // Calculate the average for each coordinate
+    NSUInteger pointCount = points.count;
+    SCNVector3 centroid = SCNVector3Make(sumX / pointCount, sumY / pointCount, sumZ / pointCount);
+
+    return centroid;
 }
+
 
 @end
