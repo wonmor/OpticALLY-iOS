@@ -203,6 +203,7 @@ struct SceneKitMDLView: UIViewRepresentable {
     @Binding var snapshot: UIImage?
     
     var url: URL?
+    var nodeFirst: SCNNode?
     var node: SCNNode? // Optional SCNNode to display
     
     func makeUIView(context: Context) -> SCNView {
@@ -250,6 +251,10 @@ struct SceneKitMDLView: UIViewRepresentable {
         }
         
         // If a centroids node is provided, add it to the scene
+        if let nodeFirst = nodeFirst {
+            scene.rootNode.addChildNode(nodeFirst)
+        }
+        
         if let node = node {
             scene.rootNode.addChildNode(node)
         }

@@ -257,6 +257,8 @@ struct ExportView: View {
                                     .bold()
                                     .monospaced()
                                     .foregroundColor(.white)
+                                
+                                Spacer()
                             }
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 30) // Adjust horizontal padding for wider background

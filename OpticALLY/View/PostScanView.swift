@@ -96,6 +96,10 @@ struct PostScanView: View {
     @State private var showDropdown: Bool = false
     
     @State private var snapshot: UIImage?
+    
+    @State private var centroidsFirst: [SCNVector3] = []
+    @State private var centroidsNodeFirst: SCNNode? = nil
+    
         @State private var centroids: [SCNVector3] = []
         @State private var centroidsNode: SCNNode? = nil
     
@@ -196,7 +200,23 @@ struct PostScanView: View {
         ExternalData.isMeshView = true  // Processing is complete, allow viewing of the mesh
         
         loadCentroids()
+        loadCentroidsFirst()
     }
+    
+    func loadCentroidsFirst() {
+          if let centroidValues = PointCloudProcessingBridge.getCentroids2DArray(at: 0) {
+              print("Number of centroids retrieved: \(centroidValues.count)")
+              centroidsFirst = centroidValues.map { $0.scnVector3Value }
+              for (index, centroid) in centroidsFirst.enumerated() {
+                  print("Centroid \(index): x = \(centroid.x), y = \(centroid.y), z = \(centroid.z)")
+              }
+              
+              // Create node from centroids and store it in centroidsNode
+              centroidsNodeFirst = createNodeFromCentroidsFirst()
+          } else {
+              print("Failed to retrieve centroids at index 1.")
+          }
+      }
     
     func loadCentroids() {
           if let centroidValues = PointCloudProcessingBridge.getCentroids2DArray(at: 1) {
@@ -213,6 +233,29 @@ struct PostScanView: View {
           }
       }
        
+    
+ func createNodeFromCentroidsFirst() -> SCNNode? {
+     guard !centroids.isEmpty else { return nil }
+     
+     let node = SCNNode()
+     let sphereGeometry = SCNSphere(radius: 0.001) // Small sphere to represent each centroid
+     
+     // Create a material with an orange color
+     let orangeMaterial = SCNMaterial()
+     orangeMaterial.diffuse.contents = UIColor.red
+     
+     // Apply the material to the sphere geometry
+     sphereGeometry.materials = [orangeMaterial]
+     
+     for centroid in centroidsFirst {
+         let centroidNode = SCNNode(geometry: sphereGeometry)
+         centroidNode.position = centroid
+         node.addChildNode(centroidNode)
+     }
+     
+     return node
+ }
+    
     func createNodeFromCentroids() -> SCNNode? {
         guard !centroids.isEmpty else { return nil }
         
@@ -408,7 +451,7 @@ struct PostScanView: View {
                 }
 
                 if let urls = exportViewModel.objURLs {
-                                   SceneKitMDLView(snapshot: $snapshot, url: URL(string: urls[0])!, node: centroidsNode)
+                    SceneKitMDLView(snapshot: $snapshot, url: URL(string: urls[0])!, nodeFirst: centroidsNodeFirst, node: centroidsNode)
                                        .padding()
                                }
                 
