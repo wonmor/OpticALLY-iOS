@@ -838,19 +838,35 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
               // Otherwise, use the pixel color from the image
               color = Eigen::Vector3d(pixel_color[0], pixel_color[1], pixel_color[2]);
           }
-        
-        // Run DBScan to group close proximity points together...
-        std::vector<std::vector<cv::Point3f>> clusters;
-            dbscan(blue_pts, EPSILON, MIN_POINTS, clusters);
+ 
+            std::vector<std::vector<cv::Point3f>> clusters;
+
+            // Number of clusters
+            int num_clusters = 5;
+
+            // Run K-means clustering on blue_pts
+            kmeans_clustering(blue_pts, num_clusters, clusters);
 
             // Output the clusters
             for (size_t i = 0; i < clusters.size(); ++i) {
-                std::cout << "Cluster " << i + 1 << ":" << std::endl;
+                std::cout << "Cluster " << i + 1 << " has " << clusters[i].size() << " points." << std::endl;
                 for (const auto& pt : clusters[i]) {
                     std::cout << "(" << pt.x << ", " << pt.y << ", " << pt.z << ")" << std::endl;
                 }
-                std::cout << std::endl;
             }
+        
+//        // Run DBScan to group close proximity points together...
+//        std::vector<std::vector<cv::Point3f>> clusters;
+//            dbscan(blue_pts, EPSILON, MIN_POINTS, clusters);
+//
+//            // Output the clusters
+//            for (size_t i = 0; i < clusters.size(); ++i) {
+//                std::cout << "Cluster " << i + 1 << ":" << std::endl;
+//                for (const auto& pt : clusters[i]) {
+//                    std::cout << "(" << pt.x << ", " << pt.y << ", " << pt.z << ")" << std::endl;
+//                }
+//                std::cout << std::endl;
+//            }
 
         colors.push_back(color);
     }
@@ -880,6 +896,41 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
         open3d::geometry::KDTreeSearchParamHybrid(normal_radius, 30)
     );
     pointCloud->OrientNormalsTowardsCameraLocation();
+}
+
+// K-means clustering function
+void ImageDepth::kmeans_clustering(const std::vector<cv::Point3f>& points, int num_clusters, std::vector<std::vector<cv::Point3f>>& clusters) {
+    if (points.empty()) {
+        std::cerr << "No points to cluster." << std::endl;
+        return;
+    }
+
+    // Convert points to a cv::Mat where each row is a point (x, y, z)
+    cv::Mat data(static_cast<int>(points.size()), 3, CV_32F);
+    for (size_t i = 0; i < points.size(); ++i) {
+        data.at<float>(i, 0) = points[i].x;
+        data.at<float>(i, 1) = points[i].y;
+        data.at<float>(i, 2) = points[i].z;
+    }
+
+    // Labels for each point
+    cv::Mat labels;
+
+    // Centroids of the clusters
+    cv::Mat centroids;
+
+    // Define criteria = (type, max_iter, epsilon)
+    cv::TermCriteria criteria(cv::TermCriteria::EPS + cv::TermCriteria::COUNT, 100, 0.01);
+
+    // Apply k-means clustering
+    cv::kmeans(data, num_clusters, labels, criteria, 3, cv::KMEANS_PP_CENTERS, centroids);
+
+    // Organize points into clusters
+    clusters.resize(num_clusters);
+    for (int i = 0; i < data.rows; ++i) {
+        int cluster_idx = labels.at<int>(i);
+        clusters[cluster_idx].push_back(cv::Point3f(data.at<float>(i, 0), data.at<float>(i, 1), data.at<float>(i, 2)));
+    }
 }
 
 // Function to compute the Euclidean distance between two 3D points

@@ -90,6 +90,7 @@ public:
     void createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask);
     void debugImageStats(const cv::Mat& image, const std::string& name);
     void dbscan(const std::vector<cv::Point3f>& points, float epsilon, int min_points, std::vector<std::vector<cv::Point3f>>& clusters);
+    void kmeans_clustering(const std::vector<cv::Point3f>& points, int num_clusters, std::vector<std::vector<cv::Point3f>>& clusters);
     
     cv::Mat srgb_to_linear(const cv::Mat& srgb_img);
     
