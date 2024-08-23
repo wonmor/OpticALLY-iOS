@@ -156,13 +156,6 @@ struct PostScanView: View {
         let leftMouthCornerArray = ExternalData.pointCloudDataArray.map { NSValue(cgPoint: $0.leftMouthCorner) }
         let rightMouthCornerArray = ExternalData.pointCloudDataArray.map { NSValue(cgPoint: $0.rightMouthCorner) }
 
-        // Generate output paths for the OBJ files
-        for index in 0..<minCount {
-            let objFileName = "output_\(index).obj"
-            let objPath = folderURL.appendingPathComponent(objFileName).path
-            outputPaths.append(objPath)
-        }
-
         // Process point clouds for the matching pairs
         PointCloudProcessingBridge.processPointClouds(
             withCalibrationFile: calibrationFileURL.path,
