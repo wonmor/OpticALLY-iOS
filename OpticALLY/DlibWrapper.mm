@@ -257,7 +257,7 @@ struct VertexOut {
                 continue; // Skip the point at index 1
             }
             dlib::point p(image_points[i].x, image_points[i].y);
-            draw_solid_circle(img, p, 5, dlib::rgb_pixel(0, 0, 255));
+            draw_solid_circle(img, p, 3, dlib::rgb_pixel(0, 0, 255));
         }
 
         
