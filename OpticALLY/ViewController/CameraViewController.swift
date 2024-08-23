@@ -572,6 +572,18 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         }
     }
     
+    @objc
+    func updateFacialLandmarks(noseTip: CGPoint, chin: CGPoint, leftEyeLeftCorner: CGPoint, rightEyeRightCorner: CGPoint, leftMouthCorner: CGPoint, rightMouthCorner: CGPoint) {
+        DispatchQueue.main.async {
+            self.noseTip = noseTip
+            self.chin = chin
+            self.leftEyeLeftCorner = leftEyeLeftCorner
+            self.rightEyeRightCorner = rightEyeRightCorner
+            self.leftMouthCorner = leftMouthCorner
+            self.rightMouthCorner = rightMouthCorner
+        }
+    }
+    
     /// Creates To SCNSpheres To Loosely Represent The Eyes
     func setupEyeNode() {
         //1. Create A Node To Represent The Eye
