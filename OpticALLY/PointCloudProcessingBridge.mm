@@ -194,9 +194,11 @@ std::vector<open3d::geometry::Image> GetTextureImages(const open3d::geometry::Tr
             NSArray<NSValue *> *centroids = [PointCloudProcessingBridge retrieveCentroidsForImageDepth:imageDepth.get()];
 
             // Print the centroids
+            NSUInteger index = 0;
             for (NSValue *centroidValue in centroids) {
                 SCNVector3 centroid = [centroidValue SCNVector3Value];
-                NSLog(@"[POINTCLOUDPROCESSING] Centroid: (%f, %f, %f)", centroid.x, centroid.y, centroid.z);
+                NSLog(@"[POINTCLOUDPROCESSING] Centroid %lu: (%f, %f, %f)", (unsigned long)index, centroid.x, centroid.y, centroid.z);
+                index++;
             }
 
             return pointCloud;
