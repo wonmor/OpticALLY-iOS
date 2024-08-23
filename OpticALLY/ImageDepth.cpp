@@ -845,6 +845,21 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
         colors.push_back(color);
     }
     
+    // Rotation matrix for 180-degree rotation around Y-axis
+    Eigen::Matrix3f rotation_matrix;
+    rotation_matrix << -1,  0,  0,
+                        0,  1,  0,
+                        0,  0, -1;
+
+    // Rotate each point in blue_pts
+    for (auto& pt : blue_pts) {
+        Eigen::Vector3f point(pt.x, pt.y, pt.z); // Convert cv::Point3f to Eigen::Vector3f
+        Eigen::Vector3f rotated_point = rotation_matrix * point; // Apply rotation
+        pt.x = rotated_point.x();
+        pt.y = rotated_point.y();
+        pt.z = rotated_point.z();
+    }
+    
     
     // Print the number of blue points
         std::cout << "Number of blue_pts: " << blue_pts.size() << std::endl;
