@@ -3,6 +3,7 @@
 #include <opencv2/opencv.hpp>
 #import <Vision/Vision.h>
 #include <vector>
+#import <SceneKit/SceneKit.h>
 #include <memory>
 #include <fstream>
 #include <Eigen/Dense>
