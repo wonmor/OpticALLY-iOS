@@ -43,21 +43,18 @@ std::vector<open3d::geometry::Image> GetTextureImages(const open3d::geometry::Tr
     using namespace geometry;
     namespace fs = std::filesystem;
     
-    if (imageFiles.count != depthFiles.count || imageFiles.count != outputPaths.count) {
-           NSLog(@"Mismatch between the number of image files, depth files, and output paths");
-           return NO;
-       }
+    NSLog(@"Image files count: %lu", (unsigned long)imageFiles.count);
+    NSLog(@"Depth files count: %lu", (unsigned long)depthFiles.count);
+    NSLog(@"Output paths count: %lu", (unsigned long)outputPaths.count);
 
-       if (imageFiles.count != noseTipArray.count ||
-           imageFiles.count != chinArray.count ||
-           imageFiles.count != leftEyeLeftCornerArray.count ||
-           imageFiles.count != rightEyeRightCornerArray.count ||
-           imageFiles.count != leftMouthCornerArray.count ||
-           imageFiles.count != rightMouthCornerArray.count) {
-           NSLog(@"Mismatch between the number of files and the facial landmark arrays");
-           return NO;
-       }
-    
+    // Print counts for each facial landmark array
+    NSLog(@"Nose Tip Array count: %lu", (unsigned long)noseTipArray.count);
+    NSLog(@"Chin Array count: %lu", (unsigned long)chinArray.count);
+    NSLog(@"Left Eye Left Corner Array count: %lu", (unsigned long)leftEyeLeftCornerArray.count);
+    NSLog(@"Right Eye Right Corner Array count: %lu", (unsigned long)rightEyeRightCornerArray.count);
+    NSLog(@"Left Mouth Corner Array count: %lu", (unsigned long)leftMouthCornerArray.count);
+    NSLog(@"Right Mouth Corner Array count: %lu", (unsigned long)rightMouthCornerArray.count);
+
     for (NSUInteger i = 0; i < imageFiles.count; i++) {
         NSString *imageFile = imageFiles[i];
         NSString *depthFile = depthFiles[i];
