@@ -817,15 +817,16 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
 
         // Check if the current point is a landmark by comparing x and y with the landmarks
         Eigen::Vector3d color(1.0, 1.0, 1.0); // Default to white
-          if ((x == static_cast<int>(noseTip.y) && y == static_cast<int>(noseTip.x)) ||
-              (x == static_cast<int>(chin.y) && y == static_cast<int>(chin.x)) ||
-              (x == static_cast<int>(leftEyeLeftCorner.y) && y == static_cast<int>(leftEyeLeftCorner.x)) ||
-              (x == static_cast<int>(rightEyeRightCorner.y) && y == static_cast<int>(rightEyeRightCorner.x)) ||
-              (x == static_cast<int>(leftMouthCorner.y) && y == static_cast<int>(leftMouthCorner.x)) ||
-              (x == static_cast<int>(rightMouthCorner.y) && y == static_cast<int>(rightMouthCorner.x))) {
-              color = Eigen::Vector3d(1.0, 0.0, 0.0); // Red color for landmarks
+        // Get the pixel color from the undistorted image
+          cv::Vec3f pixel_color = img_undistort.at<cv::Vec3f>(y, x);
+
+        // Check if color is red...
+          if (static_cast<int>(pixel_color[0]) == 1.0 &&
+              static_cast<int>(pixel_color[1]) == 0.0 &&
+              static_cast<int>(pixel_color[2]) == 0.0) {
+              color = Eigen::Vector3d(0.0, 0.0, 1.0); // Set to blue if the condition is met
           } else {
-              cv::Vec3f pixel_color = img_undistort.at<cv::Vec3f>(y, x);
+              // Otherwise, use the pixel color from the image
               color = Eigen::Vector3d(pixel_color[0], pixel_color[1], pixel_color[2]);
           }
 
