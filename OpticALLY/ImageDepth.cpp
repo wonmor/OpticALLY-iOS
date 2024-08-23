@@ -767,7 +767,7 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
         float depth = depths[idx];
         
         // Print out the x, y, and depth values
-          std::cout << "x: " << x << ", y: " << y << ", depth: " << depth << std::endl;
+        std::cout << "x: " << x << ", y: " << y << ", depth: " << depth << std::endl;
 
         float px = (x - cx) / fx * depth;
         float py = (y - cy) / fy * depth;
@@ -775,23 +775,23 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
         pts.emplace_back(px, py, depth);
         points.emplace_back(px, py, depth);
 
-        // Check if the current point is a landmark
+        // Check if the current point is a landmark by comparing x and y with the landmarks
         Eigen::Vector3d color(1.0, 1.0, 1.0); // Default to white
-        if ((px == noseX && py == noseY && depth == noseZ) ||
-            (px == chinX && py == chinY && depth == chinZ) ||
-            (px == leftEyeX && py == leftEyeY && depth == leftEyeZ) ||
-            (px == rightEyeX && py == rightEyeY && depth == rightEyeZ) ||
-            (px == leftMouthX && py == leftMouthY && depth == leftMouthZ) ||
-            (px == rightMouthX && py == rightMouthY && depth == rightMouthZ)) {
-            color = Eigen::Vector3d(1.0, 0.0, 0.0); // Red color for landmarks
-        } else {
-            cv::Vec3f pixel_color = img_undistort.at<cv::Vec3f>(y, x);
-            color = Eigen::Vector3d(pixel_color[0], pixel_color[1], pixel_color[2]);
-        }
+          if ((x == static_cast<int>(noseTip.y) && y == static_cast<int>(noseTip.x)) ||
+              (x == static_cast<int>(chin.y) && y == static_cast<int>(chin.x)) ||
+              (x == static_cast<int>(leftEyeLeftCorner.y) && y == static_cast<int>(leftEyeLeftCorner.x)) ||
+              (x == static_cast<int>(rightEyeRightCorner.y) && y == static_cast<int>(rightEyeRightCorner.x)) ||
+              (x == static_cast<int>(leftMouthCorner.y) && y == static_cast<int>(leftMouthCorner.x)) ||
+              (x == static_cast<int>(rightMouthCorner.y) && y == static_cast<int>(rightMouthCorner.x))) {
+              color = Eigen::Vector3d(1.0, 0.0, 0.0); // Red color for landmarks
+          } else {
+              cv::Vec3f pixel_color = img_undistort.at<cv::Vec3f>(y, x);
+              color = Eigen::Vector3d(pixel_color[0], pixel_color[1], pixel_color[2]);
+          }
 
         colors.push_back(color);
     }
-
+    
     // Print projected 3D points
     std::cout << "Projected 3D points (first 10 values): ";
     for (size_t i = 0; i < std::min(pts.size(), size_t(10)); ++i) {
