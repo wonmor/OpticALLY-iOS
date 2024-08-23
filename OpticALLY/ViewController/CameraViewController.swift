@@ -581,6 +581,7 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             self.rightMouthCorner = rightMouthCorner
         }
     }
+
     
     /// Creates To SCNSpheres To Loosely Represent The Eyes
     func setupEyeNode() {
