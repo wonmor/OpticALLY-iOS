@@ -223,7 +223,7 @@ struct VertexOut {
             for (int j = 0; j < width; ++j) {
                 dlib::bgr_pixel& pixel = img[i][j];
                 if (pixel.blue == 0 && pixel.green == 0 && pixel.red == 255) {
-                    // If the pixel is blue, change it to white
+                    // If the pixel is red, change it to white
                     pixel = dlib::bgr_pixel(255, 255, 255);
                 }
             }
@@ -267,10 +267,16 @@ struct VertexOut {
             if (i == 1) {
                 continue; // Skip the point at index 1
             }
-            dlib::point p(image_points[i].x, image_points[i].y);
-            draw_solid_circle(img, p, 3, dlib::rgb_pixel(0, 0, 255));
-        }
 
+            // Get the coordinates of the point
+            int x = static_cast<int>(image_points[i].x);
+            int y = static_cast<int>(image_points[i].y);
+
+            // Ensure the coordinates are within the image bounds
+            if (x >= 0 && x < width && y >= 0 && y < height) {
+                img[y][x] = dlib::bgr_pixel(0, 0, 255); // Note the order: (blue, green, red) BGR, color only ONE pixel to make it hidden (almost not visible) to the end user while red being a strong color, definitely recognizable from ImageDepth.cpp
+            }
+        }
         
                 // Draw circles along the line
 //                for (int i = 0; i < num_steps; ++i) {
