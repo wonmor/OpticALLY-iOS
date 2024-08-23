@@ -235,14 +235,41 @@ static NSMutableArray<NSMutableArray<NSValue *> *> *centroids2DArray = nil;
     }
     
     NSMutableArray<NSValue *> *centroidsA = centroids2DArray.count > 0 ? centroids2DArray[0] : nil;
-        NSMutableArray<NSValue *> *centroidsB = centroids2DArray.count > 1 ? centroids2DArray[1] : nil;
+    NSMutableArray<NSValue *> *centroidsB = centroids2DArray.count > 1 ? centroids2DArray[1] : nil;
 
-        SCNVector3 centroidA = [self calculateCentroidForPoints:centroidsA];
-        NSLog(@"Centroid A: (%f, %f, %f)", centroidA.x, centroidA.y, centroidA.z);
 
-        SCNVector3 centroidB = [self calculateCentroidForPoints:centroidsB];
-        NSLog(@"Centroid B: (%f, %f, %f)", centroidB.x, centroidB.y, centroidB.z);
-    
+        NSUInteger numPointsA = centroidsA.count;
+        NSLog(@"Number of points in centroidsA: %lu", (unsigned long)numPointsA);
+        Eigen::MatrixXd matrixA(3, numPointsA);
+
+        for (NSUInteger i = 0; i < numPointsA; ++i) {
+            SCNVector3 pointA = [centroidsA[i] SCNVector3Value];
+            matrixA(0, i) = pointA.x;
+            matrixA(1, i) = pointA.y;
+            matrixA(2, i) = pointA.z;
+            NSLog(@"centroidsA[%lu] -> SCNVector3(x: %f, y: %f, z: %f)", (unsigned long)i, pointA.x, pointA.y, pointA.z);
+        }
+
+        // Print out the matrixA
+        std::cout << "Matrix A:\n" << matrixA << std::endl;
+
+        NSUInteger numPointsB = centroidsB.count;
+        NSLog(@"Number of points in centroidsB: %lu", (unsigned long)numPointsB);
+        Eigen::MatrixXd matrixB(3, numPointsB);
+
+        for (NSUInteger i = 0; i < numPointsB; ++i) {
+            SCNVector3 pointB = [centroidsB[i] SCNVector3Value];
+            matrixB(0, i) = pointB.x;
+            matrixB(1, i) = pointB.y;
+            matrixB(2, i) = pointB.z;
+            NSLog(@"centroidsB[%lu] -> SCNVector3(x: %f, y: %f, z: %f)", (unsigned long)i, pointB.x, pointB.y, pointB.z);
+        }
+
+        // Print out the matrixB
+        std::cout << "Matrix B:\n" << matrixB << std::endl;
+
+
+
     
 
     // Combine all point clouds into a single point cloud
