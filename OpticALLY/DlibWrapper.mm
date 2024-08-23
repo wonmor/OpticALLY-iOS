@@ -252,10 +252,14 @@ struct VertexOut {
 //                    draw_solid_circle(img, p, 3, dlib::rgb_pixel(0, 255, 255));
 //                }
         
-                for (int i = 0; i < image_points.size(); i++) {
-                    dlib::point p(image_points[i].x, image_points[i].y);
-                    draw_solid_circle(img, p, 3, dlib::rgb_pixel(0, 0, 255));
-                }
+        for (int i = 0; i < image_points.size(); i++) {
+            if (i == 1) {
+                continue; // Skip the point at index 1
+            }
+            dlib::point p(image_points[i].x, image_points[i].y);
+            draw_solid_circle(img, p, 3, dlib::rgb_pixel(0, 0, 255));
+        }
+
         
                 // Draw circles along the line
 //                for (int i = 0; i < num_steps; ++i) {
