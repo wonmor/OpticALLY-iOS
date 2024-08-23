@@ -765,6 +765,9 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
         int x = xy_converted.at<int>(idx, 0);
         int y = xy_converted.at<int>(idx, 1);
         float depth = depths[idx];
+        
+        // Print out the x, y, and depth values
+          std::cout << "x: " << x << ", y: " << y << ", depth: " << depth << std::endl;
 
         float px = (x - cx) / fx * depth;
         float py = (y - cy) / fy * depth;
