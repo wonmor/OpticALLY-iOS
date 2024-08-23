@@ -1,7 +1,5 @@
 #import <Foundation/Foundation.h>
 
-class ImageDepth;
-
 @interface PointCloudProcessingBridge : NSObject
 
 + (BOOL)processPointCloudsWithCalibrationFile:(NSString *)calibrationFilePath
@@ -14,7 +12,5 @@ class ImageDepth;
                          rightEyeRightCornerArray:(NSArray<NSValue *> *)rightEyeRightCornerArray
                           leftMouthCornerArray:(NSArray<NSValue *> *)leftMouthCornerArray
                          rightMouthCornerArray:(NSArray<NSValue *> *)rightMouthCornerArray;
-
-+ (NSArray<NSValue *> *)retrieveCentroidsForImageDepth:(ImageDepth *)imageDepth;
 
 @end

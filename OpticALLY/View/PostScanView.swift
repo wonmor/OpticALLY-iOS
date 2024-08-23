@@ -349,7 +349,7 @@ struct PostScanView: View {
                     }
                     .disabled(isProcessing)  // Disable the button when processing
 
-                    Text(currentDirectionString)
+                    Text("OPTICALLY")
                         .monospaced()
                         .font(.title)
                         .fontWeight(.medium)
@@ -367,17 +367,7 @@ struct PostScanView: View {
                 }
 
                 if let urls = exportViewModel.objURLs {
-                    TabView {
-                        ForEach(0..<urls.count, id: \.self) { index in
-                            SceneKitMDLView(snapshot: $snapshot, url: URL(string: urls[index])!)
-                                .tabItem {
-                                    Label(ScanDirection(rawValue: index) == .left ? "LEFT" : "RIGHT", systemImage: "\(index).circle")
-                                }
-                                .onAppear() {
-                                    currentDirection = ScanDirection(rawValue: index)
-                                }
-                        }
-                    }
+                    SceneKitMDLView(snapshot: $snapshot, url: URL(string: urls[0])!)
                     .padding()
                 }
                 
@@ -498,7 +488,7 @@ struct PostScanView: View {
                 // This will present the share sheet
                 
                 if let fileURL = fileURLToShare {
-                    ShareSheet(fileURL: URL(fileURLWithPath: objFiles[currentDirectionIndex]))
+                    ShareSheet(fileURL: URL(fileURLWithPath: objFiles[0]))
                         .onAppear() {
                             print("Shared: \(objFiles[currentDirectionIndex])")
                         }
