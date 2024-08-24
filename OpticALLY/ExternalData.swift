@@ -78,6 +78,7 @@ struct ExternalData {
     static var vertices: [SCNVector3] = []
     static var colors: [UIColor] = []
     
+    // DON'T EDIT THIS FUNCTION ELSE IT WILL MESS UP THE FACE SCAN ALIGNMENT... (MERGING)
     static func reset(completion: @escaping () -> Void) {
         // Function to reset all variables
         renderingEnabled = true
