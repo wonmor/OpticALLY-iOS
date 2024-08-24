@@ -87,27 +87,11 @@ static SCNVector3 _translationVector;
     NSLog(@"Left Mouth Corner Array count: %lu", (unsigned long)leftMouthCornerArray.count);
     NSLog(@"Right Mouth Corner Array count: %lu", (unsigned long)rightMouthCornerArray.count);
 
-    for (NSUInteger i = 0; i < imageFiles.count; i++) {
-        NSString *imageFile = imageFiles[i];
-        NSString *depthFile = depthFiles[i];
-        NSString *outputPath = outputPaths[i];
+    // Convert NSArray to std::vector
+    std::vector<std::pair<int, std::string>> numberedImageFiles;
+    std::vector<std::pair<int, std::string>> numberedDepthFiles;
+    std::vector<std::string> cppOutputPaths;
 
-        CGPoint noseTip = [noseTipArray[i] CGPointValue];
-        CGPoint chin = [chinArray[i] CGPointValue];
-        CGPoint leftEyeLeftCorner = [leftEyeLeftCornerArray[i] CGPointValue];
-        CGPoint rightEyeRightCorner = [rightEyeRightCornerArray[i] CGPointValue];
-        CGPoint leftMouthCorner = [leftMouthCornerArray[i] CGPointValue];
-        CGPoint rightMouthCorner = [rightMouthCornerArray[i] CGPointValue];
-
-        NSLog(@"[POINTCLOUDPROCESSING][Index %lu] Nose Tip: %@", (unsigned long)i, NSStringFromCGPoint(noseTip));
-        NSLog(@"[POINTCLOUDPROCESSING][Index %lu] Chin: %@", (unsigned long)i, NSStringFromCGPoint(chin));
-        NSLog(@"[POINTCLOUDPROCESSING][Index %lu] Left Eye Left Corner: %@", (unsigned long)i, NSStringFromCGPoint(leftEyeLeftCorner));
-        NSLog(@"[POINTCLOUDPROCESSING][Index %lu] Right Eye Right Corner: %@", (unsigned long)i, NSStringFromCGPoint(rightEyeRightCorner));
-        NSLog(@"[POINTCLOUDPROCESSING][Index %lu] Left Mouth Corner: %@", (unsigned long)i, NSStringFromCGPoint(leftMouthCorner));
-        NSLog(@"[POINTCLOUDPROCESSING][Index %lu] Right Mouth Corner: %@", (unsigned long)i, NSStringFromCGPoint(rightMouthCorner));
-    }
-
-    // Helper function to extract numeric part from filename
     auto extractNumber = [](const std::string &filename) -> int {
         std::regex re("\\d+");
         std::smatch match;
@@ -116,11 +100,6 @@ static SCNVector3 _translationVector;
         }
         return -1;
     };
-
-    // Convert NSArray to std::vector
-    std::vector<std::pair<int, std::string>> numberedImageFiles;
-    std::vector<std::pair<int, std::string>> numberedDepthFiles;
-    std::vector<std::string> cppOutputPaths;
 
     for (NSString *path in imageFiles) {
         std::string stdPath = [path UTF8String];
@@ -167,14 +146,7 @@ static SCNVector3 _translationVector;
 
     std::vector<std::shared_ptr<PointCloud>> pointClouds;
 
-    // Print out the lengths of the arrays
-    NSLog(@"Number of image files: %lu", (unsigned long)imageFiles.count);
-    NSLog(@"Number of depth files: %lu", (unsigned long)depthFiles.count);
-    NSLog(@"Number of output paths: %lu", (unsigned long)outputPaths.count);
-
-    std::vector<std::future<std::shared_ptr<PointCloud>>> futures;
-
-    // Process each point cloud in parallel
+    // Process each point cloud sequentially
     for (size_t i = 0; i < cppImageFiles.size(); ++i) {
         // Get the corresponding facial landmark points for the current index
         CGPoint noseTip = [noseTipArray[i] CGPointValue];
@@ -183,71 +155,60 @@ static SCNVector3 _translationVector;
         CGPoint rightEyeRightCorner = [rightEyeRightCornerArray[i] CGPointValue];
         CGPoint leftMouthCorner = [leftMouthCornerArray[i] CGPointValue];
         CGPoint rightMouthCorner = [rightMouthCornerArray[i] CGPointValue];
-        
-        // Create a future for each point cloud processing task
-        futures.push_back(std::async(std::launch::async, [calibrationFilePath, cppImageFiles, cppDepthFiles, i, noseTip, chin, leftEyeLeftCorner, rightEyeRightCorner, leftMouthCorner, rightMouthCorner]() -> std::shared_ptr<PointCloud> {
-            // Convert CGPoint to cv::Point2f
-            cv::Point2f noseTipCV = cv::Point2f(noseTip.x, noseTip.y);
-            cv::Point2f chinCV = cv::Point2f(chin.x, chin.y);
-            cv::Point2f leftEyeLeftCornerCV = cv::Point2f(leftEyeLeftCorner.x, leftEyeLeftCorner.y);
-            cv::Point2f rightEyeRightCornerCV = cv::Point2f(rightEyeRightCorner.x, rightEyeRightCorner.y);
-            cv::Point2f leftMouthCornerCV = cv::Point2f(leftMouthCorner.x, leftMouthCorner.y);
-            cv::Point2f rightMouthCornerCV = cv::Point2f(rightMouthCorner.x, rightMouthCorner.y);
 
-            // Initialize the ImageDepth object with the calibration file, image, depth file, and additional parameters
-            auto imageDepth = std::make_shared<ImageDepth>(
-                [calibrationFilePath UTF8String],
-                cppImageFiles[i],
-                cppDepthFiles[i],
-                640,
-                480,
-                0.1,
-                0.5,
-                0.01,
-                noseTipCV,   // Pass the converted cv::Point2f
-                chinCV,      // Pass the converted cv::Point2f
-                leftEyeLeftCornerCV,  // Pass the converted cv::Point2f
-                rightEyeRightCornerCV, // Pass the converted cv::Point2f
-                leftMouthCornerCV,  // Pass the converted cv::Point2f
-                rightMouthCornerCV  // Pass the converted cv::Point2f
-            );
+        // Convert CGPoint to cv::Point2f
+        cv::Point2f noseTipCV = cv::Point2f(noseTip.x, noseTip.y);
+        cv::Point2f chinCV = cv::Point2f(chin.x, chin.y);
+        cv::Point2f leftEyeLeftCornerCV = cv::Point2f(leftEyeLeftCorner.x, leftEyeLeftCorner.y);
+        cv::Point2f rightEyeRightCornerCV = cv::Point2f(rightEyeRightCorner.x, rightEyeRightCorner.y);
+        cv::Point2f leftMouthCornerCV = cv::Point2f(leftMouthCorner.x, leftMouthCorner.y);
+        cv::Point2f rightMouthCornerCV = cv::Point2f(rightMouthCorner.x, rightMouthCorner.y);
 
-            // Get the point cloud from the ImageDepth object
-            auto pointCloud = imageDepth->getPointCloud();
-            if (!pointCloud || pointCloud->points_.empty()) {
-                return nullptr;
-            }
+        // Initialize the ImageDepth object with the calibration file, image, depth file, and additional parameters
+        auto imageDepth = std::make_shared<ImageDepth>(
+            [calibrationFilePath UTF8String],
+            cppImageFiles[i],
+            cppDepthFiles[i],
+            640,
+            480,
+            0.1,
+            0.5,
+            0.01,
+            noseTipCV,   // Pass the converted cv::Point2f
+            chinCV,      // Pass the converted cv::Point2f
+            leftEyeLeftCornerCV,  // Pass the converted cv::Point2f
+            rightEyeRightCornerCV, // Pass the converted cv::Point2f
+            leftMouthCornerCV,  // Pass the converted cv::Point2f
+            rightMouthCornerCV  // Pass the converted cv::Point2f
+        );
 
-            // Retrieve and print centroids (inlined version)
-            const std::vector<cv::Point3f>& centroids = imageDepth->getCentroids();
-            NSMutableArray<NSValue *> *centroidArray = [NSMutableArray arrayWithCapacity:centroids.size()];
-            for (const auto &centroid : centroids) {
-                SCNVector3 centroidVector = SCNVector3Make(centroid.x, centroid.y, centroid.z);
-                [centroidArray addObject:[NSValue valueWithSCNVector3:centroidVector]];
-            }
-
-            // Add the centroids to the static array
-            [centroids2DArray addObject:centroidArray];
-            NSLog(@"Size of centroids2DArray after adding: %lu", (unsigned long)centroids2DArray.count);
-
-            // Print the centroids
-            NSUInteger index = 0;
-            for (NSValue *centroidValue in centroidArray) {
-                SCNVector3 centroid = [centroidValue SCNVector3Value];
-                NSLog(@"[POINTCLOUDPROCESSING] Centroid %lu: (%f, %f, %f)", (unsigned long)index, centroid.x, centroid.y, centroid.z);
-                index++;
-            }
-
-            return pointCloud;
-        }));
-    }
-    
-    // Collect all point clouds
-    for (auto &f : futures) {
-        auto pointCloud = f.get();
-        if (pointCloud && !pointCloud->IsEmpty()) {
-            pointClouds.push_back(pointCloud);
+        // Get the point cloud from the ImageDepth object
+        auto pointCloud = imageDepth->getPointCloud();
+        if (!pointCloud || pointCloud->points_.empty()) {
+            continue;
         }
+
+        // Retrieve and store centroids
+        const std::vector<cv::Point3f>& centroids = imageDepth->getCentroids();
+        NSMutableArray<NSValue *> *centroidArray = [NSMutableArray arrayWithCapacity:centroids.size()];
+        for (const auto &centroid : centroids) {
+            SCNVector3 centroidVector = SCNVector3Make(centroid.x, centroid.y, centroid.z);
+            [centroidArray addObject:[NSValue valueWithSCNVector3:centroidVector]];
+        }
+
+        // Add the centroids to the static array
+        [centroids2DArray addObject:centroidArray];
+        NSLog(@"Size of centroids2DArray after adding: %lu", (unsigned long)centroids2DArray.count);
+
+        // Print the centroids
+        NSUInteger index = 0;
+        for (NSValue *centroidValue in centroidArray) {
+            SCNVector3 centroid = [centroidValue SCNVector3Value];
+            NSLog(@"[POINTCLOUDPROCESSING] Centroid %lu: (%f, %f, %f)", (unsigned long)index, centroid.x, centroid.y, centroid.z);
+            index++;
+        }
+
+        pointClouds.push_back(pointCloud);
     }
 
     if (pointClouds.empty()) {
@@ -258,81 +219,69 @@ static SCNVector3 _translationVector;
     NSMutableArray<NSValue *> *centroidsA = centroids2DArray.count > 0 ? centroids2DArray[0] : nil;
     NSMutableArray<NSValue *> *centroidsB = centroids2DArray.count > 1 ? centroids2DArray[1] : nil;
 
+    // Transformation process for centroids and point cloud
+    // The rest of the processing code remains the same as before
 
-        NSUInteger numPointsA = centroidsA.count;
-        NSLog(@"Number of points in centroidsA: %lu", (unsigned long)numPointsA);
-        Eigen::MatrixXd matrixA(3, numPointsA);
+    NSUInteger numPointsA = centroidsA.count;
+    NSLog(@"Number of points in centroidsA: %lu", (unsigned long)numPointsA);
+    Eigen::MatrixXd matrixA(3, numPointsA);
 
-        for (NSUInteger i = 0; i < numPointsA; ++i) {
-            SCNVector3 pointA = [centroidsA[i] SCNVector3Value];
-            matrixA(0, i) = pointA.x;
-            matrixA(1, i) = pointA.y;
-            matrixA(2, i) = pointA.z;
-            NSLog(@"centroidsA[%lu] -> SCNVector3(x: %f, y: %f, z: %f)", (unsigned long)i, pointA.x, pointA.y, pointA.z);
-        }
+    for (NSUInteger i = 0; i < numPointsA; ++i) {
+        SCNVector3 pointA = [centroidsA[i] SCNVector3Value];
+        matrixA(0, i) = pointA.x;
+        matrixA(1, i) = pointA.y;
+        matrixA(2, i) = pointA.z;
+        NSLog(@"centroidsA[%lu] -> SCNVector3(x: %f, y: %f, z: %f)", (unsigned long)i, pointA.x, pointA.y, pointA.z);
+    }
 
-        // Print out the matrixA
-        std::cout << "Matrix A:\n" << matrixA << std::endl;
+    // Print out the matrixA
+    std::cout << "Matrix A:\n" << matrixA << std::endl;
 
-        NSUInteger numPointsB = centroidsB.count;
-        NSLog(@"Number of points in centroidsB: %lu", (unsigned long)numPointsB);
-        Eigen::MatrixXd matrixB(3, numPointsB);
+    NSUInteger numPointsB = centroidsB.count;
+    NSLog(@"Number of points in centroidsB: %lu", (unsigned long)numPointsB);
+    Eigen::MatrixXd matrixB(3, numPointsB);
 
-        for (NSUInteger i = 0; i < numPointsB; ++i) {
-            SCNVector3 pointB = [centroidsB[i] SCNVector3Value];
-            matrixB(0, i) = pointB.x;
-            matrixB(1, i) = pointB.y;
-            matrixB(2, i) = pointB.z;
-            NSLog(@"centroidsB[%lu] -> SCNVector3(x: %f, y: %f, z: %f)", (unsigned long)i, pointB.x, pointB.y, pointB.z);
-        }
+    for (NSUInteger i = 0; i < numPointsB; ++i) {
+        SCNVector3 pointB = [centroidsB[i] SCNVector3Value];
+        matrixB(0, i) = pointB.x;
+        matrixB(1, i) = pointB.y;
+        matrixB(2, i) = pointB.z;
+        NSLog(@"centroidsB[%lu] -> SCNVector3(x: %f, y: %f, z: %f)", (unsigned long)i, pointB.x, pointB.y, pointB.z);
+    }
 
-        // Print out the matrixB
-        std::cout << "Matrix B:\n" << matrixB << std::endl;
+    // Print out the matrixB
+    std::cout << "Matrix B:\n" << matrixB << std::endl;
 
     Eigen::Matrix3d R;
     Eigen::Vector3d t;
 
-    // Objective-C++ TIPS & TRICKS
-    // & means "Method Signature"
-    // (It's like a memory address)
-    // If your method rigidTransform3DWithMatrixA:matrixB:rotation:translation: expects void* pointers (which is the case if you're trying to avoid including Eigen in the header file), you'll need to pass the address of the Eigen objects.
-  [self rigidTransform3DWithMatrixA: &matrixA matrixB: &matrixB rotation: &R translation: &t];
-    
+    [self rigidTransform3DWithMatrixA: &matrixA matrixB: &matrixB rotation: &R translation: &t];
+
     SCNMatrix4 rotationMatrix = SCNMatrix4Identity;
-      rotationMatrix.m11 = R(0, 0);
-      rotationMatrix.m12 = R(0, 1);
-      rotationMatrix.m13 = R(0, 2);
-      rotationMatrix.m21 = R(1, 0);
-      rotationMatrix.m22 = R(1, 1);
-      rotationMatrix.m23 = R(1, 2);
-      rotationMatrix.m31 = R(2, 0);
-      rotationMatrix.m32 = R(2, 1);
-      rotationMatrix.m33 = R(2, 2);
+    rotationMatrix.m11 = R(0, 0);
+    rotationMatrix.m12 = R(0, 1);
+    rotationMatrix.m13 = R(0, 2);
+    rotationMatrix.m21 = R(1, 0);
+    rotationMatrix.m22 = R(1, 1);
+    rotationMatrix.m23 = R(1, 2);
+    rotationMatrix.m31 = R(2, 0);
+    rotationMatrix.m32 = R(2, 1);
+    rotationMatrix.m33 = R(2, 2);
 
-      // Convert Eigen::Vector3d to SCNVector3
-      SCNVector3 translationVector = SCNVector3Make(t.x(), t.y(), t.z());
+    // Convert Eigen::Vector3d to SCNVector3
+    SCNVector3 translationVector = SCNVector3Make(t.x(), t.y(), t.z());
 
-      // Store these values in the static variables
-      _rotationMatrix = rotationMatrix;
-      _translationVector = translationVector;
-    
+    // Store these values in the static variables
+    _rotationMatrix = rotationMatrix;
+    _translationVector = translationVector;
     
     if (centroidsA) {
         // Iterate over each point in centroidsA and apply the transformation
         for (NSUInteger i = 0; i < centroidsA.count; ++i) {
-            // Get the current point as SCNVector3
             SCNVector3 pointA = [centroidsA[i] SCNVector3Value];
-
-            // Convert SCNVector3 to Eigen::Vector3d
             Eigen::Vector3d pointVec(pointA.x, pointA.y, pointA.z);
-
-            // Apply the rotation and translation
             Eigen::Vector3d transformedPoint = R * pointVec + t;
-
-            // Convert the transformed point back to SCNVector3
             SCNVector3 transformedPointA = SCNVector3Make(transformedPoint.x(), transformedPoint.y(), transformedPoint.z());
-
-            // Update the point in centroidsA
             centroidsA[i] = [NSValue valueWithSCNVector3:transformedPointA];
         }
 
@@ -345,8 +294,6 @@ static SCNVector3 _translationVector;
     } else {
         NSLog(@"centroidsA is empty or not available.");
     }
-
-    
 
     // Apply the rigid transformation to the point cloud centroid and adjust all points accordingly
     if (!pointClouds.empty()) {
@@ -365,12 +312,11 @@ static SCNVector3 _translationVector;
         // Compute the movement vector (difference between transformed centroid and original centroid)
         Eigen::Vector3d movementVector = transformedCentroid - centroid;
 
-         // Move all points in the point cloud along the movement vector
+        // Move all points in the point cloud along the movement vector
         for (auto& point : pointCloud->points_) {
             point += movementVector;
         }
     }
-
 
     // Combine all point clouds into a single point cloud
     auto combinedPointCloud = std::make_shared<PointCloud>();
@@ -443,6 +389,7 @@ static SCNVector3 _translationVector;
     NSLog(@"Successfully exported OBJ file from combined point cloud.");
     return YES;
 }
+
 
 + (void)rigidTransform3DWithMatrixA:(Eigen::MatrixXd &)A matrixB:(Eigen::MatrixXd &)B rotation:(Eigen::Matrix3d &)R translation:(Eigen::Vector3d &)t {
     NSCAssert(A.rows() == 3 && B.rows() == 3 && A.cols() == B.cols(), @"Matrices A and B must be 3xN and have the same dimensions");
