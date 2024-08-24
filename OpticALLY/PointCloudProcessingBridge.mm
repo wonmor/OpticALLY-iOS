@@ -306,12 +306,12 @@ static SCNVector3 _translationVector;
         NSLog(@"Transformed Centroid: (%f, %f, %f)", transformedCentroid.x(), transformedCentroid.y(), transformedCentroid.z());
         NSLog(@"Movement Vector: (%f, %f, %f)", movementVector.x(), movementVector.y(), movementVector.z());
         
-        auto& pointCloud = pointClouds[0];
-
-        // Apply the movement vector to all points in the point cloud
-        for (auto& point : pointCloud->points_) {
-            point += movementVector;
-        }
+//        auto& pointCloud = pointClouds[0];
+//
+//        // Apply the movement vector to all points in the point cloud
+//        for (auto& point : pointCloud->points_) {
+//            point += movementVector;
+//        }
     } else {
         NSLog(@"centroidsA is empty or not available.");
     }

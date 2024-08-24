@@ -57,11 +57,13 @@ ImageDepth::ImageDepth(const std::string& calibration_file,
                        const cv::Point2f& leftEyeLeftCorner,
                        const cv::Point2f& rightEyeRightCorner,
                        const cv::Point2f& leftMouthCorner,
-                       const cv::Point2f& rightMouthCorner)
+                       const cv::Point2f& rightMouthCorner,
+                       const Eigen::Matrix3f& rotation,
+                                              const Eigen::Vector3f& translation)
     : image_file(image_file), calibration_file(calibration_file), depth_file(depth_file),
       width(width), height(height), min_depth(min_depth), max_depth(max_depth), normal_radius(normal_radius),
       noseTip(noseTip), chin(chin), leftEyeLeftCorner(leftEyeLeftCorner), rightEyeRightCorner(rightEyeRightCorner),
-      leftMouthCorner(leftMouthCorner), rightMouthCorner(rightMouthCorner) {
+      leftMouthCorner(leftMouthCorner), rightMouthCorner(rightMouthCorner), rotation(rotation), translation(translation) {
     pose = Eigen::Matrix4f::Identity();
     loadCalibration(calibration_file);
     createUndistortionLookup();
@@ -818,8 +820,17 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
         float px = (x - cx) / fx * depth;
         float py = (y - cy) / fy * depth;
 
-        pts.emplace_back(px, py, depth);
-        points.emplace_back(px, py, depth);
+        // Create the point in camera coordinates
+             Eigen::Vector3f point_f(px, py, depth);
+
+             // Apply the rotation and translation
+             point_f = rotation * point_f + translation;
+
+             // Convert the Eigen point back to cv::Point3f for storing
+             cv::Point3f transformed_point(point_f.x(), point_f.y(), point_f.z());
+
+             pts.push_back(transformed_point);
+             points.emplace_back(transformed_point.x, transformed_point.y, transformed_point.z);
 
         // Check if the current point is a landmark by comparing x and y with the landmarks
         Eigen::Vector3d color(1.0, 1.0, 1.0); // Default to white

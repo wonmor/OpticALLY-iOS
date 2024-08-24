@@ -67,7 +67,9 @@ public:
                           const cv::Point2f& leftEyeLeftCorner = cv::Point2f(),
                           const cv::Point2f& rightEyeRightCorner = cv::Point2f(),
                           const cv::Point2f& leftMouthCorner = cv::Point2f(),
-                          const cv::Point2f& rightMouthCorner = cv::Point2f());
+                          const cv::Point2f& rightMouthCorner = cv::Point2f(),
+    const Eigen::Matrix3f& rotation = Eigen::Matrix3f::Identity(),
+                  const Eigen::Vector3f& translation = Eigen::Vector3f::Zero());
     
     std::vector<float> lensDistortionLookup;
     std::vector<float> inverseLensDistortionLookup;
@@ -77,6 +79,9 @@ public:
     std::vector<cv::Point3f> project3D(const std::vector<cv::Point2f>& points);
     
     Eigen::Matrix3d intrinsic;
+    
+    Eigen::Matrix3f rotation;  // Rotation matrix
+       Eigen::Vector3f translation;  // Translation vector
     
     const std::vector<cv::Point3f>& getCentroids() const {
           return centroids_;
