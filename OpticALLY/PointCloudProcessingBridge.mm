@@ -348,21 +348,29 @@ static SCNVector3 _translationVector;
 
     
 
-    // Apply the rigid transformation to each point in pointClouds[0]
-//    if (!pointClouds.empty()) {
-//        auto& pointCloud = pointClouds[0]; // Assuming pointClouds[0] is the point cloud to transform
-//
-//        for (auto& point : pointCloud->points_) {
-//            // Apply the rotation and translation
-//            Eigen::Vector3d pointVec(point.x(), point.y(), point.z());
-//            Eigen::Vector3d transformedPoint = R * pointVec + t;
-//
-//            // Update the point in the point cloud
-//            point.x() = transformedPoint.x();
-//            point.y() = transformedPoint.y();
-//            point.z() = transformedPoint.z();
-//        }
-//    }
+    // Apply the rigid transformation to the point cloud centroid and adjust all points accordingly
+    if (!pointClouds.empty()) {
+        auto& pointCloud = pointClouds[1];
+
+        // Calculate the centroid of the point cloud
+        Eigen::Vector3d centroid(0, 0, 0);
+        for (const auto& point : pointCloud->points_) {
+            centroid += point;
+        }
+        centroid /= static_cast<double>(pointCloud->points_.size());
+
+        // Apply the rotation and translation to the centroid
+        Eigen::Vector3d transformedCentroid = R * centroid + t;
+
+        // Compute the movement vector (difference between transformed centroid and original centroid)
+        Eigen::Vector3d movementVector = transformedCentroid - centroid;
+
+         // Move all points in the point cloud along the movement vector
+        for (auto& point : pointCloud->points_) {
+            point += movementVector;
+        }
+    }
+
 
     // Combine all point clouds into a single point cloud
     auto combinedPointCloud = std::make_shared<PointCloud>();
@@ -435,100 +443,6 @@ static SCNVector3 _translationVector;
     NSLog(@"Successfully exported OBJ file from combined point cloud.");
     return YES;
 }
-
-// Input: expects 3xN matrix of points
-// Returns R, t
-// R = 3x3 rotation matrix
-// t = 3x1 column vector
-
-+ (void)rigidTransformSceneKit3DWithMatrixA:(NSArray<NSValue *> *)matrixA
-                           matrixB:(NSArray<NSValue *> *)matrixB
-                          rotation:(SCNMatrix4 *)rotation
-                       translation:(SCNVector3 *)translation {
-    
-    NSCAssert(matrixA.count == matrixB.count, @"Matrices A and B must have the same number of points.");
-
-    NSUInteger num_points = matrixA.count;
-
-    // Calculate centroids of A and B
-    SCNVector3 centroid_A = [self calculateCentroidForPoints:matrixA];
-    SCNVector3 centroid_B = [self calculateCentroidForPoints:matrixB];
-
-    // Subtract centroids from points
-    NSMutableArray<NSValue *> *Am = [NSMutableArray arrayWithCapacity:num_points];
-    NSMutableArray<NSValue *> *Bm = [NSMutableArray arrayWithCapacity:num_points];
-
-    for (NSUInteger i = 0; i < num_points; i++) {
-        SCNVector3 pointA = [matrixA[i] SCNVector3Value];
-        SCNVector3 pointB = [matrixB[i] SCNVector3Value];
-        
-        SCNVector3 Am_point = SCNVector3Make(pointA.x - centroid_A.x, pointA.y - centroid_A.y, pointA.z - centroid_A.z);
-        SCNVector3 Bm_point = SCNVector3Make(pointB.x - centroid_B.x, pointB.y - centroid_B.y, pointB.z - centroid_B.z);
-        
-        [Am addObject:[NSValue valueWithSCNVector3:Am_point]];
-        [Bm addObject:[NSValue valueWithSCNVector3:Bm_point]];
-    }
-
-    // Compute covariance matrix H
-    float H[3][3] = {0};
-
-    for (NSUInteger i = 0; i < num_points; i++) {
-        SCNVector3 Am_point = [Am[i] SCNVector3Value];
-        SCNVector3 Bm_point = [Bm[i] SCNVector3Value];
-
-        H[0][0] += Am_point.x * Bm_point.x;
-        H[0][1] += Am_point.x * Bm_point.y;
-        H[0][2] += Am_point.x * Bm_point.z;
-
-        H[1][0] += Am_point.y * Bm_point.x;
-        H[1][1] += Am_point.y * Bm_point.y;
-        H[1][2] += Am_point.y * Bm_point.z;
-
-        H[2][0] += Am_point.z * Bm_point.x;
-        H[2][1] += Am_point.z * Bm_point.y;
-        H[2][2] += Am_point.z * Bm_point.z;
-    }
-
-    // Perform SVD on H (using LAPACK or another library if needed, or approximate SVD for simplicity)
-    // This is a simplified version, actual SVD would require a third-party library or more complex code.
-    
-    // Let's assume U and Vt are identity matrices (in real cases, perform actual SVD)
-    float U[3][3] = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
-    float Vt[3][3] = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
-
-    // Compute rotation matrix R = Vt' * U'
-    SCNMatrix4 R = SCNMatrix4Identity;
-    R.m11 = Vt[0][0] * U[0][0] + Vt[0][1] * U[1][0] + Vt[0][2] * U[2][0];
-    R.m12 = Vt[0][0] * U[0][1] + Vt[0][1] * U[1][1] + Vt[0][2] * U[2][1];
-    R.m13 = Vt[0][0] * U[0][2] + Vt[0][1] * U[1][2] + Vt[0][2] * U[2][2];
-
-    R.m21 = Vt[1][0] * U[0][0] + Vt[1][1] * U[1][0] + Vt[1][2] * U[2][0];
-    R.m22 = Vt[1][0] * U[0][1] + Vt[1][1] * U[1][1] + Vt[1][2] * U[2][1];
-    R.m23 = Vt[1][0] * U[0][2] + Vt[1][1] * U[1][2] + Vt[1][2] * U[2][2];
-
-    R.m31 = Vt[2][0] * U[0][0] + Vt[2][1] * U[1][0] + Vt[2][2] * U[2][0];
-    R.m32 = Vt[2][0] * U[0][1] + Vt[2][1] * U[1][1] + Vt[2][2] * U[2][1];
-    R.m33 = Vt[2][0] * U[0][2] + Vt[2][1] * U[1][2] + Vt[2][2] * U[2][2];
-
-    // Handle special case of reflection
-    if (R.m11 * R.m22 * R.m33 < 0) {
-        R.m31 *= -1;
-        R.m32 *= -1;
-        R.m33 *= -1;
-    }
-
-    // Compute translation t = -R * centroid_A + centroid_B
-    SCNVector3 t = SCNVector3Make(
-        -R.m11 * centroid_A.x - R.m12 * centroid_A.y - R.m13 * centroid_A.z + centroid_B.x,
-        -R.m21 * centroid_A.x - R.m22 * centroid_A.y - R.m23 * centroid_A.z + centroid_B.y,
-        -R.m31 * centroid_A.x - R.m32 * centroid_A.y - R.m33 * centroid_A.z + centroid_B.z
-    );
-
-    // Assign to output parameters
-    *rotation = R;
-    *translation = t;
-}
-
 
 + (void)rigidTransform3DWithMatrixA:(Eigen::MatrixXd &)A matrixB:(Eigen::MatrixXd &)B rotation:(Eigen::Matrix3d &)R translation:(Eigen::Vector3d &)t {
     NSCAssert(A.rows() == 3 && B.rows() == 3 && A.cols() == B.cols(), @"Matrices A and B must be 3xN and have the same dimensions");

@@ -27,10 +27,4 @@
                            rotation:(void *)R
                         translation:(void *)t;
 
-+ (void)rigidTransformSceneKit3DWithMatrixA:(NSArray<NSValue *> *)matrixA
-                           matrixB:(NSArray<NSValue *> *)matrixB
-                          rotation:(SCNMatrix4 *)rotation
-                        translation:(SCNVector3 *)translation;
-
-
 @end
