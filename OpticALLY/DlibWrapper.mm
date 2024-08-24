@@ -91,37 +91,44 @@ struct VertexOut {
         dlib::full_object_detection shape = sp(img, oneFaceRect);
         
         // Extract specific landmarks
-               dlib::point noseTip = shape.part(30);
-               dlib::point chin = shape.part(8);
-               dlib::point leftEyeRightCorner = shape.part(39);   // Left eye right corner
-               dlib::point rightEyeLeftCorner = shape.part(42);   // Right eye left corner
-               dlib::point leftMouthCorner = shape.part(48);
-               dlib::point rightMouthCorner = shape.part(54);
-               
-               // OpenCV head pose estimation
-               cv::Mat cvImg(height, width, CV_8UC4, baseBuffer);
-               cv::cvtColor(cvImg, cvImg, cv::COLOR_BGRA2BGR);
-               
-               std::vector<cv::Point2d> image_points;
-               image_points.push_back(cv::Point2d(noseTip.x(), noseTip.y()));    // Nose tip
-               image_points.push_back(cv::Point2d(chin.x(), chin.y()));          // Chin
-               image_points.push_back(cv::Point2d(leftEyeRightCorner.x(), leftEyeRightCorner.y()));  // Left eye right corner
-               image_points.push_back(cv::Point2d(rightEyeLeftCorner.x(), rightEyeLeftCorner.y()));  // Right eye left corner
-               image_points.push_back(cv::Point2d(leftMouthCorner.x(), leftMouthCorner.y()));        // Left Mouth corner
-               image_points.push_back(cv::Point2d(rightMouthCorner.x(), rightMouthCorner.y()));      // Right mouth corner
-               
-               std::vector<cv::Point3d> model_points;
-               
-               // Use model points as before
-               model_points.push_back(cv::Point3d(0.0f, 0.0f, 0.0f));               // Nose tip
-               model_points.push_back(cv::Point3d(0.0f, -330.0f, -65.0f));          // Chin
-        model_points.push_back(cv::Point3d(-100.0f, 170.0f, -135.0f));       // Left eye right corner
-       // Left eye right corner
-        model_points.push_back(cv::Point3d(100.0f, 170.0f, -135.0f));        // Right eye left corner
-       // Right eye left corner
-               model_points.push_back(cv::Point3d(-150.0f, -150.0f, -125.0f));      // Left Mouth corner
-               model_points.push_back(cv::Point3d(150.0f, -150.0f, -125.0f));       // Right Mouth corner
-
+        dlib::point noseTip = shape.part(30);
+        dlib::point chin = shape.part(8);
+        dlib::point leftEyeLeftCorner = shape.part(36);
+        dlib::point rightEyeRightCorner = shape.part(45);
+        dlib::point leftMouthCorner = shape.part(48);
+        dlib::point rightMouthCorner = shape.part(54);
+        
+        // OpenCV head pose estimation
+        cv::Mat cvImg(height, width, CV_8UC4, baseBuffer);
+        cv::cvtColor(cvImg, cvImg, cv::COLOR_BGRA2BGR);
+        
+        std::vector<cv::Point2d> image_points;
+        image_points.push_back(cv::Point2d(noseTip.x(), noseTip.y()));    // Nose tip
+        image_points.push_back(cv::Point2d(chin.x(), chin.y()));          // Chin
+        image_points.push_back(cv::Point2d(leftEyeLeftCorner.x(), leftEyeLeftCorner.y()));    // Left eye left corner
+        image_points.push_back(cv::Point2d(rightEyeRightCorner.x(), rightEyeRightCorner.y()));    // Right eye right corner
+        image_points.push_back(cv::Point2d(leftMouthCorner.x(), leftMouthCorner.y()));    // Left Mouth corner
+        image_points.push_back(cv::Point2d(rightMouthCorner.x(), rightMouthCorner.y()));    // Right mouth corner
+        
+        std::vector<cv::Point3d> model_points;
+        
+        // Process each landmark point
+        std::vector<dlib::point> landmarks = {noseTip, chin, leftEyeLeftCorner, rightEyeRightCorner, leftMouthCorner, rightMouthCorner};
+        
+        //        for (const auto& landmark : landmarks) {
+        //            simd_float2 point2D = simd_make_float2(landmark.x(), landmark.y());
+        //            simd_float3 point3D = [_pointCloudView convert2DPointTo3D:point2D];
+        //            // Log the result
+        //            NSLog(@"3D point for landmark (%f, %f) -> (%f, %f, %f)", point2D.x, point2D.y, point3D.x, point3D.y, point3D.z);
+        //            model_points.push_back(cv::Point3d(point3D.x, point3D.y, point3D.z));
+        //        }
+        
+        model_points.push_back(cv::Point3d(0.0f, 0.0f, 0.0f));               // Nose tip
+        model_points.push_back(cv::Point3d(0.0f, -330.0f, -65.0f));          // Chin
+        model_points.push_back(cv::Point3d(-225.0f, 170.0f, -135.0f));       // Left eye left corner
+        model_points.push_back(cv::Point3d(225.0f, 170.0f, -135.0f));        // Right eye right corner
+        model_points.push_back(cv::Point3d(-150.0f, -150.0f, -125.0f));      // Left Mouth corner
+        model_points.push_back(cv::Point3d(150.0f, -150.0f, -125.0f));
         
         double focal_length = cvImg.cols;
         cv::Point2d center = cv::Point2d(cvImg.cols / 2, cvImg.rows / 2);
@@ -189,20 +196,20 @@ struct VertexOut {
         [_cameraViewController updateYawAngle:finalSmoothedYawAngle];
         
         // Convert dlib::point to CGPoint
-                CGPoint noseTipCGPoint = CGPointMake(noseTip.x(), noseTip.y());
-                CGPoint chinCGPoint = CGPointMake(chin.x(), chin.y());
-                CGPoint leftEyeRightCornerCGPoint = CGPointMake(leftEyeRightCorner.x(), leftEyeRightCorner.y());
-                CGPoint rightEyeLeftCornerCGPoint = CGPointMake(rightEyeLeftCorner.x(), rightEyeLeftCorner.y());
-                CGPoint leftMouthCornerCGPoint = CGPointMake(leftMouthCorner.x(), leftMouthCorner.y());
-                CGPoint rightMouthCornerCGPoint = CGPointMake(rightMouthCorner.x(), rightMouthCorner.y());
-                
-                // Update facial landmarks in CameraViewController
-                [_cameraViewController updateFacialLandmarksWithNoseTip:noseTipCGPoint
-                                                                   chin:chinCGPoint
-                                                      leftEyeLeftCorner:leftEyeRightCornerCGPoint  // Updated
-                                                    rightEyeRightCorner:rightEyeLeftCornerCGPoint  // Updated
-                                                        leftMouthCorner:leftMouthCornerCGPoint
-                                                       rightMouthCorner:rightMouthCornerCGPoint];
+        CGPoint noseTipCGPoint = CGPointMake(noseTip.x(), noseTip.y());
+        CGPoint chinCGPoint = CGPointMake(chin.x(), chin.y());
+        CGPoint leftEyeLeftCornerCGPoint = CGPointMake(leftEyeLeftCorner.x(), leftEyeLeftCorner.y());
+        CGPoint rightEyeRightCornerCGPoint = CGPointMake(rightEyeRightCorner.x(), rightEyeRightCorner.y());
+        CGPoint leftMouthCornerCGPoint = CGPointMake(leftMouthCorner.x(), leftMouthCorner.y());
+        CGPoint rightMouthCornerCGPoint = CGPointMake(rightMouthCorner.x(), rightMouthCorner.y());
+        
+        // Update facial landmarks in CameraViewController
+        [_cameraViewController updateFacialLandmarksWithNoseTip:noseTipCGPoint
+                                                           chin:chinCGPoint
+                                              leftEyeLeftCorner:leftEyeLeftCornerCGPoint
+                                            rightEyeRightCorner:rightEyeRightCornerCGPoint
+                                                leftMouthCorner:leftMouthCornerCGPoint
+                                               rightMouthCorner:rightMouthCornerCGPoint];
         
         // Project a 3D point (0, 0, 1000.0) onto the image plane.
         std::vector<cv::Point3d> nose_end_point3D;
@@ -246,8 +253,8 @@ struct VertexOut {
 //                }
         
         for (int i = 0; i < image_points.size(); i++) {
-            if (i == 1) {
-                continue; // Skip the point at index 1 (chin)
+            if (i == 1 || i == 2 || i == 3) {
+                continue; // Skip the point at index 1, 2, 3
             }
             dlib::point p(image_points[i].x, image_points[i].y);
             draw_solid_circle(img, p, 3, dlib::rgb_pixel(0, 0, 255));
