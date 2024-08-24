@@ -12,6 +12,7 @@ struct ContentView: View {
     @EnvironmentObject var globalState: GlobalState
     
     @State private var uniqueId = UUID()
+    @State private var shouldReinit = false
     
     var body: some View {
         Group {
@@ -21,13 +22,13 @@ struct ContentView: View {
                     .transition(.opacity)
 
             case .scanning:
-                CameraView()
+                CameraView(triggerReinit: shouldReinit)
                     .id(uniqueId)
                     .transition(.opacity)
                     .ignoresSafeArea(.all)
                 
             case .postScanning:
-                PostScanView(uniqueId: $uniqueId)
+                PostScanView(uniqueId: $uniqueId, triggerReinit: $shouldReinit)
                     .transition(.opacity)
             }
         }

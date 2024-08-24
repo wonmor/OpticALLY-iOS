@@ -4,6 +4,8 @@ import UIKit
 var cameraViewController: CameraViewController!
 
 struct CameraView: UIViewControllerRepresentable {
+    var triggerReinit: Bool
+    
     @EnvironmentObject var globalState: GlobalState
     
     func makeUIViewController(context: Context) -> CameraViewController {

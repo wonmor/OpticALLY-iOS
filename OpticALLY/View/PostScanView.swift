@@ -66,6 +66,7 @@ struct PostScanView: View {
     @EnvironmentObject var globalState: GlobalState
     
     @Binding var uniqueId: UUID
+    @Binding var triggerReinit: Bool
     
     @ObservedObject private var exportViewModel = ExportViewModel()
     @ObservedObject var logManager = LogManager.shared
@@ -426,6 +427,7 @@ struct PostScanView: View {
                                     
                                     // Refresh CameraViewController
                                     uniqueId = UUID()
+                                    triggerReinit.toggle()
                                     
                                     globalState.currentView = .scanning
                                 }
