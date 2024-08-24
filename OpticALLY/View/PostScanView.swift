@@ -416,32 +416,32 @@ struct PostScanView: View {
             
             VStack {
                 HStack {
-                    Button(action: {
-                        // Only allow action if processing is not happening
-                        if !isProcessing {
-                            ExternalData.resetCompletely() {
-                                exportViewModel.reset() {
-                                    reset()  // Reset position and rotation to default values
-                                    resetSceneKitView = true
-                                    logManager.clearLogs()
-                                    
-                                    // Refresh CameraViewController
-                                    uniqueId = UUID()
-                                    triggerReinit.toggle()
-                                    
-                                    globalState.currentView = .scanning
-                                    
-                                    // VERY IMPORTANT! CURRENTLY THERE'S A BUG WHERE UNLESS YOU COMPLETELY QUIT THE APP AND RESTART, THE POINT CLOUD ALIGNMENT PROCESS WILL BE MESSED UP WHEN YOU RE-RUN IT AGAIN AFTER CLICKING THE BACK BUTTON! BUG FIX NEEDED!
-                                }
-                            }
-                        }
-                    }) {
-                        Image(systemName: "arrow.left") // Customize with your own back button image
-                            .foregroundStyle(.white)
-                            .font(.title)
-                            .padding()
-                    }
-                    .disabled(isProcessing)  // Disable the button when processing
+//                    Button(action: {
+//                        // Only allow action if processing is not happening
+//                        if !isProcessing {
+//                            ExternalData.resetCompletely() {
+//                                exportViewModel.reset() {
+//                                    reset()  // Reset position and rotation to default values
+//                                    resetSceneKitView = true
+//                                    logManager.clearLogs()
+//                                    
+//                                    // Refresh CameraViewController
+//                                    uniqueId = UUID()
+//                                    triggerReinit.toggle()
+//                                    
+//                                    globalState.currentView = .scanning
+//                                    
+//                                    // VERY IMPORTANT! CURRENTLY THERE'S A BUG WHERE UNLESS YOU COMPLETELY QUIT THE APP AND RESTART, THE POINT CLOUD ALIGNMENT PROCESS WILL BE MESSED UP WHEN YOU RE-RUN IT AGAIN AFTER CLICKING THE BACK BUTTON! BUG FIX NEEDED!
+//                                }
+//                            }
+//                        }
+//                    }) {
+//                        Image(systemName: "arrow.left") // Customize with your own back button image
+//                            .foregroundStyle(.white)
+//                            .font(.title)
+//                            .padding()
+//                    }
+//                    .disabled(isProcessing)  // Disable the button when processing
 
                     Text("OPTICALLY")
                         .monospaced()
