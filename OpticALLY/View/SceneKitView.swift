@@ -252,17 +252,17 @@ struct SceneKitMDLView: UIViewRepresentable {
         }
         
         // If a centroids node is provided, add it to the scene
-           if let nodeFirst = nodeFirst {
-               nodeFirst.eulerAngles.z = .pi / 2
-               nodeFirst.eulerAngles.y = .pi
-               scene.rootNode.addChildNode(nodeFirst)
-           }
-           
-           if let node = node {
-               node.eulerAngles.z = .pi / 2
-               node.eulerAngles.y = .pi
-               scene.rootNode.addChildNode(node)
-           }
+//           if let nodeFirst = nodeFirst {
+//               nodeFirst.eulerAngles.z = .pi / 2
+//               nodeFirst.eulerAngles.y = .pi
+//               scene.rootNode.addChildNode(nodeFirst)
+//           }
+//           
+//           if let node = node {
+//               node.eulerAngles.z = .pi / 2
+//               node.eulerAngles.y = .pi
+//               scene.rootNode.addChildNode(node)
+//           }
         
         scnView.autoenablesDefaultLighting = true
         scnView.allowsCameraControl = true

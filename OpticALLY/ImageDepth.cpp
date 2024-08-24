@@ -824,7 +824,7 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
              Eigen::Vector3f point_f(px, py, depth);
 
              // Apply the rotation and translation
-             point_f = rotation * point_f + translation;
+             point_f = -rotation * point_f + translation;
 
              // Convert the Eigen point back to cv::Point3f for storing
              cv::Point3f transformed_point(point_f.x(), point_f.y(), point_f.z());
