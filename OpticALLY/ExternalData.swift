@@ -79,21 +79,37 @@ struct ExternalData {
     static var colors: [UIColor] = []
     
     static func reset(completion: @escaping () -> Void) {
-        // Function to reset all variables
+        // Reset Booleans
         renderingEnabled = true
         isSavingFileAsPLY = false
         isMeshView = false
+
+        // Reset Data and Collections
         exportPLYData = nil
         pointCloudGeometries.removeAll()
         pointCloudDataArray.removeAll()
         verticesCount = 0
-        
         vertices.removeAll()
         colors.removeAll()
+        pointCloudNodes.removeAll()
+        landmarkMultiNodes.removeAll()
+        
+        // Reset Other Properties
+        totalRenderCount = 0
+        currentMetadata = nil
+        faceAnchor = nil
+        
+        depthWidth = 640  // or any other default value
+        depthHeight = 480 // or any other default value
+        
+        scaleX = 0.0
+        scaleY = 0.0
+        scaleZ = 0.0
         
         // Call the completion handler to indicate that the reset is complete
         completion()
     }
+
     
     static func getDocumentsDirectory() -> URL {
         let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
