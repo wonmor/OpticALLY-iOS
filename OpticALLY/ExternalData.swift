@@ -79,6 +79,23 @@ struct ExternalData {
     static var colors: [UIColor] = []
     
     static func reset(completion: @escaping () -> Void) {
+        // Function to reset all variables
+        renderingEnabled = true
+        isSavingFileAsPLY = false
+        isMeshView = false
+        exportPLYData = nil
+        pointCloudGeometries.removeAll()
+        pointCloudDataArray.removeAll()
+        verticesCount = 0
+        
+        vertices.removeAll()
+        colors.removeAll()
+        
+        // Call the completion handler to indicate that the reset is complete
+        completion()
+    }
+    
+    static func resetCompletely(completion: @escaping () -> Void) {
         // Reset Booleans
         renderingEnabled = true
         isSavingFileAsPLY = false
@@ -109,7 +126,6 @@ struct ExternalData {
         // Call the completion handler to indicate that the reset is complete
         completion()
     }
-
     
     static func getDocumentsDirectory() -> URL {
         let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)

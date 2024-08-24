@@ -419,7 +419,7 @@ struct PostScanView: View {
                     Button(action: {
                         // Only allow action if processing is not happening
                         if !isProcessing {
-                            ExternalData.reset() {
+                            ExternalData.resetCompletely() {
                                 exportViewModel.reset() {
                                     reset()  // Reset position and rotation to default values
                                     resetSceneKitView = true
