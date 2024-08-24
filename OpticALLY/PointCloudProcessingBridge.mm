@@ -276,47 +276,46 @@ static SCNVector3 _translationVector;
     _translationVector = translationVector;
     
     if (centroidsA) {
-        // Iterate over each point in centroidsA and apply the transformation
+        // Calculate centroid of centroidsA before transformation
+        Eigen::Vector3d originalCentroid(0, 0, 0);
+        for (NSUInteger i = 0; i < centroidsA.count; ++i) {
+            SCNVector3 pointA = [centroidsA[i] SCNVector3Value];
+            originalCentroid += Eigen::Vector3d(pointA.x, pointA.y, pointA.z);
+        }
+        originalCentroid /= static_cast<double>(centroidsA.count);
+
+        // Apply the transformation to centroidsA and calculate new centroid
+        Eigen::Vector3d transformedCentroid(0, 0, 0);
         for (NSUInteger i = 0; i < centroidsA.count; ++i) {
             SCNVector3 pointA = [centroidsA[i] SCNVector3Value];
             Eigen::Vector3d pointVec(pointA.x, pointA.y, pointA.z);
             Eigen::Vector3d transformedPoint = R * pointVec + t;
             SCNVector3 transformedPointA = SCNVector3Make(transformedPoint.x(), transformedPoint.y(), transformedPoint.z());
             centroidsA[i] = [NSValue valueWithSCNVector3:transformedPointA];
+            
+            // Sum up transformed points to calculate the new centroid
+            transformedCentroid += transformedPoint;
         }
+        transformedCentroid /= static_cast<double>(centroidsA.count);
 
-        // Debugging: Print out the transformed centroids
-        NSLog(@"Transformed centroids in centroidsA:");
-        for (NSUInteger i = 0; i < centroidsA.count; ++i) {
-            SCNVector3 transformedPointA = [centroidsA[i] SCNVector3Value];
-            NSLog(@"Centroid %lu: (%f, %f, %f)", (unsigned long)i, transformedPointA.x, transformedPointA.y, transformedPointA.z);
+        // Calculate movement vector based on the difference in centroids
+        Eigen::Vector3d movementVector = transformedCentroid - originalCentroid;
+
+        // Debugging: Print out the transformed centroids and the movement vector
+        NSLog(@"Original Centroid: (%f, %f, %f)", originalCentroid.x(), originalCentroid.y(), originalCentroid.z());
+        NSLog(@"Transformed Centroid: (%f, %f, %f)", transformedCentroid.x(), transformedCentroid.y(), transformedCentroid.z());
+        NSLog(@"Movement Vector: (%f, %f, %f)", movementVector.x(), movementVector.y(), movementVector.z());
+        
+        auto& pointCloud = pointClouds[0];
+
+        // Apply the movement vector to all points in the point cloud
+        for (auto& point : pointCloud->points_) {
+            point += movementVector;
         }
     } else {
         NSLog(@"centroidsA is empty or not available.");
     }
 
-    // Apply the rigid transformation to the point cloud centroid and adjust all points accordingly
-    if (!pointClouds.empty()) {
-        auto& pointCloud = pointClouds[0];
-
-        // Calculate the centroid of the point cloud
-        Eigen::Vector3d centroid(0, 0, 0);
-        for (const auto& point : pointCloud->points_) {
-            centroid += point;
-        }
-        centroid /= static_cast<double>(pointCloud->points_.size());
-
-        // Apply the rotation and translation to the centroid
-        Eigen::Vector3d transformedCentroid = R * centroid + t;
-
-        // Compute the movement vector (difference between transformed centroid and original centroid)
-        Eigen::Vector3d movementVector = transformedCentroid - centroid;
-
-        // Move all points in the point cloud along the movement vector
-        for (auto& point : pointCloud->points_) {
-            point += movementVector;
-        }
-    }
 
     // Combine all point clouds into a single point cloud
     auto combinedPointCloud = std::make_shared<PointCloud>();
