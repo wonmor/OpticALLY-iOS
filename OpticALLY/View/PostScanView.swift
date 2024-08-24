@@ -65,6 +65,8 @@ struct ShareSheet: UIViewControllerRepresentable {
 struct PostScanView: View {
     @EnvironmentObject var globalState: GlobalState
     
+    @Binding var uniqueId: UUID
+    
     @ObservedObject private var exportViewModel = ExportViewModel()
     @ObservedObject var logManager = LogManager.shared
     
@@ -421,6 +423,10 @@ struct PostScanView: View {
                                     reset()  // Reset position and rotation to default values
                                     resetSceneKitView = true
                                     logManager.clearLogs()
+                                    
+                                    // Refresh CameraViewController
+                                    uniqueId = UUID()
+                                    
                                     globalState.currentView = .scanning
                                 }
                             }

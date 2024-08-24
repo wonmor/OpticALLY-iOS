@@ -16,4 +16,9 @@ struct CameraView: UIViewControllerRepresentable {
     func updateUIViewController(_ uiViewController: CameraViewController, context: Context) {
         // Update logic if needed
     }
+    
+    func dismantleUIViewController(_ uiViewController: CameraViewController, coordinator: ()) {
+        // Handle any cleanup if necessary when the view is removed
+        // This can be used to pause the session or clear any data
+    }
 }

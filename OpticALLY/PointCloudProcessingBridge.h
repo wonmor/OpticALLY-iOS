@@ -20,7 +20,6 @@
                          rightMouthCornerArray:(NSArray<NSValue *> *)rightMouthCornerArray;
 
 // MAKE SURE YOU ADD "PLUS" SIGN IN FRONT OF FUNCTIONS FOR IT TO ACCESSIBLE BY OTHER "+" FUNCTIONS...
-+ (SCNVector3)calculateCentroidForPoints:(NSArray<NSValue *> *)points;
 
 + (void)rigidTransform3DWithMatrixA:(void *)A
                             matrixB:(void *)B

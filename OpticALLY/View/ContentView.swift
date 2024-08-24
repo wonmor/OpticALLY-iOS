@@ -10,11 +10,8 @@ import SwiftUI
 struct ContentView: View {
     @Environment(\.scenePhase) var scenePhase
     @EnvironmentObject var globalState: GlobalState
-
-    // Use a unique ID for each case of the view
-    var uniqueID: String {
-        UUID().uuidString
-    }
+    
+    @State private var uniqueId = UUID()
     
     var body: some View {
         Group {
@@ -25,11 +22,12 @@ struct ContentView: View {
 
             case .scanning:
                 CameraView()
+                    .id(uniqueId)
                     .transition(.opacity)
                     .ignoresSafeArea(.all)
                 
             case .postScanning:
-                PostScanView()
+                PostScanView(uniqueId: $uniqueId)
                     .transition(.opacity)
             }
         }

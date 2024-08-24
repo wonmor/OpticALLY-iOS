@@ -423,26 +423,5 @@ static SCNVector3 _translationVector;
     t = -R * centroid_A + centroid_B;
 }
 
-+ (SCNVector3)calculateCentroidForPoints:(NSArray<NSValue *> *)points {
-    // Initialize variables to accumulate the sum of coordinates
-    float sumX = 0.0f;
-    float sumY = 0.0f;
-    float sumZ = 0.0f;
-
-    // Iterate over the points to accumulate their coordinates
-    for (NSValue *value in points) {
-        SCNVector3 point = [value SCNVector3Value];
-        sumX += point.x;
-        sumY += point.y;
-        sumZ += point.z;
-    }
-
-    // Calculate the average for each coordinate
-    NSUInteger pointCount = points.count;
-    SCNVector3 centroid = SCNVector3Make(sumX / pointCount, sumY / pointCount, sumZ / pointCount);
-
-    return centroid;
-}
-
 
 @end
