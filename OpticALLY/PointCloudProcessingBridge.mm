@@ -443,35 +443,37 @@ static SCNVector3 _translationVector;
 
 
 + (void)rigidTransform3DWithMatrixA:(Eigen::MatrixXd &)A matrixB:(Eigen::MatrixXd &)B rotation:(Eigen::Matrix3d &)R translation:(Eigen::Vector3d &)t {
-    NSCAssert(A.rows() == 3 && B.rows() == 3 && A.cols() == B.cols(), @"Matrices A and B must be 3xN and have the same dimensions");
-
-    int num_cols = static_cast<int>(A.cols());
-
-    // Find mean column-wise
-    Eigen::Vector3d centroid_A = A.rowwise().mean();
-    Eigen::Vector3d centroid_B = B.rowwise().mean();
-
-    // Subtract mean
-    Eigen::MatrixXd Am = A.colwise() - centroid_A;
-    Eigen::MatrixXd Bm = B.colwise() - centroid_B;
-
-    Eigen::Matrix3d H = Am * Bm.transpose();
-
-    // Perform SVD
+    // Ensure A and B have the same number of columns (points)
+    assert(A.cols() == B.cols());
+    NSUInteger numPoints = A.cols();
+    
+    // Compute centroids of A and B
+    Eigen::Vector3d centroidA = A.rowwise().mean();
+    Eigen::Vector3d centroidB = B.rowwise().mean();
+    
+    // Subtract the centroids from A and B
+    Eigen::MatrixXd centeredA = A.colwise() - centroidA;
+    Eigen::MatrixXd centeredB = B.colwise() - centroidB;
+    
+    // Compute the covariance matrix H
+    Eigen::Matrix3d H = centeredA * centeredB.transpose();
+    
+    // Perform Singular Value Decomposition (SVD) on H
     Eigen::JacobiSVD<Eigen::MatrixXd> svd(H, Eigen::ComputeFullU | Eigen::ComputeFullV);
     Eigen::Matrix3d U = svd.matrixU();
-    Eigen::Matrix3d Vt = svd.matrixV().transpose();
+    Eigen::Matrix3d V = svd.matrixV();
     
-    R = Vt.transpose() * U.transpose();
-
-    // Special reflection case
+    // Compute the rotation matrix R
+    R = V * U.transpose();
+    
+    // Handle special reflection case (determinant of R should be 1 for a proper rotation)
     if (R.determinant() < 0) {
-        NSLog(@"det(R) < 0, reflection detected! Correcting for it ...");
-        Vt.row(2) *= -1;
-        R = Vt.transpose() * U.transpose();
+        V.col(2) *= -1;
+        R = V * U.transpose();
     }
-
-    t = -R * centroid_A + centroid_B;
+    
+    // Compute the translation vector t
+    t = centroidB - R * centroidA;
 }
 
 
