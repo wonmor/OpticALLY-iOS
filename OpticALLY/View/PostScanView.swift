@@ -430,6 +430,8 @@ struct PostScanView: View {
                                     triggerReinit.toggle()
                                     
                                     globalState.currentView = .scanning
+                                    
+                                    // VERY IMPORTANT! CURRENTLY THERE'S A BUG WHERE UNLESS YOU COMPLETELY QUIT THE APP AND RESTART, THE POINT CLOUD ALIGNMENT PROCESS WILL BE MESSED UP WHEN YOU RE-RUN IT AGAIN AFTER CLICKING THE BACK BUTTON! BUG FIX NEEDED!
                                 }
                             }
                         }
