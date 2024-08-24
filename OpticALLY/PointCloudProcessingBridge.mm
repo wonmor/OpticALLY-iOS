@@ -312,6 +312,58 @@ static SCNVector3 _translationVector;
 //        for (auto& point : pointCloud->points_) {
 //            point += movementVector;
 //        }
+        
+        // Get the corresponding facial landmark points for index 0
+        CGPoint noseTip0 = [noseTipArray[0] CGPointValue];
+        CGPoint chin0 = [chinArray[0] CGPointValue];
+        CGPoint leftEyeLeftCorner0 = [leftEyeLeftCornerArray[0] CGPointValue];
+        CGPoint rightEyeRightCorner0 = [rightEyeRightCornerArray[0] CGPointValue];
+        CGPoint leftMouthCorner0 = [leftMouthCornerArray[0] CGPointValue];
+        CGPoint rightMouthCorner0 = [rightMouthCornerArray[0] CGPointValue];
+
+        // Convert CGPoint to cv::Point2f for index 0
+        cv::Point2f noseTipCV0 = cv::Point2f(noseTip0.x, noseTip0.y);
+        cv::Point2f chinCV0 = cv::Point2f(chin0.x, chin0.y);
+        cv::Point2f leftEyeLeftCornerCV0 = cv::Point2f(leftEyeLeftCorner0.x, leftEyeLeftCorner0.y);
+        cv::Point2f rightEyeRightCornerCV0 = cv::Point2f(rightEyeRightCorner0.x, rightEyeRightCorner0.y);
+        cv::Point2f leftMouthCornerCV0 = cv::Point2f(leftMouthCorner0.x, leftMouthCorner0.y);
+        cv::Point2f rightMouthCornerCV0 = cv::Point2f(rightMouthCorner0.x, rightMouthCorner0.y);
+
+        // Initialize the new ImageDepth object with the transformation applied to the first image and depth file
+        auto transformedImageDepth = std::make_shared<ImageDepth>(
+            [calibrationFilePath UTF8String],
+            cppImageFiles[0],       // The first image file
+            cppDepthFiles[0],       // The first depth file
+            640,                    // Image width (adjust if necessary)
+            480,                    // Image height (adjust if necessary)
+            0.1,                    // Min depth (adjust if necessary)
+            0.5,                    // Max depth (adjust if necessary)
+            0.01,                   // Normal radius (adjust if necessary)
+            noseTipCV0,              // Nose tip (as cv::Point2f)
+            chinCV0,                 // Chin (as cv::Point2f)
+            leftEyeLeftCornerCV0,    // Left eye corner (as cv::Point2f)
+            rightEyeRightCornerCV0,  // Right eye corner (as cv::Point2f)
+            leftMouthCornerCV0,      // Left mouth corner (as cv::Point2f)
+            rightMouthCornerCV0,     // Right mouth corner (as cv::Point2f)
+            R.cast<float>(),        // Rotation matrix (cast to float if needed)
+            t.cast<float>()         // Translation vector (cast to float if needed)
+        );
+
+        // Get the transformed point cloud from the new ImageDepth object
+        auto transformedPointCloud = transformedImageDepth->getPointCloud();
+
+        if (transformedPointCloud && !transformedPointCloud->points_.empty()) {
+            // Replace pointClouds[0] with the transformedPointCloud
+            if (!pointClouds.empty()) {
+                pointClouds[0] = transformedPointCloud;
+            } else {
+                // If pointClouds is empty, just add transformedPointCloud to it
+                pointClouds.push_back(transformedPointCloud);
+            }
+        } else {
+            NSLog(@"Transformed point cloud is empty or invalid.");
+        }
+
     } else {
         NSLog(@"centroidsA is empty or not available.");
     }
