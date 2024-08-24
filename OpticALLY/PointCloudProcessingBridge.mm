@@ -317,38 +317,38 @@ static SCNVector3 _translationVector;
       _translationVector = translationVector;
     
     
-//    if (centroidsA) {
-//        // Iterate over each point in centroidsA and apply the transformation
-//        for (NSUInteger i = 0; i < centroidsA.count; ++i) {
-//            // Get the current point as SCNVector3
-//            SCNVector3 pointA = [centroidsA[i] SCNVector3Value];
-//
-//            // Convert SCNVector3 to Eigen::Vector3d
-//            Eigen::Vector3d pointVec(pointA.x, pointA.y, pointA.z);
-//
-//            // Apply the rotation and translation
-//            Eigen::Vector3d transformedPoint = R * pointVec + t;
-//
-//            // Convert the transformed point back to SCNVector3
-//            SCNVector3 transformedPointA = SCNVector3Make(transformedPoint.x(), transformedPoint.y(), transformedPoint.z());
-//
-//            // Update the point in centroidsA
-//            centroidsA[i] = [NSValue valueWithSCNVector3:transformedPointA];
-//        }
-//
-//        // Debugging: Print out the transformed centroids
-//        NSLog(@"Transformed centroids in centroidsA:");
-//        for (NSUInteger i = 0; i < centroidsA.count; ++i) {
-//            SCNVector3 transformedPointA = [centroidsA[i] SCNVector3Value];
-//            NSLog(@"Centroid %lu: (%f, %f, %f)", (unsigned long)i, transformedPointA.x, transformedPointA.y, transformedPointA.z);
-//        }
-//    } else {
-//        NSLog(@"centroidsA is empty or not available.");
-//    }
+    if (centroidsA) {
+        // Iterate over each point in centroidsA and apply the transformation
+        for (NSUInteger i = 0; i < centroidsA.count; ++i) {
+            // Get the current point as SCNVector3
+            SCNVector3 pointA = [centroidsA[i] SCNVector3Value];
+
+            // Convert SCNVector3 to Eigen::Vector3d
+            Eigen::Vector3d pointVec(pointA.x, pointA.y, pointA.z);
+
+            // Apply the rotation and translation
+            Eigen::Vector3d transformedPoint = R * pointVec + t;
+
+            // Convert the transformed point back to SCNVector3
+            SCNVector3 transformedPointA = SCNVector3Make(transformedPoint.x(), transformedPoint.y(), transformedPoint.z());
+
+            // Update the point in centroidsA
+            centroidsA[i] = [NSValue valueWithSCNVector3:transformedPointA];
+        }
+
+        // Debugging: Print out the transformed centroids
+        NSLog(@"Transformed centroids in centroidsA:");
+        for (NSUInteger i = 0; i < centroidsA.count; ++i) {
+            SCNVector3 transformedPointA = [centroidsA[i] SCNVector3Value];
+            NSLog(@"Centroid %lu: (%f, %f, %f)", (unsigned long)i, transformedPointA.x, transformedPointA.y, transformedPointA.z);
+        }
+    } else {
+        NSLog(@"centroidsA is empty or not available.");
+    }
 
     
-//
-//    // Apply the rigid transformation to each point in pointClouds[0]
+
+    // Apply the rigid transformation to each point in pointClouds[0]
 //    if (!pointClouds.empty()) {
 //        auto& pointCloud = pointClouds[0]; // Assuming pointClouds[0] is the point cloud to transform
 //
