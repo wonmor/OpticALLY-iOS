@@ -350,7 +350,7 @@ static SCNVector3 _translationVector;
 
     // Apply the rigid transformation to the point cloud centroid and adjust all points accordingly
     if (!pointClouds.empty()) {
-        auto& pointCloud = pointClouds[1];
+        auto& pointCloud = pointClouds[0];
 
         // Calculate the centroid of the point cloud
         Eigen::Vector3d centroid(0, 0, 0);
