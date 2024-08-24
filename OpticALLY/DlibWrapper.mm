@@ -115,8 +115,10 @@ struct VertexOut {
                // Use model points as before
                model_points.push_back(cv::Point3d(0.0f, 0.0f, 0.0f));               // Nose tip
                model_points.push_back(cv::Point3d(0.0f, -330.0f, -65.0f));          // Chin
-               model_points.push_back(cv::Point3d(-225.0f, 170.0f, -135.0f));       // Left eye right corner
-               model_points.push_back(cv::Point3d(225.0f, 170.0f, -135.0f));        // Right eye left corner
+        model_points.push_back(cv::Point3d(-125.0f, 170.0f, -135.0f));       // Left eye right corner
+       // Left eye right corner
+        model_points.push_back(cv::Point3d(125.0f, 170.0f, -135.0f));        // Right eye left corner
+       // Right eye left corner
                model_points.push_back(cv::Point3d(-150.0f, -150.0f, -125.0f));      // Left Mouth corner
                model_points.push_back(cv::Point3d(150.0f, -150.0f, -125.0f));       // Right Mouth corner
 
