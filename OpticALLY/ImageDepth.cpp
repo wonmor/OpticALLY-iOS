@@ -890,7 +890,7 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
         std::vector<std::vector<cv::Point3f>> clusters;
 
         // Number of clusters, same as number of significant landmark points
-        int num_clusters = 3;
+        int num_clusters = 6;
 
         // Run K-means clustering on blue_pts
         kmeans_clustering(blue_pts, num_clusters, clusters);
