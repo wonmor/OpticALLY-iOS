@@ -1,5 +1,5 @@
 # OpticALLY-iOS
-OpticALLY 3D Capture features an iOS app that can scan user's faces by leveraging iPhone's TrueDepth cameras, designed for bespoke eyeglasses.
+OpticALLY 3D Capture features an iOS app that can scan user's faces by leveraging iPhone's TrueDepth cameras, designed for bespoke eyeglasses. Supports full face registration with camera stationary but only the face moving — something the industry has never seen before.
 
 <table><tr>
 
