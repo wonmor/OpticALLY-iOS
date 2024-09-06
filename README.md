@@ -3,9 +3,9 @@ OpticALLY 3D Capture features an iOS app that can scan user's faces by leveragin
 
 <table><tr>
 
-<td valign="center"><img width="500" alt="Screenshot-1" src="sample-exports/1.png" /></td>
+<td valign="center"><img width="200" alt="Screenshot-1" src="sample-exports/1.jpg" /></td>
 
-<td valign="center"><img width="500" alt="Screenshot-2" src="sample-exports/2.png" /></td>
+<td valign="center"><img width="200" alt="Screenshot-2" src="sample-exports/2.png" /></td>
 
 </tr></table>
 
