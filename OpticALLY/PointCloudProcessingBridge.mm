@@ -5,6 +5,8 @@
 #include <vector>
 #import <SceneKit/SceneKit.h>
 #include <memory>
+#include <numeric>
+#include <algorithm>
 #include <fstream>
 #include <Eigen/Dense>
 #include <filesystem>
@@ -442,39 +444,85 @@ static SCNVector3 _translationVector;
     return YES;
 }
 
++ (double)computeRMSD:(const Eigen::MatrixXd &)A alignedB:(const Eigen::MatrixXd &)B {
+    Eigen::MatrixXd diff = A - B;
+    return std::sqrt((diff.array().square().sum()) / A.cols());
+}
 
-+ (void)rigidTransform3DWithMatrixA:(Eigen::MatrixXd &)A matrixB:(Eigen::MatrixXd &)B rotation:(Eigen::Matrix3d &)R translation:(Eigen::Vector3d &)t {
++ (void)rigidTransform3DWithMatrixA:(Eigen::MatrixXd &)A matrixB:(Eigen::MatrixXd &)B
+                           rotation:(Eigen::Matrix3d &)bestR
+                         translation:(Eigen::Vector3d &)bestT {
     // Ensure A and B have the same number of columns (points)
     assert(A.cols() == B.cols());
     NSUInteger numPoints = A.cols();
     
-    // Compute centroids of A and B
-    Eigen::Vector3d centroidA = A.rowwise().mean();
-    Eigen::Vector3d centroidB = B.rowwise().mean();
+    // Define variables for the best alignment
+    double bestRMSD = std::numeric_limits<double>::infinity();
     
-    // Subtract the centroids from A and B
-    Eigen::MatrixXd centeredA = A.colwise() - centroidA;
-    Eigen::MatrixXd centeredB = B.colwise() - centroidB;
+    // Initialize Eigen Matrix and Vector for the best rotation and translation
+    Eigen::Matrix3d bestRotation = Eigen::Matrix3d::Identity();
+    Eigen::Vector3d bestTranslation = Eigen::Vector3d::Zero();
     
-    // Compute the covariance matrix H
-    Eigen::Matrix3d H = centeredA * centeredB.transpose();
-    
-    // Perform Singular Value Decomposition (SVD) on H
-    Eigen::JacobiSVD<Eigen::MatrixXd> svd(H, Eigen::ComputeFullU | Eigen::ComputeFullV);
-    Eigen::Matrix3d U = svd.matrixU();
-    Eigen::Matrix3d V = svd.matrixV();
-    
-    // Compute the rotation matrix R
-    R = V * U.transpose();
-    
-    // Handle special reflection case (determinant of R should be 1 for a proper rotation)
-    if (R.determinant() < 0) {
-        V.col(2) *= -1;
-        R = V * U.transpose();
-    }
-    
-    // Compute the translation vector t
-    t = centroidB - R * centroidA;
+    // Generate all permutations of points in B (6 permutations for 3 points)
+    std::vector<int> indices(numPoints);
+    std::iota(indices.begin(), indices.end(), 0); // Fill indices with 0, 1, ..., numPoints - 1
+
+    // Create a matrix to store the permuted version of B
+    Eigen::MatrixXd permutedB(3, numPoints);
+
+    do {
+        // Re-arrange B using the current permutation of indices
+        for (size_t i = 0; i < numPoints; ++i) {
+            permutedB.col(i) = B.col(indices[i]);
+        }
+        
+        // Compute centroids of A and permutedB
+        Eigen::Vector3d centroidA = A.rowwise().mean();
+        Eigen::Vector3d centroidB = permutedB.rowwise().mean();
+
+        // Center the points by subtracting the centroids
+        Eigen::MatrixXd centeredA = A.colwise() - centroidA;
+        Eigen::MatrixXd centeredB = permutedB.colwise() - centroidB;
+        
+        // Compute the covariance matrix
+        Eigen::Matrix3d H = centeredA * centeredB.transpose();
+        
+        // Perform Singular Value Decomposition (SVD)
+        Eigen::JacobiSVD<Eigen::MatrixXd> svd(H, Eigen::ComputeFullU | Eigen::ComputeFullV);
+        Eigen::Matrix3d U = svd.matrixU();
+        Eigen::Matrix3d V = svd.matrixV();
+        
+        // Compute the rotation matrix
+        Eigen::Matrix3d R = V * U.transpose();
+        
+        // Handle reflection case (determinant should be 1, not -1)
+        if (R.determinant() < 0) {
+            V.col(2) *= -1;
+            R = V * U.transpose();
+        }
+        
+        // Compute the translation vector
+        Eigen::Vector3d T = centroidB - R * centroidA;
+
+        // Apply the transformation to A
+        Eigen::MatrixXd alignedA = (R * A).colwise() + T;
+        
+        // Compute RMSD between aligned A and the current permutation of B
+        // Because function declarations explicitly say void * since importing Eigen in header file is not allowed, make sure to add memory address sign '&' when passing in as params!
+        double rmsdValue = [self computeRMSD:&alignedA alignedB:&permutedB];
+        
+        // Keep track of the best (lowest) RMSD and corresponding rotation/translation
+        if (rmsdValue < bestRMSD) {
+            bestRMSD = rmsdValue;
+            bestRotation = R;
+            bestTranslation = T;
+        }
+
+    } while (std::next_permutation(indices.begin(), indices.end()));
+
+    // Output the best rotation and translation found
+    bestR = bestRotation;
+    bestT = bestTranslation;
 }
 
 
