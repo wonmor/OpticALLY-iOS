@@ -306,13 +306,6 @@ static SCNVector3 _translationVector;
         NSLog(@"Transformed Centroid: (%f, %f, %f)", transformedCentroid.x(), transformedCentroid.y(), transformedCentroid.z());
         NSLog(@"Movement Vector: (%f, %f, %f)", movementVector.x(), movementVector.y(), movementVector.z());
         
-//        auto& pointCloud = pointClouds[0];
-//
-//        // Apply the movement vector to all points in the point cloud
-//        for (auto& point : pointCloud->points_) {
-//            point += movementVector;
-//        }
-        
         // Get the corresponding facial landmark points for index 0
         CGPoint noseTip0 = [noseTipArray[0] CGPointValue];
         CGPoint chin0 = [chinArray[0] CGPointValue];
