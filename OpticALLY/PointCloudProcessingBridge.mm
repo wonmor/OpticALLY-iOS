@@ -305,6 +305,14 @@ static SCNVector3 _translationVector;
         NSLog(@"Original Centroid: (%f, %f, %f)", originalCentroid.x(), originalCentroid.y(), originalCentroid.z());
         NSLog(@"Transformed Centroid: (%f, %f, %f)", transformedCentroid.x(), transformedCentroid.y(), transformedCentroid.z());
         NSLog(@"Movement Vector: (%f, %f, %f)", movementVector.x(), movementVector.y(), movementVector.z());
+
+        // Right now we're doing below operation within ImageDepth.cpp instead of here, hence I commented out
+//        auto& pointCloud = pointClouds[0];
+//
+//        // Apply the movement vector to all points in the point cloud
+//        for (auto& point : pointCloud->points_) {
+//            point += movementVector;
+//        }
         
         // Get the corresponding facial landmark points for index 0
         CGPoint noseTip0 = [noseTipArray[0] CGPointValue];
