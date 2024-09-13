@@ -97,56 +97,7 @@ struct VertexOut {
         dlib::point rightEyeRightCorner = shape.part(45);
         dlib::point leftMouthCorner = shape.part(48);
         dlib::point rightMouthCorner = shape.part(54);
-        
-        // Extract eye landmarks
-        dlib::point leftEye = shape.part(36);
-        dlib::point rightEye = shape.part(45);
-
-        // Convert to 2D points
-        simd_float2 leftEye2D = simd_make_float2(leftEye.x(), leftEye.y());
-        simd_float2 rightEye2D = simd_make_float2(rightEye.x(), rightEye.y());
-
-        // Convert to 3D points
-        simd_float3 leftEye3D = [_pointCloudView convert2DPointTo3D:leftEye2D];
-        simd_float3 rightEye3D = [_pointCloudView convert2DPointTo3D:rightEye2D];
-
-        // Check if 3D points are valid
-        if (!isnan(leftEye3D.x) && !isnan(rightEye3D.x)) {
-            // Calculate pupil distance in millimeters
-            float pupilDistance = simd_distance(leftEye3D, rightEye3D) * 100.0f;
-
-            // Log the pupil distance
-            NSLog(@"Pupil Distance: %f mm", pupilDistance);
-            
-            // Update the UI
-            [_cameraViewController updatePupilDistance:pupilDistance];
-        
-        } else {
-            NSLog(@"Invalid 3D coordinates for eyes.");
-        }
-
-        dlib::point eyeMidpoint = dlib::point((leftEye.x() + rightEye.x()) / 2, (leftEye.y() + rightEye.y()) / 2);
-        
-        // Left eye landmarks (points 36 to 41)
-        std::vector<dlib::point> leftEyePoints;
-        for (int idx = 36; idx <= 41; ++idx) {
-            leftEyePoints.push_back(shape.part(idx));
-        }
-
-     
-        // Step 1: Calculate the 2D midpoint between the eyes
-        simd_float2 eyeMidpoint2D = simd_make_float2(eyeMidpoint.x(), eyeMidpoint.y());
-        NSLog(@"2D Eye Midpoint: (%f, %f)", eyeMidpoint2D.x, eyeMidpoint2D.y);
-
-        // Step 2: Convert the 2D midpoint to 3D space
-        simd_float3 eyeMidpoint3D = [_pointCloudView convert2DPointTo3D:eyeMidpoint2D];
-        NSLog(@"3D Eye Midpoint: (%f, %f, %f)", eyeMidpoint3D.x, eyeMidpoint3D.y, eyeMidpoint3D.z);
-
-        // Step 3: Calculate the distance between the midpoint and the screen
-        float distanceToScreen = sqrt(pow(eyeMidpoint3D.x, 2) + pow(eyeMidpoint3D.y, 2) + pow(eyeMidpoint3D.z, 2));
-        NSLog(@"Distance between screen and midpoint between left and right eye: %f", distanceToScreen);
-
-        
+    
         // OpenCV head pose estimation
         cv::Mat cvImg(height, width, CV_8UC4, baseBuffer);
         cv::cvtColor(cvImg, cvImg, cv::COLOR_BGRA2BGR);

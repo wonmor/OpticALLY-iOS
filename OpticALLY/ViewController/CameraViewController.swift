@@ -666,6 +666,22 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         print("AVCaptureSession Paused")
     }
     
+    @objc func updatePupilDistance(_ pupilDistance: Float) {
+       DispatchQueue.main.async {
+           self.pupilDistance = Double(pupilDistance)
+           // Optionally, update the UI or perform additional actions
+           print("Updated Pupil Distance: \(self.pupilDistance) mm")
+       }
+   }
+    
+    @objc func updateFaceDistance(_ faceDistance: Float) {
+        DispatchQueue.main.async {
+            self.faceDistance = Int(faceDistance)
+            // Optionally, update the UI or perform additional actions
+            print("Updated Face Distance: \(self.faceDistance ?? 0) units")
+        }
+    }
+    
     // MARK: - Point cloud view gestures
     
     @IBAction private func handlePinch(_ gesture: UIPinchGestureRecognizer) {
@@ -746,14 +762,18 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         }
         
         // Process video sample buffer
-            let sampleBuffer = syncedVideoData.sampleBuffer
+        let sampleBuffer = syncedVideoData.sampleBuffer
         
         // Process depth data and video pixel buffer
         let depthData = syncedDepthData.depthData
         
-        var depthDataToUse = depthData
+        // Convert depth data to 32-bit float format
+        let depthDataToUse = depthData.converting(toDepthDataType: kCVPixelFormatType_DepthFloat32)
+        let depthPixelBuffer = depthDataToUse.depthDataMap
         
-        depthDataToUse = depthData.converting(toDepthDataType: kCVPixelFormatType_DepthFloat16)
+        guard let videoPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
+            return
+        }
         
         // Process metadata
         if !currentMetadata.isEmpty {
@@ -761,22 +781,95 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
                 .compactMap { $0 as? AVMetadataFaceObject }
                 .map { NSValue(cgRect: $0.bounds) }
             
+            // Assuming `wrapper.doWork` processes the sampleBuffer and depthData
             wrapper.doWork(on: sampleBuffer, inRects: boundsArray, with: depthDataToUse)
         }
         
-        guard let videoPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
-            return
-        }
-      
+        // Update the video frame data on the main thread
         DispatchQueue.main.async {
             self.videoFrameData.pixelBuffer = videoPixelBuffer
         }
         
+        // Enqueue the sample buffer for display
         layer.enqueue(sampleBuffer)
         cloudView?.setDepthFrame(nil, withTexture: nil)
         cloudView?.setDepthFrame(depthData, withTexture: videoPixelBuffer)
-
         
+        // **Start of face distance calculation integration**
+        
+        // Lock the depth pixel buffer for reading
+        CVPixelBufferLockBaseAddress(depthPixelBuffer, .readOnly)
+        defer {
+            CVPixelBufferUnlockBaseAddress(depthPixelBuffer, .readOnly)
+        }
+        
+        // Get the depth map dimensions
+        let depthWidth = CVPixelBufferGetWidth(depthPixelBuffer)
+        let depthHeight = CVPixelBufferGetHeight(depthPixelBuffer)
+        
+        // Get the face bounding box from metadata
+        if !currentMetadata.isEmpty {
+            guard let faceMetadata = currentMetadata.first as? AVMetadataFaceObject else {
+                return
+            }
+            
+            // The face bounding box in normalized coordinates (0..1)
+            let faceBoundingBox = faceMetadata.bounds
+            
+            // Map face bounding box to depth map coordinates
+            // Note: Adjust this if video and depth maps have different orientations or sizes
+            let faceRectInDepthCoordinates = CGRect(
+                x: faceBoundingBox.origin.x * CGFloat(depthWidth),
+                y: faceBoundingBox.origin.y * CGFloat(depthHeight),
+                width: faceBoundingBox.size.width * CGFloat(depthWidth),
+                height: faceBoundingBox.size.height * CGFloat(depthHeight)
+            )
+            
+            // Ensure the faceRect is within the depth map bounds
+            let faceRect = faceRectInDepthCoordinates.integral.intersection(CGRect(x: 0, y: 0, width: depthWidth, height: depthHeight))
+            
+            guard !faceRect.isEmpty else {
+                return
+            }
+            
+            // Access the depth data
+            guard let baseAddress = CVPixelBufferGetBaseAddress(depthPixelBuffer) else { return }
+            let depthDataPointer = baseAddress.assumingMemoryBound(to: Float32.self)
+            
+            var depthValues: [Float32] = []
+            
+            // Iterate over the face region to collect depth values
+            for y in Int(faceRect.minY)..<Int(faceRect.maxY) {
+                for x in Int(faceRect.minX)..<Int(faceRect.maxX) {
+                    let index = y * depthWidth + x
+                    let depthValue = depthDataPointer[index]
+                    
+                    if !depthValue.isNaN && depthValue > 0 {
+                        depthValues.append(depthValue)
+                    }
+                }
+            }
+            
+            // Compute the average depth value
+            guard !depthValues.isEmpty else { return }
+            let averageDepth = depthValues.reduce(0, +) / Float32(depthValues.count)
+            
+            // Adjust for camera-to-screen offset if needed (e.g., 0.01 meters)
+            let cameraToScreenOffset: Float32 = 0.0 // Adjust based on your device specifications
+            
+            let screenToFaceDistance = averageDepth - cameraToScreenOffset
+            
+            // Print out the distance
+            DispatchQueue.main.async {
+                print("Screen to Face Distance: \(screenToFaceDistance) meters")
+                // Update the published property
+                self.faceDistance = Int(screenToFaceDistance * 100.0)
+            }
+        }
+        
+        // **End of face distance calculation integration**
+        
+        // Existing code for saving PLY files
         if ExternalData.isSavingFileAsPLY {
             ExternalData.currentMetadata = PointCloudMetadata(
                 noseTip: noseTip,
@@ -792,4 +885,5 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             ExternalData.isSavingFileAsPLY = false
         }
     }
+
 }
