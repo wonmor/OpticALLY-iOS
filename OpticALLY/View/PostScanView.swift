@@ -443,7 +443,7 @@ struct PostScanView: View {
 //                    }
 //                    .disabled(isProcessing)  // Disable the button when processing
 
-                    Text("OPTICALLY")
+                    Text("YOUR SCAN")
                         .monospaced()
                         .font(.title)
                         .fontWeight(.medium)

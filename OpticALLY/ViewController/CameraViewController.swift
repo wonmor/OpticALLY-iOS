@@ -794,7 +794,7 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         layer.enqueue(sampleBuffer)
         cloudView?.setDepthFrame(nil, withTexture: nil)
         // BELOW LINE ACTIVATES DEVELOPER MODE, POWERED BY METAL SHADER CODE. DEACTIVATED DUE TO ITS HEAVY PERFORMANCE!
-//        cloudView?.setDepthFrame(depthData, withTexture: videoPixelBuffer)
+        // cloudView?.setDepthFrame(depthData, withTexture: videoPixelBuffer)
         
         // **Start of face distance calculation integration**
         
@@ -818,7 +818,6 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             let faceBoundingBox = faceMetadata.bounds
             
             // Map face bounding box to depth map coordinates
-            // Note: Adjust this if video and depth maps have different orientations or sizes
             let faceRectInDepthCoordinates = CGRect(
                 x: faceBoundingBox.origin.x * CGFloat(depthWidth),
                 y: faceBoundingBox.origin.y * CGFloat(depthHeight),
@@ -860,15 +859,103 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             
             let screenToFaceDistance = averageDepth - cameraToScreenOffset
             
-            // Print out the distance
+            // Update the published property
             DispatchQueue.main.async {
                 print("Screen to Face Distance: \(screenToFaceDistance) meters")
-                // Update the published property
                 self.faceDistance = Int(screenToFaceDistance * 100.0)
             }
         }
         
         // **End of face distance calculation integration**
+        
+        // **Start of pupil distance calculation integration**
+        
+        // Get the video frame dimensions
+        let videoWidth = CVPixelBufferGetWidth(videoPixelBuffer)
+        let videoHeight = CVPixelBufferGetHeight(videoPixelBuffer)
+        
+        // Scaling factors between video frame and depth map
+        let xScale = CGFloat(depthWidth) / CGFloat(videoWidth)
+        let yScale = CGFloat(depthHeight) / CGFloat(videoHeight)
+        
+        // Map the eye points to depth map coordinates
+        let leftEyePoint = self.leftEyeLeftCorner
+        let rightEyePoint = self.rightEyeRightCorner
+        
+        // Adjust for coordinate system differences if necessary
+        // If the origin is at the top-left corner and the orientation is the same, no adjustment is needed
+        let leftEyeX = leftEyePoint.x * xScale
+        let leftEyeY = leftEyePoint.y * yScale
+        let rightEyeX = rightEyePoint.x * xScale
+        let rightEyeY = rightEyePoint.y * yScale
+        
+        // Convert to integer indices
+        let leftEyeXInt = Int(leftEyeX)
+        let leftEyeYInt = Int(leftEyeY)
+        let rightEyeXInt = Int(rightEyeX)
+        let rightEyeYInt = Int(rightEyeY)
+        
+        // Ensure indices are within bounds
+        guard leftEyeXInt >= 0 && leftEyeXInt < depthWidth &&
+              leftEyeYInt >= 0 && leftEyeYInt < depthHeight &&
+              rightEyeXInt >= 0 && rightEyeXInt < depthWidth &&
+              rightEyeYInt >= 0 && rightEyeYInt < depthHeight else {
+            return
+        }
+        
+        // Access the depth data
+        guard let baseAddress = CVPixelBufferGetBaseAddress(depthPixelBuffer) else { return }
+        let depthDataPointer = baseAddress.assumingMemoryBound(to: Float32.self)
+        
+        let leftEyeIndex = leftEyeYInt * depthWidth + leftEyeXInt
+        let rightEyeIndex = rightEyeYInt * depthWidth + rightEyeXInt
+        
+        let leftEyeDepth = depthDataPointer[leftEyeIndex]
+        let rightEyeDepth = depthDataPointer[rightEyeIndex]
+        
+        // Check that the depth values are valid
+        guard !leftEyeDepth.isNaN && leftEyeDepth > 0 &&
+              !rightEyeDepth.isNaN && rightEyeDepth > 0 else {
+            return
+        }
+        
+        // Get camera intrinsics
+        guard let cameraCalibrationData = depthData.cameraCalibrationData else {
+            return
+        }
+        let cameraIntrinsics = cameraCalibrationData.intrinsicMatrix
+        
+        let fx = cameraIntrinsics.columns.0.x
+        let fy = cameraIntrinsics.columns.1.y
+        let cx = cameraIntrinsics.columns.2.x
+        let cy = cameraIntrinsics.columns.2.y
+        
+        // Compute the 3D positions
+        let leftEyeX3D = (Float(leftEyeX) - cx) * leftEyeDepth / fx
+        let leftEyeY3D = (Float(leftEyeY) - cy) * leftEyeDepth / fy
+        let leftEyeZ3D = leftEyeDepth
+        
+        let rightEyeX3D = (Float(rightEyeX) - cx) * rightEyeDepth / fx
+        let rightEyeY3D = (Float(rightEyeY) - cy) * rightEyeDepth / fy
+        let rightEyeZ3D = rightEyeDepth
+        
+        // Compute the distance between the 3D points
+        let dx = leftEyeX3D - rightEyeX3D
+        let dy = leftEyeY3D - rightEyeY3D
+        let dz = leftEyeZ3D - rightEyeZ3D
+        
+        let distance = sqrt(dx * dx + dy * dy + dz * dz)
+        
+        // Convert to millimeters
+        let pupilDistanceMM = distance * 1000.0
+        
+        // Update the published property
+        DispatchQueue.main.async {
+            self.pupilDistance = Double(pupilDistanceMM)
+            print("Pupil Distance: \(pupilDistanceMM) mm")
+        }
+        
+        // **End of pupil distance calculation integration**
         
         // Existing code for saving PLY files
         if ExternalData.isSavingFileAsPLY {
