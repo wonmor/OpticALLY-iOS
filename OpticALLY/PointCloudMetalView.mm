@@ -50,6 +50,165 @@ simd::float3 matrix4_mul_vector3(simd::float4x4 m, simd::float3 v) {
     id<MTLDepthStencilState> _depthStencilState;
 }
 
+// Add this function before the convert2DPointTo3D method
+float halfToFloat(uint16_t half) {
+    uint32_t sign = (half >> 15) & 0x00000001;
+    uint32_t exponent = (half >> 10) & 0x0000001F;
+    uint32_t mantissa = half & 0x000003FF;
+
+    if (exponent == 0) {
+        if (mantissa == 0) {
+            // Zero
+            return sign ? -0.0f : 0.0f;
+        } else {
+            // Subnormal number
+            while ((mantissa & 0x00000400) == 0) {
+                mantissa <<= 1;
+                exponent -= 1;
+            }
+            exponent += 1;
+            mantissa &= ~0x00000400;
+        }
+    } else if (exponent == 31) {
+        if (mantissa == 0) {
+            // Infinity
+            return sign ? -INFINITY : INFINITY;
+        } else {
+            // NaN
+            return NAN;
+        }
+    }
+
+    exponent = exponent + (127 - 15);
+    uint32_t bits = (sign << 31) | (exponent << 23) | (mantissa << 13);
+    float result;
+    memcpy(&result, &bits, sizeof(result));
+    return result;
+}
+
+- (simd_float3)convert2DPointTo3D:(simd_float2)point2D {
+    __block AVDepthData* depthData = nil;
+
+    // Synchronize access to the depth data
+    dispatch_sync(_syncQueue, ^{
+        depthData = self->_internalDepthFrame;
+    });
+
+    // Ensure depth data is available
+    if (!depthData) {
+        NSLog(@"Depth data is not available.");
+        return simd_make_float3(0, 0, 0);
+    } else {
+        NSLog(@"Depth data is available.");
+    }
+
+    // Get the depth map from the depth data
+    CVPixelBufferRef depthFrame = depthData.depthDataMap;
+
+    // Lock the base address of the depth frame for reading
+    CVReturn lockResult = CVPixelBufferLockBaseAddress(depthFrame, kCVPixelBufferLock_ReadOnly);
+    if (lockResult != kCVReturnSuccess) {
+        NSLog(@"Failed to lock depth frame base address.");
+        return simd_make_float3(0, 0, 0);
+    } else {
+        NSLog(@"Depth frame base address locked.");
+    }
+
+    // Get the dimensions of the depth frame
+    size_t width = CVPixelBufferGetWidth(depthFrame);
+    size_t height = CVPixelBufferGetHeight(depthFrame);
+    NSLog(@"Depth frame dimensions: width=%zu, height=%zu", width, height);
+
+    // Ensure the provided 2D point is within bounds
+    int x = (int)point2D.x;
+    int y = (int)point2D.y;
+
+    if (x < 0 || x >= width || y < 0 || y >= height) {
+        NSLog(@"2D point (%d, %d) is out of bounds.", x, y);
+        CVPixelBufferUnlockBaseAddress(depthFrame, kCVPixelBufferLock_ReadOnly);
+        return simd_make_float3(0, 0, 0);
+    } else {
+        NSLog(@"2D point (%d, %d) is within bounds.", x, y);
+    }
+
+    // Access the depth value at the given point
+    void* baseAddress = CVPixelBufferGetBaseAddress(depthFrame);
+    size_t bytesPerRow = CVPixelBufferGetBytesPerRow(depthFrame);
+    NSLog(@"Base address acquired. Bytes per row: %zu", bytesPerRow);
+
+    OSType pixelFormat = CVPixelBufferGetPixelFormatType(depthFrame);
+    float depthValue = 0;
+
+    if (pixelFormat == kCVPixelFormatType_DisparityFloat16 || pixelFormat == kCVPixelFormatType_DepthFloat16) {
+        NSLog(@"Pixel format is 16-bit float.");
+        // For 16-bit half-precision float
+        uint16_t* dataPtr = (uint16_t*)baseAddress;
+        size_t rowBytes = bytesPerRow / sizeof(uint16_t);
+        size_t index = y * rowBytes + x;
+        uint16_t depth16 = dataPtr[index];
+        depthValue = halfToFloat(depth16);
+        NSLog(@"Depth value at (%d, %d): %f (after conversion from half)", x, y, depthValue);
+    } else if (pixelFormat == kCVPixelFormatType_DisparityFloat32 || pixelFormat == kCVPixelFormatType_DepthFloat32) {
+        NSLog(@"Pixel format is 32-bit float.");
+        // For 32-bit float
+        float* dataPtr = (float*)baseAddress;
+        size_t rowBytes = bytesPerRow / sizeof(float);
+        size_t index = y * rowBytes + x;
+        depthValue = dataPtr[index];
+        NSLog(@"Depth value at (%d, %d): %f", x, y, depthValue);
+    } else {
+        // Unsupported pixel format
+        NSLog(@"Unsupported pixel format: %u", (unsigned int)pixelFormat);
+        CVPixelBufferUnlockBaseAddress(depthFrame, kCVPixelBufferLock_ReadOnly);
+        return simd_make_float3(0, 0, 0);
+    }
+
+    // Unlock the depth frame after reading
+    CVPixelBufferUnlockBaseAddress(depthFrame, kCVPixelBufferLock_ReadOnly);
+    NSLog(@"Depth frame base address unlocked.");
+
+    // Validate the depth value
+    if (isnan(depthValue) || depthValue <= 0) {
+        NSLog(@"Invalid depth value: %f", depthValue);
+        return simd_make_float3(0, 0, 0);
+    } else {
+        NSLog(@"Valid depth value: %f", depthValue);
+    }
+
+    // Obtain and adjust the intrinsic matrix based on the depth frame dimensions
+    matrix_float3x3 adjustedIntrinsics = depthData.cameraCalibrationData.intrinsicMatrix;
+    CGSize referenceDimensions = depthData.cameraCalibrationData.intrinsicMatrixReferenceDimensions;
+    NSLog(@"Intrinsic matrix reference dimensions: width=%f, height=%f", referenceDimensions.width, referenceDimensions.height);
+
+    float ratioX = referenceDimensions.width / (float)width;
+    float ratioY = referenceDimensions.height / (float)height;
+    NSLog(@"Scaling ratios: ratioX=%f, ratioY=%f", ratioX, ratioY);
+
+    adjustedIntrinsics.columns[0][0] /= ratioX; // fx
+    adjustedIntrinsics.columns[1][1] /= ratioY; // fy
+    adjustedIntrinsics.columns[2][0] /= ratioX; // cx
+    adjustedIntrinsics.columns[2][1] /= ratioY; // cy
+
+    // Extract intrinsic parameters
+    float fx = adjustedIntrinsics.columns[0][0];
+    float fy = adjustedIntrinsics.columns[1][1];
+    float cx = adjustedIntrinsics.columns[2][0];
+    float cy = adjustedIntrinsics.columns[2][1];
+    NSLog(@"Adjusted intrinsic parameters: fx=%f, fy=%f, cx=%f, cy=%f", fx, fy, cx, cy);
+
+    // Compute the 3D point in camera space
+    float px = (point2D.x - cx) / fx * depthValue;
+    float py = (point2D.y - cy) / fy * depthValue;
+    float pz = depthValue;
+    NSLog(@"Computed 3D point: (%f, %f, %f)", px, py, pz);
+
+    simd_float3 point3D = {px, py, pz};
+
+    return point3D;
+}
+
+
+
 - (nonnull instancetype)initWithFrame:(CGRect)frameRect device:(nullable id<MTLDevice>)device {
     self = [super initWithFrame:frameRect device:device];
     [self internalInit];

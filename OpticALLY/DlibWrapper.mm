@@ -98,6 +98,23 @@ struct VertexOut {
         dlib::point leftMouthCorner = shape.part(48);
         dlib::point rightMouthCorner = shape.part(54);
         
+        dlib::point leftEye = shape.part(36);
+        dlib::point rightEye = shape.part(45);
+        dlib::point eyeMidpoint = dlib::point((leftEye.x() + rightEye.x()) / 2, (leftEye.y() + rightEye.y()) / 2);
+        
+        // Step 1: Calculate the 2D midpoint between the eyes
+        simd_float2 eyeMidpoint2D = simd_make_float2(eyeMidpoint.x(), eyeMidpoint.y());
+        NSLog(@"2D Eye Midpoint: (%f, %f)", eyeMidpoint2D.x, eyeMidpoint2D.y);
+
+        // Step 2: Convert the 2D midpoint to 3D space
+        simd_float3 eyeMidpoint3D = [_pointCloudView convert2DPointTo3D:eyeMidpoint2D];
+        NSLog(@"3D Eye Midpoint: (%f, %f, %f)", eyeMidpoint3D.x, eyeMidpoint3D.y, eyeMidpoint3D.z);
+
+        // Step 3: Calculate the distance between the midpoint and the screen
+        float distanceToScreen = sqrt(pow(eyeMidpoint3D.x, 2) + pow(eyeMidpoint3D.y, 2) + pow(eyeMidpoint3D.z, 2));
+        NSLog(@"Distance between screen and midpoint between left and right eye: %f", distanceToScreen);
+
+        
         // OpenCV head pose estimation
         cv::Mat cvImg(height, width, CV_8UC4, baseBuffer);
         cv::cvtColor(cvImg, cvImg, cv::COLOR_BGRA2BGR);

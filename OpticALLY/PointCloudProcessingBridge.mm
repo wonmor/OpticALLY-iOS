@@ -363,6 +363,7 @@ static SCNVector3 _translationVector;
                 // If pointClouds is empty, just add transformedPointCloud to it
                 pointClouds.push_back(transformedPointCloud);
             }
+            
         } else {
             NSLog(@"Transformed point cloud is empty or invalid.");
         }
@@ -370,7 +371,7 @@ static SCNVector3 _translationVector;
     } else {
         NSLog(@"centroidsA is empty or not available.");
     }
-
+    
 
     // Combine all point clouds into a single point cloud
     auto combinedPointCloud = std::make_shared<PointCloud>();

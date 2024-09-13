@@ -185,25 +185,25 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
             
             print("Session configured!")
             
-//            // Search for highest resolution with half-point depth values
-//            let depthFormats = device.activeFormat.supportedDepthDataFormats
-//            let filtered = depthFormats.filter({
-//                CMFormatDescriptionGetMediaSubType($0.formatDescription) == kCVPixelFormatType_DepthFloat16
-//            })
-//            let selectedFormat = filtered.max(by: {
-//                first, second in CMVideoFormatDescriptionGetDimensions(first.formatDescription).width < CMVideoFormatDescriptionGetDimensions(second.formatDescription).width
-//            })
-//            
-//            do {
-//                try device.lockForConfiguration()
-//                device.activeDepthDataFormat = selectedFormat
-//                device.unlockForConfiguration()
-//            } catch {
-//                print("Could not lock device for configuration: \(error)")
-//              
-//                session.commitConfiguration()
-//                return
-//            }
+            // Search for highest resolution with half-point depth values
+            let depthFormats = device.activeFormat.supportedDepthDataFormats
+            let filtered = depthFormats.filter({
+                CMFormatDescriptionGetMediaSubType($0.formatDescription) == kCVPixelFormatType_DepthFloat16
+            })
+            let selectedFormat = filtered.max(by: {
+                first, second in CMVideoFormatDescriptionGetDimensions(first.formatDescription).width < CMVideoFormatDescriptionGetDimensions(second.formatDescription).width
+            })
+            
+            do {
+                try device.lockForConfiguration()
+                device.activeDepthDataFormat = selectedFormat
+                device.unlockForConfiguration()
+            } catch {
+                print("Could not lock device for configuration: \(error)")
+              
+                session.commitConfiguration()
+                return
+            }
             
             // Start the session on a background thread
             DispatchQueue.global(qos: .userInitiated).async {
@@ -773,8 +773,8 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         }
         
         layer.enqueue(sampleBuffer)
-//        cloudView?.setDepthFrame(nil, withTexture: nil)
-//        cloudView?.setDepthFrame(depthData, withTexture: videoPixelBuffer)
+        cloudView?.setDepthFrame(nil, withTexture: nil)
+        cloudView?.setDepthFrame(depthData, withTexture: videoPixelBuffer)
 
         
         if ExternalData.isSavingFileAsPLY {

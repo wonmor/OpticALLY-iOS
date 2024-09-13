@@ -645,106 +645,11 @@ void ImageDepth::loadDepth(const std::string& file) {
         std::cout << "Average value of undistorted depth map: " << average_value << std::endl;
 }
 
-std::tuple<float, float, float> ImageDepth::projectTo3D(int x, int y) const {
-    double fx = intrinsic(0, 0);
-    double fy = intrinsic(1, 1);
-    double cx = intrinsic(0, 2);
-    double cy = intrinsic(1, 2);
-
-    // Extract depth using (x, y) coordinates
-    float depth = depth_map_undistort.at<float>(y, x);
-    
-    // Check if depth is within valid range
-    if (depth <= min_depth || depth >= max_depth) {
-        return std::make_tuple(std::numeric_limits<float>::quiet_NaN(),
-                               std::numeric_limits<float>::quiet_NaN(),
-                               std::numeric_limits<float>::quiet_NaN());
-    }
-
-    // Project to 3D point
-    float px = (x - cx) / fx * depth;
-    float py = (y - cy) / fy * depth;
-
-    return std::make_tuple(px, py, depth);
-}
-
 void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask) {
     std::cout << "Creating point cloud..." << std::endl;
     pointCloud = std::make_shared<open3d::geometry::PointCloud>();
     std::vector<Eigen::Vector3d> points;
     std::vector<Eigen::Vector3d> colors;
-
-    // Print the 2D and 3D positions of the facial landmarks
-    // VERY IMPORTANT. FOR 3D POINTS I FLIPPED X AND Y SINCE THE FEED HAS X AND Y TRANSPOSED SO NEED TO REVERSE THAT.
-    // Nose Tip
-    std::cout << "[IMAGEDEPTH] Nose Tip 2D Position: (" << noseTip.x << ", " << noseTip.y << ")" << std::endl;
-    auto [noseX, noseY, noseZ] = projectTo3D(static_cast<int>(noseTip.y), static_cast<int>(noseTip.x));
-    std::cout << "[IMAGEDEPTH] Nose Tip 3D Position: (" << noseX << ", " << noseY << ", " << noseZ << ")" << std::endl;
-
-    // Chin
-    std::cout << "[IMAGEDEPTH] Chin 2D Position: (" << chin.x << ", " << chin.y << ")" << std::endl;
-    auto [chinX, chinY, chinZ] = projectTo3D(static_cast<int>(chin.y), static_cast<int>(chin.x));
-    std::cout << "[IMAGEDEPTH] Chin 3D Position: (" << chinX << ", " << chinY << ", " << chinZ << ")" << std::endl;
-
-    // Left Eye Left Corner
-    std::cout << "[IMAGEDEPTH] Left Eye Left Corner 2D Position: (" << leftEyeLeftCorner.x << ", " << leftEyeLeftCorner.y << ")" << std::endl;
-    auto [leftEyeX, leftEyeY, leftEyeZ] = projectTo3D(static_cast<int>(leftEyeLeftCorner.y), static_cast<int>(leftEyeLeftCorner.x));
-    std::cout << "[IMAGEDEPTH] Left Eye Left Corner 3D Position: (" << leftEyeX << ", " << leftEyeY << ", " << leftEyeZ << ")" << std::endl;
-
-    // Right Eye Right Corner
-    std::cout << "[IMAGEDEPTH] Right Eye Right Corner 2D Position: (" << rightEyeRightCorner.x << ", " << rightEyeRightCorner.y << ")" << std::endl;
-    auto [rightEyeX, rightEyeY, rightEyeZ] = projectTo3D(static_cast<int>(rightEyeRightCorner.y), static_cast<int>(rightEyeRightCorner.x));
-    std::cout << "[IMAGEDEPTH] Right Eye Right Corner 3D Position: (" << rightEyeX << ", " << rightEyeY << ", " << rightEyeZ << ")" << std::endl;
-
-    // Left Mouth Corner
-    std::cout << "[IMAGEDEPTH] Left Mouth Corner 2D Position: (" << leftMouthCorner.x << ", " << leftMouthCorner.y << ")" << std::endl;
-    auto [leftMouthX, leftMouthY, leftMouthZ] = projectTo3D(static_cast<int>(leftMouthCorner.y), static_cast<int>(leftMouthCorner.x));
-    std::cout << "[IMAGEDEPTH] Left Mouth Corner 3D Position: (" << leftMouthX << ", " << leftMouthY << ", " << leftMouthZ << ")" << std::endl;
-
-    // Right Mouth Corner
-    std::cout << "[IMAGEDEPTH] Right Mouth Corner 2D Position: (" << rightMouthCorner.x << ", " << rightMouthCorner.y << ")" << std::endl;
-    auto [rightMouthX, rightMouthY, rightMouthZ] = projectTo3D(static_cast<int>(rightMouthCorner.y), static_cast<int>(rightMouthCorner.x));
-    std::cout << "[IMAGEDEPTH] Right Mouth Corner 3D Position: (" << rightMouthX << ", " << rightMouthY << ", " << rightMouthZ << ")" << std::endl;
-    
-    // Create spheres at the landmark locations
-        auto createSphereAt = [&](float x, float y, float z, const Eigen::Vector3d& color, float radius = 0.01) {
-            auto sphere = open3d::geometry::TriangleMesh::CreateSphere(radius);
-            sphere->Translate(Eigen::Vector3d(x, y, z));
-            sphere->PaintUniformColor(color);
-            return sphere;
-        };
-
-        auto noseSphere = createSphereAt(noseX, noseY, noseZ, Eigen::Vector3d(1.0, 0.0, 0.0));
-        auto chinSphere = createSphereAt(chinX, chinY, chinZ, Eigen::Vector3d(0.0, 1.0, 0.0));
-        auto leftEyeSphere = createSphereAt(leftEyeX, leftEyeY, leftEyeZ, Eigen::Vector3d(0.0, 0.0, 1.0));
-        auto rightEyeSphere = createSphereAt(rightEyeX, rightEyeY, rightEyeZ, Eigen::Vector3d(1.0, 1.0, 0.0));
-        auto leftMouthSphere = createSphereAt(leftMouthX, leftMouthY, leftMouthZ, Eigen::Vector3d(0.0, 1.0, 1.0));
-        auto rightMouthSphere = createSphereAt(rightMouthX, rightMouthY, rightMouthZ, Eigen::Vector3d(1.0, 0.0, 1.0));
-
-        // Add the spheres to the point cloud or a separate mesh
-        auto landmarkMesh = std::make_shared<open3d::geometry::TriangleMesh>();
-    
-    // Function to append one mesh to another
-    auto append_mesh = [](std::shared_ptr<open3d::geometry::TriangleMesh> &mesh, const std::shared_ptr<open3d::geometry::TriangleMesh> &to_add) {
-        if (!to_add->vertices_.empty()) {
-            size_t vertex_offset = mesh->vertices_.size();
-            mesh->vertices_.insert(mesh->vertices_.end(), to_add->vertices_.begin(), to_add->vertices_.end());
-            mesh->vertex_colors_.insert(mesh->vertex_colors_.end(), to_add->vertex_colors_.begin(), to_add->vertex_colors_.end());
-
-            for (const auto& triangle : to_add->triangles_) {
-                mesh->triangles_.emplace_back(Eigen::Vector3i(triangle(0) + vertex_offset, triangle(1) + vertex_offset, triangle(2) + vertex_offset));
-            }
-        }
-    };
-
-    
-    // Append each sphere to the landmarkMesh
-    append_mesh(landmarkMesh, noseSphere);
-    append_mesh(landmarkMesh, chinSphere);
-    append_mesh(landmarkMesh, leftEyeSphere);
-    append_mesh(landmarkMesh, rightEyeSphere);
-    append_mesh(landmarkMesh, leftMouthSphere);
-    append_mesh(landmarkMesh, rightMouthSphere);
 
     // Expect pts to be Nx2
     cv::Mat xy_converted;
@@ -868,22 +773,6 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
                           1,  0,  0,
                           0,  0,  1;
 
-    // Rotate each point in blue_pts
-//    for (auto& pt : blue_pts) {
-//        Eigen::Vector3f point(pt.x, pt.y, pt.z); // Convert cv::Point3f to Eigen::Vector3f
-//        
-//        // Apply the 180-degree rotation around Y-axis
-//        Eigen::Vector3f rotated_point_y = rotation_matrix_y * point;
-//        
-//        // Apply the 90-degree counterclockwise rotation around Z-axis
-//        Eigen::Vector3f final_rotated_point = rotation_matrix_z * rotated_point_y;
-//        
-//        // Update the point with the final rotated coordinates
-//        pt.x = final_rotated_point.x();
-//        pt.y = final_rotated_point.y();
-//        pt.z = final_rotated_point.z();
-//    }
-//    
     // Print the number of blue points
         std::cout << "Number of blue_pts: " << blue_pts.size() << std::endl;
 
@@ -931,20 +820,6 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
     
     centroids_ = centroids;
 
-    
-    //        // Run DBScan to group close proximity points together...
-    //        std::vector<std::vector<cv::Point3f>> clusters;
-    //            dbscan(blue_pts, EPSILON, MIN_POINTS, clusters);
-    //
-    //            // Output the clusters
-    //            for (size_t i = 0; i < clusters.size(); ++i) {
-    //                std::cout << "Cluster " << i + 1 << ":" << std::endl;
-    //                for (const auto& pt : clusters[i]) {
-    //                    std::cout << "(" << pt.x << ", " << pt.y << ", " << pt.z << ")" << std::endl;
-    //                }
-    //                std::cout << std::endl;
-    //            }
-    
     // Print projected 3D points
     std::cout << "Projected 3D points (first 10 values): ";
     for (size_t i = 0; i < std::min(pts.size(), size_t(10)); ++i) {
@@ -954,16 +829,6 @@ void ImageDepth::createPointCloud(const cv::Mat& depth_map, const cv::Mat& mask)
 
     pointCloud->points_ = points;
     pointCloud->colors_ = colors;
-    
-//    // Convert the landmark mesh vertices to a point cloud and append to the main point cloud
-//    for (const auto& vertex : landmarkMesh->vertices_) {
-//        pointCloud->points_.push_back(vertex);
-//    }
-//
-//    // Append the colors of the landmark mesh vertices to the main point cloud
-//    for (const auto& color : landmarkMesh->vertex_colors_) {
-//        pointCloud->colors_.push_back(color);
-//    }
 
     // Calculate normals
     pointCloud->EstimateNormals(

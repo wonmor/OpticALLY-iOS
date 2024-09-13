@@ -42,8 +42,6 @@ A view implementing point cloud rendering
 
 - (simd_float3)convert2DPointTo3D:(simd_float2)point2D;
 
-- (simd_float3)query3DPointFrom2DCoordinates:(simd_float2)xyCoords;
-
 @end
 
 
