@@ -793,7 +793,8 @@ class CameraViewController: UIViewController, AVCaptureDataOutputSynchronizerDel
         // Enqueue the sample buffer for display
         layer.enqueue(sampleBuffer)
         cloudView?.setDepthFrame(nil, withTexture: nil)
-        cloudView?.setDepthFrame(depthData, withTexture: videoPixelBuffer)
+        // BELOW LINE ACTIVATES DEVELOPER MODE, POWERED BY METAL SHADER CODE. DEACTIVATED DUE TO ITS HEAVY PERFORMANCE!
+//        cloudView?.setDepthFrame(depthData, withTexture: videoPixelBuffer)
         
         // **Start of face distance calculation integration**
         
