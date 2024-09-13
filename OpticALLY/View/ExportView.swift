@@ -280,7 +280,7 @@ struct ExportView: View {
                     }
                 } else {
                     VStack {
-                        if !scanInstruction.contains("Align") {
+                        if !scanInstruction.contains("Align") && !scanInstruction.contains("OPTIMAL") {
                             Text(scanInstruction)
                                 .font(.title3)
                                 .fontWeight(.medium)
@@ -345,13 +345,15 @@ struct ExportView: View {
                             }
                             .padding(.horizontal)
                             
+                        } else {
+                          DistanceIndicatorAlternative(cameraViewController: cameraViewController)
                         }
                     }
                 }
                 
-                DistanceIndicator(cameraViewController: cameraViewController)
-                
                 if scanState == .scanning {
+                    DistanceIndicator(cameraViewController: cameraViewController)
+                    
                     Spacer()
                 }
             }
@@ -365,7 +367,7 @@ struct ExportView: View {
         switch scanState {
         case .ready:
             if determineStatus().text.contains("OPTIMAL") {
-                return "Let's do this!"
+                return "OPTIMAL"
             } else {
                 return "Align your face within the frame."
             }
@@ -454,6 +456,32 @@ struct DistanceIndicator: View {
             }
                 .background(status.color)
                 .cornerRadius(20)
+        )
+    }
+}
+
+struct DistanceIndicatorAlternative: View {
+    @ObservedObject var cameraViewController: CameraViewController
+    
+    var body: some View {
+        let status = determineStatus()
+        
+        return (            
+            ZStack {
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Color.white, lineWidth: 2) // Create a white border
+                    .frame(height: 50) // Adjust this to fit your text size
+                    .padding(.horizontal)
+                
+                Text("\(status.text)\(!status.text.contains("POSITION") ? " \(cameraViewController.faceDistance ?? 0) CM" : "")")
+                    .monospaced()
+                    .font(.title3)
+                    .fontWeight(.medium)
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+            }
+            .opacity(0.7)
         )
     }
 }

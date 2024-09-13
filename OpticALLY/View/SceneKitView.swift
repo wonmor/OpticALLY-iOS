@@ -200,6 +200,55 @@ struct SceneKitTEMPView: UIViewRepresentable {
     }
 }
 
+func invertModel(_ geometry: SCNGeometry) -> SCNGeometry {
+    // Flip normals by inverting each normal vector
+    let geometrySource = geometry.sources(for: .normal).first
+    let geometryElements = geometry.elements
+
+    // Extract normals and invert them
+    if let normalsSource = geometrySource, let normalData: Data? = normalsSource.data {
+        let stride = normalsSource.dataStride
+        let offset = normalsSource.dataOffset
+        let componentCount = normalsSource.componentsPerVector
+
+        var newNormalsData = Data(count: normalData!.count)
+
+        newNormalsData.withUnsafeMutableBytes { newBytes in
+            normalData!.withUnsafeBytes { oldBytes in
+                for i in Swift.stride(from: 0, to: normalData!.count, by: stride) {
+                    let normal = oldBytes.baseAddress!.advanced(by: i + offset).assumingMemoryBound(to: Float.self)
+
+                    for j in 0..<componentCount {
+                        // Invert the normal by multiplying by -1
+                        newBytes.baseAddress!.advanced(by: i + offset + j * MemoryLayout<Float>.size).storeBytes(of: -normal[j], as: Float.self)
+                    }
+                }
+            }
+        }
+
+        // Create new SCNGeometrySource with inverted normals
+        let newNormalsSource = SCNGeometrySource(data: newNormalsData,
+                                                 semantic: .normal,
+                                                 vectorCount: normalsSource.vectorCount,
+                                                 usesFloatComponents: true,
+                                                 componentsPerVector: componentCount,
+                                                 bytesPerComponent: MemoryLayout<Float>.size,
+                                                 dataOffset: offset, dataStride: stride)
+
+        // Create a new geometry with inverted normals
+        let newGeometry = SCNGeometry(sources: [newNormalsSource] + geometry.sources(for: .vertex), elements: geometryElements)
+        
+        // Ensure materials are double-sided to render inside-out
+        newGeometry.materials.forEach { material in
+            material.isDoubleSided = true
+        }
+        
+        return newGeometry
+    }
+
+    return geometry // Return original geometry if normals are not found
+}
+
 struct SceneKitMDLView: UIViewRepresentable {
     @Binding var snapshot: UIImage?
     
