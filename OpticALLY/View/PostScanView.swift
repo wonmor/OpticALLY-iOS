@@ -489,7 +489,10 @@ struct PostScanView: View {
                         if showDropdown {
                             VStack {
                                 Button(action: {
-                                    self.showShareSheet = true  // Trigger the share sheet to open
+                                    if let urls = exportViewModel.objURLs {
+                                        self.fileURLToShare = URL(fileURLWithPath: urls[0])
+                                        self.showShareSheet = true
+                                    }
                                 }) {
                                     Text("FULL HEAD .OBJ")
                                         .font(.caption)
@@ -579,16 +582,13 @@ struct PostScanView: View {
             .sheet(isPresented: $showShareSheet, onDismiss: {
                 showShareSheet = false
             }) {
-                // This will present the share sheet
-                
                 if let fileURL = fileURLToShare {
-                    ShareSheet(fileURL: URL(fileURLWithPath: objFiles[0]))
+                    ShareSheet(fileURL: fileURL)
                         .onAppear() {
-                            print("Shared: \(objFiles[currentDirectionIndex])")
+                            print("Shared: \(fileURL.path)")
                         }
                 }
             }
-            
         }
     }
 }
