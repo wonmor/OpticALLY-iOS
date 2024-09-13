@@ -349,9 +349,7 @@ struct ExportView: View {
                     }
                 }
                 
-                if !determineStatus().text.contains("OPTIMAL") {
-                    DistanceIndicator(cameraViewController: cameraViewController)
-                }
+                DistanceIndicator(cameraViewController: cameraViewController)
                 
                 if scanState == .scanning {
                     Spacer()
