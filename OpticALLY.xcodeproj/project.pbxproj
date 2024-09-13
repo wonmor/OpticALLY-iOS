@@ -14,7 +14,6 @@
 		961D67E32B12BDFC00DBB883 /* SceneKitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 961D67E22B12BDFC00DBB883 /* SceneKitView.swift */; };
 		961D67E52B12C64A00DBB883 /* CreditsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 961D67E42B12C64A00DBB883 /* CreditsView.swift */; };
 		962058102BB2209F00F9084F /* SignalStrengthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9620580F2BB2209F00F9084F /* SignalStrengthView.swift */; };
-		963671292BC09312003EC38C /* Process3D.py in Resources */ = {isa = PBXBuildFile; fileRef = 963671282BC09312003EC38C /* Process3D.py */; };
 		963A88D92BFD9BD200A68720 /* base64.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 963A88D72BFD9BD200A68720 /* base64.cpp */; };
 		963A88DB2C00E84B00A68720 /* test_model in Resources */ = {isa = PBXBuildFile; fileRef = 963A88DA2C00E84B00A68720 /* test_model */; };
 		963DF9B32AFEDAF700E6E589 /* PostScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 963DF9B22AFEDAF600E6E589 /* PostScanView.swift */; };
@@ -69,7 +68,6 @@
 		969E42EF2ADC9D9E00E77BA7 /* promo.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 969E42ED2ADC9D9E00E77BA7 /* promo.mp4 */; };
 		969E42F02ADC9D9E00E77BA7 /* promo.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 969E42ED2ADC9D9E00E77BA7 /* promo.mp4 */; };
 		96A29DDF2C4B91120063C0D0 /* CameraPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96A29DDE2C4B91110063C0D0 /* CameraPreview.swift */; };
-		96A71A0D2C78B1BC009F515B /* rigid_transform_3D.py in Resources */ = {isa = PBXBuildFile; fileRef = 96A71A0C2C78B1BC009F515B /* rigid_transform_3D.py */; };
 		96B2A6232B5C5F320031952C /* ObjCBridge.py in Resources */ = {isa = PBXBuildFile; fileRef = 9671FDC52B5B14F2004DA4C2 /* ObjCBridge.py */; };
 		96B64F6B2B3D8AF70003E06D /* VideoTexturedFace.shader in Resources */ = {isa = PBXBuildFile; fileRef = 96B64F6A2B3D8AF70003E06D /* VideoTexturedFace.shader */; };
 		96B64F6D2B3D8FCA0003E06D /* faceTexture.metal in Sources */ = {isa = PBXBuildFile; fileRef = 96B64F6C2B3D8FCA0003E06D /* faceTexture.metal */; };
@@ -77,7 +75,6 @@
 		96B64F712B3D90410003E06D /* FaceTextureGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96B64F6F2B3D90410003E06D /* FaceTextureGenerator.swift */; };
 		96B64F732B3D90490003E06D /* ScnMatrix.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96B64F722B3D90490003E06D /* ScnMatrix.swift */; };
 		96BC2ABE2AC5E9D60081550B /* DevicePpi in Frameworks */ = {isa = PBXBuildFile; productRef = 96BC2ABD2AC5E9D60081550B /* DevicePpi */; };
-		96BDE6362B7EB4EF00CCEABA /* ImageDepth.py in Resources */ = {isa = PBXBuildFile; fileRef = 96BDE6352B7EB4EF00CCEABA /* ImageDepth.py */; };
 		96BE3D8F2BE578F40021EBED /* AssetsLibrary.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96BE3D8E2BE578F40021EBED /* AssetsLibrary.framework */; };
 		96BE3D912BE579050021EBED /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96BE3D902BE579050021EBED /* CoreGraphics.framework */; };
 		96BE3D932BE579140021EBED /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96BE3D922BE579140021EBED /* CoreMedia.framework */; };
@@ -141,7 +138,6 @@
 		961D67E22B12BDFC00DBB883 /* SceneKitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneKitView.swift; sourceTree = "<group>"; };
 		961D67E42B12C64A00DBB883 /* CreditsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditsView.swift; sourceTree = "<group>"; };
 		9620580F2BB2209F00F9084F /* SignalStrengthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalStrengthView.swift; sourceTree = "<group>"; };
-		963671282BC09312003EC38C /* Process3D.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = Process3D.py; sourceTree = "<group>"; };
 		9639661D2B76B87300EB435B /* PrefixHeader.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PrefixHeader.pch; sourceTree = "<group>"; };
 		963A88D72BFD9BD200A68720 /* base64.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = base64.cpp; sourceTree = "<group>"; };
 		963A88D82BFD9BD200A68720 /* base64.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = base64.hpp; sourceTree = "<group>"; };
@@ -201,13 +197,11 @@
 		969DF1C62B12916900FA9ABE /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		969E42ED2ADC9D9E00E77BA7 /* promo.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = promo.mp4; sourceTree = "<group>"; };
 		96A29DDE2C4B91110063C0D0 /* CameraPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPreview.swift; sourceTree = "<group>"; };
-		96A71A0C2C78B1BC009F515B /* rigid_transform_3D.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = rigid_transform_3D.py; sourceTree = "<group>"; };
 		96B64F6A2B3D8AF70003E06D /* VideoTexturedFace.shader */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = VideoTexturedFace.shader; sourceTree = "<group>"; };
 		96B64F6C2B3D8FCA0003E06D /* faceTexture.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = faceTexture.metal; sourceTree = "<group>"; };
 		96B64F6E2B3D90410003E06D /* TextureToImage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TextureToImage.swift; sourceTree = "<group>"; };
 		96B64F6F2B3D90410003E06D /* FaceTextureGenerator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FaceTextureGenerator.swift; sourceTree = "<group>"; };
 		96B64F722B3D90490003E06D /* ScnMatrix.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScnMatrix.swift; sourceTree = "<group>"; };
-		96BDE6352B7EB4EF00CCEABA /* ImageDepth.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = ImageDepth.py; sourceTree = "<group>"; };
 		96BE3D8E2BE578F40021EBED /* AssetsLibrary.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AssetsLibrary.framework; path = System/Library/Frameworks/AssetsLibrary.framework; sourceTree = SDKROOT; };
 		96BE3D902BE579050021EBED /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		96BE3D922BE579140021EBED /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
@@ -300,9 +294,6 @@
 		9671FDC42B5B14F2004DA4C2 /* Python */ = {
 			isa = PBXGroup;
 			children = (
-				96A71A0C2C78B1BC009F515B /* rigid_transform_3D.py */,
-				96BDE6352B7EB4EF00CCEABA /* ImageDepth.py */,
-				963671282BC09312003EC38C /* Process3D.py */,
 				9671FDC52B5B14F2004DA4C2 /* ObjCBridge.py */,
 			);
 			path = Python;
@@ -647,7 +638,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				96B2A6232B5C5F320031952C /* ObjCBridge.py in Resources */,
-				963671292BC09312003EC38C /* Process3D.py in Resources */,
 				9671FED82B5B3BCA004DA4C2 /* GoogleService-Info.plist in Resources */,
 				960ABDCD2C73BBA5002B85A0 /* eigen-3.4.0 in Resources */,
 				96B64F6B2B3D8AF70003E06D /* VideoTexturedFace.shader in Resources */,
@@ -672,9 +662,7 @@
 				966360602B6E03FF001D2119 /* face-found-successfully.json in Resources */,
 				9614F0AF2ADF4EA90046DD11 /* RobotoSlab.ttf in Resources */,
 				966360642B6E03FF001D2119 /* face-scan.json in Resources */,
-				96BDE6362B7EB4EF00CCEABA /* ImageDepth.py in Resources */,
 				966360612B6E03FF001D2119 /* face-id.json in Resources */,
-				96A71A0D2C78B1BC009F515B /* rigid_transform_3D.py in Resources */,
 				9646DC6C2B1064F500092549 /* glasses.mp4 in Resources */,
 				96E8A6662BED344A00CCBC18 /* pybind11 in Resources */,
 				9663606B2B6E0BD7001D2119 /* left-arrow-2.json in Resources */,

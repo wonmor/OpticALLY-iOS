@@ -117,7 +117,9 @@ struct VertexOut {
 
             // Log the pupil distance
             NSLog(@"Pupil Distance: %f mm", pupilDistance);
-
+            
+            // Update the UI
+            [_cameraViewController updatePupilDistance:pupilDistance];
         
         } else {
             NSLog(@"Invalid 3D coordinates for eyes.");
