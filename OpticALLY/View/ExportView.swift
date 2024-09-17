@@ -254,6 +254,7 @@ struct ExportView: View {
                         Text("FOR THE BEST RESULTS,")
                             .padding(.top)
                             .font(.system(size: 24.0, weight: .bold, design: .rounded))
+                            .foregroundColor(.gray)
                         
                         InformationContainerView()
                         
@@ -281,12 +282,12 @@ struct ExportView: View {
                 if scanState == .ready {
                     VStack {
                         Text("CAPTURE YOUR")
-                            .font(.body)
+                            .font(.title3)
                             .monospaced()
                             .multilineTextAlignment(.center)
                         
                         Text("SPATIAL PERSONA")
-                            .font(.title2)
+                            .font(.title)
                             .bold()
                             .monospaced()
                             .multilineTextAlignment(.center)
