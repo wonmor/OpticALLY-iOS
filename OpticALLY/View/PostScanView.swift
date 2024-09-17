@@ -468,6 +468,16 @@ struct PostScanView: View {
                 Spacer()
                 
                 if ExternalData.isMeshView {
+                    if !exportViewModel.isLoading {
+                        VStack {
+                            Text("Pupil Distance\n\(String(format: "%.1f", cameraViewController.pupilDistance)) mm")
+                                .padding()
+                                .font(.system(size: 24.0, weight: .bold, design: .rounded))
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .multilineTextAlignment(.center)
+                        }
+                    }
+                    
                     VStack {
                         Button(action: {
                             // Toggle the dropdown
@@ -508,13 +518,6 @@ struct PostScanView: View {
                             .padding(.top, 5)
                           
                         }
-                    }
-                    if !exportViewModel.isLoading {
-                        Text("PUPIL DISTANCE\n\(String(format: "%.1f", cameraViewController.pupilDistance)) mm")
-                            .padding()
-                            .frame(maxWidth: .infinity, alignment: .center)
-                            .multilineTextAlignment(.center)
-                            .monospaced()
                     }
                 }
                 

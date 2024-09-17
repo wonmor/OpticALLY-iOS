@@ -243,7 +243,7 @@ struct ExportView: View {
                 
                 if scanState == .ready {
                     VStack {
-                        Text("SCAN YOUR")
+                        Text("CAPTURE YOUR")
                             .font(.body)
                             .monospaced()
                             .multilineTextAlignment(.center)
@@ -264,7 +264,6 @@ struct ExportView: View {
                         VStack {
                             Text("DESIGNED IN")
                                 .font(.title3)
-                                .bold()
                                 .monospaced()
                                 .multilineTextAlignment(.center)
                             
@@ -405,6 +404,9 @@ struct ExportView: View {
                 
                 if scanState == .scanning {
                     DistanceIndicator(cameraViewController: cameraViewController)
+                    
+                    Text("DISTANCE TO SCREEN")
+                        .monospaced()
                     
                     Spacer()
                 }
