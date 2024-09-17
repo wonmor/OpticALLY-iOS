@@ -29,7 +29,7 @@ struct VideoPixelBufferView: UIViewRepresentable {
 }
 
 enum ScanState {
-    case ready, scanning, completed
+    case before, ready, scanning, completed
 }
 
 enum ScanDirection {
@@ -51,7 +51,9 @@ class VideoFrameData: ObservableObject {
 struct InformationContainerView: View {
     var body: some View {
         VStack(alignment: .leading) {
-            InformationDetailView(title: "", subTitle: "Preferrably Wall\nBehind Your Back", imageName: "person.and.background.striped.horizontal")
+            InformationDetailView(title: "", subTitle: "Stand about 3 feet from a plain wall", imageName: "person.and.background.striped.horizontal")
+            InformationDetailView(title: "", subTitle: "Ensure you are in good lighting", imageName: "lightbulb.max.fill")
+            InformationDetailView(title: "", subTitle: "Make sure your ears are clearly visible", imageName: "ear")
         }
         .padding(.horizontal)
     }
@@ -89,7 +91,7 @@ struct InformationDetailView: View {
             
             VStack(alignment: .leading) {
                 Text(subTitle)
-                    .font(.body)
+                    .font(.system(size: 18.0, weight: .bold, design: .rounded))
                     .bold()
                     .foregroundColor(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -211,7 +213,7 @@ struct ExportView: View {
     @ObservedObject var logManager = LogManager.shared
     @ObservedObject var videoFrameData: VideoFrameData
     
-    @State private var scanState: ScanState = .ready
+    @State private var scanState: ScanState = .before
     @State private var scanDirection: ScanDirection = .left
     @State private var showScanCompleteView: Bool = false
     
@@ -235,6 +237,41 @@ struct ExportView: View {
             VStack(spacing: 20) {
                 Spacer()
                 
+                if scanState == .before {
+                    VStack {
+                        Text("CAPTURE YOUR")
+                            .font(.body)
+                            .monospaced()
+                            .multilineTextAlignment(.center)
+                        
+                        Text("SPATIAL PERSONA")
+                            .font(.title2)
+                            .bold()
+                            .monospaced()
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                        
+                        Text("FOR THE BEST RESULTS,")
+                            .padding(.top)
+                            .font(.system(size: 24.0, weight: .bold, design: .rounded))
+                        
+                        InformationContainerView()
+                        
+                        Button(action: {
+                            scanState = .ready
+                        }) {
+                            Text("Continue")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .padding()
+                                .frame(maxWidth: .infinity)
+                                .background(Capsule().fill(Color.gray.opacity(0.4)))
+                        }
+                        .padding(.horizontal)
+                        .padding(.top)
+                    }
+                }
+                
                 if scanState == .scanning {
                     CompassView(viewModel: cameraViewController, scanState: $scanState, scanDirection: $scanDirection)
                         .frame(height: 20)
@@ -254,161 +291,162 @@ struct ExportView: View {
                             .monospaced()
                             .multilineTextAlignment(.center)
                             .padding(.horizontal)
-                        
-                        InformationContainerView()
                     }
                 }
                 
-                if showLog {
-                    if let lastLog = logManager.latestLog {
-                        VStack {
-                            Text("DESIGNED IN")
-                                .font(.title3)
-                                .monospaced()
-                                .multilineTextAlignment(.center)
-                            
-                            Text("LOS ANGELES")
-                                .font(.title)
-                                .bold()
-                                .monospaced()
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal)
-                            
-                            Text(lastLog.uppercased())
-                                .padding()
-                                .frame(maxWidth: .infinity, alignment: .center)
-                                .multilineTextAlignment(.center)
-                                .monospaced()
-                                .onAppear {
-                                    hideMoveOnButton = true
-                                }
-                        }
-                        
-                        if lastLog.contains("Capturing") {
-                            LottieView(animationFileName: "face-id-2", loopMode: .loop)
-                                .frame(width: 60, height: 60)
-                                .opacity(0.5)
-                                .scaleEffect(0.5)
-                                .padding(.vertical)
-                                .colorInvert()
-                        }
-                        
-                        
-                        if lastLog.contains("Complete") {
-                            VStack(spacing: 10) { // Adjust spacing as needed
-                                LottieView(animationFileName: "cargo-loading", loopMode: .loop)
-                                    .frame(width: 60, height: 60)
-                                    .scaleEffect(0.1)
-                                    .padding()
-                                    .colorInvert()
+                if scanState != .before {
+                    if showLog {
+                        if let lastLog = logManager.latestLog {
+                            VStack {
+                                Text("DESIGNED IN")
+                                    .font(.title3)
+                                    .monospaced()
+                                    .multilineTextAlignment(.center)
                                 
-                                Text("PROCESSING SCANS")
+                                Text("LOS ANGELES")
+                                    .font(.title)
                                     .bold()
                                     .monospaced()
-                                    .foregroundColor(.white)
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal)
                                 
-                                Spacer()
+                                Text(lastLog.uppercased())
+                                    .padding()
+                                    .frame(maxWidth: .infinity, alignment: .center)
+                                    .multilineTextAlignment(.center)
+                                    .monospaced()
+                                    .onAppear {
+                                        hideMoveOnButton = true
+                                    }
                             }
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 30) // Adjust horizontal padding for wider background
-                            .padding(.vertical, 15) // Adjust vertical padding for background height
-                            .zIndex(1) // Ensure the spinner and text are above other content
-                            .onAppear() {
-                                // Only do this for the LAST iteration of the 3 scans... (3rd scan) -> Because UI will be hidden until then, it's fine for now when it comes to logic
-                                exportViewModel.hasTurnedLeft = true
-                                exportViewModel.hasTurnedRight = true
-                                exportViewModel.hasTurnedCenter = true
-                                
-                                hideMoveOnButton = false
-                                hideFaceIDScanView = true
-                                
-                                // Important part!
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 1.25) { // Assuming animation duration is 2 seconds
-                                    viewResults()
+                            
+                            if lastLog.contains("Capturing") {
+                                LottieView(animationFileName: "face-id-2", loopMode: .loop)
+                                    .frame(width: 60, height: 60)
+                                    .opacity(0.5)
+                                    .scaleEffect(0.5)
+                                    .padding(.vertical)
+                                    .colorInvert()
+                            }
+                            
+                            
+                            if lastLog.contains("Complete") {
+                                VStack(spacing: 10) { // Adjust spacing as needed
+                                    LottieView(animationFileName: "cargo-loading", loopMode: .loop)
+                                        .frame(width: 60, height: 60)
+                                        .scaleEffect(0.1)
+                                        .padding()
+                                        .colorInvert()
+                                    
+                                    Text("PROCESSING SCANS")
+                                        .bold()
+                                        .monospaced()
+                                        .foregroundColor(.white)
+                                    
+                                    Spacer()
+                                }
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 30) // Adjust horizontal padding for wider background
+                                .padding(.vertical, 15) // Adjust vertical padding for background height
+                                .zIndex(1) // Ensure the spinner and text are above other content
+                                .onAppear() {
+                                    // Only do this for the LAST iteration of the 3 scans... (3rd scan) -> Because UI will be hidden until then, it's fine for now when it comes to logic
+                                    exportViewModel.hasTurnedLeft = true
+                                    exportViewModel.hasTurnedRight = true
+                                    exportViewModel.hasTurnedCenter = true
+                                    
+                                    hideMoveOnButton = false
+                                    hideFaceIDScanView = true
+                                    
+                                    // Important part!
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.25) { // Assuming animation duration is 2 seconds
+                                        viewResults()
+                                    }
                                 }
                             }
                         }
-                    }
-                } else {
-                    VStack {
-                        if !scanInstruction.contains("Align") && !scanInstruction.contains("OPTIMAL") {
-                            Text(scanInstruction)
-                                .font(.title3)
+                    } else {
+                        VStack {
+                            if !scanInstruction.contains("Align") && !scanInstruction.contains("OPTIMAL") {
+                                Text(scanInstruction)
+                                    .font(.title3)
+                                    .fontWeight(.medium)
+                                    .foregroundColor(.white)
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal)
+                                    .cornerRadius(12)
+                            }
+                            
+                            Text(scanInstruction2)
+                                .monospaced()
+                                .font(.title)
                                 .fontWeight(.medium)
                                 .foregroundColor(.white)
                                 .multilineTextAlignment(.center)
                                 .padding(.horizontal)
                                 .cornerRadius(12)
                         }
-                        
-                        Text(scanInstruction2)
-                            .monospaced()
-                            .font(.title)
-                            .fontWeight(.medium)
-                            .foregroundColor(.white)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal)
-                            .cornerRadius(12)
-                    }
-                }
-                
-                if !hideFaceIDScanView {
-                    ZStack {
-                        SignalStrengthView(scanState: $scanState, scanDirection: $scanDirection, cameraViewController: cameraViewController)
-                            .frame(width: 300, height: 300)
-                            .blur(radius: 5.0)
-                        
-                        // Segmented circle behind the FaceIDScanView
-                        DirectionIndicatorView(scanDirection: $scanDirection, cameraViewController: cameraViewController)
-                            .frame(width: 220, height: 220) // Adjust the size as needed
-                        
-                        // FaceIDScanView in the front
-                        //FaceIDScanView(cameraViewController: cameraViewController)
-                        if let pixelBuffer = videoFrameData.pixelBuffer {
-                            VideoPixelBufferView(pixelBuffer: pixelBuffer)
-                                .frame(width: 200, height: 200)
-                                .clipShape(Circle())
-                                .padding()
-                        }
-                    }
-                    .onChange(of: cameraViewController.faceYawAngle) { newValue in
-                        handleFaceDirectionChange(yawAngle: newValue)
                     }
                     
-                    Spacer()
-                }
-                
-                if scanState != .scanning {
-                    if let lastLog = logManager.latestLog {
-                        if lastLog.lowercased().contains("complete") {
-                            // Empty...
+                    if !hideFaceIDScanView {
+                        ZStack {
+                            SignalStrengthView(scanState: $scanState, scanDirection: $scanDirection, cameraViewController: cameraViewController)
+                                .frame(width: 300, height: 300)
+                                .blur(radius: 5.0)
+                            
+                            // Segmented circle behind the FaceIDScanView
+                            DirectionIndicatorView(scanDirection: $scanDirection, cameraViewController: cameraViewController)
+                                .frame(width: 220, height: 220) // Adjust the size as needed
+                            
+                            // FaceIDScanView in the front
+                            //FaceIDScanView(cameraViewController: cameraViewController)
+                            if let pixelBuffer = videoFrameData.pixelBuffer {
+                                VideoPixelBufferView(pixelBuffer: pixelBuffer)
+                                    .frame(width: 200, height: 200)
+                                    .clipShape(Circle())
+                                    .padding()
+                            }
+                        }
+                        .onChange(of: cameraViewController.faceYawAngle) { newValue in
+                            handleFaceDirectionChange(yawAngle: newValue)
                         }
                         
-                    } else {
-                        if determineStatus().text.contains("OPTIMAL") {
-                            Button(action: startScanning) {
-                                Text("Start Scanning")
-                                    .font(.headline)
-                                    .foregroundColor(.white)
-                                    .padding()
-                                    .frame(maxWidth: .infinity)
-                                    .background(Capsule().fill(Color.gray.opacity(0.4)))
+                        Spacer()
+                    }
+                    
+                    if scanState != .scanning {
+                        if let lastLog = logManager.latestLog {
+                            if lastLog.lowercased().contains("complete") {
+                                // Empty...
                             }
-                            .padding(.horizontal)
                             
                         } else {
-                          DistanceIndicatorAlternative(cameraViewController: cameraViewController)
+                            if determineStatus().text.contains("OPTIMAL") {
+                                Button(action: startScanning) {
+                                    Text("Start Scanning")
+                                        .font(.headline)
+                                        .foregroundColor(.white)
+                                        .padding()
+                                        .frame(maxWidth: .infinity)
+                                        .background(Capsule().fill(Color.gray.opacity(0.4)))
+                                }
+                                .padding(.horizontal)
+                                
+                            } else {
+                                DistanceIndicatorAlternative(cameraViewController: cameraViewController)
+                            }
                         }
                     }
-                }
-                
-                if scanState == .scanning {
-                    DistanceIndicator(cameraViewController: cameraViewController)
                     
-                    Text("DISTANCE TO SCREEN")
-                        .monospaced()
-                    
-                    Spacer()
+                    if scanState == .scanning {
+                        DistanceIndicator(cameraViewController: cameraViewController)
+                        
+                        Text("DISTANCE TO SCREEN")
+                            .monospaced()
+                            .bold()
+                        
+                        Spacer()
+                    }
                 }
             }
             .padding()
@@ -419,6 +457,8 @@ struct ExportView: View {
     
     private var scanInstruction: String {
         switch scanState {
+        case .before:
+            return ""
         case .ready:
             if determineStatus().text.contains("OPTIMAL") {
                 return "OPTIMAL"
@@ -440,6 +480,8 @@ struct ExportView: View {
     
     private var scanInstruction2: String {
         switch scanState {
+        case .before:
+            return ""
         case .ready:
             return ""
         case .scanning:
