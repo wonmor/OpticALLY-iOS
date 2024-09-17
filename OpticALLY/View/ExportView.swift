@@ -48,6 +48,57 @@ class VideoFrameData: ObservableObject {
     @Published var pixelBuffer: CVPixelBuffer?
 }
 
+struct InformationContainerView: View {
+    var body: some View {
+        VStack(alignment: .leading) {
+            InformationDetailView(title: "", subTitle: "Preferrably Wall\nBehind Your Back", imageName: "person.and.background.striped.horizontal")
+        }
+        .padding(.horizontal)
+    }
+}
+
+
+struct InformationDetailView: View {
+    var title: String = "title"
+    var subTitle: String = "subTitle"
+    var imageName: String = "car"
+    var backgroundLabel: String? = nil  // Optional background label property
+    
+    var body: some View {
+        HStack(alignment: .center) {
+            // Container for the image and the label (if it exists)
+            VStack(spacing: 10) {
+                Image(systemName: imageName)
+                    .font(.largeTitle)
+                    .foregroundColor(.mainColor)
+                    .accessibility(hidden: true)
+                
+                // This displays the label (if it exists) next to the image
+                if let label = backgroundLabel {
+                    Text(label)
+                        .font(.caption)
+                        .bold()
+                        .foregroundStyle(.pink)
+                        .padding(5)
+                        .background(Color.pink.opacity(0.2))
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                        .multilineTextAlignment(.center)
+                }
+            }
+            .padding()
+            
+            VStack(alignment: .leading) {
+                Text(subTitle)
+                    .font(.body)
+                    .bold()
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(.top)
+    }
+}
+
 struct CompassView: View {
     @ObservedObject var viewModel: CameraViewController
     
@@ -192,18 +243,19 @@ struct ExportView: View {
                 
                 if scanState == .ready {
                     VStack {
-                        Text("WELCOME TO")
-                            .font(.title3)
-                            .bold()
+                        Text("SCAN YOUR")
+                            .font(.body)
                             .monospaced()
                             .multilineTextAlignment(.center)
                         
-                        Text("OPTICALLY")
-                            .font(.title)
+                        Text("SPATIAL PERSONA")
+                            .font(.title2)
                             .bold()
                             .monospaced()
                             .multilineTextAlignment(.center)
                             .padding(.horizontal)
+                        
+                        InformationContainerView()
                     }
                 }
                 

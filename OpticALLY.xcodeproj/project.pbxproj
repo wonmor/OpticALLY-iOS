@@ -89,6 +89,8 @@
 		96C055152BD2F544003981FC /* Open3D-iOS in Frameworks */ = {isa = PBXBuildFile; productRef = 96C055142BD2F544003981FC /* Open3D-iOS */; };
 		96C055192BD2F729003981FC /* CountdownTimerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96C055182BD2F729003981FC /* CountdownTimerView.swift */; };
 		96D59E7C2C3AA54300A79563 /* DlibWrapper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 96D59E7A2C3AA54200A79563 /* DlibWrapper.mm */; };
+		96D79B692C99EC6B00A31309 /* EyeTrackingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96D79B682C99EC6B00A31309 /* EyeTrackingView.swift */; };
+		96D79B6B2C99ECC300A31309 /* EyesTrackingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96D79B6A2C99ECC300A31309 /* EyesTrackingViewModel.swift */; };
 		96E3E0042B867684004374D1 /* FaceIDScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E3E0032B867684004374D1 /* FaceIDScanView.swift */; };
 		96E856BB2B6EFFE00037C3BB /* PreviousScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E856BA2B6EFFE00037C3BB /* PreviousScanView.swift */; };
 		96E856BD2B6F0CF90037C3BB /* cargo-loading.json in Resources */ = {isa = PBXBuildFile; fileRef = 96E856BC2B6F0CF90037C3BB /* cargo-loading.json */; };
@@ -218,6 +220,8 @@
 		96D59E7A2C3AA54200A79563 /* DlibWrapper.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = DlibWrapper.mm; sourceTree = "<group>"; };
 		96D59E7B2C3AA54200A79563 /* DlibWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlibWrapper.h; sourceTree = "<group>"; };
 		96D59E7D2C3AA55C00A79563 /* shape_predictor_68_face_landmarks.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = shape_predictor_68_face_landmarks.dat; sourceTree = "<group>"; };
+		96D79B682C99EC6B00A31309 /* EyeTrackingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EyeTrackingView.swift; sourceTree = "<group>"; };
+		96D79B6A2C99ECC300A31309 /* EyesTrackingViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EyesTrackingViewModel.swift; sourceTree = "<group>"; };
 		96E3E0032B867684004374D1 /* FaceIDScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceIDScanView.swift; sourceTree = "<group>"; };
 		96E856BA2B6EFFE00037C3BB /* PreviousScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviousScanView.swift; sourceTree = "<group>"; };
 		96E856BC2B6F0CF90037C3BB /* cargo-loading.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "cargo-loading.json"; sourceTree = "<group>"; };
@@ -448,6 +452,7 @@
 				96E856C52B70441C0037C3BB /* FolderDetailView.swift */,
 				967EE0662AAE06FB000C4D5F /* ContentView.swift */,
 				961D67E22B12BDFC00DBB883 /* SceneKitView.swift */,
+				96D79B682C99EC6B00A31309 /* EyeTrackingView.swift */,
 				96C055182BD2F729003981FC /* CountdownTimerView.swift */,
 				963DF9B22AFEDAF600E6E589 /* PostScanView.swift */,
 				9679F8CC2AD0907A00686F13 /* CameraView.swift */,
@@ -461,6 +466,7 @@
 		967EE0912AAEDBD2000C4D5F /* ViewModel */ = {
 			isa = PBXGroup;
 			children = (
+				96D79B6A2C99ECC300A31309 /* EyesTrackingViewModel.swift */,
 				96F0CF192B12A39100417716 /* ExportViewModel.swift */,
 				96E856C12B7041E60037C3BB /* FilesViewModel.swift */,
 			);
@@ -710,6 +716,7 @@
 				96E89A352BEC469A00CCBC18 /* ImageDepth.cpp in Sources */,
 				96E3E0042B867684004374D1 /* FaceIDScanView.swift in Sources */,
 				9679F8DF2AD0907A00686F13 /* PointCloudMetalView.mm in Sources */,
+				96D79B692C99EC6B00A31309 /* EyeTrackingView.swift in Sources */,
 				969AC2822AB7554C0096892E /* Extensions+Modifiers.swift in Sources */,
 				9679F8D12AD0907A00686F13 /* AAPLTransforms.mm in Sources */,
 				96E856CA2B7045510037C3BB /* SceneKitPreview.swift in Sources */,
@@ -734,6 +741,7 @@
 				96B64F712B3D90410003E06D /* FaceTextureGenerator.swift in Sources */,
 				9679F8CF2AD0907A00686F13 /* VideoMixer.swift in Sources */,
 				9679F8D22AD0907A00686F13 /* Mixer.metal in Sources */,
+				96D79B6B2C99ECC300A31309 /* EyesTrackingViewModel.swift in Sources */,
 				967EE0652AAE06FB000C4D5F /* OpticALLYApp.swift in Sources */,
 				96795D6E2B7FE786003A5192 /* ParsePLY.swift in Sources */,
 				96E856BB2B6EFFE00037C3BB /* PreviousScanView.swift in Sources */,
