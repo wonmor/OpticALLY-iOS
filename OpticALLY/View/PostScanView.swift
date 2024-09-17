@@ -473,6 +473,7 @@ struct PostScanView: View {
                             Text("Pupil Distance\n\(String(format: "%.1f", cameraViewController.pupilDistance)) mm")
                                 .padding()
                                 .font(.system(size: 24.0, weight: .bold, design: .rounded))
+                                .foregroundColor(.gray)
                                 .frame(maxWidth: .infinity, alignment: .center)
                                 .multilineTextAlignment(.center)
                         }
@@ -485,7 +486,7 @@ struct PostScanView: View {
                         }) {
                             HStack {
                                 Image(systemName: "square.and.arrow.down")
-                                Text("Export")
+                                Text("EXPORT")
                                     .font(.body)
                                     .bold()
                             }
