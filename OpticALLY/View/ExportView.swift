@@ -49,90 +49,52 @@ class VideoFrameData: ObservableObject {
 }
 
 struct InformationContainerView: View {
-    @State private var isStep1Completed = false
-    @State private var isStep2Completed = false
-    @State private var isStep3Completed = false
-    
-    @Binding var scanState: ScanState
-    
-    // Compute if all steps are completed
-    private var allStepsCompleted: Bool {
-        return isStep1Completed && isStep2Completed && isStep3Completed
-    }
-
     var body: some View {
         VStack(alignment: .leading) {
-            InformationDetailView(
-                title: "",
-                subTitle: "Stand about 3 feet from a plain wall",
-                imageName: "person.and.background.striped.horizontal",
-                isChecked: $isStep1Completed
-            )
-            InformationDetailView(
-                title: "",
-                subTitle: "Ensure you are in good lighting",
-                imageName: "lightbulb.max.fill",
-                isChecked: $isStep2Completed
-            )
-            InformationDetailView(
-                title: "",
-                subTitle: "Make sure your ears are clearly visible",
-                imageName: "ear",
-                isChecked: $isStep3Completed
-            )
-            
-            // Only display the Continue button if all steps are completed
-            if allStepsCompleted {
-                Button(action: {
-                    // Action when the continue button is pressed
-                    scanState = .ready
-                }) {
-                    Text("Continue")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Capsule().fill(Color.blue.opacity(0.5)))
-                }
-                .padding(.top)
-            }
+            InformationDetailView(title: "", subTitle: "Stand about 3 feet from a plain wall", imageName: "person.and.background.striped.horizontal")
+            InformationDetailView(title: "", subTitle: "Ensure you are in good lighting", imageName: "lightbulb.max.fill")
+            InformationDetailView(title: "", subTitle: "Make sure your ears are clearly visible", imageName: "ear")
         }
         .padding(.horizontal)
     }
 }
 
+
 struct InformationDetailView: View {
     var title: String = "title"
     var subTitle: String = "subTitle"
     var imageName: String = "car"
-    @Binding var isChecked: Bool // Bind checkbox state to parent view
+    var backgroundLabel: String? = nil  // Optional background label property
     
     var body: some View {
         HStack(alignment: .center) {
-            // Checkbox
-            Button(action: {
-                isChecked.toggle() // Toggle checkbox state
-            }) {
-                Image(systemName: isChecked ? "checkmark.circle.fill" : "circle")
-                    .foregroundColor(isChecked ? .green : .gray)
-                    .font(.title)
-            }
-            .buttonStyle(PlainButtonStyle()) // To remove default button styling
-            
-            // Container for the image and text
-            VStack(alignment: .leading) {
-                HStack {
-                    Image(systemName: imageName)
-                        .font(.largeTitle)
-                        .foregroundColor(Color.blue.opacity(0.5))
-                        .accessibility(hidden: true)
-                    
-                    Text(subTitle)
-                        .font(.system(size: 18.0, weight: .bold, design: .rounded))
+            // Container for the image and the label (if it exists)
+            VStack(spacing: 10) {
+                Image(systemName: imageName)
+                    .font(.largeTitle)
+                    .foregroundColor(.mainColor)
+                    .accessibility(hidden: true)
+                
+                // This displays the label (if it exists) next to the image
+                if let label = backgroundLabel {
+                    Text(label)
+                        .font(.caption)
                         .bold()
-                        .foregroundColor(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
+                        .foregroundStyle(.pink)
+                        .padding(5)
+                        .background(Color.pink.opacity(0.2))
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                        .multilineTextAlignment(.center)
                 }
+            }
+            .padding()
+            
+            VStack(alignment: .leading) {
+                Text(subTitle)
+                    .font(.system(size: 18.0, weight: .bold, design: .rounded))
+                    .bold()
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
         .padding(.top)
@@ -294,7 +256,20 @@ struct ExportView: View {
                             .font(.system(size: 24.0, weight: .bold, design: .rounded))
                             .foregroundColor(.gray)
                         
-                        InformationContainerView(scanState: $scanState)
+                        InformationContainerView()
+                        
+                        Button(action: {
+                            scanState = .ready
+                        }) {
+                            Text("Continue")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .padding()
+                                .frame(maxWidth: .infinity)
+                                .background(Capsule().fill(Color.gray.opacity(0.4)))
+                        }
+                        .padding(.horizontal)
+                        .padding(.top)
                     }
                 }
                 
