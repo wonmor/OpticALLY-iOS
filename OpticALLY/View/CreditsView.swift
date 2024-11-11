@@ -49,22 +49,6 @@ struct CreditNestedView: View {
                 .font(.caption)
                 .bold()
             
-            Text(OpenCVWrapper.getOpenCVVersion())
-                .monospaced()
-                .padding(.horizontal)
-                .padding(.top)
-                .foregroundStyle(.black)
-                .font(.caption)
-                .bold()
-            
-            Text(EigenWrapper.eigenVersionString())
-                .monospaced()
-                .padding(.horizontal)
-                .padding(.top)
-                .foregroundStyle(.black)
-                .font(.caption)
-                .bold()
-            
             VStack {
                 Text("OPTICALLY")
                     .monospaced()
@@ -79,15 +63,15 @@ struct CreditNestedView: View {
             
             // Credit Lines
             VStack(alignment: .center, spacing: 20) {
-                CreditLine(title: "PRODUCT", name: "Drew Shepard")
-                CreditLine(title: "DEVELOPER", name: "John Wonmo Seong")
+                CreditLine(title: "PRODUCT", name: "Drew Shepard", email: "drew@harolden.com")
+                CreditLine(title: "DEVELOPER", name: "John Wonmo Seong", email: "johnseong@havit.space")
             }
             .padding()
             .background(backgroundColor)
             .cornerRadius(20)
             
             VStack(alignment: .center, spacing: 20) {
-                CreditLine(title: "SPECIAL THANKS", name: "Shawn Patridge")
+                CreditLine(title: "SPECIAL THANKS", name: "Shawn Patridge", email: "shawn.partridge@gmail.com")
             }
             .padding()
             .background(backgroundColor)
@@ -121,6 +105,7 @@ struct CreditNestedView: View {
 struct CreditLine: View {
     var title: String
     var name: String
+    var email: String
     
     var body: some View {
         VStack {
@@ -130,6 +115,8 @@ struct CreditLine: View {
                 .foregroundColor(.white)
             Text(name)
                 .foregroundColor(.white)
+            Text(email)
+                .foregroundColor(.blue)
         }
         .multilineTextAlignment(.center)
     }

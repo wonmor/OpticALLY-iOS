@@ -339,7 +339,7 @@ struct ExportView: View {
                                         .padding()
                                         .colorInvert()
                                     
-                                    Text("PROCESSING SCANS")
+                                    Text("COMBINING SCANS")
                                         .bold()
                                         .monospaced()
                                         .foregroundColor(.white)

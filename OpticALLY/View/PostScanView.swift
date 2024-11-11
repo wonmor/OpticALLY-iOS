@@ -123,17 +123,6 @@ struct PostScanView: View {
     
     let fileManager = FileManager.default
     
-    func getVertexCount(for filePath: String) -> Int {
-        do {
-            let fileContents = try String(contentsOfFile: filePath)
-            let vertexLines = fileContents.split(separator: "\n").filter { $0.hasPrefix("v ") }
-            return vertexLines.count
-        } catch {
-            print("Failed to read OBJ file at \(filePath): \(error)")
-            return 0
-        }
-    }
-    
     private func processUploads() {
         let baseFolderName = "bin_json"
         let documentsDirectory = ExternalData.getDocumentsDirectory()
@@ -481,15 +470,12 @@ struct PostScanView: View {
                 if ExternalData.isMeshView {
                     if !exportViewModel.isLoading {
                         VStack {
-                            if let urls = exportViewModel.objURLs, let objFile = urls.first {
-                                let vertexCount = getVertexCount(for: objFile)
-                                Text("Vertex Count\n\(vertexCount)")
-                                    .padding()
-                                    .font(.system(size: 24.0, weight: .bold, design: .rounded))
-                                    .foregroundColor(.gray)
-                                    .frame(maxWidth: .infinity, alignment: .center)
-                                    .multilineTextAlignment(.center)
-                            }
+                            Text("BETA")
+                                .padding()
+                                .font(.system(size: 24.0, weight: .bold, design: .rounded))
+                                .foregroundColor(.gray)
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .multilineTextAlignment(.center)
                         }
                     }
                     
@@ -519,8 +505,8 @@ struct PostScanView: View {
                                         self.showShareSheet = true
                                     }
                                 }) {
-                                    Text("FULL HEAD .OBJ")
-                                        .font(.caption)
+                                    Text(".OBJ")
+                                        .font(.title3)
                                         .bold()
                                         .padding()
                                         .foregroundColor(.white)
@@ -545,7 +531,7 @@ struct PostScanView: View {
                             .padding()
                             .colorInvert()
                         
-                        Text("PROCESSING SCANS (\(uploadIndex + 1)/\(uploadResults.count))")
+                        Text("COMBINING SCANS (\(uploadIndex + 1)/\(uploadResults.count))")
                             .bold()
                             .monospaced()
                             .foregroundColor(.white)
