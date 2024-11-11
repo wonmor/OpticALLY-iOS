@@ -244,7 +244,7 @@ struct ExportView: View {
                             .monospaced()
                             .multilineTextAlignment(.center)
                         
-                        Text("3D CAPTURE")
+                        Text("MULTI-SCAN")
                             .font(.title)
                             .bold()
                             .monospaced()
