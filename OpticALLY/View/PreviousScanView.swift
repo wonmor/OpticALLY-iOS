@@ -81,6 +81,7 @@ struct PreviousScanNestedView: View {
             .foregroundColor(foregroundColor)
             .cornerRadius(20)
             .padding(.bottom)
+            .colorInvert()
             
             // Confirm Button
             Button(action: {

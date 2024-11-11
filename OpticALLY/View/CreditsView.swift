@@ -16,6 +16,7 @@ struct CreditsView: View {
                 )
         }
         .edgesIgnoringSafeArea(.all)
+        .colorInvert()
     }
 }
 
