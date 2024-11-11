@@ -79,13 +79,21 @@ struct CreditNestedView: View {
             
             // Credit Lines
             VStack(alignment: .center, spacing: 20) {
-                CreditLine(title: "PRODUCT MANAGER", name: "Drew Shepard")
-                CreditLine(title: "LEAD ENGINEER", name: "John Seong")
-                CreditLine(title: "CONSULTANT", name: "Shawn Patridge")
+                CreditLine(title: "PRODUCT", name: "Drew Shepard")
+                CreditLine(title: "DEVELOPER", name: "John Seong")
             }
             .padding()
             .background(backgroundColor)
             .cornerRadius(20)
+            
+            VStack(alignment: .center, spacing: 20) {
+                CreditLine(title: "SPECIAL THANKS", name: "Shawn Patridge")
+            }
+            .padding()
+            .background(backgroundColor)
+            .cornerRadius(20)
+            
+            
             
             // Button
             Button(action: {

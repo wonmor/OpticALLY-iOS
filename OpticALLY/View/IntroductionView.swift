@@ -59,7 +59,7 @@ struct TextOverlayView: View {
             Button(action: {
                 showingPreviousScanView.toggle()
             }) {
-                Text("PREVIOUS SCANS")
+                Text("PRIVACY POLICY")
                     .font(.footnote)
                     .monospaced()
                     .bold()
