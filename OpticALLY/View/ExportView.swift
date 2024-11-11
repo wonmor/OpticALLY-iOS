@@ -281,12 +281,12 @@ struct ExportView: View {
                 
                 if scanState == .ready {
                     VStack {
-                        Text("CAPTURE YOUR")
+                        Text("ALIGN YOUR FACE")
                             .font(.title3)
                             .monospaced()
                             .multilineTextAlignment(.center)
                         
-                        Text("SPATIAL PERSONA")
+                        Text("WITHIN THE FRAME")
                             .font(.title)
                             .bold()
                             .monospaced()

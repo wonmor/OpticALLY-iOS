@@ -80,7 +80,7 @@ struct CreditNestedView: View {
             // Credit Lines
             VStack(alignment: .center, spacing: 20) {
                 CreditLine(title: "PRODUCT", name: "Drew Shepard")
-                CreditLine(title: "DEVELOPER", name: "John Seong")
+                CreditLine(title: "DEVELOPER", name: "John Wonmo Seong")
             }
             .padding()
             .background(backgroundColor)

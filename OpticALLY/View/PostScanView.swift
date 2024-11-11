@@ -123,6 +123,17 @@ struct PostScanView: View {
     
     let fileManager = FileManager.default
     
+    func getVertexCount(for filePath: String) -> Int {
+        do {
+            let fileContents = try String(contentsOfFile: filePath)
+            let vertexLines = fileContents.split(separator: "\n").filter { $0.hasPrefix("v ") }
+            return vertexLines.count
+        } catch {
+            print("Failed to read OBJ file at \(filePath): \(error)")
+            return 0
+        }
+    }
+    
     private func processUploads() {
         let baseFolderName = "bin_json"
         let documentsDirectory = ExternalData.getDocumentsDirectory()
@@ -470,12 +481,15 @@ struct PostScanView: View {
                 if ExternalData.isMeshView {
                     if !exportViewModel.isLoading {
                         VStack {
-                            Text("Pupil Distance\n\(String(format: "%.1f", cameraViewController.pupilDistance)) mm")
-                                .padding()
-                                .font(.system(size: 24.0, weight: .bold, design: .rounded))
-                                .foregroundColor(.gray)
-                                .frame(maxWidth: .infinity, alignment: .center)
-                                .multilineTextAlignment(.center)
+                            if let urls = exportViewModel.objURLs, let objFile = urls.first {
+                                let vertexCount = getVertexCount(for: objFile)
+                                Text("Vertex Count\n\(vertexCount)")
+                                    .padding()
+                                    .font(.system(size: 24.0, weight: .bold, design: .rounded))
+                                    .foregroundColor(.gray)
+                                    .frame(maxWidth: .infinity, alignment: .center)
+                                    .multilineTextAlignment(.center)
+                            }
                         }
                     }
                     
