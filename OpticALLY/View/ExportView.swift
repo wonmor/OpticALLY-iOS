@@ -251,7 +251,7 @@ struct ExportView: View {
                             .multilineTextAlignment(.center)
                             .padding(.horizontal)
                         
-                        Text("BETA")
+                        Text("For the Best Results")
                             .padding(.top)
                             .font(.system(size: 24.0, weight: .bold, design: .rounded))
                             .foregroundColor(.gray)
