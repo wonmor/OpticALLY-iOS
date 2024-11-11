@@ -39,15 +39,6 @@ struct CreditNestedView: View {
                 .padding()
                 .background(backgroundColor)
                 .cornerRadius(20)
-        
-            // Python interpolated
-            Text("Open3D Version\n\(o3d!.__version__.description)")
-                .monospaced()
-                .padding(.horizontal)
-                .padding(.top)
-                .foregroundStyle(.black)
-                .font(.caption)
-                .bold()
             
             VStack {
                 Text("OPTICALLY")
@@ -116,7 +107,7 @@ struct CreditLine: View {
             Text(name)
                 .foregroundColor(.white)
             Text(email)
-                .foregroundColor(.blue)
+                .foregroundColor(Color(.lightGray))
         }
         .multilineTextAlignment(.center)
     }

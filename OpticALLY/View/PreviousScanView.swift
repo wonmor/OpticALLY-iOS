@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import AVKit
 
 struct PreviousScanView: View {
     @Binding var showingCredits: Bool
@@ -30,7 +31,6 @@ struct PreviousScanView: View {
 struct PreviousScanNestedView: View {
     @Binding var showingCredits: Bool
     
-    // Define common styling
     private let foregroundColor = Color.white
     private let backgroundColor = Color.black
     private let commonFont = Font.system(.subheadline).monospaced()
@@ -40,7 +40,7 @@ struct PreviousScanNestedView: View {
             Spacer()
             
             // Title
-            Text("PREVIOUS SCANS")
+            Text("PRIVACY POLICY")
                 .bold()
                 .font(commonFont)
                 .foregroundColor(foregroundColor)
@@ -60,15 +60,29 @@ struct PreviousScanNestedView: View {
             .padding()
             .bold()
             
-            // Credit Lines
-            VStack(alignment: .center) {
-                FilesListView()
+            // Privacy Policy Details
+            VStack(alignment: .leading) {
+                Text("Every 3D scan is processed LOCALLY ON DEVICE.")
+                    .font(.system(size: 18.0, weight: .bold, design: .rounded))
+                
+                Text("NO data is collected or stored.\nNo scans are processed on cloud servers, ensuring complete privacy.")
+                    .padding(.top, 10)
+                    .font(.system(size: 18.0, weight: .bold, design: .rounded))
+                    .opacity(0.5)
+                
+                Text("ALL data remains on your device and is discarded when the app is closed.\nYour privacy is our priority.")
+                    .padding(.top, 5)
+                    .font(.system(size: 18.0, weight: .bold, design: .rounded))
+                    .opacity(0.5)
             }
+            .multilineTextAlignment(.leading)
             .padding()
             .background(backgroundColor)
+            .foregroundColor(foregroundColor)
             .cornerRadius(20)
+            .padding(.bottom)
             
-            // Button
+            // Confirm Button
             Button(action: {
                 withAnimation {
                     showingCredits = false
@@ -87,23 +101,6 @@ struct PreviousScanNestedView: View {
         }
         .padding()
         .foregroundStyle(.white)
-        .multilineTextAlignment(.center)
-    }
-}
-
-struct PreviousScanCreditView: View {
-    var title: String
-    var name: String
-    
-    var body: some View {
-        VStack {
-            Text(title)
-                .bold()
-                .font(Font.system(.subheadline).monospaced())
-                .foregroundColor(.white)
-            Text(name)
-                .foregroundColor(.white)
-        }
         .multilineTextAlignment(.center)
     }
 }
