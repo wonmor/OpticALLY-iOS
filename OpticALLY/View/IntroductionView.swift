@@ -6,6 +6,7 @@ struct TextOverlayView: View {
     
     @State private var showingCredits = false
     @State private var showingPreviousScanView = false
+    @State private var showingAlert = false
     
     var body: some View {
         VStack {
@@ -28,6 +29,13 @@ struct TextOverlayView: View {
             .padding(.horizontal)
             
             Button(action: {
+                let discoverySession = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInTrueDepthCamera], mediaType: .depthData, position: .front)
+                guard let depthDevice = discoverySession.devices.first else {
+                    print("Your device does not have a TrueDepth front camera")
+                    showingAlert = true
+                    return
+                }
+                
                 globalState.currentView = .scanning
             }) {
                 HStack {
@@ -78,6 +86,19 @@ struct TextOverlayView: View {
         .shadow(color: .black, radius: 10, x: 5, y: 5)
         .foregroundStyle(.white)
         .multilineTextAlignment(.center)
+        .alert(isPresented: $showingAlert) {
+                    Alert(
+                        title: Text("Unsupported Device"),
+                        message: Text(
+                            """
+                            Your device does not have a front-facing TrueDepth camera.
+                            
+                            Supported devices include iPhone X or any newer devices.
+                            """
+                        ),
+                        dismissButton: .default(Text("OK"))
+                    )
+                }
     }
 }
 
