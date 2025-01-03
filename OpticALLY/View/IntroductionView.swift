@@ -51,18 +51,18 @@ struct TextOverlayView: View {
             .padding(.bottom)
             
             Button(action: {
-               showingCredits.toggle()
-           }) {
-               Text("CREDITS")
-                   .font(.footnote)
-                   .monospaced()
-                   .bold()
-           }
-           .padding(.bottom)
-           .sheet(isPresented: $showingCredits) {
-               CreditsView(showingCredits: $showingCredits)
+                showingCredits.toggle()
+            }) {
+                Text("CREDITS")
+                    .font(.footnote)
+                    .monospaced()
+                    .bold()
             }
-           .padding(.bottom)
+            .padding(.bottom)
+            .sheet(isPresented: $showingCredits) {
+                CreditsView(showingCredits: $showingCredits)
+            }
+            .padding(.bottom)
             
             Button(action: {
                 showingPreviousScanView.toggle()
@@ -80,25 +80,25 @@ struct TextOverlayView: View {
             .sheet(isPresented: $showingPreviousScanView) {
                 PreviousScanView(showingCredits: $showingPreviousScanView)
             }
-}
+        }
         .background(Color(.black))
         .clipShape(RoundedRectangle(cornerSize: CGSize(width: 20, height: 10)))
         .shadow(color: .black, radius: 10, x: 5, y: 5)
         .foregroundStyle(.white)
         .multilineTextAlignment(.center)
         .alert(isPresented: $showingAlert) {
-                    Alert(
-                        title: Text("Unsupported Device"),
-                        message: Text(
+            Alert(
+                title: Text("Unsupported Device"),
+                message: Text(
                             """
                             Your device does not have a front-facing TrueDepth camera.
                             
                             Supported devices include iPhone X or any newer devices.
                             """
-                        ),
-                        dismissButton: .default(Text("OK"))
-                    )
-                }
+                ),
+                dismissButton: .default(Text("OK"))
+            )
+        }
     }
 }
 
