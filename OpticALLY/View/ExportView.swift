@@ -587,11 +587,11 @@ func determineStatus() -> (text: String, color: Color) {
     guard let distance = cameraViewController.faceDistance else { return ("POSITION YOURSELF", Color(.white).opacity(0.2)) }
     
     switch distance {
-    case ..<35: // Assuming distance is measured in some unit where 30 is too close
+    case ..<25: // Assuming distance is measured in some unit where 30 is too close
         return ("TOO CLOSE", .red.opacity(0.3))
-    case 35..<45: // Assuming 30 to 40 is the optimal range
+    case 25..<35: // Assuming 30 to 40 is the optimal range
         return ("OPTIMAL", .green.opacity(0.3))
-    case 45...: // Assuming distance more than 40 is too far
+    case 35...: // Assuming distance more than 40 is too far
         return ("TOO FAR", .yellow.opacity(0.3))
     default:
         return ("POSITION YOURSELF", Color(.white).opacity(0.2))
