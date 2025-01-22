@@ -21,6 +21,7 @@
 		9647457D2C3AA66900263A59 /* dlib in Resources */ = {isa = PBXBuildFile; fileRef = 9647457C2C3AA66900263A59 /* dlib */; };
 		9647457F2C3AA66D00263A59 /* libdlib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9647457E2C3AA66D00263A59 /* libdlib.a */; };
 		96491C5F2AFD746300FD3666 /* ConsoleOutputCatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96491C5E2AFD746300FD3666 /* ConsoleOutputCatcher.swift */; };
+		964A693C2D40CF07008D3F4E /* ScanSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 964A693B2D40CF00008D3F4E /* ScanSelectionView.swift */; };
 		9663605A2B6E0200001D2119 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 966360592B6E0200001D2119 /* Lottie */; };
 		966360602B6E03FF001D2119 /* face-found-successfully.json in Resources */ = {isa = PBXBuildFile; fileRef = 9663605B2B6E03FF001D2119 /* face-found-successfully.json */; };
 		966360612B6E03FF001D2119 /* face-id.json in Resources */ = {isa = PBXBuildFile; fileRef = 9663605C2B6E03FF001D2119 /* face-id.json */; };
@@ -150,6 +151,7 @@
 		9647457C2C3AA66900263A59 /* dlib */ = {isa = PBXFileReference; lastKnownFileType = folder; path = dlib; sourceTree = "<group>"; };
 		9647457E2C3AA66D00263A59 /* libdlib.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libdlib.a; sourceTree = "<group>"; };
 		96491C5E2AFD746300FD3666 /* ConsoleOutputCatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsoleOutputCatcher.swift; sourceTree = "<group>"; };
+		964A693B2D40CF00008D3F4E /* ScanSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanSelectionView.swift; sourceTree = "<group>"; };
 		9663605B2B6E03FF001D2119 /* face-found-successfully.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "face-found-successfully.json"; sourceTree = "<group>"; };
 		9663605C2B6E03FF001D2119 /* face-id.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "face-id.json"; sourceTree = "<group>"; };
 		9663605D2B6E03FF001D2119 /* face-detection.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "face-detection.json"; sourceTree = "<group>"; };
@@ -448,6 +450,7 @@
 				9620580F2BB2209F00F9084F /* SignalStrengthView.swift */,
 				96E3E0032B867684004374D1 /* FaceIDScanView.swift */,
 				9680F7DC2B22D6FD00F38A6F /* ARFaceTrackingView.swift */,
+				964A693B2D40CF00008D3F4E /* ScanSelectionView.swift */,
 				96E856C32B70421F0037C3BB /* FilesListView.swift */,
 				96E856C52B70441C0037C3BB /* FolderDetailView.swift */,
 				967EE0662AAE06FB000C4D5F /* ContentView.swift */,
@@ -707,6 +710,7 @@
 				96E8A6762BED637D00CCBC18 /* PointCloudProcessingBridge.mm in Sources */,
 				96F0CF222B12A51700417716 /* LogManager.swift in Sources */,
 				961D67E52B12C64A00DBB883 /* CreditsView.swift in Sources */,
+				964A693C2D40CF07008D3F4E /* ScanSelectionView.swift in Sources */,
 				96FC61592B146D3A00ACC840 /* HapticManager.swift in Sources */,
 				96B64F732B3D90490003E06D /* ScnMatrix.swift in Sources */,
 				96F0CF1C2B12A3D500417716 /* ExportView.swift in Sources */,
